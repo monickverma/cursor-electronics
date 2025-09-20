@@ -1,0 +1,51 @@
+# -----------------
+# Python
+# -----------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.joblib
+
+# -----------------
+# Virtual Environments
+# -----------------
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# -----------------
+# Data & Models
+# -----------------
+/data/*
+!/data/.gitkeep   # keep empty folder tracked
+internship_model.pkl
+
+# -----------------
+# Logs
+# -----------------
+*.log
+
+# -----------------
+# IDE / Editor
+# -----------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------
+# OS Specific
+# -----------------
+.DS_Store
+Thumbs.db
+
+# -----------------
+# Testing / Coverage
+# -----------------
+.pytest_cache/
+.coverage
+htmlcov/
