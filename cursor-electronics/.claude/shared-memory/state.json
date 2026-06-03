@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Do not edit by hand. Run: python tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) \u2014 module-level summary",
-  "generated_at": "2026-06-03T10:41:30.840125Z",
-  "generated_from_commit": "085b449",
+  "generated_at": "2026-06-03T10:53:26.661067Z",
+  "generated_from_commit": "f9ff270",
   "project": "Circuit OS",
   "phase": {
     "current": 1,
@@ -103,6 +103,7 @@
     "pct_overall": 0.0
   },
   "recent_commits": [
+    "f9ff270 refactor: move brain scaffold to .claude/shared-memory/",
     "085b449 chore: integrate project brain scaffold for Circuit OS",
     "eb06def chore: integrate project brain scaffold for Circuit OS",
     "88dc473 chore: integrate project brain scaffold for Circuit OS",
