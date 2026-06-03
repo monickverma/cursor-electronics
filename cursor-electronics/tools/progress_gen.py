@@ -3,12 +3,12 @@
 progress_gen.py — Generates progress.yaml from reality at FUNCTION level.
 
 What it does:
-  1. Scans every .py file in src/ using Python's `ast` module
+  1. Scans every .py file in backend/ using Python's `ast` module
      → extracts every function: name, signature, docstring, line number
   2. Detects stubs: functions whose body is only a docstring (placeholder)
   3. Runs pytest -v to get per-test pass/fail
   4. Maps source functions to their tests by naming convention
-     (test_run_simulation → run_simulation)
+     (test_generate → generate)
   5. Assigns each function a status:
      verified_done  ✅  exists + real body + test passes
      broken         ❌  exists + real body + test fails
@@ -22,24 +22,19 @@ Run via regen_state.py or standalone:
 """
 
 import ast
-import io
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Force UTF-8 stdout so emoji print correctly on Windows (cp1252 terminals)
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-elif hasattr(sys.stdout, "buffer"):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")
 
 try:
     import yaml
 except ImportError:
     yaml = None
 
-ROOT  = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent
 SRC   = ROOT / "backend"
 TESTS = ROOT / "tests"
 
@@ -50,41 +45,43 @@ TESTS = ROOT / "tests"
 
 PLANNED_FUNCTIONS = {
     "backend/ai/intent_parser.py": [
-        ("parse",    "str prompt → DesignSpec via Claude tool_use"),
+        ("parse",               "Parses user prompt → DesignSpec (tool_use mode)"),
     ],
     "backend/ai/circuit_reasoner.py": [
-        ("generate", "DesignSpec → CircuitIR (3-attempt retry, pydantic strict validation)"),
+        ("generate",            "DesignSpec → CircuitIR with 3-attempt retry loop"),
     ],
     "backend/ai/patcher.py": [
-        ("patch",    "CircuitIR + command → PatchResult (changed fields only, never full IR)"),
+        ("patch",               "IR + edit command → changed fields only (not full IR)"),
     ],
     "backend/ai/explainer.py": [
-        ("explain",  "CircuitIR → consequential plain English explanation"),
+        ("explain",             "CircuitIR → consequential plain English explanation"),
     ],
     "backend/generators/netlist/spice.py": [
-        ("generate", "CircuitIR → SPICE netlist string (MCU as 100Ohm, floating node tie-downs)"),
+        ("generate",            "CircuitIR → SPICE netlist string (MCU as R_MCU, floating node tie-downs)"),
     ],
     "backend/generators/firmware/arduino.py": [
-        ("generate", "CircuitIR → .ino source via Jinja2 template selection"),
+        ("generate",            "CircuitIR + template_id → Arduino .ino from Jinja2"),
     ],
     "backend/generators/schematic/kicad.py": [
-        ("generate", "CircuitIR → .kicad_sch string (net labels, no wire routing)"),
+        ("generate",            "CircuitIR → .kicad_sch with net labels (no wire routing Phase 1)"),
     ],
     "backend/generators/bom/compiler.py": [
-        ("compile",     "CircuitIR → BOM rows list with static pricing"),
-        ("total_cost",  "BOM rows → total cost float"),
+        ("compile",             "CircuitIR → BOM rows with static pricing"),
     ],
     "backend/simulation/runner.py": [
-        ("run",      "SPICE netlist str → dict (async, ngspice -b subprocess, 30s timeout)"),
+        ("run",                 "SPICE netlist → ngspice subprocess → raw output text"),
+    ],
+    "backend/simulation/parser.py": [
+        ("parse",               "ngspice columnar text output → structured dict (DC + AC)"),
     ],
     "backend/simulation/grader.py": [
-        ("grade",    "CircuitIR + SimulationData → GradeResult (15% tolerance)"),
+        ("grade",               "parsed ngspice data vs IR constraints → pass/fail (15% tolerance)"),
     ],
     "backend/core/ir_validator.py": [
-        ("validate_ir", "CircuitIR → IRValidationResult (floating nodes, voltage ratings, I2C)"),
+        ("validate_ir",         "CircuitIR → structural validation before any compiler"),
     ],
     "backend/validation/rule_engine.py": [
-        ("run",      "CircuitIR → list[RuleViolation] (RS-485 termination, PWM pin validity)"),
+        ("run",                 "CircuitIR → hardware rule checks (no floating nodes, I2C pull-ups, etc.)"),
     ],
 }
 
@@ -153,7 +150,7 @@ def run_tests_verbose() -> dict:
     try:
         result = subprocess.run(
             ["python", "-m", "pytest", "tests/", "-v", "--tb=no", "--no-header", "-q"],
-            capture_output=True, text=True, cwd=ROOT, timeout=120
+            capture_output=True, text=True, encoding="utf-8", cwd=ROOT, timeout=120
         )
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return {}
@@ -195,11 +192,11 @@ def derive_status(func_name: str, extracted: dict, test_status: str) -> str:
 def write_yaml(data: dict, path: Path):
     if yaml:
         path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False,
-                                  allow_unicode=True), encoding="utf-8")
+                                  allow_unicode=True))
     else:
         import json
-        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        print("  i PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
+        path.write_text(json.dumps(data, indent=2))
+        print("  ℹ PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

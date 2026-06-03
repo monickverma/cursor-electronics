@@ -17,7 +17,6 @@ What it does:
   7. Prints a reviewer summary (paste-friendly)
 """
 
-import io
 import json
 import re
 import subprocess
@@ -25,33 +24,25 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Force UTF-8 stdout so emoji print correctly on Windows (cp1252 terminals)
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-elif hasattr(sys.stdout, "buffer"):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.parent
 
 EXPECTED_MODULES = {
-    # Phase 1 — Hardware Copilot (5 templates, MVP)
-    "api_entry":         {"file": "backend/main.py",                         "phase": 1},
-    "ir_schema":         {"file": "backend/core/ir_schema.py",               "phase": 1},
-    "intent_parser":     {"file": "backend/ai/intent_parser.py",             "phase": 1},
-    "circuit_reasoner":  {"file": "backend/ai/circuit_reasoner.py",          "phase": 1},
-    "patcher":           {"file": "backend/ai/patcher.py",                   "phase": 1},
-    "explainer":         {"file": "backend/ai/explainer.py",                 "phase": 1},
-    "spice_generator":   {"file": "backend/generators/netlist/spice.py",     "phase": 1},
-    "firmware_gen":      {"file": "backend/generators/firmware/arduino.py",  "phase": 1},
-    "kicad_gen":         {"file": "backend/generators/schematic/kicad.py",   "phase": 1},
-    "bom_compiler":      {"file": "backend/generators/bom/compiler.py",      "phase": 1},
-    "simulation_runner": {"file": "backend/simulation/runner.py",            "phase": 1},
-    "rule_engine":       {"file": "backend/validation/rule_engine.py",       "phase": 1},
-    # Phase 2 — Validation Engine
-    "frontend_app":      {"file": "frontend/app/page.tsx",                   "phase": 2},
-    # Phase 3 — Industrial Layer
-    "pcb_layout":        {"file": "backend/generators/pcb/layout.py",        "phase": 3},
+    "ir_schema":         {"file": "backend/core/ir_schema.py",           "phase": 1},
+    "ir_validator":      {"file": "backend/core/ir_validator.py",        "phase": 1},
+    "intent_parser":     {"file": "backend/ai/intent_parser.py",        "phase": 1},
+    "circuit_reasoner":  {"file": "backend/ai/circuit_reasoner.py",     "phase": 1},
+    "patcher":           {"file": "backend/ai/patcher.py",              "phase": 1},
+    "explainer":         {"file": "backend/ai/explainer.py",            "phase": 1},
+    "spice_generator":   {"file": "backend/generators/netlist/spice.py","phase": 1},
+    "firmware_generator":{"file": "backend/generators/firmware/arduino.py","phase":1},
+    "kicad_generator":   {"file": "backend/generators/schematic/kicad.py","phase":1},
+    "bom_compiler":      {"file": "backend/generators/bom/compiler.py", "phase": 1},
+    "sim_runner":        {"file": "backend/simulation/runner.py",        "phase": 1},
+    "rule_engine":       {"file": "backend/validation/rule_engine.py",  "phase": 1},
+    "frontend":          {"file": "frontend/app/page.tsx",              "phase": 1},
 }
 TOTAL_PHASES = 5
 CURRENT_PHASE = 1  # Update manually when a phase completes.
@@ -61,8 +52,7 @@ CURRENT_PHASE = 1  # Update manually when a phase completes.
 def run(cmd, cwd=None, timeout=60):
     try:
         r = subprocess.run(cmd, cwd=cwd or ROOT, capture_output=True,
-                           text=True, encoding="utf-8", errors="replace",
-                           timeout=timeout)
+                           text=True, timeout=timeout)
         return r.returncode, r.stdout, r.stderr
     except subprocess.TimeoutExpired:
         return -1, "", "TIMEOUT"
