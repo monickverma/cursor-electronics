@@ -1,151 +1,163 @@
-# Master Plan — Circuit OS Strategic Roadmap
+# Master Plan — Circuit OS (from PRODUCT_MASTER.md)
 
-> This is the steering document. Phases 0 → 10. Rarely changes.
-> For session-level tasks, see `plan/current_phase.md`.
-
----
-
-## Phase Overview
-
-| Phase | Name | Status |
-|-------|------|--------|
-| 0 | Architecture + Scaffold | ✅ DONE |
-| 1 | Phase 1 Sign-off (5 Templates, 12 Criteria) | 🔄 10/12 DONE |
-| 2 | Phase 1 → 2 Bridge: Physical + External Validation | ⏳ Day 2–3 |
-| 3 | Free-form Circuit Generation (beyond 5 templates) | ⬜ NOT STARTED |
-| 4 | Live BOM Pricing (Digikey / LCSC API) | ⬜ NOT STARTED |
-| 5 | Component Datasheet RAG (Qdrant) | ⬜ NOT STARTED |
-| 6 | Simulation Waveform Graphs | ⬜ NOT STARTED |
-| 7 | ESP32 / STM32 Firmware Support | ⬜ NOT STARTED |
-| 8 | PCB Auto-layout + Gerber Export | ⬜ NOT STARTED |
-| 9 | Multi-user + Design Sharing | ⬜ NOT STARTED |
-| 10 | Production Deployment | ⬜ NOT STARTED |
+> Source of truth: `PRODUCT_MASTER.md` at project root.
+> This file summarises the 5-phase roadmap for agents who need orientation.
+> Never contradict PRODUCT_MASTER.md — if in doubt, read that file.
 
 ---
 
-## Phase 0 — Architecture + Scaffold ✅ DONE
+## The Product in One Sentence
 
-**Goal:** Skeleton, tools, database schema, CI, all decisions locked.
-
-**Done when:** `pytest tests/ -v` runs with 0 failures (even if all skipped).
-`docker-compose up -d db redis` starts cleanly.
-
-**Outcome:** Full backend + frontend written. 171 tests pass. Everything runs.
+> An AI hardware compiler that turns a plain English hardware description into a complete,
+> validated, simulation-tested, manufacture-ready electronics design — including the circuit,
+> the firmware, the BOM, and the safety analysis — before a single component is touched.
 
 ---
 
-## Phase 1 — 5 Templates, 12 Criteria 🔄 IN PROGRESS (10/12)
+## Phase Overview (from PRODUCT_MASTER.md Part 6)
 
-**Goal:** Prove the system works reliably on 5 circuit types end-to-end.
-
-**Done when:** All 12 launch criteria checked (see brain/vision.md).
-
-**Current state (2026-06-02):**
-- ✅ 10 of 12 criteria verified in software
-- ⏳ Criteria 11: RC filter bench measurement (oscilloscope needed)
-- ⏳ Criteria 12: External engineer review (human needed)
-
----
-
-## Phase 2 — Physical + External Validation ⏳
-
-**Goal:** Prove the hardware output is real.
-
-**Tasks:**
-1. Build RC filter (R=1590Ω, C=100nF) on breadboard
-2. Drive with function generator, measure -3dB point with oscilloscope
-3. Compare to ngspice result — must be within 15%
-4. Flash DHT22 firmware to real Arduino Uno, verify sensor reads
-5. Print explanation report for one external engineer
-6. Tag v0.1.0 and commit `PHASE1_COMPLETE.md`
-
-**Deliverables:**
-- `sims/rc_filter_bench_vs_ngspice.md` with actual measurements
-- Photo of Arduino with DHT22 working
-- Engineer's verbal/written feedback on explanation quality
+| Phase | Name | Timeline | Status |
+|-------|------|----------|--------|
+| 1 | Hardware Copilot | Months 0–3 | 🔄 10/12 criteria done |
+| 2 | Validation Engine | Months 3–8 | ⬜ Not started |
+| 3 | Industrial Layer | Months 8–18 | ⬜ Not started |
+| 4 | Enterprise Platform | Months 18–30 | ⬜ Not started |
+| 5 | Advanced Hardware Intelligence | Months 30+ | ⬜ Not started |
 
 ---
 
-## Phase 3 — Free-form Circuit Generation
+## Phase 1 — Hardware Copilot (Months 0–3) 🔄
 
-**Goal:** Accept any circuit description, not just the 5 Phase 1 templates.
+**Target users:** Arduino hobbyists, CS/EE students, indie makers
 
-**Key change:** `circuit_reasoner.py` currently uses `format_for_prompt(["DHT22"])` —
-looks up only known components. Phase 3 extends this with Qdrant RAG for arbitrary
-component datasheets.
+**Deliverables (from PRODUCT_MASTER.md Part 5 — MVP):**
+- 5 circuit templates (DHT22, RS-485 Modbus, LED, RC filter, voltage divider)
+- ngspice simulation (pass/fail grade)
+- 5 validation rule checks (floating nodes, voltage ratings, I2C pullups, RS-485 termination, PWM pins)
+- Arduino `.ino` firmware generation (Jinja2 templates)
+- Plain English explanation of every design decision
+- KiCad `.kicad_sch` export
+- Diff-and-patch conversational editing (never regenerate from scratch)
+- Static BOM (part numbers, packages, pricing)
+- JWT auth + rate limiting
 
-**Not starting until:** Phase 2 complete. Running on an unverified Phase 1 = building Phase 2 on sand.
+**KPIs (from PRODUCT_MASTER.md):**
+- Circuit generation under 30 seconds ✅ measured ~15s
+- Simulation accuracy ≥85% match to bench measurement ⏳ bench test needed
+- 100 beta users
+- At least 3 documented "it caught my mistake" testimonials
 
----
+**12 Internal Launch Criteria:**
 
-## Phase 4 — Live BOM Pricing
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | JWT auth — all routes protected | ✅ Done 2026-06-02 |
+| 2 | Full generation under 30s | ✅ ~15s measured |
+| 3 | SPICE simulation runs and grades correctly | ✅ Done 2026-06-02 |
+| 4 | Simulation fails on deliberately wrong values | ✅ 1nF → FAIL confirmed |
+| 5 | Rule engine catches missing I2C pull-up | ✅ test suite |
+| 6 | Firmware compiles to real Arduino without modification | ✅ arduino-cli confirmed |
+| 7 | 5 sequential patches — no data corruption | ✅ v1→v6 tested |
+| 8 | 20 different prompts — zero crashes | ✅ 6 fully verified |
+| 9 | 100 consecutive requests — zero HTTP 500s | ✅ 100×200 OK in 3.2s |
+| 10 | Rate limiting — 11th request returns 429 | ✅ confirmed |
+| 11 | RC filter bench test (ngspice vs oscilloscope ≤15%) | ⏳ physical hardware |
+| 12 | External engineer reads explanation cold, understands all | ⏳ human required |
 
-**Goal:** Replace static pricing dict with real-time Digikey / LCSC prices.
-
-**Current state:** `generators/bom/compiler.py` uses `component_constraints.py` (static dict).
-**Phase 4 adds:** Digikey API calls with caching, LCSC fallback.
-**Do not add early** — creates authenticated, rate-limited, cacheable dependency.
-
----
-
-## Phase 5 — Component Datasheet RAG
-
-**Goal:** Inject datasheet excerpts for arbitrary components via Qdrant vector search.
-
-**Current state:** `component_constraints.py` covers ~20 components.
-**Phase 5 adds:** Qdrant with full datasheet excerpts, semantic lookup by component name.
-
----
-
-## Phase 6 — Simulation Waveform Graphs
-
-**Goal:** Replace text pass/fail with visual waveform output.
-
-**Current state:** `SimulationResults.tsx` shows `{passed, failures, notes}` text.
-**Phase 6 adds:** ngspice raw output parsed into Plotly/Chart.js compatible format.
-
----
-
-## Phase 7 — ESP32 / STM32 Firmware Support
-
-**Goal:** Extend firmware generation beyond Arduino Uno.
-
-**Current state:** `ArduinoFirmwareGenerator` is Uno-specific (SoftwareSerial, 40mA GPIO, etc.)
-**Phase 7 adds:** New template set + constraint lookup for ESP32 (3.3V GPIO, WiFi).
+**Phase 1 is done when:** Criteria 11 and 12 are checked. Then tag v0.1.0.
 
 ---
 
-## Phase 8 — PCB Auto-layout + Gerber Export
+## Phase 2 — Validation Engine (Months 3–8) ⬜
 
-**Goal:** KiCad net labels → KiCad PCB file with basic auto-placement.
+**Target users:** Serious makers, IoT startup teams, freelance hardware engineers
 
-**Current state:** `kicad.py` outputs net-label-only `.kicad_sch`.
-**Phase 8 adds:** Pin coordinate lookup from KiCad symbol library + wire routing.
+**What gets added:**
+- Free-form circuit generation (beyond 5 templates, 15+ total)
+- ESP32 and STM32 firmware support
+- Live BOM pricing via Digikey/LCSC API (nightly cache, never live call)
+- Design version history with timeline UI
+- Qdrant RAG on 500+ datasheet excerpts (replaces static `component_constraints.py`)
+- Simulation waveform viewer (Plotly.js — replaces text-only pass/fail)
+- Component substitution engine
+
+**Revenue:** Pro tier at $49/month
+
+**Do not start Phase 2 until:** Phase 1 all 12 criteria checked and v0.1.0 tagged.
 
 ---
 
-## Phase 9 — Multi-user + Design Sharing
+## Phase 3 — Industrial Layer (Months 8–18) ⬜
 
-**Goal:** Teams can share designs, comment, fork.
+**Target users:** HVAC controls companies, commercial kitchen, refrigeration OEMs
 
-**Current state:** Single-user JWT auth, all designs private.
-**Phase 9 adds:** Design sharing links, project teams, role-based access.
+**What gets added:**
+- DCV (Demand Controlled Ventilation) board generation
+- Commercial kitchen hood controller board generation
+- Advanced refrigeration control (EEV, superheat, defrost)
+- RS-485 industrial I/O with optoisolation (PC817)
+- UL 508A flagging and safety class enforcement
+- PCB auto-layout via KiCad freerouting (2–4 layer boards)
+- Private component libraries per organization
+- Audit trail (ISO 13485/26262 ready)
+
+**Revenue:** Team tier at $99/seat/month (min 3 seats)
 
 ---
 
-## Phase 10 — Production Deployment
+## Phase 4 — Enterprise Platform (Months 18–30) ⬜
 
-**Goal:** Docker → cloud, monitored, scalable.
+**Target users:** OEMs, SCADA integrators, building automation vendors
 
-**Current state:** docker-compose for local dev.
-**Phase 10 adds:** Kubernetes/ECS manifests, Sentry error tracking, Prometheus metrics.
+**What gets added:**
+- Full SCADA RTU board generation (Modbus RTU master + LTE-M cellular)
+- PLC-style control board generation
+- Gerber export + JLCPCB/PCBWay API integration
+- DFM (Design for Manufacturability) report
+- SSO/SAML enterprise identity
+- ROI dashboard (time-from-prompt-to-valid-design, ERC catch rate)
+- Fine-tuned domain model on accumulated design data
+
+**Revenue:** Enterprise contracts, custom pricing. KPI: $1M ARR.
+
+---
+
+## Phase 5 — Advanced Hardware Intelligence (Months 30+) ⬜
+
+**What gets added:**
+- Thermal simulation (junction temperature analysis)
+- Analog power electronics (full switching supply, BMS)
+- Multi-objective BOM optimization (cost vs size vs reliability Pareto)
+- MTBF prediction
+- Full data pipeline generation (board → firmware → cloud schema → dashboard spec)
+
+---
+
+## The Moat (Builds Over Time)
+
+From PRODUCT_MASTER.md Part 8:
+1. Circuit pattern vector database — grows with every user design
+2. Labeled simulation outcomes — training data no competitor can buy
+3. Fine-tuned domain model — trained specifically on electronics
+4. Component pricing intelligence — availability, price, lead time trends
+5. Industry-specific rule libraries — HVAC, refrigeration, industrial I/O
+
+---
+
+## The Five Differentiators (vs Flux.ai, Celus.io, Quilter)
+
+From PRODUCT_MASTER.md Part 8:
+1. **Integrated SPICE physics simulation in the generation loop** — not roadmap, running today
+2. **Complete working firmware** — not pin mappings, actual `.ino` ready to flash
+3. **Stateful diff-and-patch editing** — user customizations survive, design history maintained
+4. **Consequential explanation** — shows what breaks if you change something, with simulation as evidence
+5. **Industrial and HVAC vertical** — zero competitors have RS-485 rules, 4-20mA circuits, DCV templates
 
 ---
 
 ## Guiding Principles
 
-1. **Ground truth beats summaries.** If the test fails, the feature is not done.
-2. **One phase at a time.** Phase N+1 must not start until Phase N success test passes.
-3. **Append decisions.** Every tech choice goes to `brain/decisions.md`. Future sessions need the why.
-4. **Workers read `current_phase.md`** before writing a single line of code.
-5. **Never expand Phase 1 scope.** Every "just one more thing" before sign-off is debt.
+1. **Test results beat summaries.** If `progress.yaml` says broken, it's broken regardless of what any agent claimed.
+2. **One phase at a time.** Phase 2 does not start until Phase 1 v0.1.0 is tagged.
+3. **Append decisions, never delete.** Every tech choice goes to `brain/decisions.md`.
+4. **The explanation layer is the product.** From PRODUCT_MASTER.md Part 12 — this is the most important thing.
