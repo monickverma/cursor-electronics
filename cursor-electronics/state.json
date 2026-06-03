@@ -1,0 +1,119 @@
+{
+  "_note": "DERIVED file. Do not edit by hand. Run: python tools/regen_state.py",
+  "_layer": "LAYER 4 (Progress) \u2014 module-level summary",
+  "generated_at": "2026-06-03T00:48:29.894899Z",
+  "generated_from_commit": "bb45f4d",
+  "project": "Circuit OS",
+  "phase": {
+    "current": 1,
+    "name": "Hardware Copilot",
+    "status": "done"
+  },
+  "modules": {
+    "api_entry": {
+      "status": "exists",
+      "file": "backend/main.py",
+      "exists": true,
+      "phase": 1
+    },
+    "ir_schema": {
+      "status": "exists",
+      "file": "backend/core/ir_schema.py",
+      "exists": true,
+      "phase": 1
+    },
+    "intent_parser": {
+      "status": "exists",
+      "file": "backend/ai/intent_parser.py",
+      "exists": true,
+      "phase": 1
+    },
+    "circuit_reasoner": {
+      "status": "exists",
+      "file": "backend/ai/circuit_reasoner.py",
+      "exists": true,
+      "phase": 1
+    },
+    "patcher": {
+      "status": "exists",
+      "file": "backend/ai/patcher.py",
+      "exists": true,
+      "phase": 1
+    },
+    "explainer": {
+      "status": "exists",
+      "file": "backend/ai/explainer.py",
+      "exists": true,
+      "phase": 1
+    },
+    "spice_generator": {
+      "status": "exists",
+      "file": "backend/generators/netlist/spice.py",
+      "exists": true,
+      "phase": 1
+    },
+    "firmware_gen": {
+      "status": "exists",
+      "file": "backend/generators/firmware/arduino.py",
+      "exists": true,
+      "phase": 1
+    },
+    "kicad_gen": {
+      "status": "exists",
+      "file": "backend/generators/schematic/kicad.py",
+      "exists": true,
+      "phase": 1
+    },
+    "bom_compiler": {
+      "status": "exists",
+      "file": "backend/generators/bom/compiler.py",
+      "exists": true,
+      "phase": 1
+    },
+    "simulation_runner": {
+      "status": "exists",
+      "file": "backend/simulation/runner.py",
+      "exists": true,
+      "phase": 1
+    },
+    "rule_engine": {
+      "status": "exists",
+      "file": "backend/validation/rule_engine.py",
+      "exists": true,
+      "phase": 1
+    },
+    "frontend_app": {
+      "status": "exists",
+      "file": "frontend/app/page.tsx",
+      "exists": true,
+      "phase": 2
+    },
+    "pcb_layout": {
+      "status": "not_started",
+      "file": "backend/generators/pcb/layout.py",
+      "exists": false,
+      "phase": 3
+    }
+  },
+  "test_summary": {
+    "passed": 177,
+    "failed": 0,
+    "total": 177
+  },
+  "blockers": [
+    "Simulation accuracy gate not yet run (needs physical hardware)"
+  ],
+  "completion": {
+    "phases_done": 0,
+    "phases_total": 5,
+    "pct_overall": 0.0
+  },
+  "recent_commits": [
+    "bb45f4d first"
+  ],
+  "pointers": {
+    "see_function_level": "progress.yaml",
+    "see_current_tasks": "plan/current_phase.md",
+    "see_full_roadmap": "plan/master_plan.md"
+  }
+}
