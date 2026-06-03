@@ -1,219 +1,226 @@
 {
-  "_note": "DERIVED file. Manually updated 2026-06-02. Run: python tools/regen_state.py to auto-regenerate (requires real backend structure scan).",
+  "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-06-02T12:00:00Z",
-  "generated_from_commit": "a1329d1",
+  "generated_at": "2026-06-03T12:02:28.297934Z",
+  "generated_from_commit": "c1ddcac",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
-
   "phase": {
     "current": 2,
     "name": "Physical + External Validation",
     "status": "in_progress",
-    "previous": "Phase 1 — 5 Templates (10/12 criteria done)",
-    "next": "Phase 3 — Free-form circuit generation"
+    "phase1_criteria_done": 10,
+    "phase1_criteria_total": 12
   },
-
   "modules": {
     "core/ir_schema": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/core/ir_schema.py",
       "exists": true,
-      "description": "Locked CircuitIR Pydantic model — never rename fields",
-      "tests_passed": 20,
-      "tests_total": 20
+      "test_status": "passing"
     },
     "core/ir_validator": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/core/ir_validator.py",
       "exists": true,
-      "description": "Structural validation: no_floating_nodes, voltage_ratings, i2c_pullups",
-      "tests_passed": "covered by test_rule_engine"
+      "test_status": "passing"
     },
-    "ai/intent_parser": {
-      "status": "done",
-      "file": "backend/ai/intent_parser.py",
+    "core/config": {
+      "status": "untested",
+      "file": "backend/core/config.py",
       "exists": true,
-      "description": "Prompt → DesignSpec via tool_use (forced)",
-      "tests_passed": "unit tests pass; live API tests skipped (need key)"
-    },
-    "ai/circuit_reasoner": {
-      "status": "done",
-      "file": "backend/ai/circuit_reasoner.py",
-      "exists": true,
-      "description": "DesignSpec → CircuitIR with 3-attempt retry loop",
-      "tests_passed": "verified by 20-prompt live test session"
-    },
-    "ai/patcher": {
-      "status": "done",
-      "file": "backend/ai/patcher.py",
-      "exists": true,
-      "description": "Returns only changed fields — never full IR",
-      "tests_passed": "verified by 5-patch sequential test"
-    },
-    "ai/explainer": {
-      "status": "done",
-      "file": "backend/ai/explainer.py",
-      "exists": true,
-      "description": "Consequential plain-English design report",
-      "tests_passed": "no unit test — called in integration"
+      "test_status": "no_test"
     },
     "ai/client": {
-      "status": "done",
+      "status": "untested",
       "file": "backend/ai/client.py",
       "exists": true,
-      "description": "Shared client factory — supports Anthropic direct + OpenRouter",
-      "tests_passed": "no unit test — used in all AI module tests"
+      "test_status": "no_test"
     },
-    "generators/netlist/spice": {
-      "status": "done",
+    "ai/intent_parser": {
+      "status": "verified_done",
+      "file": "backend/ai/intent_parser.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/circuit_reasoner": {
+      "status": "verified_done",
+      "file": "backend/ai/circuit_reasoner.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/patcher": {
+      "status": "verified_done",
+      "file": "backend/ai/patcher.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/explainer": {
+      "status": "untested",
+      "file": "backend/ai/explainer.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "generators/spice": {
+      "status": "verified_done",
       "file": "backend/generators/netlist/spice.py",
       "exists": true,
-      "description": "CircuitIR → SPICE netlist. MCU=100Ω, floating nodes→1GΩ tie-down",
-      "tests_passed": 13,
-      "tests_total": 13
+      "test_status": "passing"
     },
-    "generators/firmware/arduino": {
-      "status": "done",
+    "generators/firmware": {
+      "status": "verified_done",
       "file": "backend/generators/firmware/arduino.py",
       "exists": true,
-      "description": "CircuitIR → .ino via Jinja2 templates. Arduino-cli compilation verified.",
-      "tests_passed": "template tests pass; 3/3 arduino-cli compile tests pass"
+      "test_status": "passing"
     },
-    "generators/schematic/kicad": {
-      "status": "done",
+    "generators/kicad": {
+      "status": "untested",
       "file": "backend/generators/schematic/kicad.py",
       "exists": true,
-      "description": "CircuitIR → .kicad_sch with net labels (no wire routing)",
-      "tests_passed": "no dedicated unit test"
+      "test_status": "no_test"
     },
-    "generators/bom/compiler": {
-      "status": "done",
+    "generators/bom": {
+      "status": "verified_done",
       "file": "backend/generators/bom/compiler.py",
       "exists": true,
-      "description": "CircuitIR → BOM rows with static pricing",
-      "tests_passed": 19,
-      "tests_total": 19
+      "test_status": "passing"
     },
     "simulation/runner": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/simulation/runner.py",
       "exists": true,
-      "description": "NgspiceRunner — async subprocess with -o file capture (Windows fix)",
-      "tests_passed": "e2e tests pass (voltage divider + RC filter)"
+      "test_status": "passing"
     },
     "simulation/parser": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/simulation/parser.py",
       "exists": true,
-      "description": "DC columnar table + AC multi-table complex magnitude parser",
-      "tests_passed": 14,
-      "tests_total": 14
+      "test_status": "passing"
     },
     "simulation/grader": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/simulation/grader.py",
       "exists": true,
-      "description": "Pass/fail at 15% tolerance — DC and AC",
-      "tests_passed": 7,
-      "tests_total": 7
+      "test_status": "passing"
     },
     "simulation/monitor": {
-      "status": "done",
+      "status": "untested",
       "file": "backend/simulation/monitor.py",
       "exists": true,
-      "description": "Per-circuit-type success rate logger → sim_monitor.jsonl",
-      "tests_passed": "no dedicated test"
+      "test_status": "no_test"
     },
     "validation/rule_engine": {
-      "status": "done",
+      "status": "verified_done",
       "file": "backend/validation/rule_engine.py",
       "exists": true,
-      "description": "RS-485 termination, PWM pin validation",
-      "tests_passed": 22,
-      "tests_total": 22
-    },
-    "api/routes/design": {
-      "status": "done",
-      "file": "backend/api/routes/design.py",
-      "exists": true,
-      "description": "POST /design/generate (10/hour) + GET /design/list",
-      "tests_passed": "integration verified by 20-prompt test"
-    },
-    "api/routes/patch": {
-      "status": "done",
-      "file": "backend/api/routes/patch.py",
-      "exists": true,
-      "description": "POST /design/{id}/patch (20/hour)",
-      "tests_passed": "integration verified by 5-patch test"
-    },
-    "api/routes/simulate": {
-      "status": "done",
-      "file": "backend/api/routes/simulate.py",
-      "exists": true,
-      "description": "GET /design/{id}/simulation/{job_id} polling + POST start",
-      "tests_passed": "integration verified by simulation poll test"
-    },
-    "api/routes/auth": {
-      "status": "done",
-      "file": "backend/api/routes/auth.py",
-      "exists": true,
-      "description": "register + login (OAuth2 form) + me",
-      "tests_passed": 17,
-      "tests_total": 17
-    },
-    "db/crud": {
-      "status": "done",
-      "file": "backend/db/crud.py",
-      "exists": true,
-      "description": "save_design, get_design, update_design_ir, list_user_designs, record_patch, save_output",
-      "tests_passed": "verified via integration tests"
+      "test_status": "passing"
     },
     "tasks/simulation_task": {
-      "status": "done",
+      "status": "untested",
       "file": "backend/tasks/simulation_task.py",
       "exists": true,
-      "description": "Celery task run_simulation — async, never inline in HTTP",
-      "tests_passed": "e2e simulation poll test passes"
+      "test_status": "no_test"
+    },
+    "api/routes/design": {
+      "status": "untested",
+      "file": "backend/api/routes/design.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "api/routes/patch": {
+      "status": "untested",
+      "file": "backend/api/routes/patch.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "api/routes/simulate": {
+      "status": "untested",
+      "file": "backend/api/routes/simulate.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "api/routes/auth": {
+      "status": "verified_done",
+      "file": "backend/api/routes/auth.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "db/crud": {
+      "status": "untested",
+      "file": "backend/db/crud.py",
+      "exists": true,
+      "test_status": "no_test"
     }
   },
-
   "test_summary": {
     "passed": 177,
-    "skipped": 18,
     "failed": 0,
-    "total": 195,
-    "notes": "18 skipped = live API tests (need ANTHROPIC_API_KEY in env)"
+    "skipped": 18,
+    "total": 177
   },
-
+  "phase1_criteria": [
+    {
+      "status": "✅",
+      "criterion": "JWT auth — all routes protected"
+    },
+    {
+      "status": "✅",
+      "criterion": "Full generation under 30s"
+    },
+    {
+      "status": "✅",
+      "criterion": "SPICE simulation runs and grades"
+    },
+    {
+      "status": "✅",
+      "criterion": "Simulation fails on wrong values"
+    },
+    {
+      "status": "✅",
+      "criterion": "Rule engine catches hardware violations"
+    },
+    {
+      "status": "✅",
+      "criterion": "Firmware compiles to real Arduino"
+    },
+    {
+      "status": "✅",
+      "criterion": "5 sequential patches — no corruption"
+    },
+    {
+      "status": "✅",
+      "criterion": "20 prompts — zero crashes"
+    },
+    {
+      "status": "✅",
+      "criterion": "100 requests — zero HTTP 500s"
+    },
+    {
+      "status": "✅",
+      "criterion": "Rate limiting — 11th returns 429"
+    },
+    {
+      "status": "⏳",
+      "criterion": "RC filter bench test (physical hardware)"
+    },
+    {
+      "status": "⏳",
+      "criterion": "External engineer reads explanation"
+    }
+  ],
   "blockers": [
-    "Criteria 11: RC filter bench test requires physical oscilloscope",
-    "Criteria 12: External engineer review requires a human"
+    "Oscilloscope not yet connected",
+    "No external engineer identified",
+    "OpenRouter rate limit on rapid requests"
   ],
-
-  "completion": {
-    "phase1_criteria_done": 10,
-    "phase1_criteria_total": 12,
-    "pct_phase1": 83.3
-  },
-
-  "environment": {
-    "os": "Windows 11",
-    "python": "3.13.7",
-    "ngspice": "C:\\msys64\\ucrt64\\bin\\ngspice_con.exe (v41)",
-    "arduino_cli": "C:\\Users\\KIIT\\bin\\arduino-cli.exe (v1.5.0)",
-    "celery_start": "cd backend && celery -A worker.app worker --pool=solo",
-    "ai_provider": "OpenRouter",
-    "ai_model": "anthropic/claude-3-5-haiku-20241022",
-    "base_url_note": "ANTHROPIC_BASE_URL=https://openrouter.ai/api (no /v1 — SDK appends it)"
-  },
-
   "recent_commits": [
-    "a1329d1 brain: sync after session — all brain files rewritten from PRODUCT_MASTER.md",
+    "c1ddcac brain: full shared-memory rewrite — sync to actual Circuit OS state",
+    "a1329d1 brain: sync after session — all brain files rewritten from PRODUCT_MASTER.md, commands added",
     "f9ff270 refactor: move brain scaffold to .claude/shared-memory/",
-    "085b449 chore: integrate project brain scaffold for Circuit OS"
+    "085b449 chore: integrate project brain scaffold for Circuit OS",
+    "eb06def chore: integrate project brain scaffold for Circuit OS"
   ],
-
+  "last_diff_stat": "cursor-electronics/.claude/shared-memory/CLAUDE.md |   8 +\n cursor-electronics/.claude/shared-memory/README.md | 120 +++++++\n .../.claude/shared-memory/architecture.md          |  94 ++++++\n .../.clau",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
