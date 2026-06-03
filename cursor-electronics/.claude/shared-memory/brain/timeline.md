@@ -51,6 +51,8 @@
 
 **2026-06-03** — shared-memory system fully operational: regen_state.py + progress_gen.py rewritten for real backend, /update-memory slash command created, all brain files aligned with PRODUCT_MASTER.md 5-phase roadmap. First successful /update-memory run: 177 tests passing, 27/32 entries verified_done, 10/12 Phase 1 criteria confirmed.
 
+**2026-06-03** — /update-memory confirmed working from Claude Code slash command UI. Loop verified end-to-end: code → test → /update-memory → commit → any agent cold-starts from shared-memory with zero re-explanation.
+
 ---
 
 ## Upcoming

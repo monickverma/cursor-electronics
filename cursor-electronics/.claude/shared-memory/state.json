@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-06-03T12:18:53.615310Z",
-  "generated_from_commit": "b05dd9a",
+  "generated_at": "2026-06-03T15:28:02.465331Z",
+  "generated_from_commit": "c1bbc52",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -214,13 +214,13 @@
     "OpenRouter rate limit (10/hr IP-based)"
   ],
   "recent_commits": [
+    "c1bbc52 brain: /update-memory — 177 tests pass, 10/12 criteria, shared-memory loop verified working",
     "b05dd9a brain: align all shared-memory files with PRODUCT_MASTER.md",
     "0d3302f brain: regen_state.py + progress_gen.py rewritten for real backend, /update-memory skill added",
     "c1ddcac brain: full shared-memory rewrite — sync to actual Circuit OS state",
-    "a1329d1 brain: sync after session — all brain files rewritten from PRODUCT_MASTER.md, commands added",
-    "f9ff270 refactor: move brain scaffold to .claude/shared-memory/"
+    "a1329d1 brain: sync after session — all brain files rewritten from PRODUCT_MASTER.md, commands added"
   ],
-  "last_diff_stat": ".../.claude/shared-memory/brain/vision.md          | 157 ++++++++-------\n .../.claude/shared-memory/plan/current_phase.md    | 193 ++++++++++--------\n .../.claude/shared-memory/plan/master_plan.md    ",
+  "last_diff_stat": "cursor-electronics/.claude/shared-memory/brain/timeline.md |  2 ++\n cursor-electronics/.claude/shared-memory/progress.yaml     |  2 +-\n cursor-electronics/.claude/shared-memory/state.json        | 10 ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
