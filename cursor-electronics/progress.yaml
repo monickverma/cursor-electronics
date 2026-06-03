@@ -1,6 +1,6 @@
 _note: DERIVED. Do not edit. Run tools/progress_gen.py to update.
 _layer: LAYER 4 (Progress) — function-level reality
-generated_at: '2026-06-03T00:48:56.926811Z'
+generated_at: '2026-06-03T10:30:10.702535Z'
 project: Circuit OS
 files:
   backend/ai/intent_parser.py:
@@ -8,7 +8,7 @@ files:
     functions:
       parse:
         status: untested
-        description: str prompt → DesignSpec via Claude tool_use
+        description: Parses user prompt → DesignSpec (tool_use mode)
         signature: 'parse(self, prompt: str) -> DesignSpec'
         test: null
         test_status: no_test
@@ -19,7 +19,7 @@ files:
     functions:
       generate:
         status: untested
-        description: DesignSpec → CircuitIR (3-attempt retry, pydantic strict validation)
+        description: DesignSpec → CircuitIR with 3-attempt retry loop
         signature: 'generate(self, spec: DesignSpec) -> CircuitIR'
         test: null
         test_status: no_test
@@ -30,8 +30,7 @@ files:
     functions:
       patch:
         status: untested
-        description: CircuitIR + command → PatchResult (changed fields only, never
-          full IR)
+        description: IR + edit command → changed fields only (not full IR)
         signature: 'patch(self, ir: CircuitIR, command: str) -> PatchResult'
         test: null
         test_status: no_test
@@ -54,7 +53,7 @@ files:
     functions:
       generate:
         status: untested
-        description: CircuitIR → SPICE netlist string (MCU as 100Ohm, floating node
+        description: CircuitIR → SPICE netlist string (MCU as R_MCU, floating node
           tie-downs)
         signature: 'generate(self, ir: CircuitIR) -> str'
         test: null
@@ -66,7 +65,7 @@ files:
     functions:
       generate:
         status: untested
-        description: CircuitIR → .ino source via Jinja2 template selection
+        description: CircuitIR + template_id → Arduino .ino from Jinja2
         signature: 'generate(self, ir: CircuitIR) -> str'
         test: null
         test_status: no_test
@@ -77,7 +76,8 @@ files:
     functions:
       generate:
         status: untested
-        description: CircuitIR → .kicad_sch string (net labels, no wire routing)
+        description: CircuitIR → .kicad_sch with net labels (no wire routing Phase
+          1)
         signature: 'generate(self, ir: CircuitIR) -> str'
         test: null
         test_status: no_test
@@ -88,36 +88,40 @@ files:
     functions:
       compile:
         status: untested
-        description: CircuitIR → BOM rows list with static pricing
+        description: CircuitIR → BOM rows with static pricing
         signature: 'compile(self, ir: CircuitIR) -> List[Dict[str, Any]]'
         test: null
         test_status: no_test
         line: 32
-      total_cost:
-        status: untested
-        description: BOM rows → total cost float
-        signature: 'total_cost(self, rows: List[Dict[str, Any]]) -> float'
-        test: null
-        test_status: no_test
-        line: 52
     status: in_progress
   backend/simulation/runner.py:
     exists: true
     functions:
       run:
         status: untested
-        description: SPICE netlist str → dict (async, ngspice -b subprocess, 30s timeout)
+        description: SPICE netlist → ngspice subprocess → raw output text
         signature: 'run(self, netlist: str) -> dict'
         test: null
         test_status: no_test
         line: 38
+    status: in_progress
+  backend/simulation/parser.py:
+    exists: true
+    functions:
+      parse:
+        status: untested
+        description: ngspice columnar text output → structured dict (DC + AC)
+        signature: 'parse(self, stdout: str, stderr: str) -> SimulationData'
+        test: null
+        test_status: no_test
+        line: 42
     status: in_progress
   backend/simulation/grader.py:
     exists: true
     functions:
       grade:
         status: untested
-        description: CircuitIR + SimulationData → GradeResult (15% tolerance)
+        description: parsed ngspice data vs IR constraints → pass/fail (15% tolerance)
         signature: 'grade(self, ir: CircuitIR, data: SimulationData) -> GradeResult'
         test: null
         test_status: no_test
@@ -128,8 +132,7 @@ files:
     functions:
       validate_ir:
         status: untested
-        description: CircuitIR → IRValidationResult (floating nodes, voltage ratings,
-          I2C)
+        description: CircuitIR → structural validation before any compiler
         signature: 'validate_ir(ir: CircuitIR) -> IRValidationResult'
         test: null
         test_status: no_test
@@ -140,8 +143,8 @@ files:
     functions:
       run:
         status: untested
-        description: CircuitIR → list[RuleViolation] (RS-485 termination, PWM pin
-          validity)
+        description: CircuitIR → hardware rule checks (no floating nodes, I2C pull-ups,
+          etc.)
         signature: 'run(self, ir: CircuitIR) -> IRValidationResult'
         test: null
         test_status: no_test

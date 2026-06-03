@@ -192,11 +192,11 @@ def derive_status(func_name: str, extracted: dict, test_status: str) -> str:
 def write_yaml(data: dict, path: Path):
     if yaml:
         path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False,
-                                  allow_unicode=True))
+                                  allow_unicode=True), encoding="utf-8")
     else:
         import json
-        path.write_text(json.dumps(data, indent=2))
-        print("  ℹ PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        print("  i PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

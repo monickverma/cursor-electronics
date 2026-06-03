@@ -112,7 +112,7 @@ def read_blockers():
     if not phase_file.exists():
         return blockers
     in_blockers = False
-    for line in phase_file.read_text().splitlines():
+    for line in phase_file.read_text(encoding="utf-8").splitlines():
         if "Current Blockers" in line or "## Blockers" in line:
             in_blockers = True
             continue
@@ -130,7 +130,7 @@ def run_progress_gen():
     if not script.exists():
         print("  ⚠ tools/progress_gen.py not found — skipping function-level")
         return
-    code, out, err = run(["python", str(script)])
+    code, out, err = run(["python", "-X", "utf8", str(script)])
     if code != 0:
         print(f"  ⚠ progress_gen failed: {(err or out)[:200]}")
     else:
