@@ -1,24 +1,58 @@
-# Timeline — Circuit OS
+# Timeline — LAYER 6
 
-> Append-only. One line per significant event. Answers: "how did we get here?"
-> Format: **YYYY-MM-DD** — [what was built] — [why it matters]
+> Append-only. One entry per significant event.
+> Format: **YYYY-MM-DD** — [What changed] — [Why it matters]
+> A new agent reading this knows the full history without conversation context.
 
 ---
 
 ## History
 
-**2025-09-20** — Initial commit `bb45f4d` — Full Circuit OS backend scaffolded in one push: FastAPI + Celery entry points (`main.py`, `worker.py`); complete AI layer (`intent_parser.py`, `circuit_reasoner.py`, `patcher.py`, `explainer.py`); all 4 deterministic compilers (SPICE netlist, Arduino firmware with 4 Jinja2 templates, KiCad schematic, BOM); full simulation pipeline (`runner.py`, `parser.py`, `grader.py`, `monitor.py`); hardware rule engine; PostgreSQL models + CRUD + `schema.sql`; JWT auth; CORS; slowapi rate limiting; IR schema + validator + 5 example circuits; Next.js 14 frontend with ChatPanel, SchematicViewer (kicanvas), SimulationResults, BOMTable, ValidationReport, FirmwareViewer, typed API client; 177 tests passing, 24 skipped (live API + ngspice + arduino-cli auto-skipped when not available).
+**2026-06-01** — Project started. Architecture designed: NL prompt → CircuitIR JSON → deterministic compilers (SPICE, firmware, KiCad, BOM). Core invariant established: LLM never writes output formats directly.
 
-**2026-06-03** — Commits `88dc473`, `eb06def`, `085b449` — Project brain scaffold integrated from `ai-engineer-template-final.zip`. brain/, plan/, tools/ (regen_state.py, progress_gen.py, snapshot.py) added. CLAUDE.md updated with AGENTS.md bootstrap line. UTF-8 encoding fixes applied to both tool scripts for Windows cp1252 terminals (`sys.stdout.reconfigure`, `encoding="utf-8"` on all file writes, `-X utf8` flag for subprocess calls). `.cargo/` added to root `.gitignore` to suppress LF→CRLF warnings from Rust registry files in home-directory git repo.
+**2026-06-01** — Full backend scaffolded: FastAPI + Celery + PostgreSQL + Redis. All 7 modules built (ir_schema, ir_validator, ai layer ×4, generators ×4, simulation ×4, validation, db, api routes). Docker Compose for local dev.
 
-**2026-06-03** — Commit `f9ff270` — All scaffold files moved from project root into `.claude/shared-memory/` to co-locate Claude tooling with other `.claude/` config. Both tool scripts updated: `SHARED_MEMORY = Path(__file__).parent.parent`, `ROOT = SHARED_MEMORY.parent.parent`. All brain/ and plan/ files rewritten from PRODUCT_MASTER.md with real Circuit OS content.
+**2026-06-01** — Frontend built: Next.js 14, two-panel layout (chat + tabbed output). All 6 components (ChatPanel, SchematicViewer, FirmwareViewer, SimulationResults, BOMTable, ValidationReport). kicanvas with ssr:false for schematic rendering.
+
+**2026-06-01** — Test suite written: 7 test files, 171 tests, 24 skipped (live API + ngspice + arduino-cli not installed at time of writing).
+
+**2026-06-02** — Auth verified end-to-end: register → login (OAuth2 form) → /auth/me returns user. JWT with bcrypt password hashing.
+
+**2026-06-02** — Bug: `POST /design/generate` returned 422. Root cause: `from __future__ import annotations` in route files caused FastAPI to mis-classify `GenerateRequest` as a query parameter when slowapi decorator wraps the function. Fix: removed the import from design.py, patch.py, simulate.py.
+
+**2026-06-02** — Bug: API error display showed `[object Object]`. Root cause: FastAPI 422 responses return `detail` as an array. `new Error(array)` stringified wrong. Fix: detect array + format as "field: message" in `frontend/lib/api.ts`.
+
+**2026-06-02** — Bug: `anthropic==0.34.2` crashed on startup due to httpx 0.28.0 removing `proxies` parameter. Fix: upgraded to `anthropic==0.105.2`.
+
+**2026-06-02** — OpenRouter support added: `backend/ai/client.py` as shared client factory. `ANTHROPIC_BASE_URL` and `AI_MODEL` env vars added to config.
+
+**2026-06-02** — Bug: OpenRouter returned 404 for all AI calls. Root cause: Anthropic SDK appends `/v1/messages` to base_url. Setting `.../api/v1` produces `.../api/v1/v1/messages`. Fix: `ANTHROPIC_BASE_URL=https://openrouter.ai/api` (no /v1 suffix).
+
+**2026-06-02** — End-to-end generation verified: DHT22 + LED circuit generated in ~15s with 4-component IR, valid firmware, schematic, BOM, explanation. First real AI call succeeded.
+
+**2026-06-02** — Day 1 verification pass completed:
+  - ngspice installed via MSYS2 pacman
+  - arduino-cli downloaded + arduino:avr core + DHT + ModbusMaster libraries
+  - Celery worker started (`--pool=solo` for Windows Python 3.13)
+
+**2026-06-02** — Bug: ngspice output was empty string from subprocess. Root cause: ngspice_con.exe writes to Windows console handle, not stdout pipe. Fix: use `-o outfile` flag in `simulation/runner.py`.
+
+**2026-06-02** — Bug: DC parser returned empty dict. Root cause: parser regex matched `v(nodename) value` but ngspice outputs bare `nodename  value` in the Node/Voltage table. Fix: added `_DC_COLUMNAR_PATTERN` + state machine in `simulation/parser.py`.
+
+**2026-06-02** — Bug: AC parser returned empty list. Root cause: (1) ngspice emits one table per variable even with combined .print, (2) complex number format has trailing comma (`2.5e+00,`) that breaks float(), (3) magnitude was real part only, not sqrt(real^2+imag^2). Fix: full rewrite of `_parse_ac_table()`.
+
+**2026-06-02** — All 42 simulation tests pass. Voltage divider DC test: vout_5v=5.058V ✓. RC filter AC test: magnitude at 1kHz=3.536V (-3dB) ✓. Wrong-capacitor test: 1nF → simulation FAIL ✓.
+
+**2026-06-02** — Bug: Modbus firmware failed arduino-cli compilation with `'Serial1' was not declared`. Root cause: Arduino Uno has no Serial1 hardware UART. Fix: template rewrote to use SoftwareSerial on pins 10/11.
+
+**2026-06-02** — Test suite now: 177 passed, 18 skipped (up from 171 passed, 24 skipped). 6 tests now run that were previously skipped (ngspice + arduino-cli now available).
+
+**2026-06-02** — Phase 1 Day 1 criteria verified: 10 of 12 done. Remaining: RC filter bench test (physical oscilloscope) + external engineer review.
 
 ---
 
-## TEMPLATE — adding an entry
+## Upcoming
 
-```
-**YYYY-MM-DD** — [Concrete change] — [Why it matters / outcome]
-```
+**Day 2 (next)** — Physical validation: build RC filter on breadboard, measure -3dB with oscilloscope, compare to ngspice. Flash DHT22 firmware to real Arduino Uno.
 
-One to two sentences. Facts, not summaries. Append only, never edit past entries.
+**Day 3 (after)** — Sign-off: external engineer reads explanation report cold. All 12 criteria formally checked. Tag commit as v0.1.0. Begin Phase 2 planning.

@@ -3,12 +3,12 @@
 progress_gen.py — Generates progress.yaml from reality at FUNCTION level.
 
 What it does:
-  1. Scans every .py file in backend/ using Python's `ast` module
+  1. Scans every .py file in src/ using Python's `ast` module
      → extracts every function: name, signature, docstring, line number
   2. Detects stubs: functions whose body is only a docstring (placeholder)
   3. Runs pytest -v to get per-test pass/fail
   4. Maps source functions to their tests by naming convention
-     (test_generate → generate)
+     (test_run_simulation → run_simulation)
   5. Assigns each function a status:
      verified_done  ✅  exists + real body + test passes
      broken         ❌  exists + real body + test fails
@@ -27,16 +27,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8")
-
 try:
     import yaml
 except ImportError:
     yaml = None
 
-SHARED_MEMORY = Path(__file__).parent.parent          # .claude/shared-memory/
-ROOT  = SHARED_MEMORY.parent.parent                   # project root (cursor-electronics/)
-SRC   = ROOT / "backend"
+ROOT = Path(__file__).parent.parent
+SRC   = ROOT / "src"
 TESTS = ROOT / "tests"
 
 
@@ -45,44 +42,31 @@ TESTS = ROOT / "tests"
 # If a function is listed here but missing from the file → not_started.
 
 PLANNED_FUNCTIONS = {
-    "backend/ai/intent_parser.py": [
-        ("parse",               "Parses user prompt → DesignSpec (tool_use mode)"),
+    "src/parser.py": [
+        ("parse_nl_to_spec",    "Converts natural language string → ComponentSpec dict"),
+        ("normalize_value",     "Normalises '1k', '159n', '1kHz' → (float, unit) tuple"),
+        ("extract_components",  "Pulls component list from parsed tokens"),
+        ("extract_requirements","Pulls requirements (cutoff_freq, etc.) from parsed tokens"),
     ],
-    "backend/ai/circuit_reasoner.py": [
-        ("generate",            "DesignSpec → CircuitIR with 3-attempt retry loop"),
+    "src/netlist_gen.py": [
+        ("generate_netlist",  "ComponentSpec → SPICE netlist string"),
+        ("write_netlist",     "Writes netlist string to sims/ directory"),
+        ("format_component",  "Single component dict → SPICE element line"),
     ],
-    "backend/ai/patcher.py": [
-        ("patch",               "IR + edit command → changed fields only (not full IR)"),
+    "src/simulator.py": [
+        ("run_simulation",     "Calls ngspice subprocess on a .sp file → SimResult dict"),
+        ("parse_output",       "Parses ngspice text output → structured dict"),
+        ("retry_with_options", "Re-runs simulation with relaxed convergence options"),
+        ("build_sim_result",   "Assembles final SimResult from parsed output"),
     ],
-    "backend/ai/explainer.py": [
-        ("explain",             "CircuitIR → consequential plain English explanation"),
+    "src/verifier.py": [
+        ("verify",          "Checks SimResult against requirements → pass/fail + diagnosis"),
+        ("check_frequency", "Verifies frequency-domain requirement (cutoff, gain)"),
+        ("check_hvac",      "Verifies HVAC-specific requirements (superheat, COP)"),
     ],
-    "backend/generators/netlist/spice.py": [
-        ("generate",            "CircuitIR → SPICE netlist string (MCU as R_MCU, floating node tie-downs)"),
-    ],
-    "backend/generators/firmware/arduino.py": [
-        ("generate",            "CircuitIR + template_id → Arduino .ino from Jinja2"),
-    ],
-    "backend/generators/schematic/kicad.py": [
-        ("generate",            "CircuitIR → .kicad_sch with net labels (no wire routing Phase 1)"),
-    ],
-    "backend/generators/bom/compiler.py": [
-        ("compile",             "CircuitIR → BOM rows with static pricing"),
-    ],
-    "backend/simulation/runner.py": [
-        ("run",                 "SPICE netlist → ngspice subprocess → raw output text"),
-    ],
-    "backend/simulation/parser.py": [
-        ("parse",               "ngspice columnar text output → structured dict (DC + AC)"),
-    ],
-    "backend/simulation/grader.py": [
-        ("grade",               "parsed ngspice data vs IR constraints → pass/fail (15% tolerance)"),
-    ],
-    "backend/core/ir_validator.py": [
-        ("validate_ir",         "CircuitIR → structural validation before any compiler"),
-    ],
-    "backend/validation/rule_engine.py": [
-        ("run",                 "CircuitIR → hardware rule checks (no floating nodes, I2C pull-ups, etc.)"),
+    "src/pcb_designer.py": [
+        ("generate_kicad_netlist", "Verified schematic → KiCad-compatible netlist"),
+        ("assign_footprints",      "Maps component values to PCB footprints"),
     ],
 }
 
@@ -151,7 +135,7 @@ def run_tests_verbose() -> dict:
     try:
         result = subprocess.run(
             ["python", "-m", "pytest", "tests/", "-v", "--tb=no", "--no-header", "-q"],
-            capture_output=True, text=True, encoding="utf-8", cwd=ROOT, timeout=120
+            capture_output=True, text=True, cwd=ROOT, timeout=120
         )
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return {}
@@ -193,11 +177,11 @@ def derive_status(func_name: str, extracted: dict, test_status: str) -> str:
 def write_yaml(data: dict, path: Path):
     if yaml:
         path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False,
-                                  allow_unicode=True), encoding="utf-8")
+                                  allow_unicode=True))
     else:
         import json
-        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        print("  i PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
+        path.write_text(json.dumps(data, indent=2))
+        print("  ℹ PyYAML not installed — wrote JSON syntax. Run: pip install pyyaml")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -211,7 +195,7 @@ def generate():
         "_note": "DERIVED. Do not edit. Run tools/progress_gen.py to update.",
         "_layer": "LAYER 4 (Progress) — function-level reality",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "project": "Circuit OS",
+        "project": "AI Electronics Engineer",
         "files": {},
         "summary": {},
     }
@@ -271,7 +255,7 @@ def generate():
           f"({progress['summary']['pct_verified']}%), "
           f"{counts['broken']} broken, {counts['not_started']} not started\n")
 
-    write_yaml(progress, SHARED_MEMORY / "progress.yaml")
+    write_yaml(progress, ROOT / "progress.yaml")
     print(f"✅ progress.yaml written")
 
 

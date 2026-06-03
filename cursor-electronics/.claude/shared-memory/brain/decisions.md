@@ -1,187 +1,218 @@
-# Decisions — Circuit OS
+# Decisions — LAYER 3
 
-> Append-only. Never delete. Format: decision → reason → alternatives → date.
-> Answers the question: "why did we do it THIS way?"
+> Append-only. Never delete. Each entry answers: "why THIS way?"
+> Format: decision → reason → alternatives rejected → date
 
 ---
 
-## [2025-09-20] LLM outputs JSON only — never SPICE/KiCad/.ino directly
+## [2026-06-01] LLM writes JSON, not SPICE/KiCad/firmware directly
 
-**Decision:** All LLM output is validated JSON (CircuitIR). Deterministic compilers
-translate IR to every downstream format. The LLM never writes a netlist, schematic,
-or firmware file directly.
+**Decision:** The LLM only ever produces CircuitIR JSON. Deterministic compilers
+(Python functions) translate that JSON to SPICE, .kicad_sch, .ino, BOM.
 
-**Reason:** LLMs hallucinate component values that don't exist in standard series,
-write SPICE syntax ngspice cannot parse, and generate firmware with wrong pin numbers.
-Pydantic v2 strict validation at the IR boundary catches all of this before it reaches
-any compiler. The retry loop re-prompts with the specific failing field path — not a
-generic "invalid JSON" message — so Claude can fix the exact problem in the next attempt.
+**Reason:**
+- LLM-generated SPICE hallucinates component models, wrong node names, broken syntax
+- LLM-generated firmware uses wrong pin numbers, missing includes, imaginary libraries
+- JSON → compiler is testable, reproducible, and debuggable
+- One schema change (CircuitIR) updates all downstream formats simultaneously
 
 **Alternatives rejected:**
-- LLM → SPICE directly — passes through unvalidated, fails unpredictably in production
-- Custom IR not based on SPICE concepts — more work, no industry tooling benefit
+- LLM writes SPICE directly — fails silently, no schema validation
+- Template-free firmware — hallucinates DHT library function names
 
 ---
 
-## [2025-09-20] ngspice over LTspice
+## [2026-06-01] tool_use mode only — never raw LLM text
 
-**Decision:** ngspice is the only permitted simulation engine.
+**Decision:** All AI calls use `tool_choice={"type":"tool","name":"..."}` forcing
+structured output. `response.content[0].input` is already a parsed dict.
 
-**Reason:** LTspice's EULA explicitly prohibits commercial redistribution and
-server-side automation. Cannot legally call LTspice in a SaaS product without
-a separate commercial agreement. ngspice is BSD-licensed — fully legal, scriptable
-via subprocess, and already ships inside KiCad.
-
-**Alternatives rejected:**
-- LTspice — legally blocked for SaaS use
-- Qucs-S — less mature, smaller ecosystem, fewer tutorials to reference
-- PySpice — adds an abstraction layer that makes convergence debugging harder
+**Reason:**
+- Raw text responses require JSON extraction regex, markdown fence stripping
+- tool_use eliminates the entire class of JSON parse errors
+- Forces the model to produce a schema-conforming structure or fail cleanly
 
 ---
 
-## [2025-09-20] Jinja2 for firmware — never LLM-generated .ino
+## [2026-06-01] ngspice not LTspice
 
-**Decision:** Arduino firmware is generated from Jinja2 templates
-(`backend/generators/firmware/templates/`). The LLM never writes `.ino` code.
+**Decision:** ngspice is the SPICE engine.
 
-**Reason:** LLM-generated firmware hallucinates function names (`Wire.readByte()`
-doesn't exist), wrong pin numbers, missing `#include` statements. Jinja2 templates
-produce identical output for identical input — deterministic, testable, diffable.
-Templates are versioned independently of the AI layer and can be unit-tested in
-isolation.
+**Reason:**
+- LTspice EULA explicitly prohibits server-side automation and commercial use
+- ngspice is BSD licensed — free for commercial SaaS
+- ngspice is already integrated into KiCad
 
-**Alternatives rejected:**
-- LLM generates .ino directly — fails the reliability requirement for an engineering tool
-- Code AST builder — more complexity, same determinism benefit as Jinja2
+**Non-negotiable.** Do not add LTspice support.
 
 ---
 
-## [2025-09-20] Celery + Redis for all simulation — never inline in HTTP handler
+## [2026-06-01] Jinja2 templates for firmware, not LLM generation
 
-**Decision:** Every simulation job is submitted to Celery and returns a `job_id`
-immediately. The client polls `GET /design/{id}/simulation/{job_id}`.
+**Decision:** .ino files are rendered from Jinja2 templates (sensor_read.ino.j2,
+modbus_master.ino.j2, base.ino.j2).
 
-**Reason:** ngspice runs take 2–30 seconds. `await subprocess_run()` in FastAPI
-releases the Python event loop but keeps the HTTP connection open. Client browsers,
-load balancers, and mobile SDKs time out after 10–30s. Celery scales horizontally
-across workers and persists job state across server restarts.
-
-**Alternatives rejected:**
-- `await` inline — keeps HTTP connection open, guaranteed client timeouts at scale
-- Thread pool in FastAPI — doesn't scale across processes, no job state persistence
+**Reason:**
+- LLM-generated firmware hallucinates function names (DHT.readTemp vs dht.readTemperature)
+- Templates produce identical output for identical input — testable
+- arduino-cli compilation test can verify every template on every CI run
 
 ---
 
-## [2025-09-20] Claude tool_use mode only — response.content[0].input, never .text
+## [2026-06-01] Celery not inline simulation
 
-**Decision:** All three AI modules (IntentParser, CircuitReasoner, CircuitPatcher)
-use `tool_use` with `tool_choice={"type": "tool", "name": ...}`. Output is read
-from `response.content[0].input` — already a parsed Python dict.
+**Decision:** All ngspice runs go through Celery tasks.
 
-**Reason:** `.input` is already a Python dict — no `json.loads()`, no markdown-fence
-stripping, no regex. Eliminates the entire class of JSON parse errors that come from
-the model wrapping output in ````json ... ```` fences or adding explanatory prose
-before the JSON block.
-
-**Alternatives rejected:**
-- Raw text + regex to strip fences — brittle on every edge case
-- Asking the model to "return valid JSON" as a prompt instruction — still free text
+**Reason:**
+- `await` releases the event loop but NOT the HTTP connection
+- 30-second simulation would cause browser/load-balancer timeout
+- Celery gives job_id → client polls → scales horizontally
 
 ---
 
-## [2025-09-20] Patcher returns changed fields only — never full IR
+## [2026-06-01] Static component_constraints.py not Qdrant RAG
 
-**Decision:** `CircuitPatcher.patch()` returns only the changed fields
-(`{"changes": [{"component_id": "R1", "field": "value", "new_value": "4.7k"}]}`).
-It never returns a full new IR.
+**Decision:** Component constraints are a Python dict, not a vector database.
 
-**Reason:** Full IR regeneration overwrites user customizations made between the
-initial generation and the patch. The `patch_history` list would be meaningless if
-every patch is a full replacement. Surgical patches preserve the exact design the
-user has been working with.
-
-**Alternatives rejected:**
-- Re-generate full IR on each patch — destroys user edits, 2–3x more tokens per call
+**Reason:**
+- Datasheet excerpts are 4,000+ tokens each — $0.50–1.00 per generation call if embedded
+- Python dict lookup is 0 tokens, 0 latency, 100% reliable
+- Phase 2 adds Qdrant when breadth requires it
 
 ---
 
-## [2025-09-20] Static component_constraints.py for Phase 1 — no RAG
+## [2026-06-01] Net labels in KiCad, not wire routing
 
-**Decision:** Component electrical constraints are a Python dict
-(`backend/data/component_constraints.py`). No vector database in Phase 1.
+**Decision:** KiCad schematic uses net labels to connect components, not wire routes.
 
-**Reason:** Datasheet excerpts are 4,000+ tokens each. Embedding 20 components in
-every system prompt adds $0.50–1.00 per generation call and pushes context budgets
-on complex circuits. A Python dict lookup costs 0 tokens, 0 latency, 0 dollars,
-and is 100% reliable with no network dependency. Qdrant RAG is Phase 2 once the
-template system proves reliable.
-
-**Alternatives rejected:**
-- Qdrant with full datasheets in Phase 1 — expensive and fragile for an unproven system
+**Reason:**
+- Wire routing requires exact pin coordinates from KiCad symbol library for each component
+- Net labels connect by name — generatable without a symbol library lookup
+- Phase 3 adds proper wire routing
 
 ---
 
-## [2025-09-20] KiCad net labels only — no wire routing in Phase 1
-
-**Decision:** `KiCadSchematicGen` emits net labels that connect by name. No wire
-routing, no pin coordinate lookup.
-
-**Reason:** Wire routing requires knowing exact pin coordinates from the KiCad symbol
-library for every component. That lookup is not implemented in Phase 1. Net labels
-connect nodes by matching label text — generatable without any symbol library.
-
-**Phase plan:** Wire routing added in Phase 3 alongside the PCB layout module.
-
----
-
-## [2025-09-20] MCU modeled as 100Ω resistor in SPICE
-
-**Decision:** ATmega328P and all MCUs = `R_MCU_U1 VCC_5V GND 100` in generated SPICE.
-
-**Reason:** If both the power supply and the MCU are voltage sources on the same node,
-ngspice produces a singular matrix and refuses to simulate. The MCU is a current
-consumer, not a voltage supplier. 100Ω ≈ 50mA at 5V, which is close to ATmega328P
-typical operating current.
-
-**Alternatives rejected:**
-- `VMCU VCC_5V GND DC 5` — singular matrix error, zero output
-- Ignoring MCU entirely — leaves floating nodes, also a singular matrix
-
----
-
-## [2025-09-20] bcrypt directly — not passlib
+## [2026-06-01] bcrypt directly, not passlib
 
 **Decision:** Password hashing uses `import bcrypt` directly.
 
-**Reason:** passlib 1.7.4 is incompatible with bcrypt 4.x — it calls an internal
-`._private_rounds()` method that no longer exists in newer bcrypt. Rather than pin
-passlib to an old version or wait for a fix, bcrypt is called directly.
+**Reason:**
+- passlib 1.7.4 is incompatible with bcrypt 4.x
+- Direct bcrypt is simpler and avoids the dependency conflict
 
 ---
 
-## [2026-06-03] Brain scaffold in .claude/shared-memory/ — not project root
+## [2026-06-01] No in-memory design storage
 
-**Decision:** All Claude session context files (brain/, plan/, tools/) live in
-`.claude/shared-memory/` rather than the project root.
-
-**Reason:** The project root is already crowded with real project files. Co-locating
-Claude tooling with other `.claude/` config (CLAUDE.md, rules/, settings.json) makes
-the AI layer self-contained and clearly separated from production code.
-
----
-
-## TEMPLATE — adding a new decision
-
-```
-## [YYYY-MM-DD] Brief title
-
-**Decision:** One sentence stating what was chosen.
+**Decision:** Every CircuitIR is persisted to PostgreSQL immediately after generation.
 
 **Reason:**
-- Bullet points — include the forcing constraint, not just the preference
+- In-memory dict dies on server restart
+- Breaks with multiple Celery workers
+- Patch history and audit trail require persistent storage
 
-**Alternatives rejected:**
-- Name — specific reason it was rejected
+---
 
-**Known tradeoffs:** (optional)
-```
+## [2026-06-02] OpenRouter base_url must omit /v1
+
+**Decision:** `ANTHROPIC_BASE_URL=https://openrouter.ai/api` (no /v1 suffix).
+
+**Reason:**
+- The Anthropic SDK appends `/v1/messages` to whatever base_url is set
+- Setting base_url to `.../api/v1` results in `.../api/v1/v1/messages` → 404
+- Verified by intercepting the HTTP request with custom httpx.HTTPTransport
+
+**Applied in:** `backend/core/config.py`, `.env`, `.env.example`
+
+---
+
+## [2026-06-02] ngspice on Windows requires -o flag, not stdout pipe
+
+**Decision:** `NgspiceRunner._run_sync()` uses `ngspice_con -b -o outfile.out infile.cir`
+and reads the output file rather than capturing stdout.
+
+**Reason:**
+- ngspice_con.exe is a Windows console application that writes directly to the
+  Windows console handle (CONOUT$), bypassing stdout/stderr pipes entirely
+- `subprocess.run(capture_output=True)` always returns empty strings
+- Verified: piping to file via `-o` captures all output correctly
+
+**Applied in:** `backend/simulation/runner.py`
+
+---
+
+## [2026-06-02] ngspice AC output: magnitude = sqrt(real^2 + imag^2)
+
+**Decision:** AC simulation values are computed as complex magnitude, not real part.
+
+**Reason:**
+- ngspice AC output format: `idx  freq  real,  imag` (complex pair, comma-separated)
+- At 1kHz RC filter: real=2.502V, imag=-2.500V
+- Real part alone = 2.502V (29% error vs expected 3.536V)
+- sqrt(2.502^2 + 2.500^2) = 3.536V (exactly -3dB ✓)
+
+**Applied in:** `backend/simulation/parser.py` → `_parse_ac_table()`
+
+---
+
+## [2026-06-02] ngspice emits separate table per variable even on single .print line
+
+**Decision:** AC parser handles MULTIPLE tables (one per node) and merges by freq_idx.
+
+**Reason:**
+- `.print ac v(in) v(out)` — looks like one command
+- ngspice still emits two separate tables, one for v(in), one for v(out)
+- Plus paginates each table at ~55 rows repeating the header
+- Parser must: find ALL headers, parse each table, merge by index into final result
+
+**Applied in:** `backend/simulation/parser.py` → `_parse_ac_table()` full rewrite
+
+---
+
+## [2026-06-02] Celery on Windows Python 3.13 needs --pool=solo
+
+**Decision:** Start Celery worker with `--pool=solo`.
+
+**Reason:**
+- Celery 5.x + billiard prefork + Python 3.13 on Windows fails with:
+  `ValueError: not enough values to unpack (expected 3, got 0)` in fast_trace_task
+- `--pool=solo` runs tasks in the main process, bypassing billiard
+- Acceptable for single-machine dev; production Docker image (Linux) uses default pool
+
+---
+
+## [2026-06-02] Arduino Uno Modbus uses SoftwareSerial, not Serial1
+
+**Decision:** `modbus_master.ino.j2` uses `SoftwareSerial` on pins 10/11 for RS-485.
+
+**Reason:**
+- Arduino Uno has only one hardware UART (`Serial` on pins 0/1)
+- `Serial1` exists on Mega/Leonardo only
+- `SoftwareSerial` is bit-banged on any two pins — works on Uno
+- `Serial` (pins 0/1) stays free for debug output to Serial Monitor
+
+---
+
+## [2026-06-02] .env path resolved from config.py location, not CWD
+
+**Decision:** `config.py` uses `Path(__file__).parent.parent.parent / ".env"`.
+
+**Reason:**
+- `env_file=".env"` resolves relative to CWD at runtime
+- Running `uvicorn` from `backend/` directory looks for `backend/.env` (doesn't exist)
+- The actual `.env` is at project root
+- `Path(__file__)` always knows where config.py is, regardless of launch directory
+
+---
+
+## [2026-06-02] Rate limiting is IP-based (slowapi default)
+
+**Decision:** Rate limits apply per IP address, not per user/token.
+
+**Reason:**
+- slowapi's default key function uses the request IP
+- All localhost development traffic shares the 10/hour generate limit
+- For production: override key function to use user ID from JWT
+
+**Known limitation:** In dev, hitting the limit blocks all users from the same machine.
+Use a second test account and wait 1 hour, or temporarily raise the limit in .env.

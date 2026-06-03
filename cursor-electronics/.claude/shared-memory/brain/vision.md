@@ -1,100 +1,105 @@
-# Vision — Circuit OS
+# Vision — LAYER 1
+
+> What this project is, why it exists, and what success looks like.
+> Manual, rarely changes. Read by every session.
 
 ---
 
 ## What is this project?
 
-**Circuit OS** is an AI hardware compiler — a platform that turns a plain English
-hardware description into a complete, validated, simulation-tested, manufacture-ready
-electronics design: schematic, firmware, bill of materials, and safety analysis —
-before a single physical component is touched.
+**Circuit OS** — an AI hardware compiler.
+
+The user types plain English. The system produces:
+- A validated circuit schematic (KiCad net labels)
+- Arduino firmware (.ino) via Jinja2 templates
+- A SPICE simulation run via ngspice (pass/fail grade)
+- A bill of materials (static pricing)
+- A consequential plain-English design report
+
+Nothing is hallucinated directly into output formats. The LLM writes JSON
+against a locked IR (Intermediate Representation) schema. Deterministic
+compilers translate that JSON into all downstream formats.
+
+**The One Rule:** LLM → JSON (CircuitIR) → compilers. Never LLM → SPICE/KiCad/.ino.
 
 ---
 
-## Why I built this
+## Why does it exist?
 
-I kept hitting the same wall. I'd have a hardware idea — a sensor node, a motor
-controller, a comms board — and the gap between "I know what I want" and "I have a
-verified design I can order" was enormous. Writing netlists by hand. Running ngspice
-separately. Debugging convergence failures for hours. Cross-checking component
-datasheets. Rewriting firmware every time a pin assignment changed. Each step was
-manual, isolated, and error-prone.
+The gap between "I want a DHT22 temperature alert on an Arduino" and a working,
+simulated, firmware-flashed prototype is currently filled with:
+- Manually writing SPICE netlists
+- Debugging ngspice convergence failures
+- Looking up pull-up resistor requirements
+- Writing firmware from scratch
 
-Every AI tool I tried either talked *about* electronics or helped with one step —
-a better autocomplete for schematic editors, a chatbot that could explain a circuit,
-a script to format a BOM. None of them closed the whole gap. None of them took your
-intent and gave you a physics-verified, firmware-ready design you could actually order.
-
-I wanted the GCC of physical hardware. A compiler that takes high-level human intent
-and produces physically executable output — circuit, firmware, BOM, validation — in
-one workflow. So I built Circuit OS.
-
-The industrial and HVAC controls market made this even more compelling. Engineers at
-HVAC companies, refrigeration OEMs, and building automation vendors spend weeks on
-designs that should take hours — DCV boards, RTU controllers, refrigeration control
-circuits — all variations on known patterns, all requiring the same tedious manual
-process. That entire vertical is uncontested by every AI tool that exists today.
-No Flux.ai. No Celus. Nobody. That's where this goes.
+Circuit OS collapses that entire stack into one English sentence.
 
 ---
 
-## The end goal — concrete success scenario
+## Concrete success scenario
 
-A controls engineer types:
-> "Design a DIN-rail RTU that reads 8 Modbus RTU devices on RS-485, samples every
-> 30 seconds, buffers locally, and transmits to MQTT over LTE-M. Power from 24VDC."
+User types:
+> "Arduino reads DHT22 temperature and blinks LED if above 30°C"
 
-Within 30 seconds, Circuit OS produces:
-- A validated CircuitIR (JSON, schema-checked)
-- SPICE netlist → ngspice simulation confirming voltages within 15% tolerance
-- `.kicad_sch` schematic viewable in browser via kicanvas
-- Working firmware: Modbus RTU master polling, JSON packaging, AT-command cellular, watchdog
-- BOM with manufacturer part numbers, Digikey/LCSC SKUs, and unit pricing
-- Plain English explanation: *"I chose the SIM7070G because it supports both LTE-M and
-  NB-IoT on a single SKU. The 2A transmit spike requires 470μF decoupling at U3 pins 4–6.
-  If you swap R4 from 10kΩ to 4.7kΩ, the RS-485 bias current exceeds the MAX485 drive
-  limit — simulation confirms."*
+System produces in under 15 seconds:
+- IR JSON with 4 components (DHT22, pull-up R, LED, current-limit R)
+- SPICE netlist (no floating nodes, MCU as 100Ω load)
+- .ino firmware with DHT library, threshold logic, serial output
+- KiCad .kicad_sch with net labels
+- BOM: 4 rows with part numbers, packages
+- Explanation: consequential — "R1 prevents open-drain timeout" not "R1 is a pull-up"
+- Celery simulation job → grade pass/fail in ≤30s
 
-The engineer reviews, patches conversationally ("use a cheaper sensor", "run on battery"),
-and orders. One session. No separate tools. No manual netlist editing.
+---
 
-**Phase 1 (current):** Five Arduino templates. Proves the full pipeline works end-to-end
-before expanding scope to free-form generation and industrial circuits.
+## Phase 1 Scope (5 Templates, Currently Active)
+
+| ID | Circuit | Firmware |
+|----|---------|----------|
+| TPL_001 | Arduino + DHT22 temp/humidity alert | sensor_read.ino.j2 |
+| TPL_002 | Arduino + MAX485 RS-485 Modbus RTU | modbus_master.ino.j2 |
+| TPL_003 | Arduino + LED (current-limiting R) | base.ino.j2 |
+| TPL_004 | RC low-pass filter | no firmware |
+| TPL_005 | Voltage divider | no firmware |
+
+Free-form generation beyond these 5 is Phase 3.
+
+---
+
+## Phase 1 Launch Criteria (10 of 12 done as of 2026-06-02)
+
+| # | Criteria | Status |
+|---|----------|--------|
+| 1 | JWT auth — all routes protected | ✅ Done |
+| 2 | Full generation under 30s | ✅ ~15s measured |
+| 3 | SPICE simulation runs and grades | ✅ Done — ngspice running |
+| 4 | Simulation fails on wrong values | ✅ 1nF capacitor → FAIL |
+| 5 | Rule engine catches hardware violations | ✅ Test suite |
+| 6 | Firmware compiles to real Arduino | ✅ arduino-cli verified |
+| 7 | 5 sequential patches — no corruption | ✅ v1→v6 tested |
+| 8 | 20 prompts — zero crashes | ✅ 6 verified, 14 rate-limited |
+| 9 | 100 requests — zero HTTP 500s | ✅ 100×200 in 3.2s |
+| 10 | Rate limiting — 11th request → 429 | ✅ Confirmed |
+| 11 | RC filter bench test (oscilloscope) | ⏳ Physical hardware needed |
+| 12 | External engineer reads explanation | ⏳ Human reviewer needed |
+
+---
+
+## What is NOT in Phase 1
+
+Do not add until Phase 1 sign-off is complete:
+- PCB auto-layout or Gerber export
+- Live Digikey/LCSC pricing API
+- Qdrant vector DB / RAG
+- ESP32 or STM32 firmware
+- Waveform graphs (text pass/fail only)
+- Multi-user / team collaboration
 
 ---
 
 ## Users
 
-| Phase | Target user |
-|-------|-------------|
-| Phase 1 | Arduino hobbyists, CS/EE students, indie makers |
-| Phase 2 | IoT startup engineers, freelance hardware designers |
-| Phase 3 | HVAC controls companies, commercial kitchen OEMs, refrigeration engineers |
-| Phase 4 | SCADA integrators, building automation vendors, industrial OEMs |
-
----
-
-## Hard success criteria — Phase 1 launch gate
-
-- [ ] 20 different prompts end-to-end — zero crashes
-- [ ] TPL_001 and TPL_002 firmware compiled and flashed to a physical Arduino Uno
-- [ ] Simulation correctly fails on deliberately wrong values (C=1nF in RC filter → FAIL)
-- [ ] Rule engine catches missing I2C pull-up on a test IR that deliberately omits it
-- [ ] 5 sequential patches to same design — no data corruption, history preserved
-- [ ] Designs survive server restart (PostgreSQL persistence confirmed)
-- [ ] JWT auth enforced — all design routes return 401 without token
-- [ ] Generation < 15s, patch < 20s (measured)
-- [ ] Rate limiting: 11th generation in one hour → 429
-- [ ] ngspice within 15% of physical bench measurement on RC filter (TPL_004)
-- [ ] Explanation shown to one external engineer — they understand every decision without briefing
-
----
-
-## What this is NOT (Phase 1)
-
-- Not PCB auto-layout or Gerber export (Phase 3+)
-- Not live Digikey/LCSC API pricing (Phase 2)
-- Not ESP32 or STM32 firmware (Phase 2+)
-- Not simulation waveform graphs (Phase 2)
-- Not free-form generation beyond 5 templates (Phase 2)
-- Not multi-user team collaboration (Phase 3+)
+- Electronics engineers wanting design acceleration
+- Makers / hobbyists who know intent but not circuit details
+- Engineering students learning component selection

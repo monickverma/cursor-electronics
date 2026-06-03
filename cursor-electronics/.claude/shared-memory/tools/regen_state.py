@@ -20,32 +20,20 @@ What it does:
 import json
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8")
-
 # ── Config ────────────────────────────────────────────────────────────────────
-SHARED_MEMORY = Path(__file__).parent.parent          # .claude/shared-memory/
-ROOT = SHARED_MEMORY.parent.parent                    # project root (cursor-electronics/)
+ROOT = Path(__file__).parent.parent
 
 EXPECTED_MODULES = {
-    "ir_schema":         {"file": "backend/core/ir_schema.py",           "phase": 1},
-    "ir_validator":      {"file": "backend/core/ir_validator.py",        "phase": 1},
-    "intent_parser":     {"file": "backend/ai/intent_parser.py",        "phase": 1},
-    "circuit_reasoner":  {"file": "backend/ai/circuit_reasoner.py",     "phase": 1},
-    "patcher":           {"file": "backend/ai/patcher.py",              "phase": 1},
-    "explainer":         {"file": "backend/ai/explainer.py",            "phase": 1},
-    "spice_generator":   {"file": "backend/generators/netlist/spice.py","phase": 1},
-    "firmware_generator":{"file": "backend/generators/firmware/arduino.py","phase":1},
-    "kicad_generator":   {"file": "backend/generators/schematic/kicad.py","phase":1},
-    "bom_compiler":      {"file": "backend/generators/bom/compiler.py", "phase": 1},
-    "sim_runner":        {"file": "backend/simulation/runner.py",        "phase": 1},
-    "rule_engine":       {"file": "backend/validation/rule_engine.py",  "phase": 1},
-    "frontend":          {"file": "frontend/app/page.tsx",              "phase": 1},
+    "nl_parser":         {"file": "src/parser.py",       "phase": 1},
+    "netlist_generator": {"file": "src/netlist_gen.py",  "phase": 1},
+    "simulator":         {"file": "src/simulator.py",    "phase": 1},
+    "verifier":          {"file": "src/verifier.py",     "phase": 2},
+    "pcb_designer":      {"file": "src/pcb_designer.py", "phase": 5},
 }
-TOTAL_PHASES = 5
+TOTAL_PHASES = 12
 CURRENT_PHASE = 1  # Update manually when a phase completes.
 
 
@@ -109,11 +97,11 @@ def check_modules():
 def read_blockers():
     """Extract blockers from plan/current_phase.md table."""
     blockers = []
-    phase_file = SHARED_MEMORY / "plan" / "current_phase.md"
+    phase_file = ROOT / "plan" / "current_phase.md"
     if not phase_file.exists():
         return blockers
     in_blockers = False
-    for line in phase_file.read_text(encoding="utf-8").splitlines():
+    for line in phase_file.read_text().splitlines():
         if "Current Blockers" in line or "## Blockers" in line:
             in_blockers = True
             continue
@@ -127,11 +115,11 @@ def read_blockers():
 
 
 def run_progress_gen():
-    script = SHARED_MEMORY / "tools" / "progress_gen.py"
+    script = ROOT / "tools" / "progress_gen.py"
     if not script.exists():
         print("  ⚠ tools/progress_gen.py not found — skipping function-level")
         return
-    code, out, err = run(["python", "-X", "utf8", str(script)])
+    code, out, err = run(["python", str(script)])
     if code != 0:
         print(f"  ⚠ progress_gen failed: {(err or out)[:200]}")
     else:
@@ -176,10 +164,10 @@ def main():
         "_layer": "LAYER 4 (Progress) — module-level summary",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "generated_from_commit": commit,
-        "project": "Circuit OS",
+        "project": "AI Electronics Engineer",
         "phase": {
             "current": CURRENT_PHASE,
-            "name": "Hardware Copilot",
+            "name": "Core Pipeline",
             "status": phase_status,
         },
         "modules": modules,
@@ -198,7 +186,7 @@ def main():
         },
     }
 
-    (SHARED_MEMORY / "state.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+    (ROOT / "state.json").write_text(json.dumps(state, indent=2))
 
     # Also regenerate progress.yaml
     print("\n📋 Updating function-level progress.yaml...")
@@ -208,7 +196,7 @@ def main():
     print("\n" + "─" * 64)
     print("REVIEWER SUMMARY  (paste into any new session)")
     print("─" * 64)
-    print(f"  Project : Circuit OS")
+    print(f"  Project : AI Electronics Engineer")
     print(f"  Phase   : {CURRENT_PHASE} — {phase_status}")
     print(f"  Commit  : {commit}")
     print(f"  Tests   : {tests['passed']} passing / {tests['failed']} failing")
