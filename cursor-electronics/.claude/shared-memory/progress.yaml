@@ -1,6 +1,6 @@
 _note: DERIVED. Do not edit. Run tools/progress_gen.py to update.
 _layer: LAYER 4 (Progress) — function-level reality
-generated_at: '2026-06-03T10:30:10.702535Z'
+generated_at: '2026-06-03T10:42:01.142074Z'
 project: Circuit OS
 files:
   backend/ai/intent_parser.py:

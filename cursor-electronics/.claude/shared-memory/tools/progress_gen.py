@@ -34,7 +34,8 @@ try:
 except ImportError:
     yaml = None
 
-ROOT = Path(__file__).parent.parent
+SHARED_MEMORY = Path(__file__).parent.parent          # .claude/shared-memory/
+ROOT  = SHARED_MEMORY.parent.parent                   # project root (cursor-electronics/)
 SRC   = ROOT / "backend"
 TESTS = ROOT / "tests"
 
@@ -270,7 +271,7 @@ def generate():
           f"({progress['summary']['pct_verified']}%), "
           f"{counts['broken']} broken, {counts['not_started']} not started\n")
 
-    write_yaml(progress, ROOT / "progress.yaml")
+    write_yaml(progress, SHARED_MEMORY / "progress.yaml")
     print(f"✅ progress.yaml written")
 
 

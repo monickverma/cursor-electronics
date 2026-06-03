@@ -27,7 +27,8 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Config ────────────────────────────────────────────────────────────────────
-ROOT = Path(__file__).parent.parent
+SHARED_MEMORY = Path(__file__).parent.parent          # .claude/shared-memory/
+ROOT = SHARED_MEMORY.parent.parent                    # project root (cursor-electronics/)
 
 EXPECTED_MODULES = {
     "ir_schema":         {"file": "backend/core/ir_schema.py",           "phase": 1},
@@ -108,7 +109,7 @@ def check_modules():
 def read_blockers():
     """Extract blockers from plan/current_phase.md table."""
     blockers = []
-    phase_file = ROOT / "plan" / "current_phase.md"
+    phase_file = SHARED_MEMORY / "plan" / "current_phase.md"
     if not phase_file.exists():
         return blockers
     in_blockers = False
@@ -126,7 +127,7 @@ def read_blockers():
 
 
 def run_progress_gen():
-    script = ROOT / "tools" / "progress_gen.py"
+    script = SHARED_MEMORY / "tools" / "progress_gen.py"
     if not script.exists():
         print("  ⚠ tools/progress_gen.py not found — skipping function-level")
         return
@@ -197,7 +198,7 @@ def main():
         },
     }
 
-    (ROOT / "state.json").write_text(json.dumps(state, indent=2))
+    (SHARED_MEMORY / "state.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
 
     # Also regenerate progress.yaml
     print("\n📋 Updating function-level progress.yaml...")
