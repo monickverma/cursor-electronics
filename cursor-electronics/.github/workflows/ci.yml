@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: circuitos_test
+          POSTGRES_USER: circuitos_user
+          POSTGRES_PASSWORD: circuitos_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      DATABASE_URL: postgresql+asyncpg://circuitos_user:circuitos_pass@localhost:5432/circuitos_test
+      REDIS_URL: redis://localhost:6379/0
+      SECRET_KEY: ci-test-secret-key-minimum-32-chars-long
+      ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ngspice
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/local/bin sh
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+          arduino-cli lib install "DHT sensor library"
+          arduino-cli lib install "ModbusMaster"
+
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        working-directory: .

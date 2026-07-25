@@ -1,0 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Figtree:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Flow Design System ───────────────────────────────────────── */
+:root {
+  /* Base palette */
+  --lumen:    #ffffeb;   /* cream — light sections, chat bg */
+  --vast:     #1a1a1a;   /* near-black — dark sections, output bg */
+  --dawn:     #f0d7ff;   /* lavender — accent */
+  --fathom:   #034f46;   /* deep teal — hero / header sections */
+  --glow:     #ffa946;   /* amber — primary CTA */
+  --lumen-dim:#e4e4d0;   /* muted cream — hover, borders on light bg */
+  --dawn-dim: #d8b8f5;   /* dim lavender */
+
+  /* Semantic mappings */
+  --bg-light:   var(--lumen);
+  --bg-dark:    var(--vast);
+  --bg-teal:    var(--fathom);
+  --text-dark:  var(--vast);
+  --text-light: var(--lumen);
+  --text-muted-light: #6b6b5a;  /* muted on light bg */
+  --text-muted-dark:  #888888;  /* muted on dark bg */
+  --border-light: #1a1a1a26;    /* subtle on cream */
+  --border-dark:  #383838;      /* on dark bg */
+
+  /* Typography scale */
+  --font-heading: 'EB Garamond', Georgia, serif;
+  --font-body:    'Figtree', Arial, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* App-scale type (two-panel UI) */
+  --h1: 3.75rem;
+  --h2: 2.5rem;
+  --h3: 1.875rem;
+  --h4: 1.375rem;
+  --h5: 1.125rem;
+
+  /* Landing-scale type (Flow-inspired marketing) */
+  --lp-h1:      7.5rem;
+  --lp-h1-sm:   6rem;
+  --lp-h2:      4rem;
+  --lp-h2-big:  4.6875rem;
+  --lp-h3:      3rem;
+  --lp-h4:      2rem;
+  --lp-h5:      1.25rem;
+  --lp-body-xl: 1.5rem;
+  --lp-body-lg: 1.375rem;
+  --lp-body-md: 1.125rem;
+  --lp-body-sm: 1rem;
+  --lp-body-xs: 0.875rem;
+  --lp-body-2xs: 0.8125rem;
+
+  --body-lg: 1.125rem;
+  --body-md: 1rem;
+  --body-sm: 0.875rem;
+  --body-xs: 0.8125rem;
+
+  /* Section padding (landing) */
+  --sp-xl:  10rem;
+  --sp-lg:   8rem;
+  --sp-md:   6rem;
+
+  /* Section border radii (landing — large rounded sections) */
+  --sr-2xl:  5rem;
+  --sr-xl:   4rem;
+  --sr-lg:   3rem;
+  --sr-md:   2.5rem;
+  --sr-sm:   2rem;
+  --sr-xs:   1rem;
+
+  /* App-UI radii */
+  --r-sm:  0.75rem;
+  --r-md:  1.25rem;
+  --r-lg:  2rem;
+  --r-xl:  2.5rem;
+  --r-2xl: 3.5rem;
+
+  /* Alpha tokens */
+  --lumen-90: rgba(255,255,235,0.90);
+  --lumen-70: rgba(255,255,235,0.70);
+  --lumen-50: rgba(255,255,235,0.50);
+  --lumen-30: rgba(255,255,235,0.30);
+  --lumen-15: rgba(255,255,235,0.15);
+  --lumen-10: rgba(255,255,235,0.10);
+  --vast-90:  rgba(26,26,26,0.90);
+  --vast-70:  rgba(26,26,26,0.70);
+  --vast-50:  rgba(26,26,26,0.50);
+  --vast-30:  rgba(26,26,26,0.30);
+  --vast-15:  rgba(26,26,26,0.15);
+  --vast-10:  rgba(26,26,26,0.10);
+}
+
+/* ── Reset ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────── */
+.scroll-dark::-webkit-scrollbar  { width: 5px; }
+.scroll-dark::-webkit-scrollbar-track { background: transparent; }
+.scroll-dark::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+.scroll-light::-webkit-scrollbar { width: 5px; }
+.scroll-light::-webkit-scrollbar-track { background: transparent; }
+.scroll-light::-webkit-scrollbar-thumb { background: var(--lumen-dim); border-radius: 3px; }
+
+/* ── Cards & surfaces ─────────────────────────────────────────── */
+.card-light {
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-md);
+}
+
+.card-dark {
+  background: #242424;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-md);
+}
+
+.card-teal {
+  background: var(--fathom);
+  border-radius: var(--r-lg);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.btn-amber {
+  background: var(--glow);
+  color: var(--vast);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+.btn-amber:hover  { filter: brightness(1.08); }
+.btn-amber:active { transform: scale(0.98); }
+.btn-amber:disabled { opacity: 0.4; cursor: not-allowed; filter: none; transform: none; }
+
+.btn-ghost-light {
+  background: transparent;
+  color: var(--text-muted-light);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-ghost-light:hover { background: var(--lumen-dim); color: var(--vast); }
+
+.btn-ghost-dark {
+  background: transparent;
+  color: var(--text-muted-dark);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-ghost-dark:hover { background: #2e2e2e; color: var(--lumen); }
+
+/* ── Input fields ─────────────────────────────────────────────── */
+.input-light {
+  background: white;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-sm);
+  color: var(--vast);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-light::placeholder { color: var(--text-muted-light); }
+.input-light:focus { border-color: var(--glow); }
+
+.input-dark {
+  background: #242424;
+  border: 1.5px solid var(--border-dark);
+  border-radius: var(--r-sm);
+  color: var(--lumen);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-dark::placeholder { color: var(--text-muted-dark); }
+.input-dark:focus { border-color: var(--glow); }
+
+/* ── Code blocks ──────────────────────────────────────────────── */
+pre, code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+/* ── Tab active indicator ─────────────────────────────────────── */
+.tab-active {
+  color: var(--lumen);
+  position: relative;
+}
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--glow);
+  border-radius: 1px;
+}
+
+/* ── Animated dots ────────────────────────────────────────────── */
+@keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+.dot-1 { animation: blink 1.4s infinite 0ms; }
+.dot-2 { animation: blink 1.4s infinite 200ms; }
+.dot-3 { animation: blink 1.4s infinite 400ms; }
+
+/* ── Fade-in ──────────────────────────────────────────────────── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-up { animation: fadeUp 0.2s ease forwards; }

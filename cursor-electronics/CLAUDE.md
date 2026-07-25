@@ -1,5 +1,3 @@
-Read AGENTS.md immediately and follow its bootstrap before doing anything else.
-
 # CLAUDE.md — Circuit OS
 
 Full instructions are in `.claude/CLAUDE.md`. Rule files are in `.claude/rules/`.
