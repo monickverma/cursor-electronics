@@ -64,6 +64,7 @@ export interface GenerateResponse {
   schematic: string
   bom: BOMRow[]
   explanation: string
+  pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
 }
 
@@ -105,6 +106,7 @@ export interface PatchResponse {
   simulation_job_id: string | null
   firmware: string | null
   schematic: string
+  pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
 }
 

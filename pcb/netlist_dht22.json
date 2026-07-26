@@ -1,0 +1,25 @@
+{
+  "name": "dht22_relay_monitor",
+  "board": { "width": 63.5, "height": 45.72, "layers": 2 },
+  "ground_net": "GND",
+  "power_nets": ["VCC_5V", "GND", "RELAY_COIL_NEG"],
+  "components": [
+    { "ref": "U1", "mpn": "ATMEGA328P-PU",
+      "pins": { "4": "DHT22_DATA", "5": "TRANSISTOR_BASE",
+                "7": "VCC_5V", "8": "GND", "20": "VCC_5V", "22": "GND" } },
+    { "ref": "U2", "mpn": "DHT22",
+      "pins": { "1": "VCC_5V", "2": "DHT22_DATA", "4": "GND" } },
+    { "ref": "K1", "mpn": "SRD-05VDC-SL-C",
+      "pins": { "1": "VCC_5V", "2": "RELAY_COIL_NEG" } },
+    { "ref": "Q1", "mpn": "2N2222A",
+      "pins": { "1": "GND", "2": "RELAY_CTRL", "3": "RELAY_COIL_NEG" } },
+    { "ref": "D1", "mpn": "1N4007",
+      "pins": { "1": "RELAY_COIL_NEG", "2": "VCC_5V" } },
+    { "ref": "R1", "mpn": "CFR-25JB-52-10K",
+      "pins": { "1": "VCC_5V", "2": "DHT22_DATA" } },
+    { "ref": "R2", "mpn": "CFR-25JB-52-1K",
+      "pins": { "1": "TRANSISTOR_BASE", "2": "RELAY_CTRL" } },
+    { "ref": "C1", "mpn": "K104K15X7RF53H5",
+      "pins": { "1": "VCC_5V", "2": "GND" } }
+  ]
+}

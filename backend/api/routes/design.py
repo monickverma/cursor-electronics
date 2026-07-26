@@ -28,6 +28,8 @@ from validation.rule_engine import HardwareRuleEngine
 router = APIRouter()
 
 
+from generators.netlist.pcb import PcbNetlistGenerator
+
 class GenerateRequest(BaseModel):
     prompt: str
     project_id: Optional[str] = None
@@ -45,6 +47,7 @@ class GenerateResponse(BaseModel):
     schematic: str
     bom: list
     explanation: str
+    pcb_netlist: Optional[dict] = None
     ir: dict
 
 
@@ -89,6 +92,7 @@ async def generate_design(
 
     schematic = KiCadSchematicGenerator().generate(ir)
     bom = BOMCompiler().compile(ir)
+    pcb_netlist = PcbNetlistGenerator().generate(ir)
 
     # 5. Explanation (best-effort)
     explanation = ""
@@ -134,6 +138,7 @@ async def generate_design(
         schematic=schematic,
         bom=bom,
         explanation=explanation,
+        pcb_netlist=pcb_netlist,
         ir=ir.model_dump(mode="json"),
     )
 

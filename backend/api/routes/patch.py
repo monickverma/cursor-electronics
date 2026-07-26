@@ -29,6 +29,8 @@ class PatchRequest(BaseModel):
     command: str  # "Change R1 to 4.7k", "Use DHT11 instead of DHT22", etc.
 
 
+from generators.netlist.pcb import PcbNetlistGenerator
+
 class PatchResponse(BaseModel):
     circuit_id: str
     version: int
@@ -38,6 +40,7 @@ class PatchResponse(BaseModel):
     simulation_job_id: Optional[str]
     firmware: Optional[str]
     schematic: str
+    pcb_netlist: Optional[dict] = None
     ir: dict
 
 
@@ -88,6 +91,7 @@ async def patch_design(
     except Exception:
         pass
     schematic = KiCadSchematicGenerator().generate(new_ir)
+    pcb_netlist = PcbNetlistGenerator().generate(new_ir)
 
     # 6. Persist updated IR and patch record
     await update_design_ir(db, circuit_id, new_ir)
@@ -119,5 +123,6 @@ async def patch_design(
         simulation_job_id=job_id,
         firmware=firmware,
         schematic=schematic,
+        pcb_netlist=pcb_netlist,
         ir=new_ir.model_dump(mode="json"),
     )

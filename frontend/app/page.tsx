@@ -8,14 +8,16 @@ import FirmwareViewer from '@/components/FirmwareViewer'
 import SimulationResults from '@/components/SimulationResults'
 import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
+import PCBViewer from '@/components/PCBViewer'
 import { GenerateResponse, PatchResponse } from '@/lib/api'
 
 const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
 
-type Tab = 'schematic' | 'firmware' | 'simulation' | 'bom' | 'validation'
+type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'schematic',  label: 'Schematic' },
+  { id: 'pcb',        label: 'PCB' },
   { id: 'firmware',   label: 'Firmware' },
   { id: 'simulation', label: 'Simulation' },
   { id: 'bom',        label: 'BOM' },
@@ -152,6 +154,7 @@ export default function Home() {
           ) : (
             <>
               {activeTab === 'schematic'  && <SchematicViewer schematic={result.schematic} />}
+              {activeTab === 'pcb'        && <PCBViewer netlist={result.pcb_netlist} />}
               {activeTab === 'firmware'   && <FirmwareViewer firmware={result.firmware} />}
               {activeTab === 'simulation' && (
                 <SimulationResults
