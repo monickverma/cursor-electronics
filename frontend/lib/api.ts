@@ -22,7 +22,14 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
     } else if (detail && typeof detail === 'object') {
       // Structured error object e.g. { error: 'circuit_generation_failed', attempts: [...] }
       if (detail.error === 'circuit_generation_failed' && Array.isArray(detail.attempts)) {
-        message = `Circuit generation failed after ${detail.attempts.length} attempt(s). Last error: ${detail.attempts[detail.attempts.length - 1] ?? 'unknown'}`
+        // Show every attempt, not just the last. The attempts usually differ,
+        // and the first one is the most diagnostic — later retries carry the
+        // earlier IR in their context, so their errors are downstream of it.
+        const attempts = detail.attempts as string[]
+        message = attempts.length
+          ? `Circuit generation failed after ${attempts.length} attempt(s):\n` +
+            attempts.map((a, i) => `  ${i + 1}. ${a}`).join('\n')
+          : 'Circuit generation failed with no recorded attempts.'
       } else {
         message = JSON.stringify(detail)
       }

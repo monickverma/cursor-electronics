@@ -27,6 +27,11 @@ from .intent_parser import DesignSpec
 
 MAX_ATTEMPTS = 3
 
+# The largest reference IR (IR_005) serialises to ~1,960 tokens, so this leaves
+# roughly 4x headroom for a verbose model. Retries append the previous IR to the
+# conversation, so later attempts need more room than the first, not less.
+MAX_OUTPUT_TOKENS = 8192
+
 SYSTEM_PROMPT = """\
 You are Circuit OS, an AI hardware compiler. You produce electronics circuit designs
 as structured JSON against a locked schema.
@@ -96,12 +101,29 @@ class CircuitReasoner:
             try:
                 response = self.client.messages.create(
                     model=ai_model(),
-                    max_tokens=4096,
+                    max_tokens=MAX_OUTPUT_TOKENS,
                     system=system,
                     tools=[_GENERATE_TOOL],
                     tool_choice={"type": "tool", "name": "generate_circuit_ir"},
                     messages=messages,
                 )
+
+                # A tool call cut off at the token ceiling yields a partial dict,
+                # which then fails schema validation for *missing fields* — the
+                # symptom looks identical to the model getting the schema wrong.
+                # Retrying makes it strictly worse: _append_correction adds the
+                # previous IR to the context, so each attempt has less room than
+                # the last. Fail loudly and immediately instead of burning three
+                # attempts on an error no re-prompt can fix.
+                if response.stop_reason == "max_tokens":
+                    raise CircuitGenerationError([
+                        f"Model output hit the {MAX_OUTPUT_TOKENS}-token ceiling and was "
+                        f"truncated mid-tool-call, so the design is incomplete. "
+                        f"This is a budget problem, not a schema problem — raise "
+                        f"MAX_OUTPUT_TOKENS in circuit_reasoner.py, or use a model "
+                        f"that writes more concisely (current: '{ai_model()}')."
+                    ])
+
                 last_raw = response.content[0].input
 
                 # Override intent/application_class from spec to ensure consistency
