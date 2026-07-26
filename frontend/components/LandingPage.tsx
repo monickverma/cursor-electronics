@@ -204,6 +204,40 @@ export default function LandingPage({ onGetStarted }: Props) {
           <button className="btn-ghost-light" style={{ padding: '14px 26px', fontSize: '1rem' }}>
             Read the docs
           </button>
+          <a
+            href="https://drive.google.com/drive/folders/1GkFsTZ7xmXJsFuvLrNU-J_l4yDbeylfo?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '14px 30px',
+              fontSize: '1rem',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              color: '#fff',
+              background: '#e11d0f',
+              border: '2px solid #e11d0f',
+              borderRadius: 9999,
+              textDecoration: 'none',
+              boxShadow: '0 6px 20px rgba(225, 29, 15, 0.35)',
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#b8140a'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 10px 26px rgba(225, 29, 15, 0.45)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#e11d0f'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(225, 29, 15, 0.35)'
+            }}
+          >
+            ▶ Demo Video
+          </a>
         </div>
 
         {/* App preview card — dark, rounded top, bleeds to bottom of viewport like Flow */}
