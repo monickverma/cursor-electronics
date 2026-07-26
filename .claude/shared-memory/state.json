@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-07-25T08:22:53.282868Z",
-  "generated_from_commit": "unknown",
+  "generated_at": "2026-07-26T06:00:56.999795Z",
+  "generated_from_commit": "9dfacd9",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -153,10 +153,10 @@
     }
   },
   "test_summary": {
-    "passed": 218,
+    "passed": 257,
     "failed": 0,
     "skipped": 24,
-    "total": 218
+    "total": 257
   },
   "phase1_criteria": [
     {
@@ -213,8 +213,14 @@
     "No external engineer identified",
     "OpenRouter rate limit (10/hr IP-based)"
   ],
-  "recent_commits": [],
-  "last_diff_stat": "no diff",
+  "recent_commits": [
+    "9dfacd9 fix(api): bound AI call time and stop them blocking the event loop",
+    "75b677d feat(pcb): run the layout engine inside the API instead of a separate service",
+    "5387b3e feat: add PCB tab to main view",
+    "c91a2f4 Push local changes",
+    "c186ec1 Prefill test credentials on login page"
+  ],
+  "last_diff_stat": ".env.example                 |  7 +++++++\n backend/ai/client.py         | 28 +++++++++++++++++++++++++++-\n backend/api/routes/design.py | 21 +++++++++++++++++----\n backend/api/routes/patch.py  | 10 ++",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

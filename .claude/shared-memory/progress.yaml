@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-07-25T08:23:04.692077Z'
+generated_at: '2026-07-26T06:01:10.925094Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -206,14 +206,14 @@ files:
         type: class
         description: CircuitIR → BOM rows with static pricing
         signature: null
-        line: 31
+        line: 211
         test_file: tests/test_bom.py
       BOMCompiler.compile:
         status: verified_done
         type: method
         description: 'Main entry: returns list of BOM row dicts'
         signature: 'BOMCompiler.compile(ir: CircuitIR) -> List[Dict[str, Any]]'
-        line: 32
+        line: 236
         test_file: tests/test_bom.py
     module_status: done
   simulation/runner:
