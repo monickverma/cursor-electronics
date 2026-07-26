@@ -5,12 +5,14 @@ from typing import Annotated, Optional
 
 import anthropic
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.rate_limit import limiter
 
 from ai.circuit_reasoner import CircuitGenerationError, CircuitReasoner
+from ai.client import timeout_detail
 from ai.explainer import ExplanationEngine
 from ai.intent_parser import IntentParser
 from api.routes.auth import get_current_user
@@ -60,14 +62,25 @@ async def generate_design(
     user=Depends(get_current_user),
 ):
     # 1. Parse intent
+    #
+    # IntentParser.parse and CircuitReasoner.generate are synchronous — they
+    # block on a network call to the model provider. Calling them directly in
+    # an async def blocks the whole uvicorn event loop, so one slow generation
+    # stalls every other request on the worker, including /health. They run in
+    # a threadpool for that reason; the SDK timeout in ai/client.py bounds how
+    # long a thread can be held.
     try:
-        spec = IntentParser().parse(body.prompt)
+        spec = await run_in_threadpool(IntentParser().parse, body.prompt)
+    except anthropic.APITimeoutError as exc:
+        raise HTTPException(504, detail=timeout_detail("Intent parsing", exc))
     except anthropic.APIError as exc:
         raise HTTPException(503, detail=f"AI service unavailable: {exc}")
 
     # 2. Generate IR
     try:
-        ir = CircuitReasoner().generate(spec)
+        ir = await run_in_threadpool(CircuitReasoner().generate, spec)
+    except anthropic.APITimeoutError as exc:
+        raise HTTPException(504, detail=timeout_detail("Circuit generation", exc))
     except anthropic.APIError as exc:
         raise HTTPException(503, detail=f"AI service unavailable: {exc}")
     except CircuitGenerationError as exc:
@@ -94,10 +107,10 @@ async def generate_design(
     bom = BOMCompiler().compile(ir)
     pcb_netlist = PcbNetlistGenerator().generate(ir)
 
-    # 5. Explanation (best-effort)
+    # 5. Explanation (best-effort — a failure here must not lose the design)
     explanation = ""
     try:
-        explanation = ExplanationEngine().explain(ir, val_result)
+        explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
     except Exception:
         pass
 

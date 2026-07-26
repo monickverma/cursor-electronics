@@ -5,11 +5,13 @@ from typing import Annotated, Optional
 
 import anthropic
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.rate_limit import limiter
 
+from ai.client import timeout_detail
 from ai.patcher import CircuitPatcher
 from api.routes.auth import get_current_user
 from core.ir_schema import CircuitIR
@@ -64,8 +66,14 @@ async def patch_design(
     old_version = ir.version
 
     # 2. Generate patch (never returns full IR — only changed fields)
+    #
+    # Synchronous network call, so it runs in a threadpool: calling it directly
+    # in an async def blocks the event loop for every other request on this
+    # worker. See the same note in design.py.
     try:
-        patch_result = CircuitPatcher().patch(ir, body.command)
+        patch_result = await run_in_threadpool(CircuitPatcher().patch, ir, body.command)
+    except anthropic.APITimeoutError as exc:
+        raise HTTPException(504, detail=timeout_detail("Patch generation", exc))
     except anthropic.APIError as exc:
         raise HTTPException(503, detail=f"AI service unavailable: {exc}")
 

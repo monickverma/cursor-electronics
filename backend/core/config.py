@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     # Optional with defaults
     anthropic_base_url: str = ""         # OpenRouter: https://openrouter.ai/api  (NO /v1 — SDK appends it)
     ai_model: str = "claude-sonnet-4-6"  # OpenRouter: anthropic/claude-sonnet-4-5
+
+    # The Anthropic SDK defaults to a 600s timeout and 2 retries. Left alone,
+    # one slow upstream call occupies a request for up to half an hour and the
+    # client sees an indefinite hang instead of an error. Bound it: a request
+    # that exceeds this is a failure worth surfacing, not worth waiting on.
+    # Raise ai_timeout_seconds if AI_MODEL is a large/slow model.
+    ai_timeout_seconds: float = 45.0
+    ai_max_retries: int = 1
     celery_broker_url: str = ""          # defaults to redis_url if empty
     environment: str = "development"
     sentry_dsn: str = ""
