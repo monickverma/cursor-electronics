@@ -19,6 +19,9 @@ redis==5.0.8
 # Code generation
 jinja2==3.1.4
 
+# PCB layout engine (pcb_engine/router.py) — without this the API fails at import
+numpy==1.26.4
+
 # Rate limiting
 slowapi==0.1.9
 

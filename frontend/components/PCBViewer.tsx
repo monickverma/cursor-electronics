@@ -1,36 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { compilePCB, PCBCompileResponse } from '@/lib/api'
 
 interface Props {
   netlist?: Record<string, any>
+  token: string
 }
 
-interface PCBResponse {
-  svg?: string
-  stats?: {
-    name?: string
-    size_mm?: [number, number]
-    components?: number
-    pads?: number
-    nets?: number
-    connections?: number
-    routed?: number
-    unrouted?: number
-    drc_errors?: number
-    vias?: number
-    copper_mm?: number
-  }
-  warnings?: string[]
-  violations?: string[]
-  error?: string
-}
+// The layout engine runs inside the API (POST /pcb/compile), not as a separate
+// service. It used to be its own process on port 8001 that the browser called
+// directly, which only ever worked on a developer machine: in a deployed build
+// `localhost:8001` resolves to the *visitor's* computer, and an http:// call
+// from an https:// page is blocked as mixed content regardless.
 
-const PCB_SERVER_URL = process.env.NEXT_PUBLIC_PCB_SERVER_URL || 'http://localhost:8001/'
-
-export default function PCBViewer({ netlist }: Props) {
+export default function PCBViewer({ netlist, token }: Props) {
   const [loading, setLoading] = useState(false)
-  const [data, setData] = useState<PCBResponse | null>(null)
+  const [data, setData] = useState<PCBCompileResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -40,30 +26,14 @@ export default function PCBViewer({ netlist }: Props) {
     setLoading(true)
     setError(null)
 
-    fetch(PCB_SERVER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(netlist),
-    })
-      .then(async (res) => {
+    compilePCB(netlist, token)
+      .then((resData) => {
         if (cancelled) return
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}))
-          throw new Error(errData.error || `HTTP ${res.status} ${res.statusText}`)
-        }
-        return res.json()
-      })
-      .then((resData: PCBResponse) => {
-        if (cancelled) return
-        if (resData.error) {
-          setError(resData.error)
-        } else {
-          setData(resData)
-        }
+        setData(resData)
       })
       .catch((err) => {
         if (cancelled) return
-        setError(err.message || 'Failed to connect to PCB engine server.')
+        setError(err.message || 'PCB compilation failed.')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -72,7 +42,7 @@ export default function PCBViewer({ netlist }: Props) {
     return () => {
       cancelled = true
     }
-  }, [netlist])
+  }, [netlist, token])
 
   if (!netlist) {
     return (
@@ -152,24 +122,11 @@ export default function PCBViewer({ netlist }: Props) {
             }}
           >
             <h3 style={{ fontSize: 'var(--h5)', marginBottom: '0.5rem', color: '#f87171' }}>
-              PCB Engine Unavailable
+              PCB Layout Failed
             </h3>
-            <p style={{ fontSize: 'var(--body-xs)', lineHeight: 1.6, marginBottom: '1rem', color: '#fecaca' }}>
+            <p style={{ fontSize: 'var(--body-xs)', lineHeight: 1.6, color: '#fecaca' }}>
               {error}
             </p>
-            <div
-              style={{
-                background: '#120808',
-                padding: '0.75rem',
-                borderRadius: 'var(--r-sm)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                color: 'var(--lumen)',
-                textAlign: 'left',
-              }}
-            >
-              python compile_board.py --serve 8001
-            </div>
           </div>
         )}
 

@@ -122,6 +122,32 @@ export async function patchDesign(circuitId: string, command: string, token: str
   return apiPost(`/design/${circuitId}/patch`, { command }, token)
 }
 
+export interface PCBCompileResponse {
+  svg: string
+  stats: {
+    name?: string
+    size_mm?: [number, number]
+    components?: number
+    pads?: number
+    nets?: number
+    connections?: number
+    routed?: number
+    unrouted?: number
+    drc_errors?: number
+    vias?: number
+    copper_mm?: number
+  }
+  warnings: string[]
+  violations: string[]
+}
+
+export async function compilePCB(
+  netlist: Record<string, unknown>,
+  token: string,
+): Promise<PCBCompileResponse> {
+  return apiPost('/pcb/compile', netlist, token)
+}
+
 export async function login(email: string, password: string): Promise<{ access_token: string }> {
   const res = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
