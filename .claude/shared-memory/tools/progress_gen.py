@@ -72,7 +72,7 @@ PLANNED = {
     },
     "ai/patcher": {
         "file": "backend/ai/patcher.py",
-        "test_file": None,
+        "test_file": "tests/test_patcher.py",
         "entries": [
             ("CircuitPatcher",         "class",  "Returns only changed fields — never full IR"),
             ("CircuitPatcher.patch",   "method", "Main entry: IR + command → PatchResult"),
@@ -81,7 +81,7 @@ PLANNED = {
     },
     "ai/explainer": {
         "file": "backend/ai/explainer.py",
-        "test_file": None,
+        "test_file": "tests/test_explainer.py",
         "entries": [
             ("ExplanationEngine",         "class",  "Consequential plain-English design report"),
             ("ExplanationEngine.explain", "method", "IR → multi-section report with failure analysis"),
@@ -150,6 +150,94 @@ PLANNED = {
             ("register",        "function", "POST /auth/register → JWT token"),
             ("login",           "function", "POST /auth/login (OAuth2 form) → JWT token"),
             ("get_current_user","function", "JWT dependency — validates Bearer token on every request"),
+        ],
+    },
+
+    # ── Schematic generator (test file existed but was never registered) ──────
+    "generators/kicad": {
+        "file": "backend/generators/schematic/kicad.py",
+        "test_file": "tests/test_schematic_generator.py",
+        "entries": [
+            ("KiCadSchematicGenerator",          "class",  "CircuitIR → .kicad_sch via net labels"),
+            ("KiCadSchematicGenerator.generate", "method", "Main entry: net labels only, no wire routing"),
+        ],
+    },
+
+    # ── PCB layout engine — pulled forward from Phase 3, shipped 2026-07 ──────
+    # Registered 2026-08-07. ~2,400 lines that the memory system did not track
+    # at all before this date. Every entry is currently untested.
+    "pcb_engine/board_ir": {
+        "file": "backend/pcb_engine/board_ir.py",
+        "test_file": None,
+        "entries": [
+            ("Board",            "class",  "Board-level IR: components, pads, tracks, vias, net classes"),
+            ("Board.unrouted",   "method", "Connections still needing a route"),
+            ("Board.to_json",    "method", "Serialise board state"),
+            ("Board.from_json",  "method", "Deserialise board state"),
+            ("Pad",              "class",  "Pad with net, layer, shape, bbox"),
+            ("Component",        "class",  "Placed component with footprint and rotation"),
+            ("Track",            "class",  "Routed copper segment"),
+        ],
+    },
+    "pcb_engine/compile_board": {
+        "file": "backend/pcb_engine/compile_board.py",
+        "test_file": None,
+        "entries": [
+            ("from_netlist",        "function", "Netlist → Board IR"),
+            ("place_constructive",  "function", "Greedy constructive placement by added wirelength"),
+            ("compile_board",       "function", "Main entry: netlist → placed + routed board"),
+        ],
+    },
+    "pcb_engine/router": {
+        "file": "backend/pcb_engine/router.py",
+        "test_file": None,
+        "entries": [
+            ("Grid",                 "class",    "Routing grid with obstacle mask and halo cells"),
+            ("astar",                "function", "A* path search across the routing grid"),
+            ("AStarRouter",          "class",    "RouterBackend implementation using A*"),
+            ("AStarRouter.route",    "method",   "Main entry: routes all unrouted connections"),
+            ("generate_candidates",  "function", "Parallel candidate layouts with scorecards"),
+        ],
+    },
+    "pcb_engine/kernel": {
+        "file": "backend/pcb_engine/kernel.py",
+        "test_file": None,
+        "entries": [
+            ("drc",              "function", "Design rule check → list of Violation"),
+            ("score",            "function", "Physics scorecard for a candidate layout"),
+            ("diff_pair_skew",   "function", "Differential pair length skew"),
+            ("seg_seg_dist",     "function", "Segment-to-segment clearance primitive"),
+        ],
+    },
+    "pcb_engine/footprints": {
+        "file": "backend/pcb_engine/footprints.py",
+        "test_file": None,
+        "entries": [
+            ("normalize_package", "function", "Package string → canonical form"),
+            ("guess",             "function", "Infer footprint from component metadata"),
+            ("build",             "function", "Construct pad geometry for a footprint"),
+        ],
+    },
+    "pcb_engine/render_pretty": {
+        "file": "backend/pcb_engine/render_pretty.py",
+        "test_file": None,
+        "entries": [
+            ("to_svg", "function", "Board → SVG for the frontend PCB tab"),
+        ],
+    },
+    "generators/pcb_netlist": {
+        "file": "backend/generators/netlist/pcb.py",
+        "test_file": None,
+        "entries": [
+            ("PcbNetlistGenerator",          "class",  "CircuitIR → PCB netlist"),
+            ("PcbNetlistGenerator.generate", "method", "Main entry: feeds pcb_engine.compile_board"),
+        ],
+    },
+    "api/routes/pcb": {
+        "file": "backend/api/routes/pcb.py",
+        "test_file": None,
+        "entries": [
+            ("compile_pcb", "function", "POST /pcb/compile → runs layout engine in-process"),
         ],
     },
 }

@@ -77,10 +77,15 @@ It is what an enterprise buyer points to when justifying the seat license.
 | 8 | 20 prompts — zero crashes | ✅ |
 | 9 | 100 requests — zero HTTP 500s | ✅ |
 | 10 | Rate limiting — 11th request → 429 | ✅ |
-| 11 | RC filter bench test (oscilloscope) | ⏳ physical |
-| 12 | External engineer reads explanation cold | ⏳ human |
+| 11 | Simulation vs closed-form equations ≤2% | ⏳ substitute gate¹ |
+| 12 | External engineer reads explanation cold | ⏳ human — after explainer tests |
 
 **Phase 1 is done when:** 11 and 12 are checked → tag v0.1.0 → begin Phase 2.
+
+¹ Amended 2026-08-07. No oscilloscope access, so the bench test is replaced by an
+analytical cross-check against closed-form equations at 2% tolerance. Marked
+`met_by_substitute`, not `met` — it validates the netlist generator against
+mathematics, not physical reality. See `brain/decisions.md`.
 
 ---
 

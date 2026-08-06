@@ -53,10 +53,26 @@
 
 **2026-06-03** — /update-memory confirmed working from Claude Code slash command UI. Loop verified end-to-end: code → test → /update-memory → commit → any agent cold-starts from shared-memory with zero re-explanation.
 
+**2026-07 (undated)** — PCB layout engine built and moved into the API process (`backend/pcb_engine/`, ~2,400 lines: A* router, DRC kernel, footprint inference, SVG render). PCB tab added to frontend. Deployed to Railway. Landing page + demo video added. None of this was recorded in memory at the time.
+
+**2026-08-07** — Re-sync audit. Memory was 5 commits and ~2 months stale: claimed 177 tests, reality 257 passing / 0 failing / 24 skipped. Root cause found: `regen_state.py` and `progress_gen.py` track a hardcoded module list, so the PCB engine was invisible rather than untested.
+
+**2026-08-07** — Registered `pcb_engine/*`, `generators/pcb_netlist`, `api/routes/pcb`, and `generators/kicad` (whose test file existed but was never mapped) in both trackers. Tracked entries 32 → 60. Verified 84.4% → 48.3% — the drop is better accounting, not a regression.
+
+**2026-08-07** — Criterion 11 (RC filter bench test) changed from oscilloscope measurement at 15% tolerance to analytical cross-check at 2%. No lab access exists. Marked `met_by_substitute`, not `met`. See `brain/decisions.md`.
+
+**2026-08-07** — Added `tests/test_patcher.py` (19 tests) and `tests/test_explainer.py` (42 tests, 3 live). Suite 257 → 318 passing, 0 failing. Verified 48.3% → 56.7%.
+
+**2026-08-07** — Patcher invariant ("patch() never returns a full IR", `.claude/rules/code-style.md`) now has mechanical coverage; it was previously a rule with no test behind it. Criterion 7 (5 sequential patches) automated — it had only ever passed by hand on 2026-06-02 and could not be re-run.
+
+**2026-08-07** — Found that `ai/patcher` and `ai/explainer` were reported `untested` partly through mis-registration: 8 unit + 6 live tests already existed in `test_ai_layer.py`, but the trackers mapped both modules to `test_file: None`. Real gap was narrower than reported — no deterministic coverage of `patch()`/`explain()` when ANTHROPIC_API_KEY is absent, which is the default.
+
 ---
 
 ## Upcoming
 
-**Day 2 (next)** — Physical validation: build RC filter on breadboard, measure -3dB with oscilloscope, compare to ngspice. Flash DHT22 firmware to real Arduino Uno.
+**Next** — Criterion 11 via `tests/test_simulation_accuracy.py`: closed-form comparison across 5+ R/C pairs spanning 100Hz–100kHz, 2% tolerance.
 
-**Day 3 (after)** — Sign-off: external engineer reads explanation report cold. All 12 criteria formally checked. Tag commit as v0.1.0. Begin Phase 2 planning.
+**Then** — Criterion 12: external engineer cold-reads a DHT22 explanation. Do this after the explainer tests exist.
+
+**Then** — Scope decision on the PCB engine (in-scope tested / experimental behind a flag / deferred to Phase 3), then `PHASE1_COMPLETE.md` and tag v0.1.0.

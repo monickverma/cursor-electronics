@@ -38,11 +38,11 @@ MODULES = {
     "ai/client":               {"file": "backend/ai/client.py",                     "test": None,                               "phase": 1},
     "ai/intent_parser":        {"file": "backend/ai/intent_parser.py",              "test": "tests/test_ai_layer.py",           "phase": 1},
     "ai/circuit_reasoner":     {"file": "backend/ai/circuit_reasoner.py",           "test": "tests/test_ai_layer.py",           "phase": 1},
-    "ai/patcher":              {"file": "backend/ai/patcher.py",                    "test": "tests/test_ai_layer.py",           "phase": 1},
-    "ai/explainer":            {"file": "backend/ai/explainer.py",                  "test": None,                               "phase": 1},
+    "ai/patcher":              {"file": "backend/ai/patcher.py",                    "test": "tests/test_patcher.py",            "phase": 1},
+    "ai/explainer":            {"file": "backend/ai/explainer.py",                  "test": "tests/test_explainer.py",          "phase": 1},
     "generators/spice":        {"file": "backend/generators/netlist/spice.py",      "test": "tests/test_simulation.py",         "phase": 1},
     "generators/firmware":     {"file": "backend/generators/firmware/arduino.py",   "test": "tests/test_firmware_generator.py", "phase": 1},
-    "generators/kicad":        {"file": "backend/generators/schematic/kicad.py",    "test": None,                               "phase": 1},
+    "generators/kicad":        {"file": "backend/generators/schematic/kicad.py",    "test": "tests/test_schematic_generator.py","phase": 1},
     "generators/bom":          {"file": "backend/generators/bom/compiler.py",       "test": "tests/test_bom.py",                "phase": 1},
     "simulation/runner":       {"file": "backend/simulation/runner.py",             "test": "tests/test_simulation.py",         "phase": 1},
     "simulation/parser":       {"file": "backend/simulation/parser.py",             "test": "tests/test_simulation.py",         "phase": 1},
@@ -55,6 +55,18 @@ MODULES = {
     "api/routes/simulate":     {"file": "backend/api/routes/simulate.py",           "test": None,                               "phase": 1},
     "api/routes/auth":         {"file": "backend/api/routes/auth.py",               "test": "tests/test_auth.py",               "phase": 1},
     "db/crud":                 {"file": "backend/db/crud.py",                       "test": None,                               "phase": 1},
+
+    # ── PCB layout engine (pulled forward from Phase 3, shipped 2026-07) ──────
+    # Registered 2026-08-07: ~2,400 lines that were previously untracked by the
+    # memory system entirely. All currently untested — see current_phase.md.
+    "pcb_engine/board_ir":     {"file": "backend/pcb_engine/board_ir.py",           "test": None,                               "phase": 3},
+    "pcb_engine/compile_board":{"file": "backend/pcb_engine/compile_board.py",      "test": None,                               "phase": 3},
+    "pcb_engine/footprints":   {"file": "backend/pcb_engine/footprints.py",         "test": None,                               "phase": 3},
+    "pcb_engine/kernel":       {"file": "backend/pcb_engine/kernel.py",             "test": None,                               "phase": 3},
+    "pcb_engine/router":       {"file": "backend/pcb_engine/router.py",             "test": None,                               "phase": 3},
+    "pcb_engine/render_pretty":{"file": "backend/pcb_engine/render_pretty.py",      "test": None,                               "phase": 3},
+    "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": None,                               "phase": 3},
+    "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": None,                               "phase": 3},
 }
 
 PHASE1_CRITERIA = [

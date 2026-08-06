@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-07-26T06:01:10.925094Z'
+generated_at: '2026-08-06T22:07:44.321290Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -92,66 +92,66 @@ files:
         type: class
         description: Converts DesignSpec → CircuitIR with 3-attempt retry
         signature: null
-        line: 73
+        line: 78
         test_file: tests/test_ai_layer.py
       CircuitReasoner.generate:
         status: verified_done
         type: method
         description: 'Main entry: DesignSpec → CircuitIR'
         signature: 'CircuitReasoner.generate(spec: DesignSpec) -> CircuitIR'
-        line: 77
+        line: 82
         test_file: tests/test_ai_layer.py
     module_status: done
   ai/patcher:
     file: backend/ai/patcher.py
     exists: true
-    test_file: null
-    test_file_status: no_test
+    test_file: tests/test_patcher.py
+    test_file_status: passing
     entries:
       CircuitPatcher:
-        status: untested
+        status: verified_done
         type: class
         description: Returns only changed fields — never full IR
         signature: null
         line: 101
-        test_file: null
+        test_file: tests/test_patcher.py
       CircuitPatcher.patch:
-        status: untested
+        status: verified_done
         type: method
         description: 'Main entry: IR + command → PatchResult'
         signature: 'CircuitPatcher.patch(ir: CircuitIR, command: str) -> PatchResult'
         line: 105
-        test_file: null
+        test_file: tests/test_patcher.py
       PatchResult.apply_to:
-        status: untested
+        status: verified_done
         type: method
         description: Apply this patch to an IR and return a new IR with version incremented.
         signature: 'PatchResult.apply_to(ir: CircuitIR) -> CircuitIR'
         line: 85
-        test_file: null
-    module_status: in_progress
+        test_file: tests/test_patcher.py
+    module_status: done
   ai/explainer:
     file: backend/ai/explainer.py
     exists: true
-    test_file: null
-    test_file_status: no_test
+    test_file: tests/test_explainer.py
+    test_file_status: passing
     entries:
       ExplanationEngine:
-        status: untested
+        status: verified_done
         type: class
         description: Consequential plain-English design report
         signature: null
         line: 46
-        test_file: null
+        test_file: tests/test_explainer.py
       ExplanationEngine.explain:
-        status: untested
+        status: verified_done
         type: method
         description: IR → multi-section report with failure analysis
         signature: 'ExplanationEngine.explain(ir: CircuitIR, validation_result: IRValidationResult
           | None, simulation_results: dict | None) -> str'
         line: 50
-        test_file: null
-    module_status: in_progress
+        test_file: tests/test_explainer.py
+    module_status: done
   generators/spice:
     file: backend/generators/netlist/spice.py
     exists: true
@@ -333,11 +333,281 @@ files:
         line: 64
         test_file: tests/test_auth.py
     module_status: done
+  generators/kicad:
+    file: backend/generators/schematic/kicad.py
+    exists: true
+    test_file: tests/test_schematic_generator.py
+    test_file_status: passing
+    entries:
+      KiCadSchematicGenerator:
+        status: verified_done
+        type: class
+        description: CircuitIR → .kicad_sch via net labels
+        signature: null
+        line: 59
+        test_file: tests/test_schematic_generator.py
+      KiCadSchematicGenerator.generate:
+        status: verified_done
+        type: method
+        description: 'Main entry: net labels only, no wire routing'
+        signature: 'KiCadSchematicGenerator.generate(ir: CircuitIR) -> str'
+        line: 60
+        test_file: tests/test_schematic_generator.py
+    module_status: done
+  pcb_engine/board_ir:
+    file: backend/pcb_engine/board_ir.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      Board:
+        status: untested
+        type: class
+        description: 'Board-level IR: components, pads, tracks, vias, net classes'
+        signature: null
+        line: 150
+        test_file: null
+      Board.unrouted:
+        status: untested
+        type: method
+        description: Connections with no copper joining their endpoints.
+        signature: 'Board.unrouted(tol: float) -> list[Connection]'
+        line: 222
+        test_file: null
+      Board.to_json:
+        status: untested
+        type: method
+        description: Serialise board state
+        signature: 'Board.to_json(indent: int | None) -> str'
+        line: 237
+        test_file: null
+      Board.from_json:
+        status: untested
+        type: method
+        description: Deserialise board state
+        signature: 'Board.from_json(s: str) -> ''Board'''
+        line: 241
+        test_file: null
+      Pad:
+        status: untested
+        type: class
+        description: Pad with net, layer, shape, bbox
+        signature: null
+        line: 45
+        test_file: null
+      Component:
+        status: untested
+        type: class
+        description: Placed component with footprint and rotation
+        signature: null
+        line: 66
+        test_file: null
+      Track:
+        status: untested
+        type: class
+        description: Routed copper segment
+        signature: null
+        line: 81
+        test_file: null
+    module_status: in_progress
+  pcb_engine/compile_board:
+    file: backend/pcb_engine/compile_board.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      from_netlist:
+        status: untested
+        type: function
+        description: Returns (board, warnings). Unknown packages are reported, not
+          guessed.
+        signature: 'from_netlist(nl: dict) -> tuple[Board, list[str]]'
+        line: 43
+        test_file: null
+      place_constructive:
+        status: untested
+        type: function
+        description: Seed with the largest package, then insert each part at the legal
+          grid
+        signature: 'place_constructive(b: Board, margin: float, step: float) -> Board'
+        line: 121
+        test_file: null
+      compile_board:
+        status: untested
+        type: function
+        description: 'Main entry: netlist → placed + routed board'
+        signature: 'compile_board(netlist: dict, candidates: int, theme: str, grid:
+          float) -> Result'
+        line: 183
+        test_file: null
+    module_status: in_progress
+  pcb_engine/router:
+    file: backend/pcb_engine/router.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      Grid:
+        status: untested
+        type: class
+        description: '3-D occupancy: (layer, y, x). Cell holds 0 free, -1 blocked,
+          or net id.'
+        signature: null
+        line: 69
+        test_file: null
+      astar:
+        status: untested
+        type: function
+        description: A* path search across the routing grid
+        signature: 'astar(grid: Grid, start: tuple[int, int, int], goal: tuple[int,
+          int, int], blocked, via_cost: float, max_expand: int)'
+        line: 220
+        test_file: null
+      AStarRouter:
+        status: untested
+        type: class
+        description: Reference backend. Deliberately simple, deliberately honest.
+        signature: null
+        line: 339
+        test_file: null
+      AStarRouter.route:
+        status: untested
+        type: method
+        description: Rip-up and retry.
+        signature: 'AStarRouter.route(board: Board, seed: int, time_budget_s: float)
+          -> Board'
+        line: 406
+        test_file: null
+      generate_candidates:
+        status: untested
+        type: function
+        description: Run the solver n times under different orderings, score, rank.
+        signature: 'generate_candidates(board: Board, backend: RouterBackend, n: int,
+          weights: Weights | None, time_budget_s: float, workers: int | None) -> list[Candidate]'
+        line: 462
+        test_file: null
+    module_status: in_progress
+  pcb_engine/kernel:
+    file: backend/pcb_engine/kernel.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      drc:
+        status: untested
+        type: function
+        description: Design rule check → list of Violation
+        signature: 'drc(board: Board, edge_clearance: float) -> list[Violation]'
+        line: 100
+        test_file: null
+      score:
+        status: untested
+        type: function
+        description: Physics scorecard for a candidate layout
+        signature: 'score(board: Board, w: Weights | None, violations: list[Violation]
+          | None) -> Score'
+        line: 273
+        test_file: null
+      diff_pair_skew:
+        status: untested
+        type: function
+        description: Differential pair length skew
+        signature: 'diff_pair_skew(board: Board) -> float'
+        line: 264
+        test_file: null
+      seg_seg_dist:
+        status: untested
+        type: function
+        description: Exact minimum distance between two segments. 0.0 if they cross.
+        signature: 'seg_seg_dist(a: Point, b: Point, c: Point, d: Point) -> float'
+        line: 48
+        test_file: null
+    module_status: in_progress
+  pcb_engine/footprints:
+    file: backend/pcb_engine/footprints.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      normalize_package:
+        status: untested
+        type: function
+        description: Package string → canonical form
+        signature: 'normalize_package(pkg: str | None) -> str | None'
+        line: 111
+        test_file: null
+      guess:
+        status: untested
+        type: function
+        description: Best-effort package from a part number. None when unsure — never
+          a guess
+        signature: 'guess(mpn: str, npins: int | None) -> str | None'
+        line: 129
+        test_file: null
+      build:
+        status: untested
+        type: function
+        description: Instantiate a footprint and bind nets to its pins.
+        signature: 'build(ref: str, package: str, netlist_pins: dict[str, str], x:
+          float, y: float, warnings: list[str] | None) -> Component'
+        line: 200
+        test_file: null
+    module_status: in_progress
+  pcb_engine/render_pretty:
+    file: backend/pcb_engine/render_pretty.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      to_svg:
+        status: untested
+        type: function
+        description: Board → SVG for the frontend PCB tab
+        signature: 'to_svg(board: Board, scale: float, theme: str, title: str, show_pour:
+          bool) -> str'
+        line: 68
+        test_file: null
+    module_status: in_progress
+  generators/pcb_netlist:
+    file: backend/generators/netlist/pcb.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      PcbNetlistGenerator:
+        status: untested
+        type: class
+        description: Translates CircuitIR into the JSON format expected by compile_board.py.
+        signature: null
+        line: 7
+        test_file: null
+      PcbNetlistGenerator.generate:
+        status: untested
+        type: method
+        description: 'Main entry: feeds pcb_engine.compile_board'
+        signature: 'PcbNetlistGenerator.generate(ir: CircuitIR) -> Dict[str, Any]'
+        line: 10
+        test_file: null
+    module_status: in_progress
+  api/routes/pcb:
+    file: backend/api/routes/pcb.py
+    exists: true
+    test_file: null
+    test_file_status: no_test
+    entries:
+      compile_pcb:
+        status: untested
+        type: function
+        description: POST /pcb/compile → runs layout engine in-process
+        signature: 'compile_pcb(request: Request, body: CompileRequest, user)'
+        line: 59
+        test_file: null
+    module_status: in_progress
 summary:
-  entries_total: 32
-  entries_verified_done: 27
+  entries_total: 60
+  entries_verified_done: 34
   entries_broken: 0
   entries_stub: 0
-  entries_untested: 5
+  entries_untested: 26
   entries_not_started: 0
-  pct_verified: 84.4
+  pct_verified: 56.7

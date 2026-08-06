@@ -117,6 +117,51 @@ frontend/
 
 ---
 
+## PCB Layout Engine (`backend/pcb_engine/`) — added ~2026-07, documented 2026-08-07
+
+Roughly 2,400 lines that were not described in this file until the 2026-08-07
+re-sync. Pulled forward from Phase 3. **Currently has zero test coverage** and
+its scope status is undecided — see `plan/current_phase.md` Task 4.
+
+This is a **custom engine, not KiCad freerouting**, which is what the master plan
+originally specified. Anyone reading the roadmap alone will have the wrong model.
+
+| Module | Lines | Responsibility |
+|---|---|---|
+| `board_ir.py` | 337 | Board-level IR: `Board`, `Pad`, `Component`, `Track`, `Via`, `Keepout`, `NetClass`, `DiffPair`. Separate from `CircuitIR` — this is geometry, that is topology. |
+| `compile_board.py` | 274 | `from_netlist()` → Board IR; `place_constructive()` greedy placement by added wirelength; `compile_board()` main entry |
+| `router.py` | 594 | `Grid` with obstacle mask + halo cells, `astar()` path search, `AStarRouter`, `generate_candidates()` for parallel candidate layouts |
+| `kernel.py` | 320 | `drc()` → violations, `score()` → physics scorecard, `diff_pair_skew()`, segment-clearance primitives |
+| `footprints.py` | 257 | `normalize_package()`, `guess()` footprint inference, `build()` pad geometry |
+| `render_pretty.py` | 247 | `to_svg()` — board → SVG for the frontend PCB tab |
+
+**Data flow:**
+
+```
+CircuitIR
+   │
+   ▼  generators/netlist/pcb.py  (PcbNetlistGenerator)
+PCB netlist
+   │
+   ▼  pcb_engine/compile_board.py  (from_netlist → place_constructive)
+Board IR  (placed, unrouted)
+   │
+   ▼  pcb_engine/router.py  (AStarRouter / generate_candidates)
+Board IR  (routed candidates)
+   │
+   ▼  pcb_engine/kernel.py  (drc + score)
+Candidates + physics scorecards
+   │
+   ▼  pcb_engine/render_pretty.py → SVG → frontend PCB tab
+```
+
+**Runs in-process inside the API** (`api/routes/pcb.py` → `POST /pcb/compile`),
+not as a separate service and not via Celery. Commit `75b677d` moved it inward
+deliberately. Note this cuts against the project's own rule that long-running
+work goes through Celery — if layout times grow, that decision needs revisiting.
+
+---
+
 ## Key Data Contracts
 
 ### CircuitIR (ir_schema.py) — the locked contract

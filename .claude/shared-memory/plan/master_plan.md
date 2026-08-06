@@ -43,7 +43,7 @@
 
 **KPIs (from PRODUCT_MASTER.md):**
 - Circuit generation under 30 seconds ✅ measured ~15s
-- Simulation accuracy ≥85% match to bench measurement ⏳ bench test needed
+- Simulation accuracy within 2% of closed-form equations ⏳ `tests/test_simulation_accuracy.py` needed
 - 100 beta users
 - At least 3 documented "it caught my mistake" testimonials
 
@@ -61,10 +61,27 @@
 | 8 | 20 different prompts — zero crashes | ✅ 6 fully verified |
 | 9 | 100 consecutive requests — zero HTTP 500s | ✅ 100×200 OK in 3.2s |
 | 10 | Rate limiting — 11th request returns 429 | ✅ confirmed |
-| 11 | RC filter bench test (ngspice vs oscilloscope ≤15%) | ⏳ physical hardware |
-| 12 | External engineer reads explanation cold, understands all | ⏳ human required |
+| 11 | Simulation accuracy vs closed-form equations ≤2% | ⏳ substitute gate — see note below |
+| 12 | External engineer reads explanation cold, understands all | ⏳ human required — do after explainer tests |
 
 **Phase 1 is done when:** Criteria 11 and 12 are checked. Then tag v0.1.0.
+
+> **Amendment 2026-08-07 — criterion 11.** No oscilloscope or function generator
+> is available, so the physical bench test is replaced as the Phase 1 gate by an
+> analytical cross-check: ngspice output compared to closed-form circuit equations
+> (`f = 1/(2πRC)` and friends) at **2%** tolerance, across 5+ R/C pairs spanning
+> 100Hz–100kHz. Tolerance tightened from 15% because there is no physical
+> component tolerance to absorb. This is marked **`met_by_substitute`**, not
+> `met` — it validates the netlist generator against mathematics, not against
+> physical reality. Run the original bench test when lab access appears.
+> Rationale in `brain/decisions.md`.
+
+> **Amendment 2026-08-07 — test debt precedes sign-off.** `ai/explainer` and
+> `ai/patcher` have no test files. Per Part 12 the explanation layer *is* the
+> product, and criterion 12 is a cold read of its output — so it must be tested
+> before an external reviewer's time is booked. Criterion 7 (5 sequential
+> patches) passed manually on 2026-06-02 but has no regression test, so it is not
+> reproducible as written.
 
 ---
 
@@ -97,11 +114,28 @@
 - Advanced refrigeration control (EEV, superheat, defrost)
 - RS-485 industrial I/O with optoisolation (PC817)
 - UL 508A flagging and safety class enforcement
-- PCB auto-layout via KiCad freerouting (2–4 layer boards)
+- ~~PCB auto-layout via KiCad freerouting~~ → **built early, see note below** (custom A* engine, not freerouting)
 - Private component libraries per organization
 - Audit trail (ISO 13485/26262 ready)
 
 **Revenue:** Team tier at $99/seat/month (min 3 seats)
+
+> **Amendment 2026-08-07 — PCB layout arrived in Phase 1.** `backend/pcb_engine/`
+> (~2,400 lines) already implements A* routing, a DRC kernel, footprint
+> inference, candidate scoring, and SVG rendering. It runs inside the API and has
+> a frontend tab. It is **not** KiCad freerouting — it is a custom engine — and it
+> currently has **zero tests**.
+>
+> This is undeclared scope, and undeclared scope is how Phase 1 stops finishing.
+> A decision is required and must be recorded in `brain/decisions.md`:
+> **(a)** in scope and tested, gating v0.1.0; **(b)** in scope but experimental,
+> behind a flag and labelled in the UI, excluded from the v0.1.0 gate;
+> **(c)** out of scope, unadvertised, revisit in Phase 3.
+>
+> Recommendation: **(b)**. Gating v0.1.0 on 2,400 untested lines of geometry code
+> will stall Phase 1 indefinitely, but shipping an unlabelled experimental router
+> inside a product whose entire pitch is "physics-validated" is a credibility
+> risk. The label is the load-bearing part.
 
 ---
 
@@ -161,3 +195,8 @@ From PRODUCT_MASTER.md Part 8:
 2. **One phase at a time.** Phase 2 does not start until Phase 1 v0.1.0 is tagged.
 3. **Append decisions, never delete.** Every tech choice goes to `brain/decisions.md`.
 4. **The explanation layer is the product.** From PRODUCT_MASTER.md Part 12 — this is the most important thing.
+5. **An unregistered module is an invisible module.** Register every new backend
+   module in both `tools/regen_state.py` and `tools/progress_gen.py` in the same
+   commit. The PCB engine went untracked for two months while `progress.yaml`
+   reported 84.4% verified; the honest figure was 48.3%. A wrong denominator
+   looks like health, which makes it worse than a failing test.

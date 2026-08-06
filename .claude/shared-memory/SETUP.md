@@ -111,7 +111,7 @@ Do not ask me to explain anything — everything you need is in those files.
 
 Claude.ai will read 4 files, then know:
 - This is Circuit OS, an AI hardware compiler
-- 177 tests pass, 10/12 Phase 1 criteria done
+- 257 tests pass, 10/12 Phase 1 criteria done (as of 2026-08-07)
 - Next tasks: RC filter bench test + external engineer review
 - All key decisions, architecture, and known pitfalls
 

@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-07-26T06:00:56.999795Z",
-  "generated_from_commit": "9dfacd9",
+  "generated_at": "2026-08-06T22:07:33.107561Z",
+  "generated_from_commit": "1ae8f34",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -56,10 +56,10 @@
       "test_status": "passing"
     },
     "ai/explainer": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/ai/explainer.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "generators/spice": {
       "status": "verified_done",
@@ -74,10 +74,10 @@
       "test_status": "passing"
     },
     "generators/kicad": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/generators/schematic/kicad.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "generators/bom": {
       "status": "verified_done",
@@ -150,13 +150,61 @@
       "file": "backend/db/crud.py",
       "exists": true,
       "test_status": "no_test"
+    },
+    "pcb_engine/board_ir": {
+      "status": "untested",
+      "file": "backend/pcb_engine/board_ir.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "pcb_engine/compile_board": {
+      "status": "untested",
+      "file": "backend/pcb_engine/compile_board.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "pcb_engine/footprints": {
+      "status": "untested",
+      "file": "backend/pcb_engine/footprints.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "pcb_engine/kernel": {
+      "status": "untested",
+      "file": "backend/pcb_engine/kernel.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "pcb_engine/router": {
+      "status": "untested",
+      "file": "backend/pcb_engine/router.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "pcb_engine/render_pretty": {
+      "status": "untested",
+      "file": "backend/pcb_engine/render_pretty.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "generators/pcb_netlist": {
+      "status": "untested",
+      "file": "backend/generators/netlist/pcb.py",
+      "exists": true,
+      "test_status": "no_test"
+    },
+    "api/routes/pcb": {
+      "status": "untested",
+      "file": "backend/api/routes/pcb.py",
+      "exists": true,
+      "test_status": "no_test"
     }
   },
   "test_summary": {
-    "passed": 257,
+    "passed": 318,
     "failed": 0,
-    "skipped": 24,
-    "total": 257
+    "skipped": 27,
+    "total": 318
   },
   "phase1_criteria": [
     {
@@ -209,18 +257,22 @@
     }
   ],
   "blockers": [
-    "Oscilloscope not connected",
+    "~~No test coverage on explainer.py~~",
+    "~~No test coverage on patcher.py~~",
+    "PCB engine untested + unscoped",
+    "No oscilloscope access",
     "No external engineer identified",
-    "OpenRouter rate limit (10/hr IP-based)"
+    "OpenRouter rate limit (10/hr IP)",
+    "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "9dfacd9 fix(api): bound AI call time and stop them blocking the event loop",
-    "75b677d feat(pcb): run the layout engine inside the API instead of a separate service",
-    "5387b3e feat: add PCB tab to main view",
-    "c91a2f4 Push local changes",
-    "c186ec1 Prefill test credentials on login page"
+    "1ae8f34 Update frontend configs",
+    "6fec23e feat(landing): add red DEMO VIDEO button linking to Drive folder",
+    "6b71241 fix(ai): surface all generation attempts and detect truncated tool calls",
+    "b195f47 brain: regen state after PCB-into-API + AI timeout fixes",
+    "9dfacd9 fix(api): bound AI call time and stop them blocking the event loop"
   ],
-  "last_diff_stat": ".env.example                 |  7 +++++++\n backend/ai/client.py         | 28 +++++++++++++++++++++++++++-\n backend/api/routes/design.py | 21 +++++++++++++++++----\n backend/api/routes/patch.py  | 10 ++",
+  "last_diff_stat": "frontend/next-env.d.ts        | 2 +-\n frontend/tsconfig.tsbuildinfo | 2 +-\n 2 files changed, 2 insertions(+), 2 deletions(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

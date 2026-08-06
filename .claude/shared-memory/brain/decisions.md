@@ -216,3 +216,59 @@ and reads the output file rather than capturing stdout.
 
 **Known limitation:** In dev, hitting the limit blocks all users from the same machine.
 Use a second test account and wait 1 hour, or temporarily raise the limit in .env.
+
+---
+
+## [2026-08-07] Criterion 11 gate changed from bench measurement to analytical cross-check
+
+**Decision:** The Phase 1 simulation-accuracy gate is an analytical cross-check
+against closed-form circuit equations at 2% tolerance, not an oscilloscope
+measurement at 15% tolerance.
+
+**Reason:**
+- No oscilloscope or function generator is available, and none is expected.
+  The criterion had been blocking Phase 1 sign-off since 2026-06-02 with no path forward.
+- The failure mode criterion 11 actually guards against is a netlist generator
+  that emits plausible but incorrect SPICE. That risk lives in
+  `backend/generators/netlist/spice.py` — code written here. ngspice itself is a
+  mature, independently validated simulator; it is not the thing under test.
+- Comparing ngspice output to `f = 1/(2πRC)` catches netlist-generation bugs
+  directly, with no hardware dependency.
+
+**Tolerance changed 15% → 2%:** the 15% figure existed to absorb physical
+component tolerance (±5% resistors, ±10% capacitors) plus probe and breadboard
+error. In a purely analytical comparison none of that exists, so a 15% gate
+would pass a generator with a real scaling bug. Anything beyond ~2% is a defect.
+
+**Recorded limitation:** this validates the netlist generator against
+mathematics, not against physical reality. It cannot catch parasitic
+capacitance, contact resistance, or a real component operating outside its
+datasheet. Criterion 11 is therefore marked `met_by_substitute`, never `met`.
+When lab access becomes available, run the original bench test and upgrade it.
+The product's public claim is "simulates before it ships" — that claim is owed a
+physical measurement eventually.
+
+---
+
+## [2026-08-07] Memory trackers require explicit module registration
+
+**Decision:** Every new backend module must be registered in BOTH
+`tools/regen_state.py` (`MODULES`) and `tools/progress_gen.py` (`PLANNED`) in the
+same commit that introduces it.
+
+**Reason:**
+- Both tools iterate a hardcoded dict. An unregistered module is not reported as
+  untested — it is not reported at all.
+- `backend/pcb_engine/` (~2,400 lines across 7 modules) went untracked for
+  roughly two months. During that time `progress.yaml` reported 84.4% verified.
+  With the PCB engine registered, the honest figure is 48.3%.
+- The reported number was never false. Its denominator was silently wrong, which
+  is worse than a visibly failing test — it looks like health.
+
+**Consequence:** entry count went 32 → 60 and verified percentage 84.4% → 48.3%
+on 2026-08-07. The drop reflects better accounting, not a regression. Do not
+"restore" the old number.
+
+**Better fix, deferred:** make the trackers walk `backend/` and auto-discover
+modules so this class of bug cannot recur. Not done yet — it is a larger change
+to the tooling and was out of scope for the re-sync session.

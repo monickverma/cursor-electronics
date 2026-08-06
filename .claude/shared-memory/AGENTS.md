@@ -37,6 +37,16 @@ If `progress.yaml` says a function is `verified_done`, it is.
 If it says `broken`, the test is failing — fix the test or fix the code.
 If any agent claims something not reflected in `progress.yaml`, do not believe it.
 
+**But check the denominator.** `progress.yaml` only reports modules registered in
+`tools/regen_state.py` (MODULES) and `tools/progress_gen.py` (PLANNED). An
+unregistered module does not show up as untested — it does not show up at all.
+On 2026-08-07 the PCB engine (~2,400 lines) was found to have been invisible for
+~2 months while the file reported 84.4% verified; the honest figure was 48.3%.
+
+**When you add a module, register it in both tools in the same commit.**
+A wrong denominator looks like health, which makes it more dangerous than a
+failing test.
+
 ---
 
 ## THE SIX LAYERS — WHERE EACH LIVES
@@ -98,13 +108,14 @@ For every function `foo()` in `src/some_module.py`, write a test `test_foo()` in
 
 Example:
 ```python
-# src/parser.py
-def parse_nl_to_spec(text: str) -> dict:
-    """Converts natural language → ComponentSpec dict."""
-    ...
+# backend/ai/intent_parser.py
+class IntentParser:
+    def parse(self, prompt: str) -> DesignSpec:
+        """Converts natural language → DesignSpec via tool_use."""
+        ...
 
-# tests/test_parser.py
-def test_parse_nl_to_spec():
+# tests/test_ai_layer.py
+def test_intent_parser_parse():
     result = parse_nl_to_spec("RC filter 1kHz")
     assert result["topology"] == "rc_lowpass"
 ```
