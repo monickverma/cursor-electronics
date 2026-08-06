@@ -16,6 +16,11 @@
 
 After these five steps, you know the project. Do not ask the user to re-explain it.
 
+For a human-readable overview of the whole project in one place — what is real,
+what is unverified, what is only roadmap — see `MENTAL_MODEL.md` at the project
+root. It is prose, so it ranks last in the trust hierarchy below; verify anything
+load-bearing against `progress.yaml`.
+
 If you need more depth: `brain/decisions.md` (why choices were made),
 `brain/knowledge.md` (domain facts), `brain/timeline.md` (history), `state.json`
 (high-level summary), `plan/master_plan.md` (the full roadmap).
