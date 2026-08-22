@@ -71,12 +71,12 @@ MODULES = {
     # Registered 2026-08-07: ~2,400 lines that were previously untracked by the
     # memory system entirely. All currently untested — see current_phase.md.
     "pcb_engine/board_ir":     {"file": "backend/pcb_engine/board_ir.py",           "test": None,                               "phase": 3},
-    "pcb_engine/compile_board":{"file": "backend/pcb_engine/compile_board.py",      "test": None,                               "phase": 3},
-    "pcb_engine/footprints":   {"file": "backend/pcb_engine/footprints.py",         "test": None,                               "phase": 3},
+    "pcb_engine/compile_board":{"file": "backend/pcb_engine/compile_board.py",      "test": "tests/test_pcb_placement.py",                               "phase": 3},
+    "pcb_engine/footprints":   {"file": "backend/pcb_engine/footprints.py",         "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "pcb_engine/kernel":       {"file": "backend/pcb_engine/kernel.py",             "test": None,                               "phase": 3},
     "pcb_engine/router":       {"file": "backend/pcb_engine/router.py",             "test": None,                               "phase": 3},
     "pcb_engine/render_pretty":{"file": "backend/pcb_engine/render_pretty.py",      "test": None,                               "phase": 3},
-    "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": None,                               "phase": 3},
+    "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": None,                               "phase": 3},
 }
 

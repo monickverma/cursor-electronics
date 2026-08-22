@@ -69,6 +69,39 @@ def _relay_srd():
     return out, 20.0, 16.0
 
 
+def _chip(span: float, pad_w: float, pad_h: float):
+    """Two-terminal SMD chip (0402/0603/0805/1206/1210).
+
+    `span` is pad centre-to-centre. Geometry is IPC-7351B nominal (density
+    level B) — the same numbers KiCad's Resistor_SMD library uses, so swapping
+    this file for the real KiCad library later will not move any part."""
+    out = [("1", -span / 2, 0.0, pad_w, pad_h),
+           ("2",  span / 2, 0.0, pad_w, pad_h)]
+    return out, span + pad_w + 0.5, pad_h + 0.5
+
+
+def _sot23():
+    """SOT-23: pins 1 and 2 on one side at 0.95 mm pitch, pin 3 opposite."""
+    out = [("1", -0.95, -1.10, 0.90, 1.00),
+           ("2",  0.95, -1.10, 0.90, 1.00),
+           ("3",  0.00,  1.10, 0.90, 1.00)]
+    return out, 3.30, 3.70
+
+
+def _soic(npins: int, row: float = 5.40, pitch: float = 1.27,
+          pad_w: float = 0.60, pad_h: float = 1.50):
+    """SOIC, narrow body. Pin order matches _dip: 1..n/2 up the left, then back
+    down the right, so pin 1 and pin n sit on the same row."""
+    per = npins // 2
+    span = (per - 1) * pitch
+    out = []
+    for i in range(per):
+        out.append((str(i + 1), -row / 2, -span / 2 + i * pitch, pad_w, pad_h))
+    for i in range(per):
+        out.append((str(npins - i), row / 2, -span / 2 + i * pitch, pad_w, pad_h))
+    return out, row + pad_w + 0.5, span + pad_h + 0.5
+
+
 PACKAGES = {
     "DIP-8":    lambda: _dip(8),
     "DIP-14":   lambda: _dip(14),
@@ -86,7 +119,31 @@ PACKAGES = {
     "HEADER-4": lambda: _inline(4, vertical=True, pad=1.5),
     "HEADER-5": lambda: _inline(5, vertical=True, pad=1.5),
     "HEADER-6": lambda: _inline(6, vertical=True, pad=1.5),
+
+    # ── Surface mount ────────────────────────────────────────────────────────
+    # Added 2026-08-22. Their absence meant every 0402 passive in all five
+    # example IRs was dropped by from_netlist() — IR_003 and IR_004 compiled to
+    # completely empty boards. See tests/test_pcb_placement.py.
+    "0402":     lambda: _chip(0.95, 0.60, 0.65),
+    "0603":     lambda: _chip(1.55, 0.85, 0.95),
+    "0805":     lambda: _chip(1.90, 1.05, 1.40),
+    "1206":     lambda: _chip(3.00, 1.15, 1.80),
+    "1210":     lambda: _chip(3.00, 1.15, 2.70),
+    "SOT-23":   _sot23,
+    "SOIC-8":   lambda: _soic(8),
+    "SOIC-14":  lambda: _soic(14),
+    "SOIC-16":  lambda: _soic(16),
 }
+
+# Pads on these are surface features: single layer, no barrel. The router treats
+# shape == "th" as reachable from every layer (router.py), and DRC skips the
+# layer check for it (kernel.py) — so calling an SMD pad through-hole would let
+# the router approach it from the bottom copper, which on a real board is a
+# connection to nothing.
+SMD_PACKAGES = frozenset({
+    "0402", "0603", "0805", "1206", "1210",
+    "SOT-23", "SOIC-8", "SOIC-14", "SOIC-16",
+})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -116,6 +173,14 @@ def normalize_package(pkg: str | None) -> str | None:
     if "AXIAL" in p: return "AXIAL"
     if "RADIAL" in p: return "RADIAL-2"
     if "TO-92" in p or "TO92" in p: return "TO-92"
+
+    # Chip sizes, with or without an R/C/L prefix: "0402", "R0402", "C0603".
+    m = re.fullmatch(r"[RCL]?(0201|0402|0603|0805|1206|1210)", p)
+    if m: return m.group(1)
+    if p in ("SOT23", "SOT-23"): return "SOT-23"
+    m = re.fullmatch(r"SOIC-?(\d+)", p)
+    if m: return f"SOIC-{m.group(1)}"
+
     
     m = re.search(r"(\d+)-PIN", p)
     if m: return f"HEADER-{m.group(1)}"
@@ -193,8 +258,26 @@ PINMAPS = {
         "DATA": ["2"],
         "NC": ["3"],
         "GND": ["4"],
-    }
+    },
 }
+
+# Two-terminal parts are symmetric, so these names only need to be consistent,
+# not correct in an absolute sense — except for polarised parts, where pad 1 is
+# anode/positive by convention.
+_TWO_TERMINAL = {
+    "A": ["1"], "B": ["2"],
+    "+": ["1"], "-": ["2"],
+    "P": ["1"], "N": ["2"],
+    "ANODE": ["1"], "CATHODE": ["2"], "K": ["2"],
+}
+for _pkg in ("0402", "0603", "0805", "1206", "1210", "AXIAL", "RADIAL-2"):
+    PINMAPS.setdefault(_pkg, dict(_TWO_TERMINAL))
+
+# NOTE: no PINMAPS entry for SOIC-8. Pin 1 is RO on a MAX485 and an output on an
+# op-amp; there is no package-wide truth. build() falls back to free-pad
+# assignment and warns, which is the honest behaviour this file already chose
+# ("a missing footprint is a question you can ask the user, a wrong footprint is
+# a board that arrives unusable"). Per-part pinmaps are the real fix.
 
 
 def build(ref: str, package: str, netlist_pins: dict[str, str],
@@ -239,8 +322,9 @@ def build(ref: str, package: str, netlist_pins: dict[str, str],
         else:
             warnings.append(f"{ref} ({package}): nowhere to connect pin '{label}'")
 
+    shape = "rect" if package in SMD_PACKAGES else "th"
     pads = [Pad(ref, pin, x + px, y + py, pw, ph,
-                final_nets.get(pin, ""), shape="th")
+                final_nets.get(pin, ""), shape=shape)
             for (pin, px, py, pw, ph) in pads_rel]
     return Component(ref, x, y, courtyard_w=cw, courtyard_h=ch, pads=pads)
 

@@ -181,7 +181,7 @@ PLANNED = {
     },
     "pcb_engine/compile_board": {
         "file": "backend/pcb_engine/compile_board.py",
-        "test_file": None,
+        "test_file": "tests/test_pcb_placement.py",
         "entries": [
             ("from_netlist",        "function", "Netlist → Board IR"),
             ("place_constructive",  "function", "Greedy constructive placement by added wirelength"),
@@ -211,7 +211,7 @@ PLANNED = {
     },
     "pcb_engine/footprints": {
         "file": "backend/pcb_engine/footprints.py",
-        "test_file": None,
+        "test_file": "tests/test_pcb_placement.py",
         "entries": [
             ("normalize_package", "function", "Package string → canonical form"),
             ("guess",             "function", "Infer footprint from component metadata"),
@@ -227,7 +227,7 @@ PLANNED = {
     },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
-        "test_file": None,
+        "test_file": "tests/test_pcb_placement.py",
         "entries": [
             ("PcbNetlistGenerator",          "class",  "CircuitIR → PCB netlist"),
             ("PcbNetlistGenerator.generate", "method", "Main entry: feeds pcb_engine.compile_board"),
