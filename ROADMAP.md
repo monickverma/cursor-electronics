@@ -46,13 +46,19 @@ Pick one and write it into `brain/decisions.md`:
 
 Recommendation is **(b)**, and §4 makes it more urgent than it looked yesterday.
 
-### Step 3 — Tag v0.1.0 · **1 hour · after step 1 comes back** · ⬜
+### Step 3 — Tag v0.1.0 · **15 minutes · not blocked on anyone** · ⬜
 
-1. Write `PHASE1_COMPLETE.md` — evidence per criterion, criterion 11 marked
-   **`met_by_substitute`** with its limitation spelled out, the step-2 decision
-   recorded.
-2. `python .claude/shared-memory/tools/regen_state.py`
+`PHASE1_COMPLETE.md` is written. Amended 2026-08-22: criterion 12 no longer
+gates the tag — it made the tag depend on someone else's calendar, which is the
+only reason it sat open for twelve weeks. v0.1.0 tags at **11 of 12**, with
+criterion 12 stated as unmet on the sign-off document's first page and moved to
+a Phase 2 entry condition.
+
+1. `python .claude/shared-memory/tools/regen_state.py`
+2. Check the criteria table in `PHASE1_COMPLETE.md` against the new `state.json`
 3. `git tag v0.1.0 && git push --tags`
+
+Step 1 stays worth doing — it is now a Phase 2 gate rather than a Phase 1 one.
 
 ### Step 4 — Choose which Phase 2 is Phase 2 · **an afternoon of thinking** · ⬜
 

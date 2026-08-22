@@ -305,3 +305,37 @@ Phase 2. `ROADMAP.md` §7 carries the user-facing version.
 `master_plan.md`'s Validation Engine or `PCB_STRATEGY.md`'s constraint layer.
 The two documents describe different phases and neither references the other.
 Recorded in `ROADMAP.md` §5 as an explicit decision still owed.
+
+---
+
+## [2026-08-22] Criterion 12 moved off the v0.1.0 gate
+
+**Decision:** v0.1.0 is tagged at 11 of 12 criteria. Criterion 12 — an external
+engineer reading an explanation cold — remains on the list as openly unmet and
+becomes an entry condition for Phase 2 rather than an exit condition for Phase 1.
+
+**Reason:**
+- It is the only criterion whose completion depends on a third party's calendar.
+  Every other one can be unblocked by work in this repo.
+- It has been open since 2026-06-02. Phase 1 has been functionally complete for
+  most of that time. The tag did not happen because the gate was unreachable,
+  not because the software was unready — and an unreachable gate stops being a
+  standard and starts being an excuse.
+- Criterion 11 was already amended for a comparable reason (no oscilloscope).
+  The pattern to avoid is not amendment; it is amending silently.
+
+**What this deliberately does NOT do:** delete the criterion. PRODUCT_MASTER.md
+Part 12 says the explanation layer is the product. It remains the only part of
+the product with no verification from outside this repo, while the parts that
+are not the differentiator carry 400+ tests. That is an odd risk allocation and
+`PHASE1_COMPLETE.md` states it on its first page rather than burying it.
+
+**Rejected alternatives:**
+- *Drop it entirely.* Would make the criteria list something edited when
+  inconvenient, which devalues the other eleven.
+- *Substitute the agent panel* (`scripts/review_panel.py`). An LLM reading LLM
+  output answers correctly from its own training whether or not the explanation
+  said anything, so a descriptive and a consequential explanation score alike —
+  and that difference is the entire product claim. The panel is a pre-screen and
+  a regression metric, not evidence. Marking it as criterion 12 would be the
+  quiet devaluation this decision is trying to avoid.

@@ -178,7 +178,19 @@ NOT become `met`. The bench measurement is still owed if lab access appears.
 
 ---
 
-## Task 3 — External Engineer Review (Criterion 12)
+## Task 3 — External Engineer Review (Criterion 12) — MOVED TO PHASE 2
+
+> **Amended 2026-08-22.** This no longer blocks v0.1.0. It gated the tag on
+> another person's availability, which is why it stayed open for twelve weeks.
+> It is now a Phase 2 entry condition, tracked as openly unmet.
+>
+> The work below is unchanged and still worth doing — `CRITERION_12_REVIEW.md`
+> has the protocol and scoring sheet, `outreach-messages.md` has the messages.
+> `scripts/review_panel.py` gives an automated pre-screen in the meantime; it
+> measures whether the explanation is load-bearing, which is a different and
+> weaker claim, and it cannot close this criterion.
+
+
 
 Unchanged from the 2026-06-02 plan, but **do Task 1 first** — reviewing output
 from an untested explainer wastes the one thing that is hardest to get, which is

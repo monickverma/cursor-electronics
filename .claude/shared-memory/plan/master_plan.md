@@ -64,7 +64,20 @@
 | 11 | Simulation accuracy vs closed-form equations ≤2% | ⏳ substitute gate — see note below |
 | 12 | External engineer reads explanation cold, understands all | ⏳ human required — do after explainer tests |
 
-**Phase 1 is done when:** Criteria 11 and 12 are checked. Then tag v0.1.0.
+**Phase 1 is done when:** Criteria 1–11 are checked. Then tag v0.1.0.
+
+> **Amendment 2026-08-22 — criterion 12 no longer gates the tag.** Criterion 12
+> requires an external engineer, which makes the version tag depend on someone
+> else's calendar. No other criterion works that way, and it is why Phase 1 sat
+> functionally complete from early June while the tag never happened — not
+> because the check was hard, but because a gate you cannot unblock yourself is
+> not a gate.
+>
+> Criterion 12 stays on the list, openly **unmet**, and becomes an entry
+> condition for Phase 2 rather than an exit condition for Phase 1. v0.1.0 is
+> tagged at **11 of 12** and `PHASE1_COMPLETE.md` says so on its first page. It
+> is not quietly dropped: the explanation layer is the product, and it remains
+> the one part of it with no external verification.
 
 > **Amendment 2026-08-07 — criterion 11.** No oscilloscope or function generator
 > is available, so the physical bench test is replaced as the Phase 1 gate by an
@@ -86,6 +99,12 @@
 ---
 
 ## Phase 2 — Validation Engine (Months 3–8) ⬜
+
+**Entry condition (added 2026-08-22):** criterion 12 — an external engineer
+reads an explanation cold and can say why each component was chosen and what
+breaks if it changes. Moved here from the Phase 1 exit gate. Phase 2 work may
+begin before it is met (see Guiding Principles), but Phase 2 does not *close*
+with the product's central claim still unverified by anyone outside this repo.
 
 **Target users:** Serious makers, IoT startup teams, freelance hardware engineers
 
