@@ -212,7 +212,7 @@ asynchronous read.
 
 ---
 
-## Task 4 — Decide The PCB Engine's Status (scope question, needs a human)
+## Task 4 — Decide The PCB Engine's Status ✅ DONE 2026-08-22 — **(b) experimental**
 
 `backend/pcb_engine/` is ~2,400 lines: A* routing, DRC, footprint inference,
 scoring, SVG rendering. It ships in the API and has a frontend tab. It has
@@ -233,6 +233,20 @@ Pick one and record it in `brain/decisions.md`:
 gating v0.1.0 on 2,400 untested lines of geometry code will stall Phase 1
 indefinitely. An unlabeled experimental router in a tool whose entire pitch is
 "physics-validated" is a credibility risk — the label is the important part.
+
+**RESULT 2026-08-22 — (b) chosen.** Recorded in `brain/decisions.md` and
+`PHASE1_COMPLETE.md` §4. What made it obvious rather than theoretical: the
+placement pipeline was measured for the first time and `footprints.py` had no
+SMD packages at all, so every 0402 passive was dropped. The RC filter and the
+voltage divider compiled to empty boards, and the frontend tab had been
+rendering them for roughly two months. Fixed — SMD packages added,
+`tests/test_pcb_placement.py` guards it with 52 tests — but the experimental
+label is the load-bearing part of the decision.
+
+**Still open under (b):** UI labelling. The endpoint is not yet behind a config
+flag and the frontend tab is not yet marked experimental. That is the remaining
+work of this task, and it is a Phase 1 item because the label is what makes (b)
+honest.
 
 ---
 

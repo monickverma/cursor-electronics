@@ -42,6 +42,8 @@ cursor-electronics/
 │   │   ├── grader.py               # Pass/fail grader (15% tolerance)
 │   │   └── monitor.py              # Structured failure logger
 │   ├── validation/rule_engine.py   # HardwareRuleEngine (RS-485, PWM, etc.)
+│   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
+│   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql
 │   ├── tasks/simulation_task.py    # Celery task
@@ -50,7 +52,8 @@ cursor-electronics/
 │   ├── app/page.tsx                # Two-panel layout
 │   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.
 │   └── lib/api.ts                  # Typed API client
-├── tests/                          # pytest, conftest.py, 5 test modules
+├── scripts/                        # capture_explanation.py, review_panel.py
+├── tests/                          # pytest, conftest.py, 12 test modules + fixtures/
 └── docker-compose.yml
 ```
 
@@ -61,7 +64,7 @@ cursor-electronics/
 | Layer | Technology | Hard constraint |
 |---|---|---|
 | Backend | FastAPI + Python 3.11+ | `async def` for all routes |
-| AI | Claude claude-sonnet-4-6 | `tool_use` mode only — never raw text |
+| AI | Model from `AI_MODEL` in `.env` — do not hardcode | `tool_use` mode only — never raw text |
 | Simulation | ngspice subprocess | BSD licensed — LTspice is NOT allowed (EULA) |
 | Firmware | Jinja2 templates | Never LLM-generated .ino directly |
 | Schematic | KiCad net labels | No wire routing in Phase 1 |
@@ -89,7 +92,11 @@ Free-form generation is Phase 2. Do not expand this list until all 5 are end-to-
 
 Do not add these — they are Phase 2+ scope:
 
-- PCB auto-layout or Gerber export
+- Gerber export, DFM, fab APIs
+- ~~PCB auto-layout~~ — **exists**: `backend/pcb_engine/` ships at `POST /pcb/compile`
+  with a frontend tab. Pulled forward from Phase 3. Scope decision 2026-08-22 is
+  **(b) experimental**, excluded from the v0.1.0 gate. Do not extend it; when
+  Phase 3 begins, integrate freerouting instead. See `PHASE1_COMPLETE.md` §4.
 - Live Digikey/LCSC pricing API
 - Qdrant vector DB / RAG (use `component_constraints.py`)
 - ESP32 or STM32 firmware (Arduino Uno only)

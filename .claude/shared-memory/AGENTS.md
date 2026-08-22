@@ -21,6 +21,23 @@ what is unverified, what is only roadmap — see `MENTAL_MODEL.md` at the projec
 root. It is prose, so it ranks last in the trust hierarchy below; verify anything
 load-bearing against `progress.yaml`.
 
+**Root-level documents, and which question each answers.** These are prose and
+therefore rank last in the trust hierarchy, but an agent that never opens them
+will re-litigate decisions that are already settled:
+
+| File | Answers |
+|---|---|
+| `MENTAL_MODEL.md` | What is real, what is unverified, what is only roadmap |
+| `ROADMAP.md` | What to do next, in order, and who has to do each step |
+| `PHASE1_COMPLETE.md` | What v0.1.0 does and does not certify |
+| `PRODUCT_MASTER.md` | The canonical spec. `docs/PRODUCT_MASTER_v1.md` is superseded — do not build from it |
+| `PCB_STRATEGY.md` | Why the constraint layer, not the router, is the PCB bet |
+| `CRITERION_12_REVIEW.md` | How to run the external review that closes criterion 12 |
+
+**If you add a root-level document, add a row here in the same commit.** A doc
+absent from this table is invisible to the five-action bootstrap — the same
+failure as an unregistered module, one layer up.
+
 If you need more depth: `brain/decisions.md` (why choices were made),
 `brain/knowledge.md` (domain facts), `brain/timeline.md` (history), `state.json`
 (high-level summary), `plan/master_plan.md` (the full roadmap).
