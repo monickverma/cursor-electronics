@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-22T21:20:38.851392Z",
-  "generated_from_commit": "901cc36",
+  "generated_at": "2026-08-22T23:43:29.978929Z",
+  "generated_from_commit": "8fa7d08",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -158,16 +158,16 @@
       "test_status": "no_test"
     },
     "pcb_engine/compile_board": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/pcb_engine/compile_board.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "pcb_engine/footprints": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/pcb_engine/footprints.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "pcb_engine/kernel": {
       "status": "untested",
@@ -188,10 +188,10 @@
       "test_status": "no_test"
     },
     "generators/pcb_netlist": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/generators/netlist/pcb.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "api/routes/pcb": {
       "status": "untested",
@@ -201,10 +201,10 @@
     }
   },
   "test_summary": {
-    "passed": 358,
+    "passed": 410,
     "failed": 0,
-    "skipped": 21,
-    "total": 358
+    "skipped": 22,
+    "total": 410
   },
   "phase1_criteria": [
     {
@@ -276,13 +276,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "901cc36 chore: regenerate state.json (11/12 criteria) and fix UTF-8 handling in regen_state.py",
-    "7bb6507 memory: let criterion 11 actually pass, and drop resolved blockers",
-    "09727c6 chore: update shared memory files and ignore _to_delete folder",
-    "c926fe6 test(simulation): add analytical accuracy gate — closes criterion 11",
-    "71cb0fb docs: add PCB_STRATEGY.md — reframe layout around constraints, not routing"
+    "8fa7d08 docs: settle the canonical spec and Phase 2 — and correct a fork I invented",
+    "6d7559b docs: PHASE1_COMPLETE.md — tag v0.1.0 at 11/12, criterion 12 off the gate",
+    "fb7717f feat(scripts): agent review panel with an ablation control",
+    "75d0b26 feat(scripts): capture a real /design/generate response to JSON",
+    "e3a046e docs: add ROADMAP.md, and amend phase gating to target visibility not timing"
   ],
-  "last_diff_stat": ".claude/shared-memory/state.json           | 66 +++++++++++++++++-------------\n .claude/shared-memory/tools/regen_state.py |  8 ++--\n 2 files changed, 43 insertions(+), 31 deletions(-)",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md  |  41 ++\n .claude/shared-memory/plan/master_plan.md |  38 +-\n PRODUCT_MASTER.md                         |   7 +\n ROADMAP.md                                |  ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
