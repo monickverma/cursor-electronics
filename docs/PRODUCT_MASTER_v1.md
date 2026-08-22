@@ -1,12 +1,29 @@
+> # SUPERSEDED — archived 2026-08-22
+>
+> This is `PRODUCT_MASTER.md` **version 1.0**, the original pre-build product
+> definition. It is kept for history and is **not** the spec to build from.
+>
+> The canonical spec is `PRODUCT_MASTER.md` at the repo root. It revised this
+> document in two ways that were deliberate and are still in force:
+>
+> | | This file (v1) | Canonical |
+> |---|---|---|
+> | Phase 3 | "KiCad Workflow Layer" — freerouting, Gerber, fab APIs, DFM, industrial bundled together | "Industrial Layer" — DCV, refrigeration, RS-485, UL 508A. Gerber/DFM/fab moved to Phase 4 |
+> | Pro tier | $29/month | $49/month |
+>
+> The Phase 3 change moved the industrial vertical **earlier** and the
+> manufacturing workflow **later**, on the argument in `MENTAL_MODEL.md` §9 that
+> industrial rule libraries are the one area no competitor occupies.
+>
+> Confirmed canonical on 2026-08-22 — see `brain/decisions.md`.
+>
+> Do not build from this file. Read it only to understand why something is the
+> way it is.
+
+---
+
 # CIRCUIT OS — Complete Product Definition
 ### The AI Hardware Compiler: From Natural Language to Manufacturable Electronics
-
-
-> **CANONICAL.** Confirmed 2026-08-22. This file is the spec to build from.
-> An earlier v1.0 is archived at `docs/PRODUCT_MASTER_v1.md` — it puts
-> freerouting/Gerber/DFM in Phase 3 and prices Pro at $29. Both were revised
-> here on purpose. If the two disagree, this file wins.
-> Summary for agents: `.claude/shared-memory/plan/master_plan.md`.
 
 ---
 
@@ -240,17 +257,85 @@ UI components:
 
 Three sub-modules, all communicating via structured JSON:
 
-**Intent Parser:** Receives the raw user prompt. Uses Claude with function calling to extract a structured design spec: application type, functional requirements, constraints (voltage, current, environment, budget, form factor), communication protocols required, safety classification. Output is a DesignSpec JSON object, not free text.
+**Intent Parser:** Receives the raw user prompt. Uses Claude or GPT-4 with function calling to extract a structured design spec: application type, functional requirements, constraints (voltage, current, environment, budget, form factor), communication protocols required, safety classification. Output is a DesignSpec JSON object, not free text.
 
-**Circuit Reasoner:** Receives the DesignSpec. Selects circuit topology from the topology library. Calculates component values. Selects specific parts from the component database. Builds the full Intermediate Representation (IR). Every decision is tagged with a confidence score.
+**Circuit Reasoner:** Receives the DesignSpec. Selects circuit topology from the topology library (RC filter, buck converter, H-bridge, optoisolated input, RS-485 transceiver, etc.). Calculates component values. Selects specific parts from the component database. Builds the full Intermediate Representation (IR). Every decision is tagged with a confidence score.
 
 **Explanation Engine:** Reads the IR and generates plain English explanations for every component choice, every topology decision, every warning. This output goes directly to the user. It is the most important differentiator in the product — the reasoning that makes engineers trust the system.
 
-**RAG System (Phase 2+):** A vector database (Qdrant or pgvector) containing manufacturer datasheets, application notes, IEC/UL standards excerpts, and known circuit patterns. Phase 1 uses a static Python lookup table instead — zero tokens, zero latency, zero cost.
+**RAG System:** A vector database (Qdrant or pgvector) containing manufacturer datasheets, application notes, IEC/UL standards excerpts, and known circuit patterns. The Circuit Reasoner queries this during design generation to ground its decisions in actual documentation.
 
 ### Layer 3 — The Intermediate Representation (IR)
 
 This is the core innovation. The canonical JSON schema that all other layers read and write. The single source of truth for any design in the system.
+
+```json
+{
+  "circuit_id": "uuid-v4",
+  "version": 3,
+  "intent": "Modbus RTU master with LTE-M cellular telemetry, 24VDC input",
+  "application_class": "industrial_iot",
+  "safety_class": "general",
+
+  "components": [
+    {
+      "id": "U1",
+      "type": "microcontroller",
+      "part": "STM32F405RGT6",
+      "manufacturer": "STMicroelectronics",
+      "digikey_pn": "497-15960-ND",
+      "lcsc_pn": "C8832",
+      "package": "LQFP-64",
+      "supply_voltage": 3.3,
+      "confidence": 0.91,
+      "justification": "Selected for hardware UART multiplexing (2 UARTs needed: Modbus + modem), FreeRTOS support, and industrial temp range -40 to 85°C"
+    }
+  ],
+
+  "nodes": [
+    { "id": "VCC_3V3", "voltage_nominal": 3.3, "type": "power" },
+    { "id": "VCC_5V",  "voltage_nominal": 5.0, "type": "power" },
+    { "id": "GND",     "voltage_nominal": 0,   "type": "ground" },
+    { "id": "MODBUS_A","type": "signal", "protocol": "RS485_differential" },
+    { "id": "MODBUS_B","type": "signal", "protocol": "RS485_differential" }
+  ],
+
+  "connections": [
+    { "component": "U1", "pin": "PA9",  "node": "UART1_TX" },
+    { "component": "U1", "pin": "PA10", "node": "UART1_RX" }
+  ],
+
+  "constraints": {
+    "supply_voltage_input": 24,
+    "operating_temp_min": -40,
+    "operating_temp_max": 85,
+    "certifications_required": ["CE", "RoHS"],
+    "modbus_slave_count_max": 32,
+    "cellular_protocol": "LTE-M"
+  },
+
+  "simulation_spec": {
+    "analyses": [
+      { "type": "dc_op",      "description": "Verify all rail voltages" },
+      { "type": "transient",  "stop_time": "0.1", "description": "Power-on sequencing" }
+    ]
+  },
+
+  "validation_rules": [
+    "no_floating_nodes",
+    "voltage_ratings_ok",
+    "rs485_termination_present",
+    "rs485_bias_resistors_present",
+    "modem_decoupling_sufficient",
+    "watchdog_present",
+    "industrial_temp_range_all_components"
+  ],
+
+  "patch_history": [
+    { "version": 2, "change": "Swapped LM7805 linear reg for TPS54360 buck (thermal)", "timestamp": "2025-01-15T14:23:00Z" }
+  ]
+}
+```
 
 The IR is then compiled by four independent compilers:
 - **IR → SPICE netlist** (for ngspice simulation)
@@ -262,21 +347,25 @@ The IR is then compiled by four independent compilers:
 
 All tools run as subprocesses or CLI calls from the Python backend. No GUI required.
 
+**KiCad (headless):** Called via KiCad CLI. Generates .kicad_sch from the IR. Runs ERC and returns structured results. In Phase 2, generates .kicad_pcb with auto-placement. In Phase 3, exports Gerber files, drill files, pick-and-place files.
+
 **ngspice (subprocess):** Receives SPICE netlist. Runs the analysis types specified in the IR's simulation_spec. Returns raw data in tabular format. The post-processor parses this, extracts key metrics, compares against the IR's constraints, generates pass/fail grades.
 
-**Firmware generator:** Templates + IR data → compilable source code. Uses Jinja2 templating for Arduino/C.
+**Post-processor:** Analyzes simulation output. Identifies anomalies — unexpected oscillation, voltage overshoot, thermal limit approach, insufficient settling time. Feeds results back to the AI Brain for re-evaluation if any check fails.
+
+**Firmware generator:** Templates + IR data → compilable source code. Uses Jinja2 templating for Arduino/C. For Phase 3+, generates IEC 61131-3 structured text for PLC-style applications.
 
 ### Layer 5 — Data Layer
 
 **PostgreSQL:** User accounts, projects, design history, team memberships, audit logs.
 
-**Component Constraints (Phase 1 — Python lookup table):** Static Python dict keyed by part number. Zero tokens, zero latency, zero cost. Injected selectively into the circuit reasoner prompt (200–500 tokens max, not 40,000+).
+**Circuit Pattern Vector DB (Qdrant):** Every generated design is stored as an embedding. When a new design starts, the system retrieves the 5 most similar previous designs as context. This is what makes the system smarter over time — it has seen this problem before.
 
-**Circuit Pattern Vector DB (Qdrant — Phase 2+):** Every generated design is stored as an embedding. When a new design starts, the system retrieves the 5 most similar previous designs as context.
+**Component Database (PostgreSQL + nightly sync):** Full component catalog with specs, footprints, ratings, pricing, availability. Synced nightly from Digikey V3 API and LCSC API. Never call the distributor API live — always query local cache.
 
-**Component Database (PostgreSQL + nightly sync — Phase 2+):** Full component catalog with specs, footprints, ratings, pricing, availability. Synced nightly from Digikey V3 API and LCSC API. Never call the distributor API live.
+**Simulation Cache (Redis):** Identical simulation runs (same netlist) return cached results instantly. Prevents unnecessary compute for common circuits.
 
-**Simulation Cache (Redis):** Identical simulation runs (same netlist) return cached results instantly.
+**Training Flywheel Pipeline:** Every design → simulation → validation cycle generates labeled data. "This circuit worked" / "This circuit had a short" / "This component needed a pull-up." With user consent, this data feeds a fine-tuning pipeline that improves the Circuit Reasoner over time. This is the compounding competitive advantage.
 
 ### The Diff-and-Patch Edit System
 
@@ -301,20 +390,37 @@ A single natural language prompt describing an Arduino-compatible hardware inten
 5. Plain English explanation of every design decision
 
 ### The Five MVP Validation Checks
-1. No floating nodes (every node has ≥2 connections)
-2. Voltage rating ≥ supply voltage for every component
-3. I2C buses have pull-up resistors on SDA and SCL
-4. RS-485 buses have 120Ω termination resistor
-5. PWM signals assigned to PWM-capable pins only
+1. Wrong voltage level on a microcontroller pin
+2. Missing pull-up resistor on I2C, 1-Wire, or open-drain signal lines
+3. Invalid pin assignment (e.g., PWM function requested on non-PWM-capable pin)
+4. Unsupported or end-of-life component selected
+5. Obvious wiring error caught by KiCad ERC
 
 ### The Five Supported Circuit Templates (MVP Only)
-1. Arduino + DHT22 (temperature/humidity with threshold alert)
-2. Arduino + MAX485 (RS-485 Modbus RTU master)
-3. Arduino + LED with current-limiting resistor
-4. RC low-pass filter (calculated cutoff)
-5. Voltage divider (calculated output)
+1. RC low-pass filter (calculated cutoff, standard values)
+2. RC high-pass filter
+3. Voltage divider with load analysis
+4. LED driver with current limiting resistor
+5. Arduino + digital sensor (DHT22, PIR, ultrasonic — 3 sensor variants)
 
-These are templates, not free generation. Free generation expands in Phase 2 once the template system has proven reliability.
+These are templates, not free generation. The LLM fills in values and constraints against a validated schema. This produces reliable, non-hallucinated output. Free generation expands in Phase 2 once the template system has proven reliability.
+
+### Week-by-Week Build Plan
+
+**Weeks 1–3: Physics engine first.**
+Build the IR schema. Build the ngspice subprocess wrapper (pyspice). Prove that a manually written IR compiles correctly to a SPICE netlist, runs, and returns parsed data. The AI is not involved yet. This foundation must be solid.
+
+**Weeks 4–6: LLM → IR translator.**
+Build the prompt-to-IR translation for the five templates. Use Claude function calling with the IR schema as the output schema. Build the retry loop (if JSON fails schema validation, re-prompt with the error). Test with 20 different prompt phrasings per template.
+
+**Weeks 7–8: Validation and explanation layer.**
+Post-simulation, grade the output. Generate the plain English explanation chain. This is the feature that makes engineers trust the system — build it carefully.
+
+**Weeks 9–10: Chat interface and KiCad integration.**
+Next.js frontend with chat panel and kicanvas schematic viewer. KiCad CLI headless schematic generation from IR. Add the edit/patch capability.
+
+**Weeks 11–12: Component validation layer.**
+For every component in the IR, check voltage rating against supply voltage, check datasheet requirements (pull-up needed? specific capacitor dielectric?), surface warnings in plain language with specific resistor values and part suggestions.
 
 ### What Does NOT Exist in MVP
 PCB layout, BOM pricing API, Gerber export, team collaboration, simulation waveform graphs (text-only pass/fail), analog circuits, generative free-form design, enterprise features, mobile app.
@@ -325,61 +431,67 @@ PCB layout, BOM pricing API, Gerber export, team collaboration, simulation wavef
 
 ### Phase 1 — "Hardware Copilot" (Months 0–3)
 Target users: Arduino hobbyists, CS/EE students, indie makers.
-Deliverables: 5 circuit templates, ngspice validation, 5 rule checks, Arduino code generation, plain English explanation layer, KiCad export, diff-and-patch editing, static BOM, auth.
+Deliverables: 5 circuit templates, ngspice validation, ERC checks, Arduino code generation, plain English explanation layer.
 KPIs: Circuit generation under 30 seconds. Simulation accuracy ≥85% match to bench measurement. 100 beta users. At least 3 documented "it caught my mistake" testimonials.
 Revenue: Free.
 
 ### Phase 2 — "Validation Engine" (Months 3–8)
 Target users: Serious makers, IoT startup teams, freelance hardware engineers.
 Deliverables:
-- Free-form circuit generation (beyond 5 templates, 15 total)
-- ESP32 and STM32 firmware support
-- Live BOM pricing via Digikey/LCSC API (nightly cache sync)
+- Free-form circuit generation (beyond 5 templates)
+- KiCad schematic export with clean layout
+- ESP32 and STM32 target support
+- BOM with live Digikey/LCSC pricing and availability
+- Diff-and-patch iterative editing
+- Component substitution engine ("find a cheaper/more available alternative")
+- Basic analog circuits: op-amp configurations, buck/boost converters, LDO regulators
+- Simulation waveform viewer
 - Design version history with timeline UI
-- Qdrant RAG on 500 datasheet excerpts
-- Simulation waveform viewer (Plotly.js)
-- Component substitution engine
 
-KPIs: 3 paying pilot teams. Average IoT node design under 45 minutes. BOM accuracy within 5%.
-Revenue: Pro tier at $49/month.
+KPIs: 3 paying pilot teams. Average design time under 45 minutes for a complete IoT node. BOM accuracy within 5% of manual engineer's component selection.
+Revenue: Pro tier at $29/month.
 
-### Phase 3 — "Industrial Layer" (Months 8–18)
-Target users: HVAC controls companies, commercial kitchen equipment, refrigeration OEMs.
+### Phase 3 — "KiCad Workflow Layer" (Months 8–18)
+Target users: Hardware product teams, contract electronics engineers, HVAC controls companies.
 Deliverables:
-- DCV board generation
-- Commercial kitchen hood controller board generation
-- Advanced refrigeration control
-- RS-485 industrial I/O with optoisolation
-- UL 508A flagging and safety class enforcement
-- PCB auto-layout via KiCad freerouting (basic, 2–4 layer boards)
-- Private component libraries per organization
-- Audit trail (ISO 13485/26262 ready)
+- PCB auto-routing via KiCad freerouting integration
+- Gerber export and direct fab API integration (JLCPCB, PCBWay)
+- DFM (Design for Manufacturability) report generation
+- Industrial circuit support: RS-485, 4–20mA, 24VDC power, optoisolation
+- DCV board generation (full demand-controlled ventilation design)
+- Commercial refrigeration control board generation
+- Private component libraries (organization-scoped)
+- Design diff viewer and rollback
+- Team workspace with role-based access
 
-KPIs: First enterprise contract signed. One customer prompt-to-ordered-PCB within one business day.
+KPIs: First enterprise contract signed. At least one customer goes from prompt to ordered PCB within one working day.
 Revenue: Team tier at $99/seat/month.
 
 ### Phase 4 — "Enterprise Platform" (Months 18–30)
-Target users: OEMs, SCADA integrators, building automation vendors.
+Target users: OEMs, industrial automation companies, HVAC manufacturers, building automation vendors.
 Deliverables:
-- Full SCADA RTU board generation (Modbus RTU master + LTE-M cellular)
+- Full SCADA/RTU board generation (Modbus RTU master + cellular)
 - PLC-style control board generation
-- Gerber export + JLCPCB/PCBWay API integration
-- DFM report
-- SSO/SAML enterprise identity
-- ROI dashboard
-- Fine-tuned domain model on accumulated design data
+- Hood controller board generation
+- SSO and enterprise identity management
+- Audit trail meeting ISO 13485 and ISO 26262 documentation requirements
+- Compliance reporting (UL, CE, RoHS flag generation)
+- ROI dashboard ("time saved vs manual baseline" per engineer)
+- API access for integration into existing engineering workflows
+- Fine-tuned domain model trained on accumulated design data
 
-KPIs: $1M ARR. Average 40% prototype cycle reduction documented.
+KPIs: $1M ARR. Average 40% reduction in prototype cycle time documented by enterprise customers.
 Revenue: Enterprise contracts, custom pricing.
 
 ### Phase 5 — "Advanced Hardware Intelligence" (Months 30+)
-Target users: High-complexity power electronics, RF, medical devices.
+Target users: High-complexity engineering teams, advanced power electronics, RF.
 Deliverables:
-- Thermal simulation (junction temperature analysis)
-- Analog power electronics (full switching supply, BMS)
-- Multi-objective BOM optimization (cost vs. size vs. reliability Pareto)
-- MTBF prediction
-- Full data pipeline generation (board → firmware → cloud schema → dashboard spec)
+- Thermal simulation integration (for power dissipation and junction temperature analysis)
+- Analog power electronics: full switching power supply design, battery management systems
+- Multi-objective optimization: "minimize cost, minimize size, maximize reliability" with Pareto front
+- BOM cost optimization across multiple distributors
+- Reliability prediction (MTBF estimation based on component ratings and stress)
+- Full data pipeline generation (board → firmware → cloud schema → dashboard specification)
 
 ---
 
@@ -390,78 +502,55 @@ Deliverables:
 - **FastAPI** — REST API layer, async throughout
 - **Celery + Redis** — async job queue for simulation runs (never block the API thread)
 - **PostgreSQL** — primary database (projects, users, components, audit logs)
-- **ngspice** — physics simulation via subprocess (BSD licensed, legally usable in SaaS)
+- **Qdrant** — vector database for circuit pattern similarity search
+- **pyspice** — Python wrapper for ngspice subprocess
+- **KiCad CLI** — headless schematic and PCB generation via subprocess
 - **Pydantic v2** — IR schema validation (strict mode, no extra fields allowed)
 - **Jinja2** — firmware code templating
-- **slowapi** — rate limiting
 
 ### AI/ML
 - **Claude API (claude-sonnet-4-6)** — primary LLM, used with tool_use/function_calling to enforce JSON output
 - **Anthropic tool use** — forces IR-schema-compliant output, eliminates free-text hallucination
-- **Qdrant (Phase 2+)** — RAG retrieval for datasheet and application note context
+- **pgvector or Qdrant** — RAG retrieval for datasheet and application note context
 
 ### Frontend
 - **Next.js 14** — web application
-- **kicanvas** — browser-native KiCad schematic renderer (open source, no KiCad install required, dynamic import with ssr:false)
+- **kicanvas** — browser-native KiCad schematic renderer (open source, no KiCad install required)
+- **Plotly.js** — simulation waveform visualization
 - **Tailwind CSS** — styling
 
 ### External APIs
-- **Digikey V3 API (Phase 2+)** — component pricing and availability (cached nightly, never called live)
-- **LCSC API (Phase 2+)** — low-cost component alternative pricing
-- **JLCPCB API (Phase 3+)** — Gerber submission and order tracking
+- **Digikey V3 API** — component pricing and availability (cached nightly, never called live)
+- **LCSC API** — low-cost component alternative pricing
+- **JLCPCB API (Phase 2+)** — Gerber submission and order tracking
+- **PCBWay API (Phase 2+)** — alternative fabrication option
 
 ### Infrastructure
 - **Docker + Docker Compose** — containerized services
+- **AWS or GCP** — cloud hosting
 - **GitHub Actions** — CI/CD
 - **Sentry** — error tracking
 - **PostHog** — product analytics (track time-from-prompt-to-valid-design as primary KPI)
 
 ---
 
-## PART 8 — COMPETITIVE POSITION (CORRECTED — Updated 2026)
+## PART 8 — COMPETITIVE POSITION
 
 ### The Landscape
 
-| Tool | What It Actually Does | Your Differentiation |
+| Tool | What It Is | What It Cannot Do |
 |---|---|---|
-| **Flux.ai** | Natural language → PCB recommendations. 750K+ part library. Firmware assistance (pin mappings, init scripts). No integrated SPICE simulation (roadmap, not shipped). | You run physics simulation in the generation loop. You generate complete working firmware, not assistance. |
-| **Celus.io** | High-level requirements → schematic with AI-assisted component selection. Validates compatibility against a database — not physics. No simulation, no firmware, no industrial rule libraries. Exports to your existing EDA tool. | You prove the parts work together with physics. You generate firmware. You own the industrial vertical they ignore. |
-| **Quilter** | Takes a completed schematic (KiCad, Altium, Cadence) and produces a physics-validated PCB layout. Does not generate schematics. Does not take natural language input. No firmware. No simulation. | Not a competitor — a partner. Circuit OS generates the KiCad schematic; Quilter takes it for physics-optimized layout. |
-| **Altium 365** | Enterprise PCB design platform. Manual design only. No AI reasoning. $500+/month. | No natural language input. No simulation loop. No firmware generation. |
-| **ChatGPT / Claude** | General LLM | Will hallucinate circuit values. No simulation. No files. No validation. |
+| Flux.ai | Cloud PCB editor with basic AI autocomplete | Does not understand intent. No simulation loop. No firmware. |
+| Altium 365 | Enterprise PCB design platform | Manual design only. No AI reasoning. $500+/month. |
+| Cadence Allegro | Professional EDA suite | Extremely complex. No AI. No intent-based design. |
+| Celus.io | Automated schematic entry for automotive OEMs | Closed, expensive, no simulation loop, no firmware. |
+| ChatGPT / Claude | General LLM | Will hallucinate circuit values. No simulation. No files. |
 
-### Flux.ai — The Corrected, Detailed Assessment
+### Your Defensible Position
 
-Flux is a real competitor. Not a drawing tool with AI autocomplete. Their documentation (2026): "Copilot isn't operating in a vacuum — it's an AI agent with access to real tools, structured data, and your active design context including schematics, PCB, parts, netlist, and a 750K+ part library." They accept natural language, determine PCB layer count, recommend components, handle interoperability, suggest in-stock alternatives, and provide firmware assistance.
+"The only tool that closes the complete loop: natural language intent → simulation-validated circuit → compiled firmware → manufacture-ready files → iterative editing."
 
-**Where Flux stops and Circuit OS starts:**
-1. **Simulation:** Flux's own 2026 marketing lists simulation as a capability — it appears in their feature roadmap. Their platform today handles schematic generation, component placement, routing, and design rule checks. There is no integrated SPICE physics simulation in their technical documentation. It is on their roadmap. It is not built. That is your clearest differentiator.
-2. **Firmware:** Flux provides firmware assistance — pin mappings, configuration files, initialization scripts based on netlist data. That is not a complete working `.ino` or `.c` file ready to flash. Circuit OS generates the actual code.
-3. **Trust model:** Flux's own documentation advises: "treat it like a fast junior engineer: powerful, but you must review its work. We recommend intermediate PCB experience." Circuit OS simulates, validates, and explains why — so the review has evidence behind it, not just human intuition.
-
-### Celus.io — The Corrected, Detailed Assessment
-
-Celus overlaps with Circuit OS Tier 1 and 2. Their AI-assisted hardware design engine moves from high-level requirements to completed schematics. Their core value is component intelligence — matching specs against a database. Their "validated schematic" means component compatibility is checked, not physics.
-
-**The differentiation from Celus is the physics layer and the industrial vertical.** Celus helps you pick the right parts. Circuit OS proves those parts work together correctly and tells you what will fail and why. Celus exports to your existing EDA tool rather than replacing the workflow. There is no firmware output, no SPICE simulation, no industrial rule libraries, no stateful editing.
-
-### Quilter — The Corrected, Detailed Assessment
-
-Quilter automates PCB placement and routing using physics-driven reinforcement learning. You upload a completed schematic and board file. Quilter understands circuit relationships and generates multiple candidate layouts with physics scorecards. It is genuinely world-class at one thing: taking a completed schematic and producing a physics-validated PCB layout.
-
-**Quilter is not a competitor — it is a workflow partner.** Quilter supports KiCad native files. Circuit OS generates a KiCad schematic. A user takes the Circuit OS output and hands it to Quilter for physics-optimized layout. In Phase 3, Circuit OS adds basic auto-routing for 2–4 layer industrial control boards and recommends Quilter for high-complexity RF or high-speed digital boards.
-
-### The Five Claims No Competitor Can Make
-
-1. **Integrated SPICE physics simulation in the generation loop.** Not planned, not external, not mentioned in a roadmap. Running today. ngspice as part of the pipeline, auto-correcting component choices when simulation fails.
-2. **Complete working firmware.** Not pin mappings, not initialization scripts, not firmware assistance. Working `.ino`, `.c`, Modbus RTU master code. Ready to flash.
-3. **Stateful diff-and-patch editing.** Every other tool either regenerates or requires manual edit. The patch model preserves user customizations across edits. Design history is maintained.
-4. **Consequential explanation.** Flux shows what it did. Circuit OS shows what will happen if the user changes something — with the simulation result as evidence. That distinction is what makes a senior engineer trust the output.
-5. **Industrial and HVAC vertical.** Not a single competitor — Flux, Celus, Quilter, Altium — has RS-485 rule enforcement, 4–20mA circuit generation, DCV board templates, refrigeration control design, or SCADA/RTU board generation. This is the entire uncontested market.
-
-### Corrected One-Sentence Position
-
-**"The only AI hardware tool that simulates before it ships, explains why every decision was made, generates complete firmware, and serves the industrial controls market that every other AI tool ignores."**
+No competitor does all five. That is the wedge.
 
 ### The Moat (What Becomes Harder to Copy Over Time)
 
@@ -477,9 +566,9 @@ Quilter automates PCB placement and routing using physics-driven reinforcement l
 
 ### Pricing Tiers
 
-**Free:** 10 generations per hour, community component library, KiCad export. Purpose: acquire hobbyists and students, build the circuit pattern database.
+**Free:** 50 generations per month, 5 simulation runs, community component library, no export, no version history. Purpose: acquire hobbyists and students, build the circuit pattern database.
 
-**Pro — $49/month:** Unlimited generations, unlimited simulation, BOM with live pricing, Gerber export (Phase 2+), version history. Target: freelance engineers, serious makers, IoT startup founders.
+**Pro — $29/month:** Unlimited generations, unlimited simulation, BOM with live pricing, KiCad export, Gerber export (Phase 2+), version history, 5 projects. Target: freelance engineers, serious makers, IoT startup founders.
 
 **Team — $99/seat/month:** Everything in Pro, private component libraries, team workspace, design review workflow, audit trail, priority support, API access. Minimum 3 seats. Target: small hardware product companies, engineering consultancies.
 
@@ -500,22 +589,19 @@ The ROI dashboard built into the Team/Enterprise tier surfaces these numbers aut
 ## PART 10 — KEY TECHNICAL DECISIONS AND RATIONALE
 
 **Why ngspice instead of LTspice?**
-LTspice is owned by Analog Devices. Its EULA explicitly prohibits commercial redistribution and server-side automation. You cannot legally call LTspice in a SaaS product without a licensing agreement. ngspice is fully open-source (BSD license), SPICE-compatible, scriptable via subprocess. Use ngspice from day one.
+LTspice is owned by Analog Devices. Its EULA explicitly prohibits commercial redistribution and server-side automation. You cannot legally call LTspice in a SaaS product without a licensing agreement that Analog Devices does not grant easily. ngspice is fully open-source (BSD license), SPICE-compatible, scriptable via subprocess, and KiCad has built-in ngspice integration. Use ngspice from day one.
 
 **Why the IR must be strict JSON schema (no free text)?**
-LLMs hallucinate. They will invent resistor values that don't exist in standard series, specify capacitor voltages below the supply rail, write SPICE syntax that ngspice cannot parse. The IR schema enforces physical constraints at the data layer. If the LLM outputs a capacitor with a 3V rating in a 5V circuit, schema validation rejects it before it reaches the simulation. The retry loop re-prompts with the specific violation.
+LLMs hallucinate. They will invent resistor values that don't exist in standard series, specify capacitor voltages below the supply rail, write SPICE syntax that ngspice cannot parse. The IR schema enforces physical constraints at the data layer. If the LLM outputs a capacitor with a 3V rating in a 5V circuit, schema validation rejects it before it reaches the simulation. The retry loop re-prompts with the specific violation. This is the only reliable way to produce correct circuits at scale.
 
 **Why simulation must be the truth, not the LLM's opinion?**
-A language model has no internal physics engine. Simulation runs actual SPICE equations. When simulation says the output voltage is 4.8V not 5V, that is a physics result, not a prediction. The system trusts simulation, not the LLM, for any numerical claim about circuit behavior.
+A language model has no internal physics engine. It has statistical associations between words. It knows "capacitor" appears near "filter" in its training data, but it does not simulate electron flow. Simulation runs actual SPICE equations. When simulation says the output voltage is 4.8V not 5V, that is a physics result, not a prediction. The system trusts simulation, not the LLM, for any numerical claim about circuit behavior.
 
 **Why diff-and-patch editing instead of regeneration?**
-Regeneration destroys user customizations. The patch model applies changes surgically, preserves everything not explicitly modified, and maintains a complete change history. This is the behavior engineers expect from a professional tool.
+If the system regenerates the entire IR on every edit, user customizations are lost. An engineer might manually override a component choice, adjust a pin assignment to match their board constraints, or add a comment to a net. Regeneration destroys all of that. The patch model applies changes surgically, preserves everything not explicitly modified, and maintains a complete change history. This is the behavior engineers expect from a professional tool.
 
 **Why start with Arduino/digital and not jump straight to industrial?**
-Arduino circuits are deterministic and forgiving. This makes it possible to prove the system works and build user trust before tackling analog circuits. The hobbyist market provides volume — thousands of users generating thousands of designs — which builds the circuit pattern database and training flywheel faster than targeting 50 industrial customers first.
-
-**Why static Python lookup table instead of RAG for Phase 1?**
-Datasheet excerpts are 4,000+ tokens each. Embedding 20 components in the system prompt adds 40,000–80,000 tokens per request, exceeds context budget on complex prompts, and costs $0.50–1.00 extra per generation. A Python dict lookup is 0 tokens, 0 latency, 0 cost, and 100% reliable. Qdrant RAG is Phase 2.
+Arduino circuits are deterministic and forgiving. Component values can be off by 20% and the circuit still works. This makes it possible to prove the system works and build user trust before tackling analog circuits where parasitics, layout sensitivity, and noise make simulation accuracy much harder. The hobbyist market also provides volume — thousands of users generating thousands of designs — which builds the circuit pattern database and training flywheel faster than targeting 50 industrial customers first.
 
 ---
 
@@ -528,9 +614,9 @@ An AI assistant for electronics that hobbyists and indie engineers use to build 
 A hardware prototyping platform that engineering teams use as their primary design environment. The market sees it as "Cursor for hardware." Revenue comes from Team and early Enterprise contracts. Value is workflow integration and team productivity.
 
 ### Long Term (Year 3+)
-The standard interface for hardware design. The GCC of physical electronics. Any engineer at any level uses this as their starting point. The market sees it as a new category: Generative Electronic Design Automation (GEDA). Revenue comes from Enterprise contracts and platform fees.
+The standard interface for hardware design. The GCC of physical electronics. Any engineer at any level — from a student building their first sensor to a controls engineer designing an industrial refrigeration rack — uses this as their starting point. The market sees it as a new category: Generative Electronic Design Automation (GEDA). Revenue comes from Enterprise contracts and platform fees. Value is the intelligence layer that no hardware company can afford not to have.
 
-The markets this touches — HVAC controls, building automation, commercial refrigeration, industrial IoT, embedded systems, EV power electronics — collectively represent hundreds of billions of dollars in annual engineering services.
+The markets this touches — HVAC controls, building automation, commercial refrigeration, industrial IoT, embedded systems, EV power electronics — collectively represent hundreds of billions of dollars in annual engineering services. The engineers doing that work today spend enormous amounts of time on the exact repetitive, mistake-prone design work this system automates.
 
 ---
 
@@ -550,4 +636,4 @@ Everything else follows from trust.
 
 ---
 
-*Document version 2.0 — Part 8 competitive position corrected per Flux.ai 2026 technical documentation, Celus.io product review, and Quilter partner assessment. All other sections unchanged from v1.0.*
+*Document version 1.0 — synthesized from all design conversations, architecture sessions, and use case explorations. This is the complete product definition.*

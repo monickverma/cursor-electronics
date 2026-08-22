@@ -1,6 +1,9 @@
 # Master Plan — Circuit OS (from PRODUCT_MASTER.md)
 
-> Source of truth: `PRODUCT_MASTER.md` at project root.
+> Source of truth: `PRODUCT_MASTER.md` at project root — **confirmed canonical
+> 2026-08-22**. The pre-build v1.0 is archived at `docs/PRODUCT_MASTER_v1.md`
+> and must not be built from; it puts freerouting/Gerber/DFM in Phase 3 and
+> prices Pro at $29, both revised deliberately.
 > This file summarises the 5-phase roadmap for agents who need orientation.
 > Never contradict PRODUCT_MASTER.md — if in doubt, read that file.
 
@@ -117,6 +120,22 @@ with the product's central claim still unverified by anyone outside this repo.
 - Simulation waveform viewer (Plotly.js — replaces text-only pass/fail)
 - Component substitution engine
 
+**Sequencing notes (added 2026-08-22):**
+- **Do analog last.** "Basic analog circuits" (op-amps, buck/boost, LDO) is not
+  an increment on Phase 1. Everything validated so far is DC operating point and
+  AC sweep over passive networks; a switching converter needs transient analysis
+  with real device models, and `SimulationGrader` is built around
+  `expected_outputs` per node. PRODUCT_MASTER Part 10 says plainly why Phase 1
+  started digital — that reasoning does not expire when Phase 2 begins.
+- **Free-form generation needs an "out of my depth" signal.** The five templates
+  exist because five that work every time beat twenty that work 60% of the time.
+  Going free-form without a way to detect low confidence trades the reliability
+  story for breadth, which is the one trade this product cannot afford.
+- **The BOM KPI needs a person.** "Within 5% of a manual engineer's component
+  selection" requires a manual engineer to compare against — the same shape as
+  criterion 12, which sat open twelve weeks for exactly that reason. Line the
+  person up early or rewrite the KPI.
+
 **Revenue:** Pro tier at $49/month
 
 **Gating (amended 2026-08-22):** Phase 2 work may start in parallel with Phase 1
@@ -142,6 +161,23 @@ two of five templates. See Guiding Principles and `ROADMAP.md` §7.
 - ~~PCB auto-layout via KiCad freerouting~~ → **built early, see note below** (custom A* engine, not freerouting)
 - Private component libraries per organization
 - Audit trail (ISO 13485/26262 ready)
+
+> **PCB approach, settled 2026-08-22.** `PRODUCT_MASTER.md` Phase 3 says
+> "PCB auto-layout via KiCad freerouting" and `PCB_STRATEGY.md` says "the router
+> is a commodity you should consume, not a product you should build." Those
+> agree. The custom A* engine in `backend/pcb_engine/` was a deviation from both,
+> not a choice between them.
+>
+> So: when Phase 3 begins, integrate freerouting rather than extending the A*
+> engine, and treat the **constraint layer** — net classes, differential pairs
+> and keepouts derived from `SignalType` and `ApplicationClass`, each with a
+> plain-English reason attached — as the differentiating deliverable of this
+> phase. That is the part no competitor can build: Flux has design context but no
+> physics, Quilter receives only a netlist so intent never reaches it. Constraints
+> are portable across routers; routers are not.
+>
+> The existing engine remains experimental and excluded from v0.1.0 — see
+> `PHASE1_COMPLETE.md` §4.
 
 **Revenue:** Team tier at $99/seat/month (min 3 seats)
 

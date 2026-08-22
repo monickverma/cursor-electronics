@@ -339,3 +339,44 @@ are not the differentiator carry 400+ tests. That is an odd risk allocation and
   and that difference is the entire product claim. The panel is a pre-screen and
   a regression metric, not evidence. Marking it as criterion 12 would be the
   quiet devaluation this decision is trying to avoid.
+
+---
+
+## [2026-08-22] PRODUCT_MASTER.md is canonical; Phase 2 is the Validation Engine
+
+**Decision:** The `PRODUCT_MASTER.md` at the repo root is the spec. The
+pre-build v1.0 is archived at `docs/PRODUCT_MASTER_v1.md` and must not be built
+from. Phase 2 is the **Validation Engine**.
+
+**Reason:**
+- Two files named PRODUCT_MASTER.md were in circulation with different roadmaps:
+  v1.0 has Phase 3 = "KiCad Workflow Layer" (freerouting, Gerber, DFM, fab APIs,
+  industrial all bundled) and Pro at $29; the repo copy has Phase 3 =
+  "Industrial Layer" with Gerber/DFM/fab moved to Phase 4, and Pro at $49.
+- The repo copy is the later revision and both changes look deliberate. Moving
+  the industrial vertical earlier and the manufacturing workflow later matches
+  the argument in MENTAL_MODEL.md §9 that industrial rule libraries are the one
+  area no competitor occupies. Reverting to v1.0 would have undone that silently.
+
+**The fork that was not a fork.** An earlier draft of ROADMAP.md claimed
+master_plan.md and PCB_STRATEGY.md described competing Phase 2s. They do not.
+PCB_STRATEGY's routing thesis — "the router is a commodity you should consume,
+not a product you should build" — is what PRODUCT_MASTER Phase 3 already said:
+"PCB auto-layout via KiCad freerouting integration." The custom A* engine in
+backend/pcb_engine/ was a deviation from BOTH documents, not a choice between
+them. ROADMAP.md §5 is corrected.
+
+**Consequence for Phase 3:** integrate freerouting rather than extending the A*
+engine, and treat the constraint layer — net classes, differential pairs and
+keepouts derived from SignalType and ApplicationClass, each carrying a
+plain-English reason — as the differentiating deliverable of that phase. It is
+the piece no competitor can build, because nobody else has intent → IR →
+simulation in one system.
+
+**Risks recorded against Phase 2 rather than discovered later:**
+- Analog (op-amps, buck/boost, LDO) is a different validation problem, not an
+  increment. Sequence it last.
+- Free-form generation needs a low-confidence signal or it trades the
+  reliability story for breadth.
+- The "BOM within 5% of a manual engineer" KPI needs a manual engineer — the
+  same dependency that kept criterion 12 open for twelve weeks.

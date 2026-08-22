@@ -60,11 +60,11 @@ a Phase 2 entry condition.
 
 Step 1 stays worth doing — it is now a Phase 2 gate rather than a Phase 1 one.
 
-### Step 4 — Choose which Phase 2 is Phase 2 · **an afternoon of thinking** · ⬜
+### Step 4 — ~~Choose which Phase 2 is Phase 2~~ · ✅ **done 2026-08-22**
 
-You have two different Phase 2s written down and nothing reconciles them. See
-§5. This decision is worth more than a week of code and costs nothing but
-attention.
+Phase 2 is the Validation Engine. `PRODUCT_MASTER.md` is canonical; the
+pre-build v1.0 is archived at `docs/PRODUCT_MASTER_v1.md`. The apparent conflict
+with `PCB_STRATEGY.md` was not one — see §5.
 
 ### Step 5 — Build it. ⬜
 
@@ -122,36 +122,56 @@ the real fix.
 
 ---
 
-## 5. The fork: which Phase 2 is Phase 2?
+## 5. Phase 2 — settled
 
-Two documents in your own repo describe different next phases, and neither
-mentions the other.
+**Phase 2 is the Validation Engine**, per `PRODUCT_MASTER.md` (confirmed
+canonical 2026-08-22): free-form generation beyond the five templates,
+ESP32/STM32 firmware, live BOM pricing, waveform viewer, version history,
+component substitution, and analog circuits.
 
-| | `master_plan.md` — **Validation Engine** | `PCB_STRATEGY.md` — **Constraint layer** |
-|---|---|---|
-| Thesis | Broaden what it can generate | Own what nobody else can derive |
-| Contents | Free-form generation (15+ circuits), ESP32/STM32, live BOM pricing, Qdrant RAG on datasheets, waveform viewer, version history UI | Net classes and differential pairs exported with a plain-English reason attached, annotated board viewer, KiCad/DSN export for designers |
-| Bet | More users can use it for more things | Fewer users, but nobody can copy it |
-| Risk | Every feature is one a competitor can also build | Might be a rationalisation for not competing on layout |
+### The fork that turned out not to be one
 
-**The case for the constraint layer** (from `PCB_STRATEGY.md`, written
-2026-08-07): your `CircuitIR` already knows that two nets are `rs485_a` and
-`rs485_b` — a differential pair needing matched length, 120Ω termination at both
-physical ends and nowhere else, TVS at the connector. Flux has design context but
-no physics. Quilter only ever receives a netlist, so intent never reaches it.
-Nobody else can derive layout constraints from intent, because nobody else has
-intent → IR → simulation in one system. Constraints are portable across routers;
-routers are not.
+An earlier draft of this file said `master_plan.md` and `PCB_STRATEGY.md`
+described two competing Phase 2s and you had to pick. That was wrong, and it is
+worth understanding why, because the real situation is more useful.
 
-**The case for the Validation Engine**: it is what `PRODUCT_MASTER.md` promises,
-it is what a $49/month tier is actually sold on, and free-form generation beyond
-five templates is the difference between a demo and a product.
+`PCB_STRATEGY.md`'s central routing claim is *"the router is a commodity you
+should consume, not a product you should build."* But `PRODUCT_MASTER.md` Phase 3
+already said **"PCB auto-layout via KiCad freerouting integration."** The two
+documents agree. **The custom A\* engine was a deviation from both of them** — not
+a choice between them.
 
-**An honest reading:** these aren't mutually exclusive, they're differently
-sequenced. The constraint layer is the more defensible bet and the cheaper one to
-start. The Validation Engine is the one users will pay for sooner. Pick based on
-whether the next six months are about **revenue** or about **moat** — and write
-the answer down, because right now the repo argues with itself.
+So nothing is being given up:
+
+| | Where it lands |
+|---|---|
+| Validation Engine — free-form, ESP32, BOM, waveforms | **Phase 2** |
+| freerouting integration instead of extending the A\* engine | **Phase 3** |
+| Constraint layer — net classes and diff pairs with reasons attached | **Phase 3**, as its differentiating deliverable |
+| Existing `pcb_engine` | experimental, excluded from v0.1.0 |
+
+The constraint layer is still the most defensible idea in the repo. It just
+belongs in the phase where PCB work already lives, rather than displacing the
+phase that pays for it.
+
+### Three things to sequence carefully in Phase 2
+
+**Do analog last.** "Op-amps, buck/boost, LDO" is not an increment on what
+Phase 1 validated. Everything so far is DC operating point and AC sweep over
+passive networks; a switching converter needs transient analysis with real
+device models, and the grader is built around `expected_outputs` per node.
+`PRODUCT_MASTER.md` Part 10 explains why Phase 1 started digital — that
+reasoning does not expire when Phase 2 starts.
+
+**Free-form generation needs an "out of my depth" signal.** Five templates exist
+because five that work every time beat twenty that work 60% of the time. Going
+free-form without low-confidence detection trades the reliability story for
+breadth, and reliability is the whole pitch.
+
+**The BOM accuracy KPI needs a person.** "Within 5% of a manual engineer's
+component selection" requires a manual engineer. That is the same shape as
+criterion 12, which sat open for twelve weeks for precisely that reason. Line
+someone up early or rewrite the KPI.
 
 ---
 
