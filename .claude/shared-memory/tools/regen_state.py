@@ -127,13 +127,15 @@ def run(cmd, cwd=None, env=None, timeout=120):
         r = subprocess.run(
             cmd, cwd=cwd or PROJECT_ROOT,
             capture_output=True, text=True, timeout=timeout,
-            env=env or os.environ,
+            env=env or os.environ, encoding="utf-8", errors="replace",
         )
-        return r.returncode, r.stdout, r.stderr
+        return r.returncode, r.stdout or "", r.stderr or ""
     except subprocess.TimeoutExpired:
         return -1, "", "TIMEOUT"
     except FileNotFoundError:
         return -1, "", f"NOT FOUND: {cmd[0]}"
+    except Exception as e:
+        return -1, "", f"ERROR: {e}"
 
 
 def git_commit():
@@ -376,7 +378,7 @@ def main():
     }
 
     state_path = MEMORY_ROOT / "state.json"
-    state_path.write_text(json.dumps(state, indent=2, ensure_ascii=False))
+    state_path.write_text(json.dumps(state, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\n✅  state.json written → {state_path}")
 
     # ── Also run progress_gen ─────────────────────────────────────────────────
