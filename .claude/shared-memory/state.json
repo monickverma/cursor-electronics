@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-22T21:19:41.176196Z",
-  "generated_from_commit": "7bb6507",
+  "generated_at": "2026-08-22T21:20:38.851392Z",
+  "generated_from_commit": "901cc36",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -276,13 +276,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "901cc36 chore: regenerate state.json (11/12 criteria) and fix UTF-8 handling in regen_state.py",
     "7bb6507 memory: let criterion 11 actually pass, and drop resolved blockers",
     "09727c6 chore: update shared memory files and ignore _to_delete folder",
     "c926fe6 test(simulation): add analytical accuracy gate — closes criterion 11",
-    "71cb0fb docs: add PCB_STRATEGY.md — reframe layout around constraints, not routing",
-    "8c86b3e docs: add MENTAL_MODEL.md — single-page picture of the whole project"
+    "71cb0fb docs: add PCB_STRATEGY.md — reframe layout around constraints, not routing"
   ],
-  "last_diff_stat": ".claude/shared-memory/AGENTS.md             |  12 +++\n .claude/shared-memory/plan/current_phase.md |  20 ++++-\n .claude/shared-memory/tools/progress_gen.py |  37 +++++++--\n .claude/shared-memory/tools",
+  "last_diff_stat": ".claude/shared-memory/state.json           | 66 +++++++++++++++++-------------\n .claude/shared-memory/tools/regen_state.py |  8 ++--\n 2 files changed, 43 insertions(+), 31 deletions(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
