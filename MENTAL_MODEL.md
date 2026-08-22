@@ -134,10 +134,15 @@ All of it is roadmap. **Do not imply otherwise in a demo.**
 
 ## 5. Where The Project Actually Stands
 
+A bar drawn here is a *picture* of the progress bar. The bar itself is
+`progress.yaml` and `state.json` — read the fill level there:
+
 ```
-Phase 1 ██████████████████████  see state.json  (11 / 12 as of 2026-08-22)
-Phase 2 ░░░░░░░░░░░░░░░░░░░░░░  not started
+phase1_criteria_done / phase1_criteria_total   → state.json
+verified / total entries                       → progress.yaml
 ```
+
+Phase 2 has not started.
 
 **Phase 1 has been functionally complete since early June.** It has sat unsigned
 for two months because the last two criteria needed things you did not have — an
