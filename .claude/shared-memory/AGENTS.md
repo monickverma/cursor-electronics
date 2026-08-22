@@ -52,6 +52,18 @@ On 2026-08-07 the PCB engine (~2,400 lines) was found to have been invisible for
 A wrong denominator looks like health, which makes it more dangerous than a
 failing test.
 
+**The same rule applies to test files.** `MODULES['test']` and
+`PLANNED['test_file']` both accept a list — a module covered by two test files
+must list both, or the second one earns nothing. And a criterion wired to a test
+file missing from `CRITERIA_TEST_MAP` can never pass, however green that file is:
+on 2026-08-22 criterion 11 was found hardcoded to `⏳` with no path to `✅`, three
+weeks after the plan amended it. Registering a test means adding it to the
+covering module's list, and — if it closes a criterion — to `CRITERIA_TEST_MAP`.
+
+**A criterion met by a substitute gate is `✅*`, never `✅`.** Add its index to
+`SUBSTITUTE_CRITERIA` so the distinction survives into every summary rather than
+depending on someone remembering the footnote.
+
 ---
 
 ## THE SIX LAYERS — WHERE EACH LIVES

@@ -118,7 +118,7 @@ Criterion 12 still needs a human. See Task 3.
 
 ---
 
-## Task 2 — Criterion 11 via Analytical Cross-Check (replaces bench test)
+## Task 2 — Criterion 11 via Analytical Cross-Check (replaces bench test) ✅ DONE 2026-08-22
 
 **Decision 2026-08-07:** no oscilloscope or function generator is available and
 none is expected. The physical bench test is replaced as the Phase 1 gate.
@@ -159,6 +159,22 @@ parasitic capacitance, breadboard contact resistance, or a component behaving
 outside its datasheet. Your public positioning is "simulates before it ships,"
 so when lab access does appear, run the bench test and upgrade the criterion.
 Do not let `met_by_substitute` quietly become `met` in a later summary.
+
+---
+
+**RESULT 2026-08-22 — done.** `tests/test_simulation_accuracy.py`: 34 tests, all
+passing against ngspice-42. Six R/C pairs with cutoffs from 100Hz to 100kHz (81
+sweep points each) plus five divider ratios, every point compared against the
+closed-form transfer function. Worst measured deviation **0.0003%** — the
+residual is ngspice's 7-significant-figure print precision, not disagreement.
+
+Negative controls included: a capacitor wrong by a decade and a divider with the
+wrong ratio must both blow the gate, and are asserted to. Separately verified by
+injecting a 5% error into resistor emission — 13 of the 34 tests fail, while the
+15% grader passes the same error silently. That gap is why the file exists.
+
+Criterion 11 is `met_by_substitute`, tracked as `✅*` by `regen_state.py`. It has
+NOT become `met`. The bench measurement is still owed if lab access appears.
 
 ---
 
@@ -226,7 +242,7 @@ indefinitely. An unlabeled experimental router in a tool whose entire pitch is
 | ~~No test coverage on explainer.py~~ | resolved 2026-08-07 | `tests/test_explainer.py` — 42 tests |
 | ~~No test coverage on patcher.py~~ | resolved 2026-08-07 | `tests/test_patcher.py` — 19 tests, criterion 7 automated |
 | PCB engine untested + unscoped | ~2026-07 | Task 4 — needs a scope decision, not code |
-| No oscilloscope access | 2026-06-02 | **Resolved by substitution** — Task 2 |
+| ~~No oscilloscope access~~ | resolved 2026-08-22 | **Resolved by substitution** — `tests/test_simulation_accuracy.py`, 34 tests |
 | No external engineer identified | 2026-06-02 | Task 3 — still open, needs a person |
 | OpenRouter rate limit (10/hr IP) | 2026-06-02 | 2s delay between calls in test scripts |
 | Memory trackers need manual registration | 2026-08-07 | Register modules in both tools per commit |

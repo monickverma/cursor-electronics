@@ -89,7 +89,7 @@ PLANNED = {
     },
     "generators/spice": {
         "file": "backend/generators/netlist/spice.py",
-        "test_file": "tests/test_simulation.py",
+        "test_file": ["tests/test_simulation.py", "tests/test_simulation_accuracy.py"],
         "entries": [
             ("SpiceNetlistGenerator",          "class",  "CircuitIR → SPICE netlist string"),
             ("SpiceNetlistGenerator.generate", "method", "Main entry: MCU=100Ω, floating→1GΩ tie-down"),
@@ -113,7 +113,7 @@ PLANNED = {
     },
     "simulation/runner": {
         "file": "backend/simulation/runner.py",
-        "test_file": "tests/test_simulation.py",
+        "test_file": ["tests/test_simulation.py", "tests/test_simulation_accuracy.py"],
         "entries": [
             ("NgspiceRunner",     "class",  "Async subprocess wrapper for ngspice"),
             ("NgspiceRunner.run", "method", "async: writes netlist → -o outfile → reads result"),
@@ -121,7 +121,7 @@ PLANNED = {
     },
     "simulation/parser": {
         "file": "backend/simulation/parser.py",
-        "test_file": "tests/test_simulation.py",
+        "test_file": ["tests/test_simulation.py", "tests/test_simulation_accuracy.py"],
         "entries": [
             ("SpiceResultParser",       "class",  "Parses ngspice -b -o output"),
             ("SpiceResultParser.parse", "method", "Handles DC columnar table + AC multi-table complex"),
@@ -357,6 +357,34 @@ def run_tests_by_file() -> dict:
     return file_status
 
 
+# ── Test-file mapping ─────────────────────────────────────────────────────────
+def as_test_list(cfg_test) -> list:
+    """PLANNED['test_file'] accepts None, a single path, or a list of paths."""
+    if cfg_test is None:
+        return []
+    if isinstance(cfg_test, str):
+        return [cfg_test]
+    return list(cfg_test)
+
+
+def aggregate_status(cfg_test, file_status: dict) -> str:
+    """Worst-case status across every test file covering a module.
+
+    Any failure wins; every listed file must be present and passing for the
+    module to read as passing. Crediting a module for one green file while a
+    second is missing is the wrong-denominator failure in miniature.
+    """
+    files = as_test_list(cfg_test)
+    if not files:
+        return "no_test"
+    statuses = [file_status.get(Path(f).name, "no_test") for f in files]
+    if "failing" in statuses:
+        return "failing"
+    if any(st in ("no_test", "empty") for st in statuses):
+        return "no_test"
+    return "passing"
+
+
 # ── Status derivation ─────────────────────────────────────────────────────────
 def derive_status(symbol_key: str, symbols: dict, test_file_status: str) -> str:
     if symbol_key not in symbols:
@@ -415,8 +443,7 @@ def generate():
     for module_key, cfg in PLANNED.items():
         filepath   = PROJECT_ROOT / cfg["file"]
         symbols    = extract_symbols(filepath)
-        test_fname = Path(cfg["test_file"]).name if cfg["test_file"] else None
-        tf_status  = file_status.get(test_fname, "no_test") if test_fname else "no_test"
+        tf_status  = aggregate_status(cfg["test_file"], file_status)
 
         file_entry = {
             "file": cfg["file"],

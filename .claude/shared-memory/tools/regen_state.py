@@ -31,6 +31,11 @@ BACKEND      = PROJECT_ROOT / "backend"
 TESTS        = PROJECT_ROOT / "tests"
 
 # ── Circuit OS Modules to verify ──────────────────────────────────────────────
+#
+# "test" accepts a single path or a list of paths. A module covered by more than
+# one test file must list all of them: a module is only "verified_done" when
+# every listed file passes. Listing one file when two exist understates coverage
+# in exactly the direction that looks like health.
 MODULES = {
     "core/ir_schema":          {"file": "backend/core/ir_schema.py",                "test": "tests/test_ir_schema.py",          "phase": 1},
     "core/ir_validator":       {"file": "backend/core/ir_validator.py",             "test": "tests/test_rule_engine.py",        "phase": 1},
@@ -40,12 +45,18 @@ MODULES = {
     "ai/circuit_reasoner":     {"file": "backend/ai/circuit_reasoner.py",           "test": "tests/test_ai_layer.py",           "phase": 1},
     "ai/patcher":              {"file": "backend/ai/patcher.py",                    "test": "tests/test_patcher.py",            "phase": 1},
     "ai/explainer":            {"file": "backend/ai/explainer.py",                  "test": "tests/test_explainer.py",          "phase": 1},
-    "generators/spice":        {"file": "backend/generators/netlist/spice.py",      "test": "tests/test_simulation.py",         "phase": 1},
+    "generators/spice":        {"file": "backend/generators/netlist/spice.py",      "test": ["tests/test_simulation.py",
+                                                                                             "tests/test_simulation_accuracy.py"], "phase": 1},
     "generators/firmware":     {"file": "backend/generators/firmware/arduino.py",   "test": "tests/test_firmware_generator.py", "phase": 1},
     "generators/kicad":        {"file": "backend/generators/schematic/kicad.py",    "test": "tests/test_schematic_generator.py","phase": 1},
     "generators/bom":          {"file": "backend/generators/bom/compiler.py",       "test": "tests/test_bom.py",                "phase": 1},
-    "simulation/runner":       {"file": "backend/simulation/runner.py",             "test": "tests/test_simulation.py",         "phase": 1},
-    "simulation/parser":       {"file": "backend/simulation/parser.py",             "test": "tests/test_simulation.py",         "phase": 1},
+    "simulation/runner":       {"file": "backend/simulation/runner.py",             "test": ["tests/test_simulation.py",
+                                                                                             "tests/test_simulation_accuracy.py"], "phase": 1},
+    "simulation/parser":       {"file": "backend/simulation/parser.py",             "test": ["tests/test_simulation.py",
+                                                                                             "tests/test_simulation_accuracy.py"], "phase": 1},
+    # grader is deliberately NOT covered by test_simulation_accuracy.py — that
+    # file compares against closed-form equations directly, bypassing the 15%
+    # grader on purpose. Do not add it here.
     "simulation/grader":       {"file": "backend/simulation/grader.py",             "test": "tests/test_simulation.py",         "phase": 1},
     "simulation/monitor":      {"file": "backend/simulation/monitor.py",            "test": None,                               "phase": 1},
     "validation/rule_engine":  {"file": "backend/validation/rule_engine.py",        "test": "tests/test_rule_engine.py",        "phase": 1},
@@ -80,9 +91,18 @@ PHASE1_CRITERIA = [
     "20 prompts — zero crashes",
     "100 requests — zero HTTP 500s",
     "Rate limiting — 11th returns 429",
-    "RC filter bench test (physical hardware)",
+    # Amended 2026-08-07: the original criterion was an oscilloscope bench
+    # measurement at 15%. No lab access exists, so it was replaced by a
+    # closed-form analytical cross-check at 2%. See brain/decisions.md.
+    "Simulation vs closed-form equations ≤2%",
     "External engineer reads explanation",
 ]
+
+# Criteria met by a SUBSTITUTE gate rather than the original one. These render
+# as "✅*" and count toward done, but the asterisk must survive into any summary
+# — criterion 11 validates the netlist generator against mathematics, not
+# against physical reality. Do not let met_by_substitute quietly become met.
+SUBSTITUTE_CRITERIA = {10}
 
 # Which criteria map to which test files (auto-checkable)
 CRITERIA_TEST_MAP = {
@@ -91,7 +111,14 @@ CRITERIA_TEST_MAP = {
     3: ["tests/test_simulation.py"],
     4: ["tests/test_rule_engine.py"],
     5: ["tests/test_firmware_generator.py"],
+    10: ["tests/test_simulation_accuracy.py"],
 }
+
+# Test files consulted when evaluating criteria. A criterion wired to a file
+# missing from this list can never pass, however green the file is.
+CRITERIA_SCAN_FILES = sorted({
+    Path(f).name for files in CRITERIA_TEST_MAP.values() for f in files
+} | {"test_bom.py", "test_ir_schema.py"})
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -141,17 +168,41 @@ def run_tests():
     return {"passed": passed, "failed": failed, "skipped": skipped, "total": total, "raw": text}
 
 
-def get_file_test_status(test_file_rel: str, raw_output: str) -> str:
-    """Returns 'passing', 'failing', or 'no_test' for a test file."""
-    if test_file_rel is None:
-        return "no_test"
+def as_test_list(cfg_test) -> list:
+    """MODULES['test'] accepts None, a single path, or a list of paths."""
+    if cfg_test is None:
+        return []
+    if isinstance(cfg_test, str):
+        return [cfg_test]
+    return list(cfg_test)
+
+
+def single_file_status(test_file_rel: str, raw_output: str) -> str:
+    """Returns 'passing', 'failing', or 'no_test' for one test file."""
     test_name = Path(test_file_rel).name
     lines = raw_output.splitlines()
-    mentioned = any(test_name in line for line in lines)
-    if not mentioned:
+    if not any(test_name in line for line in lines):
         return "no_test"
     has_failures = any("FAILED" in line and test_name in line for line in lines)
     return "failing" if has_failures else "passing"
+
+
+def get_file_test_status(cfg_test, raw_output: str) -> str:
+    """Aggregate status across every test file covering a module.
+
+    Any failure wins; otherwise every listed file must be present and passing.
+    A module whose second test file silently vanished must not keep reporting
+    'passing' on the strength of the first.
+    """
+    files = as_test_list(cfg_test)
+    if not files:
+        return "no_test"
+    statuses = [single_file_status(f, raw_output) for f in files]
+    if "failing" in statuses:
+        return "failing"
+    if any(st == "no_test" for st in statuses):
+        return "no_test"
+    return "passing"
 
 
 # ── Module checker ────────────────────────────────────────────────────────────
@@ -195,32 +246,33 @@ def check_criteria(test_raw: str, modules: dict):
     results = []
     test_files_passing = set()
     # A test file "passes" if it appears in the output AND has no FAILED lines
-    for tf in ["test_auth.py", "test_simulation.py", "test_rule_engine.py",
-               "test_firmware_generator.py", "test_bom.py", "test_ir_schema.py"]:
+    for tf in CRITERIA_SCAN_FILES:
         # Look for the test file path in output — pytest shows e.g. "tests/test_auth.py ...."
         file_mentioned = any(tf in line for line in test_raw.splitlines())
         has_failures = any("FAILED" in line and tf in line for line in test_raw.splitlines())
         if file_mentioned and not has_failures:
             test_files_passing.add(tf)
 
+    # Derived from CRITERIA_TEST_MAP rather than hand-listed, so wiring a new
+    # criterion to a test file is a one-line change in one place.
     auto_pass = {
-        0: "test_auth.py" in test_files_passing,
-        2: "test_simulation.py" in test_files_passing,
-        3: "test_simulation.py" in test_files_passing,
-        4: "test_rule_engine.py" in test_files_passing,
-        5: "test_firmware_generator.py" in test_files_passing,
+        idx: all(Path(f).name in test_files_passing for f in files)
+        for idx, files in CRITERIA_TEST_MAP.items()
     }
 
     for i, criterion in enumerate(PHASE1_CRITERIA):
         if i in auto_pass:
-            status = "✅" if auto_pass[i] else "❌"
+            if not auto_pass[i]:
+                status = "❌"
+            else:
+                status = "✅*" if i in SUBSTITUTE_CRITERIA else "✅"
         elif i in (1, 6, 7, 8, 9):  # verified in previous live session
             status = "✅"
         else:
             status = "⏳"  # physical/human — can't auto-check
         results.append((status, criterion))
 
-    done_count = sum(1 for s, _ in results if s == "✅")
+    done_count = sum(1 for s, _ in results if s.startswith("✅"))
     return results, done_count
 
 
@@ -239,8 +291,14 @@ def read_blockers():
             break
         if in_section and line.startswith("|") and "---" not in line:
             parts = [p.strip() for p in line.split("|") if p.strip()]
-            if parts and parts[0] not in ("Blocker", "Since", ":"):
-                blockers.append(parts[0])
+            if not parts or parts[0] in ("Blocker", "Since", ":"):
+                continue
+            # A blocker struck through (~~like this~~) is resolved. Without this
+            # check the list keeps reporting blockers the plan closed weeks ago,
+            # which is how "No oscilloscope access" survived its own resolution.
+            if parts[0].startswith("~~") and parts[0].endswith("~~"):
+                continue
+            blockers.append(parts[0])
     return blockers
 
 
@@ -293,7 +351,18 @@ def main():
             "skipped": tests["skipped"],
             "total": tests["total"],
         },
-        "phase1_criteria": [{"status": s, "criterion": c} for s, c in criteria],
+        "phase1_criteria": [
+            {
+                "status": s,
+                "criterion": c,
+                "met_by_substitute": i in SUBSTITUTE_CRITERIA and s.startswith("✅"),
+            }
+            for i, (s, c) in enumerate(criteria)
+        ],
+        "phase1_criteria_legend": (
+            "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · "
+            "❌ failing · ⏳ needs a human or physical hardware"
+        ),
         "blockers": blockers,
         "recent_commits": log,
         "last_diff_stat": diff,
@@ -329,7 +398,11 @@ def main():
     print(f"  Commit   : {commit}")
     print(f"  Tests    : {tests['passed']} passing  /  {tests['failed']} failing  /  {tests['skipped']} skipped")
     print(f"  Phase    : 2 — Physical + External Validation")
+    subs = [c for i, (st, c) in enumerate(criteria)
+            if i in SUBSTITUTE_CRITERIA and st.startswith("✅")]
     print(f"  Criteria : {criteria_done}/12 Phase 1 criteria done")
+    for c in subs:
+        print(f"             * {c} — met_by_substitute, NOT met")
     print(f"  Modules  : {done} verified_done  /  {in_progress} untested  /  {not_started} not_started")
     if blockers:
         print(f"  Blockers : {len(blockers)}")
