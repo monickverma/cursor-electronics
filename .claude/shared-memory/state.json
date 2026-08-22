@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-06T22:07:33.107561Z",
-  "generated_from_commit": "1ae8f34",
+  "generated_at": "2026-08-06T22:47:09.124154Z",
+  "generated_from_commit": "8c86b3e",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -266,13 +266,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "8c86b3e docs: add MENTAL_MODEL.md — single-page picture of the whole project",
+    "6eed3a6 memory: re-sync to reality + close patcher/explainer test debt",
     "1ae8f34 Update frontend configs",
     "6fec23e feat(landing): add red DEMO VIDEO button linking to Drive folder",
-    "6b71241 fix(ai): surface all generation attempts and detect truncated tool calls",
-    "b195f47 brain: regen state after PCB-into-API + AI timeout fixes",
-    "9dfacd9 fix(api): bound AI call time and stop them blocking the event loop"
+    "6b71241 fix(ai): surface all generation attempts and detect truncated tool calls"
   ],
-  "last_diff_stat": "frontend/next-env.d.ts        | 2 +-\n frontend/tsconfig.tsbuildinfo | 2 +-\n 2 files changed, 2 insertions(+), 2 deletions(-)",
+  "last_diff_stat": ".claude/shared-memory/AGENTS.md |   5 +\n MENTAL_MODEL.md                 | 326 ++++++++++++++++++++++++++++++++++++++++\n 2 files changed, 331 insertions(+)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

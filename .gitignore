@@ -1,5 +1,6 @@
 # Secrets — NEVER COMMIT
 .env
+_to_delete/
 
 # Python
 __pycache__/
