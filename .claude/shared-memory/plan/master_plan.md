@@ -100,7 +100,13 @@
 
 **Revenue:** Pro tier at $49/month
 
-**Do not start Phase 2 until:** Phase 1 all 12 criteria checked and v0.1.0 tagged.
+**Gating (amended 2026-08-22):** Phase 2 work may start in parallel with Phase 1
+sign-off. It must not displace the criterion 12 outreach or the tag, and nothing
+may ship into the API or UI untested and unlabelled. The original rule barred
+parallel work outright; it was aimed at the wrong variable. The PCB engine did
+not cause harm by being early — it caused harm by being undeclared and untested,
+which on 2026-08-22 turned out to mean a product tab rendering empty boards for
+two of five templates. See Guiding Principles and `ROADMAP.md` §7.
 
 ---
 
@@ -192,7 +198,14 @@ From PRODUCT_MASTER.md Part 8:
 ## Guiding Principles
 
 1. **Test results beat summaries.** If `progress.yaml` says broken, it's broken regardless of what any agent claimed.
-2. **One phase at a time.** Phase 2 does not start until Phase 1 v0.1.0 is tagged.
+2. **Build early if you want — just never invisibly.** *(Amended 2026-08-22;
+   previously "Phase 2 does not start until Phase 1 v0.1.0 is tagged".)* Phase 2
+   work may run in parallel with Phase 1 sign-off. What may not happen is
+   unregistered, untested surface reaching the product. Concretely: nothing
+   displaces the criterion 12 outreach or the tag; every new module is registered
+   in both trackers in the same commit; anything reaching the API or UI before
+   v0.1.0 is either tested or labelled experimental, not neither; and new scope
+   goes into `brain/decisions.md` when it starts. See `ROADMAP.md` §7.
 3. **Append decisions, never delete.** Every tech choice goes to `brain/decisions.md`.
 4. **The explanation layer is the product.** From PRODUCT_MASTER.md Part 12 — this is the most important thing.
 5. **An unregistered module is an invisible module.** Register every new backend

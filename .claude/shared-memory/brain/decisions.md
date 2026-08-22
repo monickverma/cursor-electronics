@@ -272,3 +272,36 @@ on 2026-08-07. The drop reflects better accounting, not a regression. Do not
 **Better fix, deferred:** make the trackers walk `backend/` and auto-discover
 modules so this class of bug cannot recur. Not done yet — it is a larger change
 to the tooling and was out of scope for the re-sync session.
+
+---
+
+## [2026-08-22] Phase gating targets visibility, not timing
+
+**Decision:** Phase 2 work may proceed in parallel with Phase 1 sign-off. The
+rule "Phase 2 does not start until v0.1.0 is tagged" is replaced by four
+conditions: sign-off keeps priority, every new module is registered in both
+trackers in the same commit, anything reaching the API or UI before the tag is
+either tested or labelled experimental, and new scope is recorded here when it
+starts rather than discovered later.
+
+**Reason:**
+- The original rule was written after the PCB engine appeared as undeclared
+  Phase 3 scope during Phase 1. But the damage was not caused by building early.
+  It was caused by ~2,400 lines that were untested, unregistered, and wired into
+  the product UI while `progress.yaml` reported 84.4% verified.
+- On 2026-08-22 that damage became concrete: the first real measurement of the
+  placement pipeline found `footprints.py` had no SMD packages, so every 0402
+  passive was silently dropped. Two of five templates compiled to empty boards.
+  A shipping product tab had been rendering them for two months.
+- A rule that says "don't build" gets ignored the moment someone is excited. A
+  rule that says "register it, test it or label it" is one anyone can follow
+  while still building.
+
+**Consequence:** Phase 1 sign-off (criterion 12 outreach, PCB scope decision,
+v0.1.0 tag) remains the priority queue, but is no longer a barrier to starting
+Phase 2. `ROADMAP.md` §7 carries the user-facing version.
+
+**Open question this does not answer:** which Phase 2 is Phase 2 —
+`master_plan.md`'s Validation Engine or `PCB_STRATEGY.md`'s constraint layer.
+The two documents describe different phases and neither references the other.
+Recorded in `ROADMAP.md` §5 as an explicit decision still owed.
