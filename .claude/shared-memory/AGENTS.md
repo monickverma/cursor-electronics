@@ -83,6 +83,38 @@ depending on someone remembering the footnote.
 
 ---
 
+## ONE OWNER PER FACT
+
+Every drift this project has suffered was a **stale copy**, not a missing check.
+The criteria list was written out in seven files; criterion 11 was amended in
+three of them and not in the one that generates `state.json`. Two
+`PRODUCT_MASTER.md` files disagreed. `MENTAL_MODEL.md` reported 318 tests and
+10/12 for two weeks after both numbers changed.
+
+So: **each fact has exactly one owner. Everywhere else links to it.**
+
+| Fact | Owner | Everywhere else |
+|---|---|---|
+| Phase 1 criteria + their status | `tools/regen_state.py` (`PHASE1_CRITERIA`) → `state.json` | link, never restate |
+| Test counts, verified %, module status | `progress.yaml` + `state.json` (derived) | link, never restate |
+| The 5-phase roadmap | `PRODUCT_MASTER.md` | `master_plan.md` summarises; others link |
+| This session's tasks | `plan/current_phase.md` | link, never restate |
+| Why a choice was made | `brain/decisions.md` | link, never restate |
+| Project file tree | `.claude/CLAUDE.md` | nowhere else |
+
+**Do not write a number into prose that a derived file already carries.** Write
+the pointer. A number in Markdown is correct for one commit and wrong after
+that, and nothing will tell you which state it is in.
+
+The exception is a **snapshot document** — `PHASE1_COMPLETE.md` — where a frozen
+number is the point. Say the date it was frozen.
+
+**Before adding a document, check this table.** If the fact you are about to
+write already has an owner, edit the owner instead. 31 documents is already more
+than this project can keep honest.
+
+---
+
 ## THE SIX LAYERS — WHERE EACH LIVES
 
 ```

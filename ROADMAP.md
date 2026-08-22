@@ -8,9 +8,14 @@
 
 ---
 
+> **Scope of this file.** The multi-phase picture and the order things happen
+> in. The live task list lives in `.claude/shared-memory/plan/current_phase.md`
+> and that file is authoritative — if the two disagree, it wins. Current test
+> counts and criteria status are in `state.json`, not here.
+
 ## 1. Where you are, in four lines
 
-- **Phase 1 is 11 of 12 criteria done.** ~410 tests passing, 0 failing.
+- **Phase 1 is nearly done** — exact criteria and test counts in `state.json`.
 - **The one thing left needs a person**, not code: an engineer reading an
   explanation cold. It has been open since 2026-06-02 — nearly twelve weeks.
 - **The core pipeline is real**: prompt → IR → SPICE + KiCad + firmware + BOM,
