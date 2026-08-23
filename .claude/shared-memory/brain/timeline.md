@@ -67,12 +67,36 @@
 
 **2026-08-07** — Found that `ai/patcher` and `ai/explainer` were reported `untested` partly through mis-registration: 8 unit + 6 live tests already existed in `test_ai_layer.py`, but the trackers mapped both modules to `test_file: None`. Real gap was narrower than reported — no deterministic coverage of `patch()`/`explain()` when ANTHROPIC_API_KEY is absent, which is the default.
 
+**2026-08-22** — Added `tests/test_simulation_accuracy.py` (34 tests): netlist generator compared against closed-form equations across six R/C pairs, 100Hz–100kHz, 2% tolerance. Worst deviation 0.0003%. Closes criterion 11 as `met_by_substitute`.
+
+**2026-08-22** — Found criterion 11 could never pass: index 10 was absent from `CRITERIA_TEST_MAP`, from `auto_pass`, and from the manual tuple in `regen_state.py`, so it fell through to a hardcoded `⏳`. The 2026-08-07 amendment reached three prose files and not the one that writes `state.json`. `auto_pass` is now derived from `CRITERIA_TEST_MAP`; substitute criteria render `✅*` via `SUBSTITUTE_CRITERIA`.
+
+**2026-08-22** — `read_blockers()` was reporting resolved blockers as live; struck-through rows are now skipped. `MODULES['test']` and `PLANNED['test_file']` accept lists, aggregated worst-case, so a module covered by two test files credits both.
+
+**2026-08-22** — Wrote `tests/test_pcb_placement.py` (52 tests) as a placement characterization harness. Its first run found `footprints.py` had no SMD packages at all: every 0402 passive failed the footprint lookup and was dropped by `from_netlist()`. IR_003 and IR_004 compiled to empty boards, and the frontend PCB tab had been rendering them for ~2 months.
+
+**2026-08-22** — Added SMD footprints (0402–1210, SOT-23, SOIC-8/14/16) at IPC-7351B nominal. All five templates now place 100% of components. SMD pads are `rect`, not `th` — `th` means all-layer reachable to the router and skips the DRC layer check. SOIC-8 pin assignment remains arbitrary and warns; per-part pinmaps are the fix.
+
+**2026-08-22** — PCB scope decided: **(b) in scope, experimental, excluded from the v0.1.0 gate**. Endpoint flag and UI label are still outstanding — under (b) the label is the decision.
+
+**2026-08-22** — Criterion 12 moved off the v0.1.0 gate to a Phase 2 entry condition. It was the only criterion depending on a third party's calendar and had been open since 2026-06-02. `PHASE1_COMPLETE.md` written, signing off at 11/12 with the unmet criterion stated on its first page.
+
+**2026-08-22** — `PRODUCT_MASTER.md` at repo root confirmed canonical; the pre-build v1.0 archived to `docs/PRODUCT_MASTER_v1.md`. The two disagreed on Phase 3 (KiCad Workflow Layer vs Industrial Layer) and Pro pricing ($29 vs $49). Phase 2 is the Validation Engine.
+
+**2026-08-22** — `PCB_STRATEGY.md` and `PRODUCT_MASTER.md` were found to agree on routing, not conflict: both say consume freerouting rather than build a router. The custom A* engine was a deviation from both. The constraint layer belongs in Phase 3, where PCB work already lives.
+
+**2026-08-22** — Added a one-owner-per-fact table to `AGENTS.md` after finding the Phase 1 criteria list restated in seven files and `MENTAL_MODEL.md` carrying 318 tests / 10 of 12 two weeks after both changed. Derived numbers removed from prose in favour of pointers to `state.json`.
+
+**2026-08-23** — **Open:** one test in `test_simulation_accuracy.py` is flaky. Regen at `2edfbc8` reported 410 passing / 0 failing; regen at `f5fbd3d` reported 409 / 1 failing with no code change between them. Criterion 11 shows `❌` and `generators/spice`, `simulation/runner`, `simulation/parser` show `broken`. Do not tag v0.1.0 until it is reproducible.
+
 ---
 
 ## Upcoming
 
-**Next** — Criterion 11 via `tests/test_simulation_accuracy.py`: closed-form comparison across 5+ R/C pairs spanning 100Hz–100kHz, 2% tolerance.
+**Next** — Diagnose the flaky accuracy test. Suspected transient ngspice subprocess failure (~20 launches per run, 30s timeout, output read immediately after return). An infrastructure hiccup may be retried; an accuracy disagreement never may.
 
-**Then** — Criterion 12: external engineer cold-reads a DHT22 explanation. Do this after the explainer tests exist.
+**Then** — PCB endpoint behind a config flag and the frontend tab labelled experimental, completing decision (b).
 
-**Then** — Scope decision on the PCB engine (in-scope tested / experimental behind a flag / deferred to Phase 3), then `PHASE1_COMPLETE.md` and tag v0.1.0.
+**Then** — `regen_state.py`, confirm `PHASE1_COMPLETE.md` matches, tag v0.1.0.
+
+**Phase 2 entry** — Criterion 12: external engineer cold-reads a DHT22 explanation. `CRITERION_12_REVIEW.md` has the protocol.
