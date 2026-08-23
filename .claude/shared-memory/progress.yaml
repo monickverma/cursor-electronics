@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-08-06T22:47:21.087893Z'
+generated_at: '2026-08-23T08:40:05.197887Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -155,7 +155,9 @@ files:
   generators/spice:
     file: backend/generators/netlist/spice.py
     exists: true
-    test_file: tests/test_simulation.py
+    test_file: &id001
+    - tests/test_simulation.py
+    - tests/test_simulation_accuracy.py
     test_file_status: passing
     entries:
       SpiceNetlistGenerator:
@@ -165,14 +167,14 @@ files:
           string.
         signature: null
         line: 41
-        test_file: tests/test_simulation.py
+        test_file: *id001
       SpiceNetlistGenerator.generate:
         status: verified_done
         type: method
         description: 'Main entry: MCU=100Ω, floating→1GΩ tie-down'
         signature: 'SpiceNetlistGenerator.generate(ir: CircuitIR) -> str'
         line: 44
-        test_file: tests/test_simulation.py
+        test_file: *id001
     module_status: done
   generators/firmware:
     file: backend/generators/firmware/arduino.py
@@ -219,7 +221,9 @@ files:
   simulation/runner:
     file: backend/simulation/runner.py
     exists: true
-    test_file: tests/test_simulation.py
+    test_file: &id002
+    - tests/test_simulation.py
+    - tests/test_simulation_accuracy.py
     test_file_status: passing
     entries:
       NgspiceRunner:
@@ -227,20 +231,22 @@ files:
         type: class
         description: Runs ngspice in batch mode (-b) and returns (stdout, stderr).
         signature: null
-        line: 29
-        test_file: tests/test_simulation.py
+        line: 30
+        test_file: *id002
       NgspiceRunner.run:
         status: verified_done
         type: method
         description: 'async: writes netlist → -o outfile → reads result'
         signature: 'NgspiceRunner.run(netlist: str) -> dict'
-        line: 38
-        test_file: tests/test_simulation.py
+        line: 39
+        test_file: *id002
     module_status: done
   simulation/parser:
     file: backend/simulation/parser.py
     exists: true
-    test_file: tests/test_simulation.py
+    test_file: &id003
+    - tests/test_simulation.py
+    - tests/test_simulation_accuracy.py
     test_file_status: passing
     entries:
       SpiceResultParser:
@@ -250,14 +256,14 @@ files:
           dicts.
         signature: null
         line: 39
-        test_file: tests/test_simulation.py
+        test_file: *id003
       SpiceResultParser.parse:
         status: verified_done
         type: method
         description: Handles DC columnar table + AC multi-table complex
         signature: 'SpiceResultParser.parse(stdout: str, stderr: str) -> SimulationData'
         line: 42
-        test_file: tests/test_simulation.py
+        test_file: *id003
     module_status: done
   simulation/grader:
     file: backend/simulation/grader.py
@@ -413,34 +419,34 @@ files:
   pcb_engine/compile_board:
     file: backend/pcb_engine/compile_board.py
     exists: true
-    test_file: null
-    test_file_status: no_test
+    test_file: tests/test_pcb_placement.py
+    test_file_status: passing
     entries:
       from_netlist:
-        status: untested
+        status: verified_done
         type: function
         description: Returns (board, warnings). Unknown packages are reported, not
           guessed.
         signature: 'from_netlist(nl: dict) -> tuple[Board, list[str]]'
         line: 43
-        test_file: null
+        test_file: tests/test_pcb_placement.py
       place_constructive:
-        status: untested
+        status: verified_done
         type: function
         description: Seed with the largest package, then insert each part at the legal
           grid
         signature: 'place_constructive(b: Board, margin: float, step: float) -> Board'
         line: 121
-        test_file: null
+        test_file: tests/test_pcb_placement.py
       compile_board:
-        status: untested
+        status: verified_done
         type: function
         description: 'Main entry: netlist → placed + routed board'
         signature: 'compile_board(netlist: dict, candidates: int, theme: str, grid:
           float) -> Result'
         line: 183
-        test_file: null
-    module_status: in_progress
+        test_file: tests/test_pcb_placement.py
+    module_status: done
   pcb_engine/router:
     file: backend/pcb_engine/router.py
     exists: true
@@ -526,33 +532,33 @@ files:
   pcb_engine/footprints:
     file: backend/pcb_engine/footprints.py
     exists: true
-    test_file: null
-    test_file_status: no_test
+    test_file: tests/test_pcb_placement.py
+    test_file_status: passing
     entries:
       normalize_package:
-        status: untested
+        status: verified_done
         type: function
         description: Package string → canonical form
         signature: 'normalize_package(pkg: str | None) -> str | None'
-        line: 111
-        test_file: null
+        line: 168
+        test_file: tests/test_pcb_placement.py
       guess:
-        status: untested
+        status: verified_done
         type: function
         description: Best-effort package from a part number. None when unsure — never
           a guess
         signature: 'guess(mpn: str, npins: int | None) -> str | None'
-        line: 129
-        test_file: null
+        line: 194
+        test_file: tests/test_pcb_placement.py
       build:
-        status: untested
+        status: verified_done
         type: function
         description: Instantiate a footprint and bind nets to its pins.
         signature: 'build(ref: str, package: str, netlist_pins: dict[str, str], x:
           float, y: float, warnings: list[str] | None) -> Component'
-        line: 200
-        test_file: null
-    module_status: in_progress
+        line: 283
+        test_file: tests/test_pcb_placement.py
+    module_status: done
   pcb_engine/render_pretty:
     file: backend/pcb_engine/render_pretty.py
     exists: true
@@ -571,24 +577,24 @@ files:
   generators/pcb_netlist:
     file: backend/generators/netlist/pcb.py
     exists: true
-    test_file: null
-    test_file_status: no_test
+    test_file: tests/test_pcb_placement.py
+    test_file_status: passing
     entries:
       PcbNetlistGenerator:
-        status: untested
+        status: verified_done
         type: class
         description: Translates CircuitIR into the JSON format expected by compile_board.py.
         signature: null
         line: 7
-        test_file: null
+        test_file: tests/test_pcb_placement.py
       PcbNetlistGenerator.generate:
-        status: untested
+        status: verified_done
         type: method
         description: 'Main entry: feeds pcb_engine.compile_board'
         signature: 'PcbNetlistGenerator.generate(ir: CircuitIR) -> Dict[str, Any]'
         line: 10
-        test_file: null
-    module_status: in_progress
+        test_file: tests/test_pcb_placement.py
+    module_status: done
   api/routes/pcb:
     file: backend/api/routes/pcb.py
     exists: true
@@ -605,9 +611,9 @@ files:
     module_status: in_progress
 summary:
   entries_total: 60
-  entries_verified_done: 34
+  entries_verified_done: 42
   entries_broken: 0
   entries_stub: 0
-  entries_untested: 26
+  entries_untested: 18
   entries_not_started: 0
-  pct_verified: 56.7
+  pct_verified: 70.0

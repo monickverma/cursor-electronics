@@ -1,15 +1,15 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-22T23:45:38.948914Z",
-  "generated_from_commit": "2edfbc8",
+  "generated_at": "2026-08-23T08:38:57.918222Z",
+  "generated_from_commit": "4ac5f32",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
     "current": 2,
     "name": "Physical + External Validation",
     "status": "in_progress",
-    "phase1_criteria_done": 10,
+    "phase1_criteria_done": 11,
     "phase1_criteria_total": 12
   },
   "modules": {
@@ -62,10 +62,10 @@
       "test_status": "passing"
     },
     "generators/spice": {
-      "status": "broken",
+      "status": "verified_done",
       "file": "backend/generators/netlist/spice.py",
       "exists": true,
-      "test_status": "failing"
+      "test_status": "passing"
     },
     "generators/firmware": {
       "status": "verified_done",
@@ -86,16 +86,16 @@
       "test_status": "passing"
     },
     "simulation/runner": {
-      "status": "broken",
+      "status": "verified_done",
       "file": "backend/simulation/runner.py",
       "exists": true,
-      "test_status": "failing"
+      "test_status": "passing"
     },
     "simulation/parser": {
-      "status": "broken",
+      "status": "verified_done",
       "file": "backend/simulation/parser.py",
       "exists": true,
-      "test_status": "failing"
+      "test_status": "passing"
     },
     "simulation/grader": {
       "status": "verified_done",
@@ -201,8 +201,8 @@
     }
   },
   "test_summary": {
-    "passed": 409,
-    "failed": 1,
+    "passed": 410,
+    "failed": 0,
     "skipped": 22,
     "total": 410
   },
@@ -258,9 +258,9 @@
       "met_by_substitute": false
     },
     {
-      "status": "❌",
+      "status": "✅*",
       "criterion": "Simulation vs closed-form equations ≤2%",
-      "met_by_substitute": false
+      "met_by_substitute": true
     },
     {
       "status": "⏳",
@@ -276,13 +276,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "2edfbc8 chore: update state.json for commit 8fa7d08",
-    "8fa7d08 docs: settle the canonical spec and Phase 2 — and correct a fork I invented",
-    "6d7559b docs: PHASE1_COMPLETE.md — tag v0.1.0 at 11/12, criterion 12 off the gate",
-    "fb7717f feat(scripts): agent review panel with an ablation control",
-    "75d0b26 feat(scripts): capture a real /design/generate response to JSON"
+    "4ac5f32 fix(simulation): ngspice runner discarded its own errors and raced its output file",
+    "7cf7d85 brain: drop the third copy of the substitute-criteria rule from AGENTS.md",
+    "9ba8be3 brain: append 2026-08-22 to timeline.md",
+    "1a28de6 memory: the drawn bar was still a hardcoded number",
+    "2d1061f memory: one owner per fact — stop duplicating instead of adding a checker"
   ],
-  "last_diff_stat": ".claude/shared-memory/state.json | 34 +++++++++++++++++-----------------\n 1 file changed, 17 insertions(+), 17 deletions(-)",
+  "last_diff_stat": "backend/simulation/runner.py      | 66 +++++++++++++++++++++++++++++++++------\n tests/test_simulation_accuracy.py | 11 ++++++-\n 2 files changed, 67 insertions(+), 10 deletions(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
