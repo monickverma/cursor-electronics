@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from typing import Tuple
 
@@ -39,6 +40,38 @@ class NgspiceRunner:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self._run_sync, netlist)
 
+    # The process exiting does not mean its output file is readable yet. On
+    # Windows an on-access AV scan can hold a freshly written file open for a
+    # few tens of milliseconds, so a read immediately after `subprocess.run`
+    # returns can see the file missing, empty, or half-written. That surfaces as
+    # a simulation that produced no data, with nothing to say why.
+    _READ_ATTEMPTS = 6
+    _READ_DELAY_S = 0.05
+
+    def _read_settled(self, path: Path) -> str:
+        """Read `path` once its size has stopped changing.
+
+        Returns "" only if the file genuinely never appeared — not because we
+        looked too early.
+        """
+        last_size = -1
+        for _ in range(self._READ_ATTEMPTS):
+            if path.exists():
+                size = path.stat().st_size
+                if size > 0 and size == last_size:
+                    try:
+                        return path.read_text(encoding="utf-8", errors="replace")
+                    except PermissionError:
+                        pass          # still locked; fall through and retry
+                last_size = size
+            time.sleep(self._READ_DELAY_S)
+        if path.exists():
+            try:
+                return path.read_text(encoding="utf-8", errors="replace")
+            except PermissionError:
+                return ""
+        return ""
+
     def _run_sync(self, netlist: str) -> dict:
         # ngspice_con on Windows writes to the console handle, not stdout pipe.
         # Use -o <outfile> to capture all output to a file instead.
@@ -49,13 +82,28 @@ class NgspiceRunner:
             tmp_path = Path(f.name)
         out_path = tmp_path.with_suffix(".out")
         try:
-            subprocess.run(
-                [_NGSPICE_CMD, "-b", "-o", str(out_path), str(tmp_path)],
-                capture_output=True,  # suppress any direct console writes
-                timeout=self._TIMEOUT_SECONDS,
-            )
-            stdout = out_path.read_text(encoding="utf-8", errors="replace") if out_path.exists() else ""
-            return {"stdout": stdout, "stderr": ""}
+            try:
+                proc = subprocess.run(
+                    [_NGSPICE_CMD, "-b", "-o", str(out_path), str(tmp_path)],
+                    capture_output=True,  # suppress any direct console writes
+                    timeout=self._TIMEOUT_SECONDS,
+                )
+                rc = proc.returncode
+                # ngspice's own console output was being captured and discarded,
+                # so a failed run produced an empty result and no explanation.
+                err = (proc.stderr or b"").decode("utf-8", "replace")
+            except subprocess.TimeoutExpired:
+                rc, err = -1, (
+                    f"ngspice exceeded {self._TIMEOUT_SECONDS}s and was killed"
+                )
+            stdout = self._read_settled(out_path)
+            return {"stdout": stdout, "stderr": err, "returncode": rc}
         finally:
-            tmp_path.unlink(missing_ok=True)
-            out_path.unlink(missing_ok=True)
+            # Cleanup must never fail a simulation that already succeeded — on
+            # Windows an unlink can raise PermissionError on a file still held
+            # by a scanner.
+            for pth in (tmp_path, out_path):
+                try:
+                    pth.unlink(missing_ok=True)
+                except OSError:
+                    pass

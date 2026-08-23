@@ -182,8 +182,17 @@ def run_ir(ir: CircuitIR) -> SimulationData:
     netlist = SpiceNetlistGenerator().generate(ir)
     result = asyncio.run(NgspiceRunner().run(netlist))
     data = SpiceResultParser().parse(result["stdout"], result["stderr"])
+    # A bare "no output" assertion is unactionable, and this file was observed
+    # failing once and passing once on identical code (2026-08-22/23). Whatever
+    # the cause, the next occurrence must say what it was rather than leaving
+    # someone to guess between a netlist bug and a subprocess hiccup.
     assert data.ac_points or data.dc_voltages, (
-        "ngspice produced no parseable output. Netlist was:\n" + netlist
+        "ngspice produced no parseable output — this is an infrastructure "
+        "failure, not an accuracy failure.\n"
+        f"  exit code : {result.get('returncode')}\n"
+        f"  stderr    : {(result.get('stderr') or '(empty)')[:400]}\n"
+        f"  stdout len: {len(result.get('stdout') or '')} chars\n"
+        f"  netlist:\n{netlist}"
     )
     return data
 
