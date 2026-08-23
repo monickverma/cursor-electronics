@@ -77,10 +77,6 @@ on 2026-08-22 criterion 11 was found hardcoded to `⏳` with no path to `✅`, t
 weeks after the plan amended it. Registering a test means adding it to the
 covering module's list, and — if it closes a criterion — to `CRITERIA_TEST_MAP`.
 
-**A criterion met by a substitute gate is `✅*`, never `✅`.** Add its index to
-`SUBSTITUTE_CRITERIA` so the distinction survives into every summary rather than
-depending on someone remembering the footnote.
-
 ---
 
 ## ONE OWNER PER FACT
