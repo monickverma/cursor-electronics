@@ -20,6 +20,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 from api.routes.auth import get_current_user
+from core.config import settings
 from middleware.rate_limit import limiter
 from pcb_engine import compile_board
 
@@ -61,6 +62,15 @@ async def compile_pcb(
     body: CompileRequest,
     user=Depends(get_current_user),
 ):
+    if not settings.pcb_engine_enabled:
+        # 501, not 404: the endpoint exists and the client is not at fault —
+        # this build simply does not offer it. 404 would read as a wrong URL
+        # and send the caller looking for a typo.
+        raise HTTPException(
+            501,
+            detail="PCB layout is experimental and disabled in this build.",
+        )
+
     netlist: dict[str, Any] = body.model_dump(exclude_none=True)
 
     if not netlist.get("components"):

@@ -130,6 +130,32 @@ export default function PCBViewer({ netlist, token }: Props) {
           </div>
         )}
 
+        {/* Every component was dropped. The engine still returns a valid SVG —
+            an empty board renders as a plain rectangle and reads as success,
+            which is exactly how this went unnoticed. Say so explicitly. */}
+        {data && !loading && !error && data.stats?.components === 0 && (
+          <div
+            style={{
+              maxWidth: 480,
+              marginBottom: '1rem',
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--r-md)',
+              background: '#2a2214',
+              border: '1px solid #a16207',
+              color: '#fde68a',
+              textAlign: 'center',
+            }}
+          >
+            <h3 style={{ fontSize: 'var(--h5)', marginBottom: '0.4rem', color: '#fbbf24' }}>
+              Empty board — no components placed
+            </h3>
+            <p style={{ fontSize: 'var(--body-xs)', lineHeight: 1.6 }}>
+              Every component was dropped before layout. See the warnings below
+              for which parts and why.
+            </p>
+          </div>
+        )}
+
         {data?.svg && !loading && (
           <div
             id="pcb-panel"
@@ -139,9 +165,11 @@ export default function PCBViewer({ netlist, token }: Props) {
         )}
       </div>
 
-      {/* Warnings footer */}
+      {/* Warnings footer — open by default. A warning here means the board on
+          screen is not the board that was asked for; collapsed, that reads as
+          no warning at all. */}
       {data?.warnings && data.warnings.length > 0 && (
-        <details className="border-t border-border-dark" style={{ background: '#141414' }}>
+        <details open className="border-t border-border-dark" style={{ background: '#141414' }}>
           <summary className="px-4 py-2 text-xs text-amber-400 cursor-pointer hover:text-amber-300 select-none">
             PCB Engine Warnings ({data.warnings.length})
           </summary>

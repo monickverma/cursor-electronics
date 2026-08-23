@@ -18,7 +18,7 @@ type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'schematic',  label: 'Schematic' },
-  { id: 'pcb',        label: 'PCB' },
+  { id: 'pcb',        label: 'PCB (experimental)' },
   { id: 'firmware',   label: 'Firmware' },
   { id: 'simulation', label: 'Simulation' },
   { id: 'bom',        label: 'BOM' },

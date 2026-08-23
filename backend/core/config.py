@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # The PCB engine was pulled forward from Phase 3 and is experimental: its
+    # placement is tested, its routing is not, and it silently drops components
+    # it has no footprint for. Scope decision 2026-08-22 excludes it from the
+    # v0.1.0 gate, so it ships off by default — a build that has not opted in
+    # should not expose an untested surface. Set PCB_ENGINE_ENABLED=true to
+    # develop against it.
+    pcb_engine_enabled: bool = False
+
     @property
     def broker_url(self) -> str:
         return self.celery_broker_url or self.redis_url
