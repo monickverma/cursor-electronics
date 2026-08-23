@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-23T08:38:57.918222Z",
-  "generated_from_commit": "4ac5f32",
+  "generated_at": "2026-08-23T08:53:51.351749Z",
+  "generated_from_commit": "4bb2e84",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -276,13 +276,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "4bb2e84 regen state",
     "4ac5f32 fix(simulation): ngspice runner discarded its own errors and raced its output file",
     "7cf7d85 brain: drop the third copy of the substitute-criteria rule from AGENTS.md",
     "9ba8be3 brain: append 2026-08-22 to timeline.md",
-    "1a28de6 memory: the drawn bar was still a hardcoded number",
-    "2d1061f memory: one owner per fact — stop duplicating instead of adding a checker"
+    "1a28de6 memory: the drawn bar was still a hardcoded number"
   ],
-  "last_diff_stat": "backend/simulation/runner.py      | 66 +++++++++++++++++++++++++++++++++------\n tests/test_simulation_accuracy.py | 11 ++++++-\n 2 files changed, 67 insertions(+), 10 deletions(-)",
+  "last_diff_stat": ".claude/shared-memory/progress.yaml | 92 ++++++++++++++++++++-----------------\n .claude/shared-memory/state.json    | 38 +++++++--------\n 2 files changed, 68 insertions(+), 62 deletions(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

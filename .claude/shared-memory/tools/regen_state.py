@@ -20,8 +20,18 @@ import json
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# This script prints emoji. On Windows the console encoding is cp1252, which
+# cannot encode them, so an unguarded run dies with UnicodeEncodeError before
+# writing anything — the failure looks like a broken script rather than a
+# broken terminal. Force UTF-8 here so no caller has to remember
+# PYTHONIOENCODING=utf-8.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 TOOLS_DIR    = Path(__file__).parent
