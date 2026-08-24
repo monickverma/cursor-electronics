@@ -1,7 +1,17 @@
-# Current Phase: Phase 1 Sign-off — Test Debt + Substitute Validation
+# Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-08-07 (re-sync session — previous update was 2026-06-02, two months stale)
+> Last updated: 2026-08-25 (Phase 1 closed; Phase 2 opened)
+>
+> **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
+> substitute, criterion 12 deferred with a trigger. Neither is met — see
+> `state.json` for status and `brain/decisions.md` for why. Phase 2 is the
+> Validation Engine per `PRODUCT_MASTER.md`.
+>
+> **The Phase 1 tasks below are kept, not archived.** Task 3 is deferred with a
+> live trigger and Task 4 is closed; the rest record how Phase 1 finished. The
+> next planner should write Phase 2 tasks above this line rather than editing
+> history underneath it.
 >
 > Context: Phase 1 software is done. Since the last memory update the project also
 > shipped a PCB layout engine (Phase 3 scope, pulled forward) and deployed to Railway.
@@ -114,7 +124,8 @@ the patcher invariant. Both are now closed.
 
 Still open and NOT closed by this work: whether an explanation is actually
 *good*. Keyword checks catch a prompt regression, not a quality regression.
-Criterion 12 still needs a human. See Task 3.
+Criterion 12 still needs a human — deferred 2026-08-25 with a trigger, not
+done. See Task 3.
 
 ---
 
@@ -178,11 +189,20 @@ NOT become `met`. The bench measurement is still owed if lab access appears.
 
 ---
 
-## Task 3 — External Engineer Review (Criterion 12) — MOVED TO PHASE 2
+## Task 3 — External Engineer Review (Criterion 12) — DEFERRED WITH A TRIGGER
 
+> **Amended again 2026-08-25.** No longer a Phase 2 entry condition either —
+> holding Phase 2's start against a third party's calendar reproduces the same
+> problem one phase later. It is deferred with a **trigger: before the first
+> external user is shown a generated explanation**, whichever comes first
+> between a public launch, a demo to a prospect, or onboarding anyone outside
+> this repo. See `brain/decisions.md` [2026-08-25].
+>
+> Deferred is not dropped. If the trigger fires and this has not been done, it
+> is blocking at that moment — that is the whole point of naming one.
+>
 > **Amended 2026-08-22.** This no longer blocks v0.1.0. It gated the tag on
 > another person's availability, which is why it stayed open for twelve weeks.
-> It is now a Phase 2 entry condition, tracked as openly unmet.
 >
 > The work below is unchanged and still worth doing — `CRITERION_12_REVIEW.md`
 > has the protocol and scoring sheet, `outreach-messages.md` has the messages.
@@ -280,7 +300,7 @@ footer by default and shows an explicit banner when zero components placed.
 | ~~No test coverage on patcher.py~~ | resolved 2026-08-07 | `tests/test_patcher.py` — 19 tests, criterion 7 automated |
 | PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`) | ~2026-07 | Narrowed 2026-08-24. Scope and labelling are closed by Task 4 (PR #1); placement and `api/routes/pcb` are tested. Routing quality is not, and per `.claude/CLAUDE.md` the fix is freerouting in Phase 3, not tests for these 2,400 lines |
 | ~~No oscilloscope access~~ | resolved 2026-08-22 | **Resolved by substitution** — `tests/test_simulation_accuracy.py`, 34 tests |
-| No external engineer identified | 2026-06-02 | Task 3 — still open, needs a person |
+| ~~No external engineer identified~~ | deferred 2026-08-25 | Not resolved — **deferred with a trigger**: before the first external user sees a generated explanation. Task 3, and `brain/decisions.md` [2026-08-25]. Struck here so it stops reading as work in flight; it is not struck because it is done |
 | OpenRouter rate limit (10/hr IP) | 2026-06-02 | 2s delay between calls in test scripts |
 | Memory trackers need manual registration | 2026-08-07 | Register modules in both tools per commit |
 

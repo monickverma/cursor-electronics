@@ -114,6 +114,18 @@ PHASE1_CRITERIA = [
 # against physical reality. Do not let met_by_substitute quietly become met.
 SUBSTITUTE_CRITERIA = {10}
 
+# Criteria DEFERRED out of Phase 1 with a named reopening trigger. These render
+# as "⏭" and do NOT count toward done — Phase 1 closes at 11/12 with one
+# deferred, not at 12/12. The distinction from SUBSTITUTE_CRITERIA matters: a
+# substitute criterion was met by a different gate, a deferred one was not met
+# at all. Collapsing the two would be the quiet devaluation that
+# brain/decisions.md [2026-08-22] "Criterion 12 moved off the v0.1.0 gate"
+# spends a page refusing.
+#
+# The trigger is what stops "deferred" from meaning "dropped". It is recorded in
+# brain/decisions.md, not here — this set only needs to know which index.
+DEFERRED_CRITERIA = {11}
+
 # Which criteria map to which test files (auto-checkable)
 CRITERIA_TEST_MAP = {
     0: ["tests/test_auth.py"],
@@ -273,7 +285,9 @@ def check_criteria(test_raw: str, modules: dict):
     }
 
     for i, criterion in enumerate(PHASE1_CRITERIA):
-        if i in auto_pass:
+        if i in DEFERRED_CRITERIA:
+            status = "⏭"   # deferred with a trigger — not met, not counted
+        elif i in auto_pass:
             if not auto_pass[i]:
                 status = "❌"
             else:
@@ -349,12 +363,19 @@ def main():
         "generated_from_commit": commit,
         "project": "Circuit OS",
         "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
+        # Phase 2 is the Validation Engine, per PRODUCT_MASTER.md — declared
+        # canonical in brain/decisions.md [2026-08-22]. It was previously named
+        # "Physical + External Validation" here, which described the leftover
+        # Phase 1 gates rather than a phase: criterion 11 is met by substitute
+        # and criterion 12 is deferred, so that name now has no content.
         "phase": {
             "current": 2,
-            "name": "Physical + External Validation",
-            "status": "in_progress" if criteria_done < 12 else "done",
+            "name": "Validation Engine",
+            "status": "in_progress",
+            "phase1_status": "closed_with_deferral",
             "phase1_criteria_done": criteria_done,
             "phase1_criteria_total": 12,
+            "phase1_criteria_deferred": sorted(DEFERRED_CRITERIA),
         },
         "modules": {k: {kk: vv for kk, vv in v.items() if kk != "test_file"} for k, v in modules.items()},
         "test_summary": {
@@ -409,12 +430,18 @@ def main():
     print(f"  Project  : Circuit OS  (AI hardware compiler: NL → circuit + firmware)")
     print(f"  Commit   : {commit}")
     print(f"  Tests    : {tests['passed']} passing  /  {tests['failed']} failing  /  {tests['skipped']} skipped")
-    print(f"  Phase    : 2 — Physical + External Validation")
+    print(f"  Phase    : 2 — Validation Engine")
     subs = [c for i, (st, c) in enumerate(criteria)
             if i in SUBSTITUTE_CRITERIA and st.startswith("✅")]
-    print(f"  Criteria : {criteria_done}/12 Phase 1 criteria done")
+    deferred = [c for i, (st, c) in enumerate(criteria) if i in DEFERRED_CRITERIA]
+    print(f"  Criteria : {criteria_done}/12 Phase 1 done, {len(deferred)} deferred")
     for c in subs:
         print(f"             * {c} — met_by_substitute, NOT met")
+    # The asterisk convention exists so a substitute cannot pass as met. A
+    # deferral needs the same protection, and more of it: it was not met by any
+    # gate at all.
+    for c in deferred:
+        print(f"             ⏭ {c} — DEFERRED, not met. Trigger in decisions.md")
     print(f"  Modules  : {done} verified_done  /  {in_progress} untested  /  {not_started} not_started")
     if blockers:
         print(f"  Blockers : {len(blockers)}")

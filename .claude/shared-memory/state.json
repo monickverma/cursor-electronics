@@ -1,16 +1,20 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-24T19:54:06.787331Z",
-  "generated_from_commit": "2bd73c8",
+  "generated_at": "2026-08-24T20:22:09.073311Z",
+  "generated_from_commit": "cec1a25",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
     "current": 2,
-    "name": "Physical + External Validation",
+    "name": "Validation Engine",
     "status": "in_progress",
+    "phase1_status": "closed_with_deferral",
     "phase1_criteria_done": 11,
-    "phase1_criteria_total": 12
+    "phase1_criteria_total": 12,
+    "phase1_criteria_deferred": [
+      11
+    ]
   },
   "modules": {
     "core/ir_schema": {
@@ -263,7 +267,7 @@
       "met_by_substitute": true
     },
     {
-      "status": "⏳",
+      "status": "⏭",
       "criterion": "External engineer reads explanation",
       "met_by_substitute": false
     }
@@ -271,18 +275,17 @@
   "phase1_criteria_legend": "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · ❌ failing · ⏳ needs a human or physical hardware",
   "blockers": [
     "PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`)",
-    "No external engineer identified",
     "OpenRouter rate limit (10/hr IP)",
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "cec1a25 brain: record the PCB decision in the file that owns it",
+    "9ef38fb brain: close Task 4, and register the test that was earning nothing",
     "2bd73c8 Merge PR #1: gate the experimental PCB engine; fix regen_state.py on Windows",
     "2384666 refactor(pcb): derive the flag from environment, and hide the tab when off",
-    "5831c98 test(pcb): cover the /pcb/compile experimental gate",
-    "5f0c967 feat(pcb): gate the experimental layout engine behind a flag, and surface dropped components",
-    "0a85755 fix(tools): force UTF-8 stdout so regen_state.py runs on Windows"
+    "5831c98 test(pcb): cover the /pcb/compile experimental gate"
   ],
-  "last_diff_stat": ".claude/shared-memory/state.json           |  10 +-\n .claude/shared-memory/tools/regen_state.py |  10 ++\n .env.example                               |   8 ++\n backend/api/routes/pcb.py                ",
+  "last_diff_stat": ".claude/shared-memory/brain/architecture.md |  8 ++++--\n .claude/shared-memory/brain/decisions.md    | 43 +++++++++++++++++++++++++++++\n MENTAL_MODEL.md                             | 20 ++++++++------",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

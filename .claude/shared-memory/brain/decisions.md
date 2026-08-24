@@ -423,3 +423,43 @@ components were placed.
 `render_pretty` have no tests, and per `.claude/CLAUDE.md` the answer is
 integrating freerouting in Phase 3 rather than testing lines slated for
 replacement. Carried as a blocker in `plan/current_phase.md`.
+
+---
+
+## [2026-08-25] Criterion 12 deferred with a trigger; Phase 2 begins
+
+**Decision:** Phase 1 closes at 11 of 12. Criterion 12 — an external engineer
+reading an explanation cold — is **deferred, not dropped**, and reopens on a
+named trigger: **before the first external user is shown a generated
+explanation**, whichever comes first between a public launch, a demo to a
+prospect, or onboarding anyone outside this repo.
+
+It renders as `⏭` in `state.json` and does **not** count toward done.
+`DEFERRED_CRITERIA` in `regen_state.py` is deliberately a separate set from
+`SUBSTITUTE_CRITERIA`: a substitute criterion was met by a different gate, a
+deferred one was not met at all, and collapsing the two would produce exactly
+the quiet devaluation that [2026-08-22] Criterion 12 moved off the v0.1.0 gate
+spends a page refusing.
+
+**Reason:**
+- The 2026-08-22 entry made it a Phase 2 *entry* condition. Holding Phase 2's
+  start against a third party's calendar reproduces the original problem one
+  phase later — it was open twelve weeks and no person had been identified.
+- The trigger binds it to the event that actually makes it matter. The risk was
+  never "we did not do a review"; it was "an outsider reads an explanation and
+  it does not land." That risk arrives with the first outsider, not with the
+  start of Phase 2.
+- A deferral without a trigger is a deletion with better manners.
+
+**What this does NOT change:** the risk allocation stays odd and stays stated.
+The explanation layer is the product per `PRODUCT_MASTER.md` Part 12, and it
+remains the only part with no verification from outside this repo while the
+non-differentiating parts carry 400+ tests. `PHASE1_COMPLETE.md` says so on its
+first page and is not being edited to soften it.
+
+**Also settled here — Phase 2 is the Validation Engine.** `regen_state.py`
+hardcoded the phase name as "Physical + External Validation", contradicting
+[2026-08-22] PRODUCT_MASTER.md is canonical. That name described the leftover
+Phase 1 gates rather than a phase, and with criterion 11 met by substitute and
+criterion 12 deferred it now has no content at all. Renamed to match the
+canonical roadmap.
