@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-23T08:53:51.351749Z",
-  "generated_from_commit": "4bb2e84",
+  "generated_at": "2026-08-24T19:54:06.787331Z",
+  "generated_from_commit": "2bd73c8",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -194,17 +194,17 @@
       "test_status": "passing"
     },
     "api/routes/pcb": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/api/routes/pcb.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 410,
+    "passed": 425,
     "failed": 0,
     "skipped": 22,
-    "total": 410
+    "total": 425
   },
   "phase1_criteria": [
     {
@@ -270,19 +270,19 @@
   ],
   "phase1_criteria_legend": "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · ❌ failing · ⏳ needs a human or physical hardware",
   "blockers": [
-    "PCB engine untested + unscoped",
+    "PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`)",
     "No external engineer identified",
     "OpenRouter rate limit (10/hr IP)",
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "4bb2e84 regen state",
-    "4ac5f32 fix(simulation): ngspice runner discarded its own errors and raced its output file",
-    "7cf7d85 brain: drop the third copy of the substitute-criteria rule from AGENTS.md",
-    "9ba8be3 brain: append 2026-08-22 to timeline.md",
-    "1a28de6 memory: the drawn bar was still a hardcoded number"
+    "2bd73c8 Merge PR #1: gate the experimental PCB engine; fix regen_state.py on Windows",
+    "2384666 refactor(pcb): derive the flag from environment, and hide the tab when off",
+    "5831c98 test(pcb): cover the /pcb/compile experimental gate",
+    "5f0c967 feat(pcb): gate the experimental layout engine behind a flag, and surface dropped components",
+    "0a85755 fix(tools): force UTF-8 stdout so regen_state.py runs on Windows"
   ],
-  "last_diff_stat": ".claude/shared-memory/progress.yaml | 92 ++++++++++++++++++++-----------------\n .claude/shared-memory/state.json    | 38 +++++++--------\n 2 files changed, 68 insertions(+), 62 deletions(-)",
+  "last_diff_stat": ".claude/shared-memory/state.json           |  10 +-\n .claude/shared-memory/tools/regen_state.py |  10 ++\n .env.example                               |   8 ++\n backend/api/routes/pcb.py                ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

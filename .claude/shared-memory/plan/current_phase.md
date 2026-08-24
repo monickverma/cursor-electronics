@@ -243,10 +243,21 @@ rendering them for roughly two months. Fixed — SMD packages added,
 `tests/test_pcb_placement.py` guards it with 52 tests — but the experimental
 label is the load-bearing part of the decision.
 
-**Still open under (b):** UI labelling. The endpoint is not yet behind a config
-flag and the frontend tab is not yet marked experimental. That is the remaining
-work of this task, and it is a Phase 1 item because the label is what makes (b)
-honest.
+**CLOSED 2026-08-24 — UI labelling shipped.** PR #1, merged as `2bd73c8`.
+`PCB_ENGINE_ENABLED` defaults to `None` and resolves from `environment`: on in
+development, off in production, explicit value overriding either way. Disabled,
+`POST /pcb/compile` returns 501 and `/health` reports the flag so the frontend
+drops the tab rather than rendering one that errors on every click. Enabled, the
+tab reads "PCB (experimental)". `tests/test_pcb_route.py` — 15 tests — pins the
+gate and the ordering around it (auth before the gate, the gate before body
+validation).
+
+The label was the load-bearing part of (b), so this closes Task 4 outright.
+
+Also shipped there, and the more important half: an empty board used to render
+as a clean rectangle and read as a successful compile, which is how the dropped
+components went unnoticed for two months. `PCBViewer` now opens its warnings
+footer by default and shows an explicit banner when zero components placed.
 
 ---
 
@@ -267,7 +278,7 @@ honest.
 |---------|-------|-----------------|
 | ~~No test coverage on explainer.py~~ | resolved 2026-08-07 | `tests/test_explainer.py` — 42 tests |
 | ~~No test coverage on patcher.py~~ | resolved 2026-08-07 | `tests/test_patcher.py` — 19 tests, criterion 7 automated |
-| PCB engine untested + unscoped | ~2026-07 | Task 4 — needs a scope decision, not code |
+| PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`) | ~2026-07 | Narrowed 2026-08-24. Scope and labelling are closed by Task 4 (PR #1); placement and `api/routes/pcb` are tested. Routing quality is not, and per `.claude/CLAUDE.md` the fix is freerouting in Phase 3, not tests for these 2,400 lines |
 | ~~No oscilloscope access~~ | resolved 2026-08-22 | **Resolved by substitution** — `tests/test_simulation_accuracy.py`, 34 tests |
 | No external engineer identified | 2026-06-02 | Task 3 — still open, needs a person |
 | OpenRouter rate limit (10/hr IP) | 2026-06-02 | 2s delay between calls in test scripts |
