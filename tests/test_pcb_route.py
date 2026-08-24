@@ -1,10 +1,11 @@
 """POST /pcb/compile — the experimental-engine gate.
 
-The PCB engine ships disabled (`PCB_ENGINE_ENABLED=false`). These tests pin the
-gate itself, not the layout engine — `test_pcb_placement.py` covers that. What
-matters here is that the flag is actually consulted, that it is consulted in the
-right order relative to auth and body validation, and that a disabled build says
-so instead of failing in a way that reads as the caller's fault.
+The PCB engine is experimental: on in development, off in production, with
+`PCB_ENGINE_ENABLED` overriding either way. These tests pin the gate itself, not
+the layout engine — `test_pcb_placement.py` covers that. What matters here is
+that the flag is actually consulted, that it is consulted in the right order
+relative to auth and body validation, and that a disabled build says so instead
+of failing in a way that reads as the caller's fault.
 
 The enabled cases deliberately post an empty netlist so the request stops at the
 422 immediately after the gate. Posting a real netlist would run A* routing for
@@ -17,7 +18,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.routes.auth import get_current_user
-from core.config import settings
+from core.config import Settings, settings
 from db.models import get_db
 from main import app
 
@@ -108,8 +109,75 @@ class TestPcbEngineGate:
 
 
 class TestPcbEngineDefault:
-    def test_ships_disabled(self):
-        """The default is the shipped behaviour, not a developer convenience.
-        If this flips to True, a deployment that never set the env var starts
-        serving an untested surface."""
-        assert type(settings).model_fields["pcb_engine_enabled"].default is False
+    """The flag defaults to None and is resolved from `environment`.
+
+    Scope decision 2026-08-22 is "experimental and labelled", not "disabled":
+    the engine is available in development and off in production. What matters
+    is that the *omission* case is safe — a production deploy that never sets
+    the variable must not serve an untested surface by accident.
+    """
+
+    def _settings(self, **overrides):
+        return Settings(
+            anthropic_api_key="",
+            database_url="postgresql+asyncpg://t:t@localhost/t",
+            redis_url="redis://localhost:6379/0",
+            secret_key="test-secret-key-minimum-32-characters-long",
+            **overrides,
+        )
+
+    def test_unset_is_the_sentinel_not_a_literal(self):
+        """A bare True/False default would ignore the environment. None is what
+        makes the derivation happen at all."""
+        assert type(settings).model_fields["pcb_engine_enabled"].default is None
+
+    def test_production_defaults_off(self):
+        assert self._settings(environment="production").pcb_engine_enabled is False
+
+    def test_development_defaults_on(self):
+        assert self._settings(environment="development").pcb_engine_enabled is True
+
+    def test_explicit_true_overrides_production(self):
+        """Opting in must still be possible — otherwise there is no way to
+        exercise the engine on a production-like deploy."""
+        s = self._settings(environment="production", pcb_engine_enabled=True)
+        assert s.pcb_engine_enabled is True
+
+    def test_explicit_false_overrides_development(self):
+        s = self._settings(environment="development", pcb_engine_enabled=False)
+        assert s.pcb_engine_enabled is False
+
+    def test_resolves_to_a_real_bool(self):
+        """Callers do `if not settings.pcb_engine_enabled`. If None ever leaked
+        through, that check would silently read as 'disabled' everywhere."""
+        assert isinstance(self._settings(environment="development").pcb_engine_enabled, bool)
+
+
+class TestHealthAdvertisesTheFlag:
+    """/health carries the flag so the frontend can hide the PCB tab.
+
+    Without this the tab is decoration: visible, labelled experimental, and
+    wired to a route that refuses every click.
+    """
+
+    def test_health_reports_flag(self, client, monkeypatch):
+        monkeypatch.setattr(settings, "pcb_engine_enabled", True)
+
+        body = client.get("/health").json()
+
+        assert body["pcb_engine_enabled"] is True
+
+    def test_health_tracks_the_flag(self, client, monkeypatch):
+        """Read at request time, not captured at import — otherwise the tab
+        would reflect whatever the flag was when the module loaded."""
+        monkeypatch.setattr(settings, "pcb_engine_enabled", False)
+
+        assert client.get("/health").json()["pcb_engine_enabled"] is False
+
+    def test_health_needs_no_auth(self, anon_client):
+        """The tab list is decided before login, so this must answer without a
+        token. It reveals nothing /pcb/compile would not."""
+        res = anon_client.get("/health")
+
+        assert res.status_code == 200
+        assert "pcb_engine_enabled" in res.json()

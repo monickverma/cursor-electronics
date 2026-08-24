@@ -168,3 +168,18 @@ export async function login(email: string, password: string): Promise<{ access_t
 export async function register(email: string, password: string): Promise<{ access_token: string }> {
   return apiPost('/auth/register', { email, password })
 }
+
+export interface HealthResponse {
+  status: string
+  environment: string
+  pcb_engine_enabled: boolean
+}
+
+// Used to decide which tabs exist. Failure is treated as "off" by the caller:
+// a tab wired to an unreachable backend is the same dead click as a tab wired
+// to a disabled route.
+export async function fetchHealth(): Promise<HealthResponse> {
+  const res = await fetch(`${BASE}/health`)
+  if (!res.ok) throw new Error(`Health check failed: ${res.status}`)
+  return res.json()
+}
