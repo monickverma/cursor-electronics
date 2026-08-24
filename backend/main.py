@@ -63,4 +63,12 @@ app.include_router(pcb.router, prefix="/pcb", tags=["pcb"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "environment": settings.environment}
+    # pcb_engine_enabled is here so the frontend can hide the PCB tab rather
+    # than render a tab whose every click returns 501. Unauthenticated by
+    # design: it reveals nothing a caller could not learn by hitting
+    # /pcb/compile, and the tab list is decided before login.
+    return {
+        "status": "ok",
+        "environment": settings.environment,
+        "pcb_engine_enabled": settings.pcb_engine_enabled,
+    }

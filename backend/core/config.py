@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"  # project root
@@ -30,6 +31,18 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # The PCB engine was pulled forward from Phase 3 and is experimental: its
+    # placement is tested, its routing is not, and it silently drops components
+    # it has no footprint for. Scope decision 2026-08-22 is "experimental and
+    # labelled", not "disabled" — so it is available in development and off in
+    # production, rather than off everywhere.
+    #
+    # None means "derive from environment", resolved below. An explicit
+    # PCB_ENGINE_ENABLED overrides that in either direction. The default is
+    # deliberately not a bare True: a production deploy that never sets the
+    # variable must not end up serving an untested surface by omission.
+    pcb_engine_enabled: bool | None = None
+
     @property
     def broker_url(self) -> str:
         return self.celery_broker_url or self.redis_url
@@ -41,6 +54,17 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @model_validator(mode="after")
+    def _resolve_pcb_engine_default(self) -> "Settings":
+        """Turn the None sentinel into a real bool once `environment` is known.
+
+        Done here rather than in a property so every caller sees a plain bool
+        and the route stays a simple flag check.
+        """
+        if self.pcb_engine_enabled is None:
+            self.pcb_engine_enabled = not self.is_production
+        return self
 
     model_config = SettingsConfigDict(env_file=str(_ENV_FILE), env_file_encoding="utf-8")
 

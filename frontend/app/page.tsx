@@ -2,7 +2,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import ChatPanel from '@/components/ChatPanel'
 import ValidationReport from '@/components/ValidationReport'
 import FirmwareViewer from '@/components/FirmwareViewer'
@@ -10,7 +10,7 @@ import SimulationResults from '@/components/SimulationResults'
 import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
 import PCBViewer from '@/components/PCBViewer'
-import { GenerateResponse, PatchResponse } from '@/lib/api'
+import { GenerateResponse, PatchResponse, fetchHealth } from '@/lib/api'
 
 const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
 
@@ -18,7 +18,7 @@ type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'schematic',  label: 'Schematic' },
-  { id: 'pcb',        label: 'PCB' },
+  { id: 'pcb',        label: 'PCB (experimental)' },
   { id: 'firmware',   label: 'Firmware' },
   { id: 'simulation', label: 'Simulation' },
   { id: 'bom',        label: 'BOM' },
@@ -30,6 +30,30 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('schematic')
   const [token, setToken] = useState<string>('')
   const [showApp, setShowApp] = useState(false)
+
+  // The PCB engine is experimental and off in production, where /pcb/compile
+  // returns 501. Ask the backend which build this is rather than rendering a
+  // tab whose every click is an error. Starts false so the tab never flashes
+  // in before the answer arrives, and stays false if /health is unreachable —
+  // an unreachable backend is the same dead click as a disabled route.
+  const [pcbEnabled, setPcbEnabled] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchHealth()
+      .then(h => { if (!cancelled) setPcbEnabled(h.pcb_engine_enabled) })
+      .catch(() => { if (!cancelled) setPcbEnabled(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  const visibleTabs = TABS.filter(t => t.id !== 'pcb' || pcbEnabled)
+
+  // If the engine is disabled while the PCB tab is somehow selected (it is the
+  // initial tab for nobody, but a stale state or a future default could get
+  // here), fall back rather than render a panel with no tab.
+  useEffect(() => {
+    if (!pcbEnabled && activeTab === 'pcb') setActiveTab('schematic')
+  }, [pcbEnabled, activeTab])
 
   const handleResult = useCallback((res: GenerateResponse | PatchResponse) => {
     setResult(res)
@@ -105,7 +129,7 @@ export default function Home() {
             height: 44,
           }}
         >
-          {TABS.map(tab => {
+          {visibleTabs.map(tab => {
             const isActive = activeTab === tab.id
             return (
               <button
