@@ -107,20 +107,22 @@ that only ever passes is worthless; this one says no.
 
 **The PCB layout engine.** ~2,400 lines: A* router, DRC kernel, footprint
 inference, candidate scoring, SVG rendering. Live at `POST /pcb/compile` with a
-frontend tab. **Zero tests.**
+frontend tab, both gated by a flag and off in production.
 
 Two things to know:
 
 1. It is a **custom engine, not KiCad freerouting** — the roadmap says
    freerouting, so the roadmap will mislead you.
-2. It was Phase 3 scope built during Phase 1. Not necessarily wrong, but it is
-   *undeclared*, and undeclared scope is how Phase 1 stops finishing.
+2. It was Phase 3 scope built during Phase 1. Declared as of 2026-08-22; before
+   that it was undeclared, and undeclared scope is how Phase 1 stops finishing.
 
-**Decision still owed** (see `plan/current_phase.md` Task 4): in-scope and
-tested / experimental behind a flag / deferred. Recommendation is experimental
-behind a flag — gating v0.1.0 on 2,400 untested lines of geometry code stalls
-Phase 1 indefinitely, but an unlabelled experimental router inside a product
-whose whole pitch is "physics-validated" is a credibility risk.
+Placement and the route are tested; **routing quality is not** — that is what
+keeps this in Tier 2. Per-module status is derived: read `progress.yaml`.
+
+**Decided 2026-08-22, shipped 2026-08-24:** in scope, experimental, labelled,
+behind a config flag. Rationale lives in `brain/decisions.md` — "[2026-08-22]
+PCB engine is in scope, experimental, and labelled". Off in production, where
+`POST /pcb/compile` returns 501 and the frontend hides the tab.
 
 ### ⬜ Tier 3 — Does not exist
 

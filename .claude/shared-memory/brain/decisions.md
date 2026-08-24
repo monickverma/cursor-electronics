@@ -380,3 +380,46 @@ simulation in one system.
   reliability story for breadth.
 - The "BOM within 5% of a manual engineer" KPI needs a manual engineer — the
   same dependency that kept criterion 12 open for twelve weeks.
+
+---
+
+## [2026-08-22] PCB engine is in scope, experimental, and labelled — option (b)
+
+**Decision:** `backend/pcb_engine/` stays in the product, excluded from the
+v0.1.0 gate, labelled experimental in the UI, and gated by a config flag.
+Alternatives rejected: (a) in scope and tested, (c) out of scope for now.
+
+Belatedly recorded here on 2026-08-24. The decision was taken on 2026-08-22 and
+`plan/current_phase.md` Task 4 claimed it was "recorded in `brain/decisions.md`"
+— it was not. Two files pointed at an entry that did not exist, which is the
+same stale-copy failure the ownership table exists to prevent, in the one file
+that owns the fact.
+
+**Reason:**
+- Gating v0.1.0 on ~2,400 untested lines of geometry code stalls Phase 1
+  indefinitely. Deleting work that demos well is its own waste.
+- An unlabelled experimental router inside a product whose whole pitch is
+  "physics-validated" is a credibility risk. The label is the load-bearing part
+  of (b) — without it, (b) is just (a) with the testing skipped.
+- What made this concrete rather than theoretical is recorded in
+  [2026-08-22] Phase gating targets visibility, not timing: the first
+  measurement of the placement pipeline found `footprints.py` had no SMD
+  packages at all.
+
+**Consequence:** shipped 2026-08-24 in PR #1 (`2bd73c8`). `PCB_ENGINE_ENABLED`
+resolves from `environment` — on in development, off in production, explicit
+value overriding either way. Disabled, `POST /pcb/compile` returns 501 and
+`/health` reports the flag so the frontend drops the tab instead of rendering
+one that errors on every click.
+
+The more consequential half of that PR was not the flag. An empty board rendered
+as a clean rectangle and read as a successful compile, which is *why* the
+dropped components went unnoticed for two months — the warnings existed and were
+collapsed. A flag hides a feature; it does not make a silent failure audible.
+`PCBViewer` now opens its warnings by default and says so explicitly when zero
+components were placed.
+
+**Not settled by this:** routing quality. `board_ir`, `kernel`, `router` and
+`render_pretty` have no tests, and per `.claude/CLAUDE.md` the answer is
+integrating freerouting in Phase 3 rather than testing lines slated for
+replacement. Carried as a blocker in `plan/current_phase.md`.

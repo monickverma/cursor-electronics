@@ -120,8 +120,12 @@ frontend/
 ## PCB Layout Engine (`backend/pcb_engine/`) — added ~2026-07, documented 2026-08-07
 
 Roughly 2,400 lines that were not described in this file until the 2026-08-07
-re-sync. Pulled forward from Phase 3. **Currently has zero test coverage** and
-its scope status is undecided — see `plan/current_phase.md` Task 4.
+re-sync. Pulled forward from Phase 3. Scope settled 2026-08-22 as **experimental,
+labelled, behind a config flag** — see `brain/decisions.md`, "[2026-08-22] PCB
+engine is in scope, experimental, and labelled".
+
+Placement and `api/routes/pcb` are tested; routing is not. Per-module status is
+derived — read `progress.yaml`, do not restate counts here.
 
 This is a **custom engine, not KiCad freerouting**, which is what the master plan
 originally specified. Anyone reading the roadmap alone will have the wrong model.
