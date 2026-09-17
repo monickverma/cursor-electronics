@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     anthropic_base_url: str = ""         # OpenRouter: https://openrouter.ai/api  (NO /v1 — SDK appends it)
     ai_model: str = "claude-sonnet-4-6"  # OpenRouter: anthropic/claude-sonnet-4-5
 
+    # "anthropic" (default) or "openai_compat" — an OpenAI-compatible server
+    # such as vLLM on ROCm, which is how Circuit OS runs on AMD GPUs. With
+    # openai_compat, AI_MODEL is the served model name (e.g. Qwen/Qwen2.5-7B-Instruct)
+    # and ANTHROPIC_API_KEY may be left empty. See docs/AMD.md.
+    ai_provider: str = "anthropic"
+    openai_base_url: str = "http://localhost:8000/v1"
+    openai_api_key: str = "EMPTY"
+
     # The Anthropic SDK defaults to a 600s timeout and 2 retries. Left alone,
     # one slow upstream call occupies a request for up to half an hour and the
     # client sees an indefinite hang instead of an error. Bound it: a request

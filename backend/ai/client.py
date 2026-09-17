@@ -11,6 +11,10 @@ Supports both direct Anthropic API and OpenRouter by reading env vars:
   AI_MODEL           — model ID; defaults change depending on provider
   AI_TIMEOUT_SECONDS — per-request timeout (default 45s)
   AI_MAX_RETRIES     — SDK-level retries on transient errors (default 1)
+  AI_PROVIDER        — "anthropic" (default) or "openai_compat" for an
+                       OpenAI-compatible server such as vLLM on AMD ROCm GPUs
+  OPENAI_BASE_URL    — openai_compat only, e.g. http://localhost:8000/v1
+  OPENAI_API_KEY     — openai_compat only; vLLM accepts any value by default
 
 The timeout and retry cap are not optional niceties. The SDK ships with a 600s
 timeout and 2 retries, so a single stalled upstream call can hold a request for
@@ -22,8 +26,18 @@ thread for that whole time.
 import anthropic
 from core.config import settings
 
+from ai.openai_compat import OpenAICompatClient
 
-def make_client() -> anthropic.Anthropic:
+
+def make_client() -> anthropic.Anthropic | OpenAICompatClient:
+    if settings.ai_provider == "openai_compat":
+        return OpenAICompatClient(
+            base_url=settings.openai_base_url,
+            api_key=settings.openai_api_key,
+            timeout=settings.ai_timeout_seconds,
+            max_retries=settings.ai_max_retries,
+        )
+
     kwargs: dict = {
         "api_key": settings.anthropic_api_key,
         "timeout": settings.ai_timeout_seconds,
