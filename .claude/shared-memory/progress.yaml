@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-08-23T08:40:05.197887Z'
+generated_at: '2026-09-20T12:48:40.072623Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -141,7 +141,7 @@ files:
         type: class
         description: Consequential plain-English design report
         signature: null
-        line: 46
+        line: 91
         test_file: tests/test_explainer.py
       ExplanationEngine.explain:
         status: verified_done
@@ -149,7 +149,7 @@ files:
         description: IR → multi-section report with failure analysis
         signature: 'ExplanationEngine.explain(ir: CircuitIR, validation_result: IRValidationResult
           | None, simulation_results: dict | None) -> str'
-        line: 50
+        line: 95
         test_file: tests/test_explainer.py
     module_status: done
   generators/spice:
@@ -606,14 +606,420 @@ files:
         type: function
         description: POST /pcb/compile → runs layout engine in-process
         signature: 'compile_pcb(request: Request, body: CompileRequest, user)'
-        line: 59
+        line: 60
         test_file: null
     module_status: in_progress
+  observability/request_log:
+    file: backend/observability/request_log.py
+    exists: true
+    test_file: tests/test_request_log.py
+    test_file_status: passing
+    entries:
+      Outcome:
+        status: verified_done
+        type: class
+        description: What happened to the request. REFUSED is not a failure — it is
+        signature: null
+        line: 61
+        test_file: tests/test_request_log.py
+      RequestLogRow:
+        status: verified_done
+        type: class
+        description: One request, one row.
+        signature: null
+        line: 74
+        test_file: tests/test_request_log.py
+      RequestLogContext:
+        status: verified_done
+        type: class
+        description: Mutable per-request scratch space. The middleware creates one,
+          the handler
+        signature: null
+        line: 153
+        test_file: tests/test_request_log.py
+      RequestLogger:
+        status: verified_done
+        type: class
+        description: Writes rows. Never raises into the caller.
+        signature: null
+        line: 227
+        test_file: tests/test_request_log.py
+      RequestLogger.record:
+        status: verified_done
+        type: method
+        description: Persist one row. True if it reached Postgres, False if it went
+          to the
+        signature: 'RequestLogger.record(row: RequestLogRow) -> bool'
+        line: 233
+        test_file: tests/test_request_log.py
+      RequestLogger.write_fallback:
+        status: verified_done
+        type: method
+        description: 'Last resort. Swallows its own errors too: if the disk is gone
+          as well'
+        signature: 'RequestLogger.write_fallback(row: RequestLogRow) -> None'
+        line: 262
+        test_file: tests/test_request_log.py
+      RequestLogger.read_fallback:
+        status: verified_done
+        type: method
+        description: Rows that never reached Postgres. Replay source, and a health
+          signal.
+        signature: RequestLogger.read_fallback() -> List[dict]
+        line: 275
+        test_file: tests/test_request_log.py
+      prompt_hash:
+        status: verified_done
+        type: function
+        description: Stable hash of a prompt, for the §4.4 cache key and for counting
+          repeats
+        signature: 'prompt_hash(prompt: str) -> str'
+        line: 144
+        test_file: tests/test_request_log.py
+      log_ctx:
+        status: verified_done
+        type: function
+        description: The request's log context, or a detached throwaway if the middleware
+          is not
+        signature: 'log_ctx(request: Any) -> RequestLogContext'
+        line: 211
+        test_file: tests/test_request_log.py
+    module_status: done
+  middleware/instrumentation:
+    file: backend/middleware/instrumentation.py
+    exists: true
+    test_file: tests/test_request_log.py
+    test_file_status: passing
+    entries:
+      RequestLogMiddleware:
+        status: verified_done
+        type: class
+        description: Outermost middleware — a row on every exit path
+        signature: null
+        line: 31
+        test_file: tests/test_request_log.py
+      RequestLogMiddleware.dispatch:
+        status: verified_done
+        type: method
+        description: Times the request, flushes the row in a finally
+        signature: 'RequestLogMiddleware.dispatch(request: Request, call_next) ->
+          Response'
+        line: 48
+        test_file: tests/test_request_log.py
+    module_status: done
+  generators/protocol:
+    file: backend/generators/protocol.py
+    exists: true
+    test_file: tests/test_generator_protocol.py
+    test_file_status: passing
+    entries:
+      IntentLike:
+        status: verified_done
+        type: class
+        description: The slice of IntentIR a generator touches. v2 §6 gives the full
+          schema and
+        signature: null
+        line: 67
+        test_file: tests/test_generator_protocol.py
+      Interval:
+        status: verified_done
+        type: class
+        description: A quantity over a range, not a point.
+        signature: null
+        line: 83
+        test_file: tests/test_generator_protocol.py
+      Interval.at:
+        status: verified_done
+        type: method
+        description: A degenerate interval. Used for a single grid point in CI.
+        signature: 'Interval.at(cls, value: float, units: str) -> ''Interval'''
+        line: 124
+        test_file: tests/test_generator_protocol.py
+      Interval.contains:
+        status: verified_done
+        type: method
+        description: Is this measurement inside the band
+        signature: 'Interval.contains(value: float) -> bool'
+        line: 128
+        test_file: tests/test_generator_protocol.py
+      Interval.relative_error:
+        status: verified_done
+        type: method
+        description: Fractional distance from `measured` to this interval — 0.0 when
+          inside.
+        signature: 'Interval.relative_error(measured: float) -> float'
+        line: 135
+        test_file: tests/test_generator_protocol.py
+      ClaimScope:
+        status: verified_done
+        type: class
+        description: What a prediction quantifies over. EVIDENCE_CLASSES.md §3.3.
+        signature: null
+        line: 152
+        test_file: tests/test_generator_protocol.py
+      PortContract:
+        status: verified_done
+        type: class
+        description: One port of a generated block, and what it promises electrically.
+        signature: null
+        line: 174
+        test_file: tests/test_generator_protocol.py
+      EnvelopeDecision:
+        status: verified_done
+        type: class
+        description: Whether this generator will take the job.
+        signature: null
+        line: 200
+        test_file: tests/test_generator_protocol.py
+      EnvelopeDecision.accept:
+        status: verified_done
+        type: method
+        description: Acceptance carrying its interface contract
+        signature: 'EnvelopeDecision.accept(cls, ports: Sequence[PortContract]) ->
+          ''EnvelopeDecision'''
+        line: 233
+        test_file: tests/test_generator_protocol.py
+      EnvelopeDecision.refuse:
+        status: verified_done
+        type: method
+        description: Refusal carrying a backlog-grade reason
+        signature: 'EnvelopeDecision.refuse(cls, reason: str) -> ''EnvelopeDecision'''
+        line: 237
+        test_file: tests/test_generator_protocol.py
+      Prediction:
+        status: verified_done
+        type: class
+        description: Closed-form behaviour of a design, over a parameter box.
+        signature: null
+        line: 243
+        test_file: tests/test_generator_protocol.py
+      GridSpec:
+        status: verified_done
+        type: class
+        description: The parameter grid a generator declares for CI. Consumed by Task
+          0.4.
+        signature: null
+        line: 273
+        test_file: tests/test_generator_protocol.py
+      GridSpec.points:
+        status: verified_done
+        type: method
+        description: Cartesian product of the axes, in declaration order.
+        signature: GridSpec.points() -> Iterator[Dict[str, float]]
+        line: 296
+        test_file: tests/test_generator_protocol.py
+      Generator:
+        status: verified_done
+        type: class
+        description: Structural, not inherited. A generator is anything with these
+          members.
+        signature: null
+        line: 313
+        test_file: tests/test_generator_protocol.py
+      conservative_closure:
+        status: verified_done
+        type: function
+        description: Every component. Sound but vacuous — a locality check against
+          this passes
+        signature: 'conservative_closure(ir: CircuitIR) -> FrozenSet[str]'
+        line: 383
+        test_file: tests/test_generator_protocol.py
+      conformance_gaps:
+        status: verified_done
+        type: function
+        description: Which parts of the contract `candidate` is missing, by name.
+        signature: 'conformance_gaps(candidate: Any) -> List[str]'
+        line: 397
+        test_file: tests/test_generator_protocol.py
+    module_status: done
+  generators/rc_lowpass:
+    file: backend/generators/rc_lowpass.py
+    exists: true
+    test_file: tests/test_rc_lowpass_generator.py
+    test_file_status: passing
+    entries:
+      cutoff_hz:
+        status: verified_done
+        type: function
+        description: f_c = 1 / (2·pi·R·C).
+        signature: 'cutoff_hz(ohms: float, farads: float) -> float'
+        line: 104
+        test_file: tests/test_rc_lowpass_generator.py
+      snap_to_e96:
+        status: verified_done
+        type: function
+        description: Nearest E96 value. Chooses in log space, because the series is
+        signature: 'snap_to_e96(ohms: float) -> float'
+        line: 109
+        test_file: tests/test_rc_lowpass_generator.py
+      select_components:
+        status: verified_done
+        type: function
+        description: 'Pick R and C for a target cutoff. Deterministic: capacitors
+          are tried in'
+        signature: 'select_components(target_hz: float, supply_v: float) -> Optional[_Selection]'
+        line: 194
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator:
+        status: verified_done
+        type: class
+        description: Single-pole passive RC low-pass. Implements `generators.protocol.Generator`.
+        signature: null
+        line: 225
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator.envelope:
+        status: verified_done
+        type: method
+        description: Accept with the interface contract, or refuse with a reason specific
+        signature: 'RCLowPassGenerator.envelope(intent: IntentLike) -> EnvelopeDecision'
+        line: 233
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator.predict:
+        status: verified_done
+        type: method
+        description: Closed-form behaviour over a parameter box.
+        signature: 'RCLowPassGenerator.predict(intent: IntentLike, box: Optional[Mapping[str,
+          Interval]]) -> Prediction'
+        line: 313
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator.generate:
+        status: verified_done
+        type: method
+        description: Deterministic given (intent, version). Callers call `envelope()`
+          first.
+        signature: 'RCLowPassGenerator.generate(intent: IntentLike) -> CircuitIR'
+        line: 405
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator.grid:
+        status: verified_done
+        type: method
+        description: Three decades of the declared envelope. A single 1 kHz point
+          passes on
+        signature: RCLowPassGenerator.grid() -> GridSpec
+        line: 501
+        test_file: tests/test_rc_lowpass_generator.py
+      RCLowPassGenerator.dependency_closure:
+        status: verified_done
+        type: method
+        description: Narrow where it can be. A conservative closure is sound but makes
+          the
+        signature: 'RCLowPassGenerator.dependency_closure(requirement_path: str) ->
+          FrozenSet[str]'
+        line: 512
+        test_file: tests/test_rc_lowpass_generator.py
+    module_status: done
+  validation/envelope_grid:
+    file: backend/validation/envelope_grid.py
+    exists: true
+    test_file: tests/test_envelope_grid.py
+    test_file_status: passing
+    entries:
+      GridPointResult:
+        status: verified_done
+        type: class
+        description: One grid point, one quantity, one verdict.
+        signature: null
+        line: 66
+        test_file: tests/test_envelope_grid.py
+      GridReport:
+        status: verified_done
+        type: class
+        description: The outcome of sweeping one generator's declared envelope.
+        signature: null
+        line: 95
+        test_file: tests/test_envelope_grid.py
+      GridReport.summary:
+        status: verified_done
+        type: method
+        description: Human-readable failures, named by point
+        signature: GridReport.summary() -> str
+        line: 117
+        test_file: tests/test_envelope_grid.py
+      GridAdapter:
+        status: verified_done
+        type: class
+        description: The circuit-class-specific glue between a generator and a simulator.
+        signature: null
+        line: 131
+        test_file: tests/test_envelope_grid.py
+      run_grid:
+        status: verified_done
+        type: function
+        description: Sweep one generator's declared envelope and compare `predict()`
+          against the
+        signature: 'run_grid(adapter: GridAdapter, tolerance: float) -> GridReport'
+        line: 154
+        test_file: tests/test_envelope_grid.py
+      scale_component_value:
+        status: verified_done
+        type: function
+        description: Return a copy of `ir` with one passive's value scaled.
+        signature: 'scale_component_value(ir: CircuitIR, component_id: str, factor:
+          float) -> CircuitIR'
+        line: 266
+        test_file: tests/test_envelope_grid.py
+      MutatedGenerator:
+        status: verified_done
+        type: class
+        description: A generator whose `generate()` is wrong by a known factor while
+          its
+        signature: null
+        line: 306
+        test_file: tests/test_envelope_grid.py
+      MatrixReport:
+        status: verified_done
+        type: class
+        description: Control arm plus mutation arms. The pair is the evidence, not
+          either half.
+        signature: null
+        line: 347
+        test_file: tests/test_envelope_grid.py
+      run_matrix:
+        status: verified_done
+        type: function
+        description: Run the control arm and each seeded fault. `ARCHITECTURE_ASSURANCE_CASE.md`
+        signature: 'run_matrix(adapter: GridAdapter, component_id: str, mutations:
+          Optional[Mapping[str, float]], tolerance: float) -> MatrixReport'
+        line: 388
+        test_file: tests/test_envelope_grid.py
+    module_status: done
+  ai/derived_explainer:
+    file: backend/ai/derived_explainer.py
+    exists: true
+    test_file: tests/test_derived_explainer.py
+    test_file_status: passing
+    entries:
+      DerivedExplainer:
+        status: verified_done
+        type: class
+        description: Deterministic explanation. Zero API calls, zero network, works
+          offline.
+        signature: null
+        line: 69
+        test_file: tests/test_derived_explainer.py
+      DerivedExplainer.explain:
+        status: verified_done
+        type: method
+        description: Requirements + predict() + generator justifications → prose
+        signature: 'DerivedExplainer.explain(ir: CircuitIR, validation_result: Optional[IRValidationResult],
+          simulation_results: Optional[dict], prediction: Optional[Prediction], requirements:
+          Optional[dict]) -> str'
+        line: 79
+        test_file: tests/test_derived_explainer.py
+      explanation_markers:
+        status: verified_done
+        type: function
+        description: The consequential-language markers this explanation is scored
+          on.
+        signature: 'explanation_markers(text: str) -> List[str]'
+        line: 286
+        test_file: tests/test_derived_explainer.py
+    module_status: done
 summary:
-  entries_total: 60
-  entries_verified_done: 42
+  entries_total: 108
+  entries_verified_done: 90
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 70.0
+  pct_verified: 83.3

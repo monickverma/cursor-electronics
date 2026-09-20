@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-24T20:22:09.073311Z",
-  "generated_from_commit": "cec1a25",
+  "generated_at": "2026-09-20T12:46:57.202390Z",
+  "generated_from_commit": "f54752f",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -202,13 +202,49 @@
       "file": "backend/api/routes/pcb.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "observability/request_log": {
+      "status": "verified_done",
+      "file": "backend/observability/request_log.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "middleware/instrumentation": {
+      "status": "verified_done",
+      "file": "backend/middleware/instrumentation.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/protocol": {
+      "status": "verified_done",
+      "file": "backend/generators/protocol.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/rc_lowpass": {
+      "status": "verified_done",
+      "file": "backend/generators/rc_lowpass.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/envelope_grid": {
+      "status": "verified_done",
+      "file": "backend/validation/envelope_grid.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/derived_explainer": {
+      "status": "verified_done",
+      "file": "backend/ai/derived_explainer.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 425,
+    "passed": 625,
     "failed": 0,
-    "skipped": 22,
-    "total": 425
+    "skipped": 23,
+    "total": 625
   },
   "phase1_criteria": [
     {
@@ -279,13 +315,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "f54752f Add lablab submission cover and slides",
+    "11185ff Run on AMD GPUs via vLLM, and license under AGPL-3.0",
+    "b8e63b9 brain: close Phase 1 at 11/12, defer criterion 12 with a trigger, open Phase 2",
     "cec1a25 brain: record the PCB decision in the file that owns it",
-    "9ef38fb brain: close Task 4, and register the test that was earning nothing",
-    "2bd73c8 Merge PR #1: gate the experimental PCB engine; fix regen_state.py on Windows",
-    "2384666 refactor(pcb): derive the flag from environment, and hide the tab when off",
-    "5831c98 test(pcb): cover the /pcb/compile experimental gate"
+    "9ef38fb brain: close Task 4, and register the test that was earning nothing"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/architecture.md |  8 ++++--\n .claude/shared-memory/brain/decisions.md    | 43 +++++++++++++++++++++++++++++\n MENTAL_MODEL.md                             | 20 ++++++++------",
+  "last_diff_stat": "docs/submission/Circuit-OS-slides.pdf | Bin 0 -> 446380 bytes\n docs/submission/cover.png             | Bin 0 -> 425006 bytes\n 2 files changed, 0 insertions(+), 0 deletions(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

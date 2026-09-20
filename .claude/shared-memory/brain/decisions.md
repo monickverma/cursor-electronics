@@ -463,3 +463,143 @@ hardcoded the phase name as "Physical + External Validation", contradicting
 Phase 1 gates rather than a phase, and with criterion 11 met by substitute and
 criterion 12 deferred it now has no content at all. Renamed to match the
 canonical roadmap.
+
+---
+
+## [2026-09-20] `predict()` is the per-request truth; ngspice becomes the regression check
+
+**Decision:** Amends `PRODUCT_MASTER.md` Part 10, *"Why simulation must be the
+truth, not the LLM's opinion."* A generator's `predict()` — closed-form physics —
+answers any numerical claim about a design at request time. ngspice moves to CI,
+where it runs the generator's full declared envelope grid and `predict()` must
+agree with it to within 2%.
+
+Recorded as amendment **X1** in `PHASE_2_PLAN_v2.md` §2, which is the owner of
+the Phase 2 plan. This entry is the owner of *why*.
+
+**Reason:**
+
+- Part 10's sentence carries two readings that were identical in Phase 1 and come
+  apart in Phase 2: *the numbers must not come from the LLM*, and *the numbers
+  must come specifically from ngspice*. The first is the principle. Closed-form
+  arithmetic is not the LLM either, so the principle survives intact.
+- One nominal ngspice run is a statement about one point in parameter space. The
+  same physics evaluated across a tolerance box — monotone corners, or z3 over
+  component ranges — is a statement about every point in it. That is a stronger
+  claim, not a weaker one, and it is the whole reason for the amendment.
+- **Simulation is not removed, and it runs more than it does today.** One nominal
+  run per design becomes an entire envelope grid per generator on every CI build,
+  where a disagreement blocks a merge instead of producing a number that nothing
+  was diffing against.
+
+**Alternatives rejected:**
+
+- *Keep ngspice as the per-request truth and add `predict()` beside it.* Two
+  sources of numerical truth on the same design is the condition this project
+  spent 2026-08 removing from its documentation, one layer down. When they
+  disagree there is no rule for which wins.
+- *Drop ngspice once `predict()` exists.* `predict()` is code written here, which
+  makes it exactly the class of thing criterion 11 was written to guard. An
+  independent implementation that disagrees is the only cheap defence, and
+  ngspice is that implementation.
+
+**Carried forward — the defeater fans out.** `predict()` validated against
+mathematics rather than hardware is the same limitation criterion 11 carries as
+`met_by_substitute`, now sitting under every user-facing number instead of one
+test file. It is D1 in `PHASE_2_PLAN_v2.md` §7. Do not let it go quiet: the
+bench measurement is still owed, and it is owed more broadly after this decision
+than before it.
+
+**Not settled by this:**
+
+- *Whether per-request ngspice survives as an on-demand facility.* X1 says
+  `predict()` is the truth and SPICE's role moves to CI; it does not say to
+  delete `POST /design/{id}/simulation/{job_id}`, and X3 implies runtime ngspice
+  still exists. The machinery is built and tested, so keeping it as optional
+  corroboration costs nothing. Decide explicitly before Stage 0 closes.
+- *The public claim.* "Simulates before it ships" becomes true of the
+  **generator** — validated against ngspice across its declared envelope — rather
+  than of the **instance** a user just generated. That is still a strong claim
+  and arguably a better one, but it is a different sentence. Nothing is
+  inaccurate today, because `predict()` does not exist yet; the restatement is
+  owed at the moment the first generator ships with `predict()` answering, and
+  `MENTAL_MODEL.md` §9 is where it lands.
+
+---
+
+## [2026-09-20] Explanation derivability: yes for the baseline, no for the domain layer
+
+**The question** (`PHASE_2_PLAN_v2.md` §4.4, Task 0.5): given `predict()` output
+and the requirements, is the explanation a template fill, or does it need a
+model call? §4.4 calls this "the single highest-leverage experiment in Phase 2"
+because a yes removes the dominant per-design cost and makes the product work
+offline.
+
+**Answer: a qualified yes, and the qualification is the useful part.**
+
+Evidence: `scripts/explanation_derivability.py`, run 2026-09-20 over six
+designs — one produced by the `rc_lowpass` generator, plus the five Phase 1
+example IRs — scored on the consequential-language markers
+`tests/test_explainer.py` already enforces, against live
+`ExplanationEngine` output from the configured model.
+
+```
+  case                          derived (0 calls)        live model (6 calls)
+  *rc_lowpass (generated)  4 mk / 2/2 cmp /  2562c PASS  6 mk / 2/2 cmp /  9045c PASS
+   IR_001 dht22            5 mk / 4/4 cmp /  1472c PASS  6 mk / 4/4 cmp / 13739c PASS
+   IR_002 led              6 mk / 4/4 cmp /  1657c PASS  8 mk / 4/4 cmp / 10453c PASS
+   IR_003 rc_filter        4 mk / 2/2 cmp /   988c PASS  7 mk / 2/2 cmp / 12232c PASS
+   IR_004 divider          4 mk / 2/2 cmp /  1018c PASS  6 mk / 2/2 cmp / 10168c PASS
+   IR_005 modbus           5 mk / 6/6 cmp /  2118c PASS  8 mk / 6/6 cmp / 15717c PASS
+```
+
+Derived: 6/6 clear the marker bar, 6/6 name every component, **zero API calls**.
+
+**What is derivable.** The structural explanation: what was asked for, what was
+chosen and by what rule, what the design will do over the whole tolerance box,
+which tolerance dominates the result, what margin each part has, and what the
+claim does not cover. It reads as consequential rather than descriptive without
+any prompting, and it clears the bar the test suite enforces on the model.
+
+The reason this works is architectural rather than clever templating: **a
+deterministic generator already knows why it chose what it chose.**
+`rc_lowpass` writes the selection rule into each component's `justification` as
+it builds the design, and `predict()` supplies the consequences in closed form.
+The explainer assembles reasons that already exist as data; it invents none.
+
+**What is not derivable.** Reading the two side by side for the RC case, the
+model supplies a layer of domain knowledge that is nowhere in the IR or the
+prediction: that the output impedance should stay inside an ATmega-class ADC's
+10 kΩ source-impedance limit, that a sample-and-hold will not charge within the
+conversion window if it does not, why X7R rather than an electrolytic, that the
+fix for a tighter corner is a ±2% C0G capacitor and not a tighter resistor, and
+that a single-connection IN node means this is a filter fragment rather than a
+finished netlist. Counterfactuals at specific alternative values — "34 kΩ drops
+the cutoff 10× to ~100 Hz" — are also outside what `predict()` alone supports.
+
+**Consequence for the cost model.** §4.4's per-design table can be satisfied:
+the explanation becomes **0 calls** rather than "0 or 1", the product works
+offline, and the model call becomes an optional enrichment on top of a
+genuinely useful baseline rather than a requirement for having any explanation
+at all. Whether to keep that enrichment, and on which tier, is a product
+decision this entry does not make.
+
+**Two caveats that must survive into any summary.**
+
+1. **Only the `rc_lowpass` row is a real test.** The five example IRs carry
+   justifications written by the LLM back in Phase 1, so a derived explanation
+   over them is assembling model output, not deriving from requirements. They
+   show what is recoverable from an IR alone, which is a weaker and different
+   claim. The result generalises to a new generator only insofar as its author
+   writes real justifications — which is now a standard to hold generators to,
+   not an accident.
+2. **Marker counting measures form, not quality.** `tests/test_explainer.py`
+   says as much about itself. This experiment can say "clears the bar the test
+   suite enforces"; it cannot say "as good as the model", and the side-by-side
+   above shows it is not. **Criterion 12 — a human reading one cold — remains
+   the only test of whether either version lands, and it is still open.**
+
+**Alternatives rejected:** scoring by length (the model wins on length and that
+proves nothing), and LLM-as-judge (an LLM reading LLM output answers from its
+own training whether or not the text said anything — the same argument that
+kept `scripts/review_panel.py` from being allowed to close criterion 12).

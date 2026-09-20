@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-08-25 (Phase 1 closed; Phase 2 opened)
+> Last updated: 2026-09-20 (Stage 0 opened; Task 0.1 done)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -16,6 +16,237 @@
 > Context: Phase 1 software is done. Since the last memory update the project also
 > shipped a PCB layout engine (Phase 3 scope, pulled forward) and deployed to Railway.
 > Neither was tracked by the memory system until 2026-08-07.
+
+---
+
+# Phase 2 — Stage 0: Instrumentation, harness, contract
+
+> Opened 2026-09-20. Plan of record is `PHASE_2_PLAN_v2.md` §5 Stage 0 — read it
+> for the gates; this file carries the tasks at function level.
+>
+> **Precedence, set 2026-09-20:** `PHASE_2_PLAN_v2.md` > `PRODUCT_MASTER.md` >
+> `EVIDENCE_CLASSES.md` / `ARCHITECTURE_ASSURANCE_CASE.md`. PRODUCT_MASTER is
+> the general flow; v2 refines Phase 2 inside its shape.
+>
+> Amendments X1–X8 in v2 §2 each need a `brain/decisions.md` entry **before**
+> the code they touch. X1 and the `predict()` half of X3 are recorded
+> ([2026-09-20]). X2, X4–X8 are not — do not start Stage 1 or Stage 2 work
+> until the ones they depend on are.
+
+## Task 0.1 — Log the rows ✅ DONE 2026-09-20
+
+v2 §8 action 1, and §4.5: *"Data not logged is gone permanently."*
+
+- `backend/observability/request_log.py` — `RequestLogRow`, `RequestLogContext`,
+  `RequestLogger`, `prompt_hash()`, `log_ctx()`
+- `backend/middleware/instrumentation.py` — `RequestLogMiddleware.dispatch()`
+- `backend/db/models.py` — `RequestLog` table; DDL in `db/schema.sql`
+- Hooked into `api/routes/design.py:generate_design`
+
+**Success criterion:** `tests/test_request_log.py` passes. Met — 35 tests.
+
+Two design decisions worth not re-litigating, both recorded in the module
+docstring: the logger opens its **own** session rather than the request's,
+because `get_db()` rolls back on exception and the rows most worth having come
+from requests that failed; and a write that cannot reach Postgres lands in a
+JSONL sidecar rather than raising, because observability must not be able to
+fail the thing it observes.
+
+**Gate status.** v2's Stage 0 gate is *"every request produces a complete log
+row — G1, schema-enforced."* Completeness is enforced in `RequestLogRow` at
+construction, keyed on what the request did rather than which route it hit. The
+required set is deliberately narrow today and **tightens in Stage 1**: when
+IntentIR exists, `intent_ir` and `generator` join the requirement for
+`COMPLETED`, and `LOG_SCHEMA_VERSION` bumps in the same commit.
+
+## Task 0.2 — `Generator` protocol, interface-contract fields included ✅ DONE 2026-09-20
+
+v2 §8 action 2, and `ARCHITECTURE_ASSURANCE_CASE.md` §8.1: done **before** five
+generators calcify the return type.
+
+`backend/generators/protocol.py` — `Generator` is a structural
+`typing.Protocol`: `name`, `version`, `envelope()`, `generate()`, `predict()`,
+`grid()`, `dependency_closure()`.
+
+**Success criterion:** `tests/test_generator_protocol.py` passes. Met — 34 tests.
+
+**Two invariants are enforced by validators, not convention**, because both are
+stated as G1 gates and a G1 claim that depends on everyone remembering is not
+G1. A refusal cannot be constructed without a named reason — §4.5 makes the
+refusal log the backlog, so the reason is a specification, not an error
+message. An acceptance cannot be constructed without at least one
+`PortContract` — if the interface contract were optional it would be skipped,
+and Stage 3 composition would begin by editing all five generators.
+
+**Front-loaded on purpose.** `PortContract` (composition, Stage 3+),
+`ClaimScope` (claim objects, Stage 3), `grid()` (Task 0.4) and
+`dependency_closure()` (locality, Stage 2) are all unused today and all exist
+so that adding them later does not mean touching every generator. That is the
+entire justification for doing this task second rather than last.
+
+**`Interval` is amendment X1 in one type.** `predict()` returns bands, not
+points: a statement about every component value in tolerance rather than one
+nominal run. `ClaimScope.model` is required, so the MCU-as-100Ω assumption
+(X6, defeater D2) has somewhere to live from the first generator onward.
+
+**Scope note — a wrinkle in v2's own ordering.** v2 §5 puts the concrete
+IntentIR schema in Stage 1 but this protocol, which consumes it, in Stage 0.
+Resolved with `IntentLike`, a structural Protocol covering only what a
+generator reads (`requirements`). Stage 1's concrete model satisfies it with
+no change here. **Task 1.1 is unchanged** — it still owns the real schema,
+validation, `underdetermined` semantics, sign-off/freeze and provenance.
+
+## Task 0.3 — Port the RC low-pass generator and prove `predict()` ✅ DONE 2026-09-20
+
+The first real generator, and the one that makes X1 concrete rather than
+documentary.
+
+`backend/generators/rc_lowpass.py` on the Task 0.2 contract.
+`tests/test_rc_lowpass_generator.py` — 55 tests, ngspice harness reused from
+`tests/test_simulation_accuracy.py`.
+
+**Gate met.** `predict()` versus ngspice at all seven declared grid points,
+100 Hz – 100 kHz: **worst deviation 0.0000%**, the residual being ngspice's
+7-significant-figure print precision rather than disagreement. Same result the
+criterion-11 harness reports for the netlist generator, which is the expected
+outcome — both sides are the same mathematics, and that is exactly why the
+negative control below is the part that carries weight.
+
+**Three things worth not re-deriving:**
+
+- **The gate compares like with like.** `predict()` returns a band over the
+  tolerance box; ngspice simulates one nominal netlist. Asserting the
+  simulated point falls inside a ±10% band would pass on almost any
+  prediction. The gate therefore pins the box to the netlist's exact component
+  values via degenerate intervals and compares point against point. The band
+  is asserted separately, against the worked example in the research report
+  (R ∈ [1574, 1606] Ω, C ∈ [90, 110] nF → 900.7–1123.3 Hz).
+- **There is a negative control.** A 20% capacitor shift must push the
+  measured cutoff outside the 2% gate. A gate that only ever passes tests
+  nothing — the same argument that put the injected-5%-error check in
+  `test_simulation_accuracy.py`.
+- **`method="monotone_corners"`, not `sampled`.** `f_c` is monotone decreasing
+  in both R and C, so the band edges are opposite corners of the box and two
+  evaluations give the exact worst case. EVIDENCE_CLASSES §3.2 grades those
+  differently, and it is the difference between a G1 claim and a G6 one.
+
+**Component choice is deterministic**: fixed capacitor catalogue in declaration
+order, R snapped to E96 in log space, ties broken by catalogue position. Note
+E96 ≠ E24 — 4.7 kΩ is not a 1% value, and the nearest are 4.64 k and 4.75 k.
+`IR_003`'s justification claims 1.59 kΩ is "E24 nearest", which is wrong on
+both counts; this generator does not copy that.
+
+**Byte-identical determinism is still blocked on Task 2.3.** `circuit_id`
+defaults to a fresh `uuid4` per instantiation. `test_deterministic_modulo_circuit_id`
+asserts everything the generator controls is reproducible and will be the test
+that proves full byte-identity when 2.3 lands. Deliberately not worked around
+locally.
+
+## Task 0.4 — CI envelope-grid harness with a mutation check ✅ DONE 2026-09-20
+
+**M1** in `ARCHITECTURE_ASSURANCE_CASE.md` §7, and the refutation of defeater
+**D-G** — *"a generator bug makes `predict()` confidently wrong, and nothing
+catches it."* That document ranks it the highest-priority doubt to close.
+
+`backend/validation/envelope_grid.py` — a module rather than test-local code,
+because Stage 3 runs the same sweep across the generator library and Stage 3's
+claim objects will want the results as evidence.
+`tests/test_envelope_grid.py` — 24 tests.
+
+**Both gates met:**
+
+```
+control: rc_lowpass@0.1.0: 7/7 points within 2%, worst 0.0000%
+P5:  DETECTED — 7/7 points outside 2%, worst  4.8403%
+P20: DETECTED — 7/7 points outside 2%, worst 16.7323%
+X10: DETECTED — 7/7 points outside 2%, worst 90.0000%
+```
+
+**The design decision that mattered, and the number that justifies it.** The
+gate is the deviation from `Interval.nominal` — the generator's claim at its
+intended component values — *not* whether the measurement lands inside the
+tolerance band. Under the P5 arm every failing point reports **`in-band
+True`**: a 5% capacitor fault sits comfortably inside a band that is ±10% wide
+because the capacitor is a 10% part. **A harness gated on band containment
+would have passed the entire seeded fault.**
+`test_band_containment_would_not_have_caught_the_fault` pins exactly that, and
+will start failing if the band ever tightens enough to make the point moot.
+
+**A blindness bug caught in design, before it was written.** An earlier draft
+read the realized component values back out of the generated design and pinned
+`predict()` to them. Under a mutation arm that reads the *mutated* values, so
+the claim and the design would have agreed again and the harness would have
+been blind to the one fault it exists to catch. The claim under test is what
+the generator predicts **from the intent**, compared against what the design it
+produced actually does.
+
+**A point that cannot be evaluated is a failure, never a skip** — a refused
+grid point, a generator crash, a non-finite measurement, or a `measure()` whose
+names do not intersect `predict()`'s. A harness that quietly drops what it
+cannot handle reports a clean sweep over whatever happened to work.
+
+**`MatrixReport.passed` requires both arms.** The clean design must pass *and*
+every seeded fault must be caught. A detector that fails everything is not a
+detector, and each half alone is satisfiable by a broken harness.
+
+## Task 0.5 — The explanation-derivability test ✅ DONE 2026-09-20 — **qualified yes**
+
+v2 §8 action 3 and §4.4, "the single highest-leverage experiment in Phase 2".
+
+`scripts/explanation_derivability.py` · `backend/ai/derived_explainer.py` ·
+`tests/test_derived_explainer.py` (24 tests).
+
+**Answer recorded in full in `brain/decisions.md` [2026-09-20] — read it there,
+not here.** In one line: the structural explanation is derivable with **zero API
+calls** and clears the bar `tests/test_explainer.py` enforces (6/6 cases); the
+domain-knowledge layer is not.
+
+Six designs, derived versus live model, scored on the repo's existing markers.
+Derived: 6/6 clear the bar, 6/6 name every component, 0 calls. The reason it
+works is architectural — a deterministic generator already knows why it chose
+what it chose, and `rc_lowpass` writes that rule into each `justification` as it
+builds. Nothing is invented; reasons that already exist as data are assembled.
+
+**What the model still supplies** and `predict()` cannot: ADC source-impedance
+limits, sample-and-hold charging, X7R versus electrolytic, "use a ±2% C0G, not a
+tighter resistor", and that a single-connection IN node means a filter fragment
+rather than a finished netlist.
+
+**Two caveats that must survive into any summary.** Only the `rc_lowpass` row is
+a real test — the five example IRs carry Phase 1 LLM-written justifications, so
+a derived explanation over them assembles model output rather than deriving
+anything. And marker counting measures form, not quality: **criterion 12 is
+still the only test of whether either version lands, and it is still open.**
+
+### Found while running it — two defects in the shipping explainer
+
+1. **`explainer.py` crashed on every call.** `response.content[0].text` assumed
+   block zero is text; the configured `AI_MODEL` reasons first, so block zero is
+   a `ThinkingBlock` and every explanation raised `AttributeError`. Fixed with
+   `_first_text()`; `tests/test_explainer.py::TestReasoningModelResponses`
+   pins it. The tool_use modules were **verified against the live API and left
+   alone** — forced `tool_choice` suppresses thinking blocks, so
+   `content[0].input` is correct there.
+2. **`max_tokens=2048` is too small for a reasoning model** — some calls spent
+   the whole budget thinking and returned no text block at all. Not changed:
+   raising it is a product decision with a cost attached. The experiment widens
+   the budget for its own calls only, so the comparison measures the model's
+   explanation rather than truncation.
+
+### Also found — an environment trap
+
+`ANTHROPIC_BASE_URL` is exported in the Claude Code shell as
+`https://api.anthropic.com`, and **pydantic-settings gives environment variables
+precedence over `.env`** — so the OpenRouter routing in `.env` is silently
+ignored and an OpenRouter key goes to Anthropic, which rejects it as invalid.
+Anyone debugging "API key is invalid" should check this first.
+
+## Not in Stage 0 — do not start
+
+IntentIR, the form producer, registry dispatch (Stage 1) · patching on IntentIR
+(Stage 2) · claim objects and `grade_floor` (Stage 3) · the proof compiler
+(Stage 4). And per v2 §5: no buck/boost, no labelled ring, no PCB work, no
+fine-tuning.
 
 ---
 
