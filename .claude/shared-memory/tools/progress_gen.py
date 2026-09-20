@@ -338,6 +338,23 @@ PLANNED = {
             ("explanation_markers", "function", "The consequential markers test_explainer.py enforces, reused verbatim"),
         ],
     },
+    "core/intent_ir": {
+        "file": "backend/core/intent_ir.py",
+        "test_file": "tests/test_intent_ir.py",
+        "entries": [
+            ("Producer",     "class", "form | llm — §4.2 makes the form the reference producer"),
+            ("Requirements", "class", "function / targets / constraints / preferences"),
+            ("SignOff",      "class", "Who agreed, when, and to which property_hash"),
+            ("Provenance",   "class", "Which producer wrote it; an LLM must name its model"),
+            ("IntentIR",     "class", "The requirement as an artifact — A1, the architecture's one analytic claim"),
+            ("IntentIR.is_answerable",      "method", "Stage 1 gate: underdetermined non-empty → ask, never generate"),
+            ("IntentIR.open_questions",     "method", "The fields the user still has to supply"),
+            ("IntentIR.requirements_hash",  "method", "Key-order-stable hash; the §4.4 cache key and the sign-off pin"),
+            ("IntentIR.sign_off",           "method", "Signed copy, refused while anything is underdetermined"),
+            ("IntentIR.is_intact",          "method", "Whether the requirements still match what was signed"),
+            ("IntentIR.with_requirements",  "method", "New version; the signature does not travel with an edit"),
+        ],
+    },
 }
 
 STATUS_ICON = {

@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-20T13:44:18.762852Z",
-  "generated_from_commit": "5bd3ad8",
+  "generated_at": "2026-09-20T19:19:12.725736Z",
+  "generated_from_commit": "1fc0eec",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -238,13 +238,19 @@
       "file": "backend/ai/derived_explainer.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "core/intent_ir": {
+      "status": "verified_done",
+      "file": "backend/core/intent_ir.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 636,
+    "passed": 663,
     "failed": 0,
     "skipped": 23,
-    "total": 636
+    "total": 663
   },
   "phase1_criteria": [
     {
@@ -315,13 +321,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "1fc0eec fix: address Copilot review — seven findings, all legitimate",
     "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state",
     "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator",
     "039ad1d fix(ai): explainer crashed on every call with a reasoning model",
-    "3cc376f fix(tools): the memory trackers must report their own failures",
-    "1c20106 docs: closed-form predict() becomes the per-request truth (X1/X3)"
+    "3cc376f fix(tools): the memory trackers must report their own failures"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 140 ++++++++++\n .claude/shared-memory/brain/timeline.md     |  20 ++\n .claude/shared-memory/plan/current_phase.md | 233 ++++++++++++++-\n .claude/shared-me",
+  "last_diff_stat": ".claude/shared-memory/progress.yaml        | 38 +++++++++++++--------------\n .claude/shared-memory/state.json           | 20 +++++++-------\n .claude/shared-memory/tools/regen_state.py | 27 +++++++++++",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

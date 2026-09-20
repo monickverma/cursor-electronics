@@ -97,6 +97,7 @@ MODULES = {
     "generators/rc_lowpass":      {"file": "backend/generators/rc_lowpass.py",      "test": "tests/test_rc_lowpass_generator.py", "phase": 2},
     "validation/envelope_grid":   {"file": "backend/validation/envelope_grid.py",   "test": "tests/test_envelope_grid.py",        "phase": 2},
     "ai/derived_explainer":       {"file": "backend/ai/derived_explainer.py",       "test": "tests/test_derived_explainer.py",    "phase": 2},
+    "core/intent_ir":             {"file": "backend/core/intent_ir.py",             "test": "tests/test_intent_ir.py",            "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -461,7 +462,12 @@ def main():
     print("\n📋  Updating progress.yaml...")
     prog_script = TOOLS_DIR / "progress_gen.py"
     if prog_script.exists():
-        code, out, err = run(["python", str(prog_script)])
+        # progress_gen.py runs the whole suite itself to map tests to entries,
+        # so it needs the same headroom run_tests() does. The default 120s was
+        # silently too small once the suite passed two minutes — caught only
+        # because the exit-code check below now reports it. Third instance of
+        # this root cause; the first two were silent.
+        code, out, err = run(["python", str(prog_script)], timeout=900)
         # The exit code used to be discarded, and the keyword filter below does
         # not match a Python traceback — so when progress_gen.py started dying
         # on a Windows encoding error this step printed nothing and looked

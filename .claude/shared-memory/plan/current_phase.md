@@ -241,6 +241,103 @@ precedence over `.env`** — so the OpenRouter routing in `.env` is silently
 ignored and an OpenRouter key goes to Anthropic, which rejects it as invalid.
 Anyone debugging "API key is invalid" should check this first.
 
+---
+
+# Phase 2 — Stage 1: IntentIR, registry, form, hard abstention
+
+> Opened 2026-09-21. Gates in `PHASE_2_PLAN_v2.md` §5 Stage 1.
+
+## Task 1.1 — IntentIR schema ✅ DONE 2026-09-21
+
+`backend/core/intent_ir.py` · `tests/test_intent_ir.py` (27 tests).
+
+The artifact `ARCHITECTURE_ASSURANCE_CASE.md` §2 rests the architecture on:
+only this architecture materializes the requirement before the design exists.
+Where it is not written down, *"this circuit does what was asked"* is not
+verified badly — it is inexpressible.
+
+**`requirements` is validated through `Requirements` and stored as a mapping.**
+Generators read it through the `IntentLike` protocol frozen in Task 0.2, which
+types it as a `Mapping`. Keeping it a mapping is what lets every generator
+consume an IntentIR without reopening that protocol —
+`test_a_real_generator_accepts_it_end_to_end` drives `RCLowPassGenerator`
+through envelope → generate → predict on a real IntentIR, which is the
+evidence that the Stage 0 ordering call was right.
+
+**Three invariants worth not re-deriving:**
+
+- **Frozen after construction.** An editable record makes `property_hash`
+  meaningless and the Stage 2 patch chain unreadable. Edits go through
+  `with_requirements()`, which returns a new version.
+- **An incomplete specification cannot be signed**, at the schema level and
+  not only in the helper. A signature on a spec still missing pieces looks
+  like agreement, which is what sign-off exists to prevent.
+- **A signature does not survive an edit to what it signed.** Changed
+  requirements are by definition not the ones agreed to. This is the cheap
+  version of Stage 4's freeze and the mitigation for defeater **D-B**.
+
+`requirements_hash()` is key-order stable, so two producers that asked for the
+same thing hash the same — required for the §4.4 cache and for sign-off to
+survive a round trip.
+
+## Task 1.2 — Generator registry and dispatch
+
+- `backend/generators/registry.py` — register generators, dispatch an intent
+  to the ones whose `envelope()` accepts it
+- Deterministic dispatch keyed on circuit class. The research report is
+  explicit that an LLM adds nothing to solver choice at tiers 0–2 and that a
+  deterministic dispatcher is easier to defend.
+- Refusals from every registered generator are collected, not just the first —
+  §4.5 makes the refusal log the backlog, and "nothing accepted this" is a
+  weaker backlog entry than the set of reasons.
+
+**Success criterion:** `tests/test_registry.py` — an intent inside one
+generator's envelope dispatches to it; an intent outside every envelope is
+refused with all the reasons; a non-conforming generator is rejected at
+registration with the gaps named (`conformance_gaps` already does this).
+
+## Task 1.3 — Form producer, generated from the registry
+
+- `backend/ai/form_producer.py` — build the field set from the registry so the
+  form *is* the envelope catalogue
+- Zero API calls. This is what makes the system provably LLM-optional (§4.2).
+
+**Success criterion:** `tests/test_form_producer.py` — produces a valid
+IntentIR for every registered generator with 0 API calls, and the field set
+matches what the registry declares.
+
+## Task 1.4 — LLM producer, and X5 — **needs a decision first**
+
+Blocked on the X5 entry in `brain/decisions.md`. Recommendation on record:
+accept X5, but make a schema failure a **loud** 422 carrying the raw tool
+input rather than a silent one-shot failure — "schema failure is structurally
+impossible" is an empirical claim about frontier models (§4.3 concedes it is
+only structural under constrained decoding, which is unbuilt), so it should
+announce itself if it ever breaks.
+
+Note the interaction with Task 1.5: `circuit_reasoner.py` *is* a path by which
+the LLM writes CircuitIR, so X5 may apply to the new IntentIR producer rather
+than to that module's `except` clauses.
+
+## Task 1.5 — Remove every path by which the LLM can write CircuitIR
+
+**Success criterion:** a test asserts it, rather than prose claiming it. This
+is the architecture's load-bearing invariant and currently has no mechanical
+guard.
+
+## Task 1.6 — Labelled 200-case corpus, false-acceptance rate
+
+Reported **as a rate, with the corpus named** — v2 §1.2 calls the original
+"false acceptance at zero" unmeasurable as written.
+
+## Task 1.7 — Tighten the request-log row
+
+`intent_ir` and `generator` join the required set for a row that produced a
+design; bump `LOG_SCHEMA_VERSION` in the same commit. The Stage 0 gate
+ratchets as promised.
+
+---
+
 ## Not in Stage 0 — do not start
 
 IntentIR, the form producer, registry dispatch (Stage 1) · patching on IntentIR

@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-20T13:46:11.146261Z'
+generated_at: '2026-09-20T19:21:18.894454Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -1015,11 +1015,100 @@ files:
         line: 286
         test_file: tests/test_derived_explainer.py
     module_status: done
+  core/intent_ir:
+    file: backend/core/intent_ir.py
+    exists: true
+    test_file: tests/test_intent_ir.py
+    test_file_status: passing
+    entries:
+      Producer:
+        status: verified_done
+        type: class
+        description: 'Which of the two producers wrote this. §4.2: the form is the
+          reference'
+        signature: null
+        line: 55
+        test_file: tests/test_intent_ir.py
+      Requirements:
+        status: verified_done
+        type: class
+        description: What was asked for, split by how each part constrains the design.
+        signature: null
+        line: 67
+        test_file: tests/test_intent_ir.py
+      SignOff:
+        status: verified_done
+        type: class
+        description: A human agreeing to a specification, and to exactly this version
+          of it.
+        signature: null
+        line: 93
+        test_file: tests/test_intent_ir.py
+      Provenance:
+        status: verified_done
+        type: class
+        description: Where this IntentIR came from. Needed to answer the §4.5 questions
+          —
+        signature: null
+        line: 111
+        test_file: tests/test_intent_ir.py
+      IntentIR:
+        status: verified_done
+        type: class
+        description: The requirement as an artifact. Satisfies `generators.protocol.IntentLike`.
+        signature: null
+        line: 135
+        test_file: tests/test_intent_ir.py
+      IntentIR.is_answerable:
+        status: verified_done
+        type: method
+        description: Whether this intent can be built from as it stands.
+        signature: IntentIR.is_answerable() -> bool
+        line: 183
+        test_file: tests/test_intent_ir.py
+      IntentIR.open_questions:
+        status: verified_done
+        type: method
+        description: The fields the user still has to supply, in declared order.
+        signature: IntentIR.open_questions() -> List[str]
+        line: 193
+        test_file: tests/test_intent_ir.py
+      IntentIR.requirements_hash:
+        status: verified_done
+        type: method
+        description: Stable hash of the requirements alone.
+        signature: IntentIR.requirements_hash() -> str
+        line: 199
+        test_file: tests/test_intent_ir.py
+      IntentIR.sign_off:
+        status: verified_done
+        type: method
+        description: Return a signed copy, pinned to the requirements as they stand
+          now.
+        signature: 'IntentIR.sign_off(by: str) -> ''IntentIR'''
+        line: 211
+        test_file: tests/test_intent_ir.py
+      IntentIR.is_intact:
+        status: verified_done
+        type: method
+        description: Whether the requirements still match what was signed.
+        signature: IntentIR.is_intact() -> bool
+        line: 231
+        test_file: tests/test_intent_ir.py
+      IntentIR.with_requirements:
+        status: verified_done
+        type: method
+        description: A new version carrying different requirements.
+        signature: 'IntentIR.with_requirements(requirements: Mapping[str, Any]) ->
+          ''IntentIR'''
+        line: 246
+        test_file: tests/test_intent_ir.py
+    module_status: done
 summary:
-  entries_total: 108
-  entries_verified_done: 90
+  entries_total: 119
+  entries_verified_done: 101
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 83.3
+  pct_verified: 84.9
