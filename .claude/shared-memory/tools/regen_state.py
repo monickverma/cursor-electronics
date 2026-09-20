@@ -88,6 +88,15 @@ MODULES = {
     "pcb_engine/render_pretty":{"file": "backend/pcb_engine/render_pretty.py",      "test": None,                               "phase": 3},
     "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": "tests/test_pcb_route.py",          "phase": 3},
+
+    # ── Phase 2 — Validation Engine ──────────────────────────────────────────
+    # Stage 0 instrumentation. PHASE_2_PLAN_v2.md §4.5.
+    "observability/request_log":  {"file": "backend/observability/request_log.py",  "test": "tests/test_request_log.py",        "phase": 2},
+    "middleware/instrumentation": {"file": "backend/middleware/instrumentation.py", "test": "tests/test_request_log.py",        "phase": 2},
+    "generators/protocol":        {"file": "backend/generators/protocol.py",        "test": "tests/test_generator_protocol.py", "phase": 2},
+    "generators/rc_lowpass":      {"file": "backend/generators/rc_lowpass.py",      "test": "tests/test_rc_lowpass_generator.py", "phase": 2},
+    "validation/envelope_grid":   {"file": "backend/validation/envelope_grid.py",   "test": "tests/test_envelope_grid.py",        "phase": 2},
+    "ai/derived_explainer":       {"file": "backend/ai/derived_explainer.py",       "test": "tests/test_derived_explainer.py",    "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -178,15 +187,34 @@ def git_diff_stat():
 # ── Test runner ───────────────────────────────────────────────────────────────
 def run_tests():
     env = {**os.environ, "PYTHONPATH": str(BACKEND)}
+    # 2026-09-20: this was 180s. The suite grew past it — ngspice runs the
+    # envelope grid and the accuracy harness — so pytest was killed, the
+    # regexes below matched nothing, and zeros were written to state.json:
+    # 0 tests, every module untested, on a suite that was fully green. A
+    # derived file that reports total collapse is worse than a stale one,
+    # because AGENTS.md says to trust it over everything else.
     code, out, err = run(
         ["python", "-m", "pytest", "tests/", "--tb=no", "-v", "--no-header"],
-        env=env, timeout=180,
+        env=env, timeout=900,
     )
     text = out + err
     passed = int(re.search(r"(\d+) passed", text).group(1)) if re.search(r"(\d+) passed", text) else 0
     failed = int(re.search(r"(\d+) failed", text).group(1)) if re.search(r"(\d+) failed", text) else 0
     skipped = int(re.search(r"(\d+) skipped", text).group(1)) if re.search(r"(\d+) skipped", text) else 0
     total = passed + failed
+
+    # Refuse to write a result we did not actually measure. Aborting here
+    # leaves the previous state.json in place, which is recoverable; writing
+    # zeros over it is not.
+    if total == 0 and skipped == 0:
+        reason = "timed out" if "TIMEOUT" in err else f"exit {code}"
+        print(f"  [ABORT] pytest produced no parseable summary ({reason}).")
+        for line in (err or out).strip().splitlines()[-8:]:
+            print(f"     {line}")
+        raise SystemExit(
+            "regen_state.py: refusing to write state.json from an unmeasured "
+            "test run — state.json and progress.yaml are unchanged."
+        )
     icon = "OK" if failed == 0 and total > 0 else ("FAIL" if failed > 0 else "??")
     print(f"  [{icon}] {passed} passed, {failed} failed, {skipped} skipped")
     return {"passed": passed, "failed": failed, "skipped": skipped, "total": total, "raw": text}
@@ -417,6 +445,15 @@ def main():
     prog_script = TOOLS_DIR / "progress_gen.py"
     if prog_script.exists():
         code, out, err = run(["python", str(prog_script)])
+        # The exit code used to be discarded, and the keyword filter below does
+        # not match a Python traceback — so when progress_gen.py started dying
+        # on a Windows encoding error this step printed nothing and looked
+        # like it had worked. progress.yaml went stale for four weeks.
+        # A tool that cannot report its own failure is worse than no tool.
+        if code != 0:
+            print(f"  ❌ progress_gen.py FAILED (exit {code}) — progress.yaml is STALE")
+            for line in (err or out).strip().splitlines()[-6:]:
+                print(f"     {line}")
         for line in (out + err).splitlines():
             if any(k in line for k in ["Summary", "verified", "✅", "❌", "progress.yaml"]):
                 print(f"  {line.strip()}")

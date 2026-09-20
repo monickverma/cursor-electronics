@@ -25,8 +25,19 @@ import ast
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# This script prints emoji. On Windows the console encoding is cp1252, which
+# cannot encode them, so an unguarded run dies with UnicodeEncodeError before
+# writing anything. Commit 0a85755 fixed this in regen_state.py and not here,
+# and because regen_state.py ignored this script's exit code the breakage was
+# silent: progress.yaml stopped regenerating on 2026-08-23 and kept reporting
+# the state of that day for four weeks. Same guard, applied 2026-09-20.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 TOOLS_DIR    = Path(__file__).parent
 MEMORY_ROOT  = TOOLS_DIR.parent
@@ -238,6 +249,93 @@ PLANNED = {
         "test_file": None,
         "entries": [
             ("compile_pcb", "function", "POST /pcb/compile → runs layout engine in-process"),
+        ],
+    },
+
+    # ── Phase 2 — Validation Engine ──────────────────────────────────────────
+    # Stage 0 instrumentation. PHASE_2_PLAN_v2.md §4.5.
+    "observability/request_log": {
+        "file": "backend/observability/request_log.py",
+        "test_file": "tests/test_request_log.py",
+        "entries": [
+            ("Outcome",           "class",    "completed | refused | failed | abandoned | patched"),
+            ("RequestLogRow",     "class",    "One request, one row — completeness enforced at construction"),
+            ("RequestLogContext", "class",    "Per-request scratch space; middleware creates, handler enriches"),
+            ("RequestLogger",     "class",    "Writes rows; own transaction, JSONL fallback, never raises"),
+            ("RequestLogger.record",        "method",   "Persist one row; True if it reached Postgres"),
+            ("RequestLogger.write_fallback","method",   "Sidecar write when Postgres is unreachable"),
+            ("RequestLogger.read_fallback", "method",   "Replay source for rows that never reached Postgres"),
+            ("prompt_hash",       "function", "Stable sha256 of a prompt — half the §4.4 cache key"),
+            ("log_ctx",           "function", "Request's log context, or a throwaway if uninstrumented"),
+        ],
+    },
+    "middleware/instrumentation": {
+        "file": "backend/middleware/instrumentation.py",
+        "test_file": "tests/test_request_log.py",
+        "entries": [
+            ("RequestLogMiddleware",          "class",  "Outermost middleware — a row on every exit path"),
+            ("RequestLogMiddleware.dispatch", "method", "Times the request, flushes the row in a finally"),
+        ],
+    },
+    "generators/protocol": {
+        "file": "backend/generators/protocol.py",
+        "test_file": "tests/test_generator_protocol.py",
+        "entries": [
+            ("IntentLike",        "class",    "The slice of IntentIR a generator reads — Stage 1 model satisfies it structurally"),
+            ("Interval",          "class",    "A quantity over a range, not a point — amendment X1 in one type"),
+            ("Interval.at",               "method", "Degenerate interval — one CI grid point"),
+            ("Interval.contains",         "method", "Is this measurement inside the band"),
+            ("Interval.relative_error",   "method", "Fractional distance to the band; 0.0 inside"),
+            ("ClaimScope",        "class",    "parameters/horizon/model/inputs — EVIDENCE_CLASSES §3.3; model is required"),
+            ("PortContract",      "class",    "Port impedance, current draw, voltage range — composition contract"),
+            ("EnvelopeDecision",  "class",    "Accept with ports, or refuse with a named reason; both enforced"),
+            ("EnvelopeDecision.accept",   "method", "Acceptance carrying its interface contract"),
+            ("EnvelopeDecision.refuse",   "method", "Refusal carrying a backlog-grade reason"),
+            ("Prediction",        "class",    "Closed-form behaviour over a parameter box; scope required"),
+            ("GridSpec",          "class",    "The envelope grid a generator declares for CI — Task 0.4"),
+            ("GridSpec.points",           "method", "Cartesian product of the declared axes"),
+            ("Generator",         "class",    "The contract: name, version, envelope, generate, predict, grid, dependency_closure"),
+            ("conservative_closure", "function", "Every component — sound, vacuous, the honest default"),
+            ("conformance_gaps",     "function", "Which parts of the contract are missing, by name"),
+        ],
+    },
+    "generators/rc_lowpass": {
+        "file": "backend/generators/rc_lowpass.py",
+        "test_file": "tests/test_rc_lowpass_generator.py",
+        "entries": [
+            ("cutoff_hz",          "function", "f_c = 1/(2·pi·R·C) — the closed form X1 makes the truth"),
+            ("snap_to_e96",        "function", "Nearest 1% series value, chosen in log space"),
+            ("select_components",  "function", "Deterministic R/C choice; catalogue order breaks ties"),
+            ("RCLowPassGenerator", "class",    "First generator on the Task 0.2 contract"),
+            ("RCLowPassGenerator.envelope",           "method", "Accept with ports, or refuse naming the offending value"),
+            ("RCLowPassGenerator.predict",            "method", "Closed-form band over the tolerance box; monotone corners"),
+            ("RCLowPassGenerator.generate",           "method", "Deterministic CircuitIR (byte-identity blocked on Task 2.3)"),
+            ("RCLowPassGenerator.grid",               "method", "Seven points, 100 Hz – 100 kHz, for the CI gate"),
+            ("RCLowPassGenerator.dependency_closure", "method", "Narrow closure — supply_v cannot touch R1"),
+        ],
+    },
+    "validation/envelope_grid": {
+        "file": "backend/validation/envelope_grid.py",
+        "test_file": "tests/test_envelope_grid.py",
+        "entries": [
+            ("GridPointResult",  "class",    "One grid point, one quantity, one verdict"),
+            ("GridReport",       "class",    "One generator's sweep; gate is deviation from nominal"),
+            ("GridReport.summary",        "method", "Human-readable failures, named by point"),
+            ("GridAdapter",      "class",    "Circuit-class glue: grid point → intent, design → measurement"),
+            ("run_grid",         "function", "Sweep the declared envelope; unevaluable points fail, never skip"),
+            ("scale_component_value", "function", "Seed a fault by scaling one passive; deep-copies"),
+            ("MutatedGenerator", "class",    "generate() wrong by a known factor, predict() untouched — D-G's shape"),
+            ("MatrixReport",     "class",    "Control arm plus mutation arms; sound only if both hold"),
+            ("run_matrix",       "function", "M1 fault-injection matrix — ARCHITECTURE_ASSURANCE_CASE §7"),
+        ],
+    },
+    "ai/derived_explainer": {
+        "file": "backend/ai/derived_explainer.py",
+        "test_file": "tests/test_derived_explainer.py",
+        "entries": [
+            ("DerivedExplainer", "class",    "Explanation with zero API calls — Task 0.5, §4.4"),
+            ("DerivedExplainer.explain", "method", "Requirements + predict() + generator justifications → prose"),
+            ("explanation_markers", "function", "The consequential markers test_explainer.py enforces, reused verbatim"),
         ],
     },
 }
