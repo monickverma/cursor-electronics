@@ -258,6 +258,16 @@ class RCLowPassGenerator:
             )
 
         supply_v = _supply_v(intent)
+        # Checked before anything downstream can raise on it. A negative or
+        # non-finite supply reaches `_ports()` as Interval(lo=0, hi=supply_v),
+        # which Pydantic rejects — breaking the contract that envelope() never
+        # raises, and turning a bad intent into a crash rather than a named
+        # refusal.
+        if not math.isfinite(supply_v) or supply_v <= 0:
+            return EnvelopeDecision.refuse(
+                f"supply_v={supply_v:g} is not a usable positive rail voltage"
+            )
+
         selection = select_components(target, supply_v)
         if selection is None:
             return EnvelopeDecision.refuse(
@@ -327,12 +337,19 @@ class RCLowPassGenerator:
         EVIDENCE_CLASSES §3.2 grades those differently, and the distinction is
         the difference between a G1 claim and a G6 one.
         """
+        # The envelope is the authority on what this generator will speak to,
+        # so predict() asks it rather than re-deriving a weaker version.
+        # Checking only that a cutoff and a catalogue pair exist let a caller
+        # obtain a confident claim for an intent the generator had already
+        # refused — a band-pass request, or a tolerance the selected pair
+        # cannot meet. A claim outside the declared envelope is exactly the
+        # thing `envelope()` exists to prevent.
+        decision = self.envelope(intent)
+        if not decision.accepted:
+            raise ValueError(f"predict() called on a refused intent: {decision.reason}")
+
         target = _target_cutoff(intent)
-        if target is None:
-            raise ValueError("predict() requires targets.cutoff_hz — call envelope() first")
         selection = select_components(target, _supply_v(intent))
-        if selection is None:
-            raise ValueError("predict() called on an intent envelope() refuses")
 
         r_band, c_band = self._boxes(selection, box)
 

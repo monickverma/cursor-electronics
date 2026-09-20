@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-20T12:46:57.202390Z",
-  "generated_from_commit": "f54752f",
+  "generated_at": "2026-09-20T13:44:18.762852Z",
+  "generated_from_commit": "5bd3ad8",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -241,10 +241,10 @@
     }
   },
   "test_summary": {
-    "passed": 625,
+    "passed": 636,
     "failed": 0,
     "skipped": 23,
-    "total": 625
+    "total": 636
   },
   "phase1_criteria": [
     {
@@ -315,13 +315,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "f54752f Add lablab submission cover and slides",
-    "11185ff Run on AMD GPUs via vLLM, and license under AGPL-3.0",
-    "b8e63b9 brain: close Phase 1 at 11/12, defer criterion 12 with a trigger, open Phase 2",
-    "cec1a25 brain: record the PCB decision in the file that owns it",
-    "9ef38fb brain: close Task 4, and register the test that was earning nothing"
+    "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state",
+    "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator",
+    "039ad1d fix(ai): explainer crashed on every call with a reasoning model",
+    "3cc376f fix(tools): the memory trackers must report their own failures",
+    "1c20106 docs: closed-form predict() becomes the per-request truth (X1/X3)"
   ],
-  "last_diff_stat": "docs/submission/Circuit-OS-slides.pdf | Bin 0 -> 446380 bytes\n docs/submission/cover.png             | Bin 0 -> 425006 bytes\n 2 files changed, 0 insertions(+), 0 deletions(-)",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 140 ++++++++++\n .claude/shared-memory/brain/timeline.md     |  20 ++\n .claude/shared-memory/plan/current_phase.md | 233 ++++++++++++++-\n .claude/shared-me",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

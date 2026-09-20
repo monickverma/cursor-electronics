@@ -41,12 +41,16 @@ for _stream in (sys.stdout, sys.stderr):
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 from ai.derived_explainer import DerivedExplainer, explanation_markers  # noqa: E402
+from ai.explainer import CONSEQUENTIAL_MARKER_BAR  # noqa: E402
 from core.ir_examples import IR_001, IR_002, IR_003, IR_004, IR_005  # noqa: E402
 from core.ir_schema import CircuitIR  # noqa: E402
 from core.ir_validator import validate_ir  # noqa: E402
 from generators.rc_lowpass import RCLowPassGenerator  # noqa: E402
 
-MARKER_THRESHOLD = 3  # tests/test_explainer.py requires >= 3 distinct markers
+#: Imported, not restated. The bar belongs to ai/explainer.py alongside the
+#: marker list; a literal here could drift from the one the test suite enforces
+#: and this experiment would silently report against a different standard.
+MARKER_THRESHOLD = CONSEQUENTIAL_MARKER_BAR
 
 
 class _Intent:

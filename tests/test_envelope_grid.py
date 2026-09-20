@@ -151,6 +151,30 @@ class TestHarnessLogic:
         text = result.summary()
         assert "FAIL" in text and "x=1" in text
 
+    def test_multi_output_rows_are_counted_as_checks_not_points(self):
+        # run_grid appends one row per (point, quantity). Reporting rows as
+        # "points" overstates the sweep for any generator whose measure()
+        # returns more than one quantity — two quantities at one point read as
+        # two points.
+        class TwoOutputs(_FakeGenerator):
+            def predict(self, intent, box=None):
+                n = 10.0 * intent["x"]
+                return Prediction(
+                    quantities={
+                        "value": Interval(lo=n * 0.9, hi=n * 1.1, nominal=n, units="u"),
+                        "other": Interval(lo=n * 1.9, hi=n * 2.1, nominal=n * 2, units="u"),
+                    },
+                    scope=ClaimScope(model="fake"),
+                )
+
+        result = run_grid(_fake_adapter(
+            TwoOutputs(), lambda d: {"value": 10.0 * d["x"], "other": 20.0 * d["x"]}
+        ))
+        assert len(result.results) == 6      # 3 points x 2 quantities
+        assert result.point_count == 3
+        assert "3 grid points" in result.summary()
+        assert "6 checks" in result.summary()
+
     def test_report_identifies_the_generator_and_version(self):
         result = run_grid(_fake_adapter(_FakeGenerator(), lambda d: {"value": 10.0 * d["x"]}))
         assert result.generator == "fake@1.0.0"
@@ -296,12 +320,18 @@ class TestFaultInjectionMatrix:
     def test_a_matrix_with_no_seeded_faults_is_not_sound(self):
         # The third way to build a broken detector, after "always passes" and
         # "always fails": run no faults at all and report soundness vacuously.
-        # Same mistake as a grid that skips the points it cannot evaluate.
-        report = run_matrix(_rc_adapter(), "C1", {"P5": 1.05})
-        empty = report.model_copy(update={"mutations": {}})
-        assert empty.control_passed
-        assert empty.undetected == []
-        assert not empty.passed, "a matrix that seeded nothing reported itself sound"
+        # Reachable through the API now that `{}` is honoured rather than
+        # being swapped for the defaults — previously this could only be
+        # constructed by hand, which meant the guard was untestable in situ.
+        report = run_matrix(_rc_adapter(), "C1", {})
+        assert report.mutations == {}
+        assert report.control_passed
+        assert report.undetected == []
+        assert not report.passed, "a matrix that seeded nothing reported itself sound"
+
+    def test_explicit_empty_mutations_is_not_treated_as_unspecified(self):
+        assert run_matrix(_rc_adapter(), "C1", {}).mutations == {}
+        assert set(run_matrix(_rc_adapter(), "C1", None).mutations) == set(MUTATIONS)
 
     def test_control_arm_is_required_for_the_matrix_to_pass(self):
         # A detector that fails everything is not a detector. `passed` is only

@@ -114,10 +114,23 @@ class GridReport(BaseModel):
         errors = [r.error for r in self.results if r.error is not None]
         return max(errors) if errors else 0.0
 
+    @property
+    def point_count(self) -> int:
+        """
+        Distinct grid points visited.
+
+        Not the same as `len(results)`: a generator whose `measure()` reports
+        several quantities produces one row per (point, quantity), so counting
+        rows as points overstates the sweep. Reported separately rather than
+        conflated.
+        """
+        return len({tuple(sorted(r.point.items())) for r in self.results})
+
     def summary(self) -> str:
         head = (
             f"{self.generator}: {len(self.results) - len(self.failures)}/"
-            f"{len(self.results)} points within {self.tolerance:.0%}, "
+            f"{len(self.results)} checks within {self.tolerance:.0%} "
+            f"across {self.point_count} grid points, "
             f"worst {self.worst_error:.4%}"
         )
         if self.passed:
@@ -380,7 +393,7 @@ class MatrixReport(BaseModel):
             verdict = "DETECTED" if not report.passed else "MISSED"
             lines.append(
                 f"{name}: {verdict} — {len(report.failures)}/{len(report.results)} "
-                f"points outside {report.tolerance:.0%}, worst {report.worst_error:.4%}"
+                f"checks outside {report.tolerance:.0%}, worst {report.worst_error:.4%}"
             )
         return "\n".join(lines)
 
@@ -398,7 +411,13 @@ def run_matrix(
     """
     control = run_grid(adapter, tolerance)
     arms: Dict[str, GridReport] = {}
-    for label, factor in (mutations or MUTATIONS).items():
+    # `mutations or MUTATIONS` would treat an explicitly empty mapping as
+    # "unspecified" and silently seed the defaults, so a caller could not ask
+    # for a control-only run — and the no-seeded-faults soundness check could
+    # not be reached through this API at all. None means unspecified; {} means
+    # none, and `MatrixReport.passed` will correctly refuse it.
+    selected = MUTATIONS if mutations is None else mutations
+    for label, factor in selected.items():
         mutated = GridAdapter(
             generator=MutatedGenerator(adapter.generator, component_id, factor),
             intent_for=adapter.intent_for,

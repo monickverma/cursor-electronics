@@ -201,14 +201,31 @@ def run_tests():
     passed = int(re.search(r"(\d+) passed", text).group(1)) if re.search(r"(\d+) passed", text) else 0
     failed = int(re.search(r"(\d+) failed", text).group(1)) if re.search(r"(\d+) failed", text) else 0
     skipped = int(re.search(r"(\d+) skipped", text).group(1)) if re.search(r"(\d+) skipped", text) else 0
+    errors = int(re.search(r"(\d+) errors?\b", text).group(1)) if re.search(r"(\d+) errors?\b", text) else 0
     total = passed + failed
 
-    # Refuse to write a result we did not actually measure. Aborting here
-    # leaves the previous state.json in place, which is recoverable; writing
-    # zeros over it is not.
+    # Refuse to write a result we did not actually measure. Aborting leaves the
+    # previous state.json in place, which is recoverable; writing over it with
+    # a number we did not measure is not.
+    #
+    # Three ways a run can be unmeasurable, and the first version caught only
+    # the first:
+    #   - nothing parseable at all (killed, crashed, no summary)
+    #   - collection errors: "100 passed, 1 error" leaves failed == 0, so the
+    #     run looks clean while some tests never ran
+    #   - a non-zero exit with no failures to explain it
+    # A run with genuine test failures is measured, and is recorded as such —
+    # `broken` modules are exactly what progress.yaml exists to show.
+    abort_reason = None
     if total == 0 and skipped == 0:
-        reason = "timed out" if "TIMEOUT" in err else f"exit {code}"
-        print(f"  [ABORT] pytest produced no parseable summary ({reason}).")
+        abort_reason = "timed out" if "TIMEOUT" in err else f"no parseable summary (exit {code})"
+    elif errors:
+        abort_reason = f"{errors} collection/setup error(s) — some tests never ran"
+    elif code != 0 and failed == 0:
+        abort_reason = f"exit {code} with no reported failures"
+
+    if abort_reason:
+        print(f"  [ABORT] pytest run is not measurable: {abort_reason}.")
         for line in (err or out).strip().splitlines()[-8:]:
             print(f"     {line}")
         raise SystemExit(

@@ -79,12 +79,19 @@ class RequestLogRow(BaseModel):
     (schema-enforced)." Completeness is enforced here, at construction, rather
     than checked by sampling afterwards: an incomplete row cannot be built.
 
-    What counts as complete is outcome-dependent, and tightens as later stages
-    land. Today a COMPLETED or REFUSED request must carry a `prompt_hash`; a
-    FAILED one need not, because it may have died before the body was read.
+    What counts as complete is keyed on **what the request did**, not on which
+    route it hit, and it tightens as later stages land. Today:
+
+      - a REFUSED row must carry a `refusal_reason` and a `prompt_hash`
+      - any row carrying a `circuit_id` must carry a `prompt_hash`, because a
+        design that exists came from a prompt
+      - everything else — a read-only route that completed, a request that
+        died before its body was read — needs neither, and must not be forced
+        to invent one
+
     When Stage 1 ships IntentIR, `intent_ir` and `generator` join the required
-    set for COMPLETED — extend `_require_for_outcome` then and bump
-    LOG_SCHEMA_VERSION in the same commit.
+    set for a row that produced a design — extend `_require_for_outcome` then
+    and bump LOG_SCHEMA_VERSION in the same commit.
     """
 
     model_config = ConfigDict(use_enum_values=True, extra="forbid")

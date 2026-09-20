@@ -206,6 +206,16 @@ class TestEnvelope:
         d = GEN.envelope(_Intent())
         assert d.accepted is False and d.reason
 
+    @pytest.mark.parametrize("supply", [-5.0, 0.0, float("inf"), float("nan")])
+    def test_unusable_supply_is_refused_not_raised(self, supply):
+        # envelope() is contracted never to raise. A negative or non-finite
+        # supply reaches _ports() as Interval(lo=0, hi=supply), which Pydantic
+        # rejects — turning a bad intent into a crash instead of a named
+        # refusal, in the one method whose job is to say no cleanly.
+        d = GEN.envelope(intent(cutoff=1000.0, supply_v=supply))
+        assert d.accepted is False
+        assert "rail voltage" in d.reason
+
 
 # ── predict() ────────────────────────────────────────────────────────────────
 
@@ -297,6 +307,26 @@ class TestPredict:
     def test_predict_refuses_an_intent_envelope_would_refuse(self):
         with pytest.raises(ValueError):
             GEN.predict(intent(cutoff=None))
+
+    @pytest.mark.parametrize("bad", [
+        {"function": "band_pass_filter"},          # not what this generator builds
+        {"cutoff": 2_000_000.0},                   # outside the declared envelope
+        {"tolerance_pct": 0.1},                    # tighter than E96 can deliver
+        {"supply_v": 100.0},                       # beyond every capacitor rating
+    ])
+    def test_predict_will_not_produce_a_claim_outside_the_envelope(self, bad):
+        # predict() used to check only that a cutoff and a catalogue pair
+        # existed, so a caller could get a confident band for an intent the
+        # generator had already refused. A claim outside the declared envelope
+        # is precisely what envelope() exists to prevent, and it would be
+        # indistinguishable from a real one downstream.
+        i = intent(**bad)
+        assert GEN.envelope(i).accepted is False
+        with pytest.raises(ValueError, match="refused intent"):
+            GEN.predict(i)
+
+    def test_predict_still_works_for_an_accepted_intent(self):
+        assert GEN.predict(intent(cutoff=1000.0)).quantities["cutoff_hz"].nominal > 0
 
 
 # ── generate() ───────────────────────────────────────────────────────────────
