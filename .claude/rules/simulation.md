@@ -4,6 +4,15 @@
 
 Never run ngspice inline in an HTTP handler. Simulation takes 2–30 seconds.
 
+> **Scope, narrowed 2026-09-20.** This rule governs **ngspice runs**, which still
+> go through Celery without exception. It does not govern `predict()` — a
+> generator's closed-form evaluation, which is microseconds, synchronous by
+> design, and must stay inside the rule-engine budget. `predict()` is not
+> simulation and does not spawn a subprocess.
+>
+> Amendment X1/X3 of `PHASE_2_PLAN_v2.md` §2. Rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-20].
+
 ```python
 # CORRECT — submit job, return immediately, client polls
 task = run_simulation.apply_async(args=[circuit_id, netlist, job_id], task_id=job_id)

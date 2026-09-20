@@ -69,7 +69,7 @@ cursor-electronics/
 | Firmware | Jinja2 templates | Never LLM-generated .ino directly |
 | Schematic | KiCad net labels | No wire routing in Phase 1 |
 | Validation | Pydantic v2 strict | Fails at import if env vars missing |
-| Queue | Celery + Redis | All simulation runs — never inline HTTP |
+| Queue | Celery + Redis | All ngspice runs — never inline HTTP. `predict()` is synchronous; see `rules/simulation.md` |
 | Database | PostgreSQL + SQLAlchemy async | No in-memory storage ever |
 | Frontend | Next.js 14 App Router | kicanvas with `ssr: false` |
 | Rate limiting | slowapi | On all LLM + simulation endpoints |
