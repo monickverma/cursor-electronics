@@ -28,10 +28,14 @@ cursor-electronics/
 │   │   └── component_db.json         # 100-entry component database
 │   ├── ai/
 │   │   ├── intent_parser.py        # Prompt → DesignSpec (tool_use)
-│   │   ├── circuit_reasoner.py     # DesignSpec → CircuitIR (retry loop, 3 attempts max)
+│   │   ├── intent_producer.py      # Prompt → IntentIR (tool_use; X5 retry rules)
+│   │   ├── form_producer.py        # Form → IntentIR — the reference producer, 0 API calls
 │   │   ├── patcher.py              # IR + command → patch JSON ONLY, never full IR
 │   │   └── explainer.py            # IR → consequential plain English
 │   ├── generators/
+│   │   ├── protocol.py             # THE Generator contract — envelope/generate/predict
+│   │   ├── registry.py             # Deterministic dispatch; collects every refusal
+│   │   ├── rc_lowpass.py           # First generator on the contract
 │   │   ├── firmware/arduino.py     # IR → .ino (Jinja2)
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
 │   │   ├── schematic/kicad.py      # IR → .kicad_sch (net labels only)

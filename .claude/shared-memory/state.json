@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-20T19:19:12.725736Z",
-  "generated_from_commit": "1fc0eec",
+  "generated_at": "2026-09-20T20:04:59.414241Z",
+  "generated_from_commit": "1e74609",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -44,12 +44,6 @@
     "ai/intent_parser": {
       "status": "verified_done",
       "file": "backend/ai/intent_parser.py",
-      "exists": true,
-      "test_status": "passing"
-    },
-    "ai/circuit_reasoner": {
-      "status": "verified_done",
-      "file": "backend/ai/circuit_reasoner.py",
       "exists": true,
       "test_status": "passing"
     },
@@ -244,13 +238,31 @@
       "file": "backend/core/intent_ir.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "generators/registry": {
+      "status": "verified_done",
+      "file": "backend/generators/registry.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/form_producer": {
+      "status": "verified_done",
+      "file": "backend/ai/form_producer.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/intent_producer": {
+      "status": "verified_done",
+      "file": "backend/ai/intent_producer.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 663,
+    "passed": 742,
     "failed": 0,
-    "skipped": 23,
-    "total": 663
+    "skipped": 18,
+    "total": 742
   },
   "phase1_criteria": [
     {
@@ -321,13 +333,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "1e74609 feat(phase2): Stage 1 Task 1.1 — the IntentIR schema",
     "1fc0eec fix: address Copilot review — seven findings, all legitimate",
     "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state",
     "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator",
-    "039ad1d fix(ai): explainer crashed on every call with a reasoning model",
-    "3cc376f fix(tools): the memory trackers must report their own failures"
+    "039ad1d fix(ai): explainer crashed on every call with a reasoning model"
   ],
-  "last_diff_stat": ".claude/shared-memory/progress.yaml        | 38 +++++++++++++--------------\n .claude/shared-memory/state.json           | 20 +++++++-------\n .claude/shared-memory/tools/regen_state.py | 27 +++++++++++",
+  "last_diff_stat": ".claude/shared-memory/brain/timeline.md     |   4 +\n .claude/shared-memory/plan/current_phase.md |  97 +++++++++++\n .claude/shared-memory/progress.yaml         |  97 ++++++++++-\n .claude/shared-memory",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

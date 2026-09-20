@@ -331,6 +331,25 @@ class Generator(Protocol):
         ...
 
     @property
+    def function(self) -> str:
+        """
+        The `requirements.function` value this generator serves, e.g.
+        `low_pass_filter`.
+
+        Added in Stage 1 and not in Stage 0, deliberately and with the cost
+        acknowledged: §4.2 makes the form producer derive its fields from the
+        registry so that the form *is* the envelope catalogue, and a catalogue
+        cannot be built from generators that do not say what they build.
+        Probing `envelope()` with candidate functions would work and would be
+        worse — it makes the catalogue depend on refusal messages.
+
+        One generator exists, so this costs one edit today. That is the same
+        argument Task 0.2 used for front-loading the other fields, and this is
+        the last cheap moment to apply it.
+        """
+        ...
+
+    @property
     def version(self) -> str:
         """
         Semver. Half of the determinism contract, and recorded on the design —
@@ -389,7 +408,7 @@ def conservative_closure(ir: CircuitIR) -> FrozenSet[str]:
     return frozenset(c.id for c in ir.components)
 
 
-_REQUIRED_ATTRIBUTES = ("name", "version")
+_REQUIRED_ATTRIBUTES = ("name", "version", "function")
 _REQUIRED_METHODS = ("envelope", "generate", "predict", "grid", "dependency_closure")
 _REQUIRED_MEMBERS = _REQUIRED_ATTRIBUTES + _REQUIRED_METHODS
 

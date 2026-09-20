@@ -55,6 +55,9 @@ from generators.protocol import (
 
 NAME = "rc_lowpass"
 VERSION = "0.1.0"
+#: The requirements.function this generator serves. The registry reads it to
+#: build the form's catalogue without probing envelope() with guesses.
+FUNCTION = "low_pass_filter"
 
 # The declared envelope. Below 10 Hz the capacitor gets impractically large for
 # an 0402 part; above 100 kHz the parasitics this model ignores stop being
@@ -227,6 +230,7 @@ class RCLowPassGenerator:
 
     name = NAME
     version = VERSION
+    function = FUNCTION
 
     # ── envelope() ────────────────────────────────────────────────────────
 
@@ -239,7 +243,7 @@ class RCLowPassGenerator:
         """
         requirements = _requirements(intent)
         function = requirements.get("function")
-        if function != "low_pass_filter":
+        if function != FUNCTION:
             return EnvelopeDecision.refuse(
                 f"function={function!r} is not low_pass_filter — this generator "
                 f"produces single-pole passive RC low-pass filters only"

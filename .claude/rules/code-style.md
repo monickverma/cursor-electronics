@@ -18,7 +18,7 @@ Do not rename fields. Do not add fields without updating every downstream genera
 
 ## AI Layer Pattern: tool_use Only
 
-All three AI modules (intent_parser, circuit_reasoner, patcher) use the same pattern. Never deviate from it.
+Every AI module (intent_parser, intent_producer, patcher) uses the same pattern. Never deviate from it.
 
 ```python
 # CORRECT — tool_use forces structured output, response is already a parsed dict
@@ -41,24 +41,44 @@ spice_netlist = response.content[0].text  # NO. This is not how Circuit OS works
 
 ---
 
-## Circuit Reasoner: Retry Loop (3 Distinct Failure Types)
+## Retry: Schema Never, Semantics Once — and a Retry May Not Rewrite the Request
 
-The retry loop in `circuit_reasoner.py` handles exactly three failure modes. Each requires a different response:
+> **Amended 2026-09-21.** `circuit_reasoner.py` and its 3-attempt loop are
+> **deleted** — it was the path by which the LLM wrote `CircuitIR`, which Stage 1
+> Task 1.5 removes. The rules below govern `ai/intent_producer.py`, which writes
+> `IntentIR` instead. Amendment X5 of `PHASE_2_PLAN_v2.md`; rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-21].
 
-| Failure type | Cause | Response |
-|---|---|---|
-| `anthropic.APIError` | Claude API down or rate limited | Do NOT retry. Raise immediately → 503 |
-| `json.JSONDecodeError` | Malformed JSON from API | Re-prompt with exact error position |
-| `pydantic.ValidationError` | Valid JSON but fails schema | Re-prompt with specific field paths |
+| Failure type | Response |
+|---|---|
+| `anthropic.APIError` | Do NOT retry. Raise immediately → 503 |
+| **Schema failure** (tool input does not fit the schema) | Do NOT retry. Raise `IntentProductionError` **carrying the raw tool input** → 422 |
+| **Semantic rejection** (`envelope()` refused, with a reason) | Retry **once**, subject to the guard below |
 
-Maximum 3 attempts total. On all-fail: raise `CircuitGenerationError` → HTTP 422 with structured body. Never HTTP 500 — that means a server bug, not a generation failure.
+**Why schema failures no longer retry.** Forced `tool_choice` returns a parsed
+dict conforming to the tool schema, so re-prompting for a schema failure
+re-prompts for something that should not happen — and hides how often it does.
+That "should not happen" is an empirical claim about frontier models, not a
+structural one, so the error carries the raw input: if the assumption breaks it
+must announce itself.
 
-For `pydantic.ValidationError` corrections, include the specific field paths:
+**The guard: a retry may add, never rewrite.**
+
+```python
+# CORRECT — the retry supplies a value it failed to record the first time
+before = {"targets.cutoff_hz": 2_000_000}
+after  = {"targets.cutoff_hz": 2_000_000, "targets.tolerance_pct": 5}
+
+# WRONG — the retry altered what the user asked for so it would fit
+before = {"targets.cutoff_hz": 2_000_000}
+after  = {"targets.cutoff_hz": 1_000}      # refused: IntentProductionError
 ```
-"Field components[2].justification is too short (4 chars, minimum 20).
- Field connections[0].component_id references 'U99' which does not exist."
-```
-Generic "validation failed" is not enough. Claude needs to know which field to fix.
+
+Told "no generator accepted this", the fix most available to a model is to
+**change the requirement until it fits**, handing back a design the user never
+asked for. That defeats the one analytic claim the architecture rests on — that
+the requirement is materialized before the design. A request genuinely outside
+the catalogue is **refused, not negotiated**.
 
 ---
 

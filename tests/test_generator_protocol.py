@@ -58,6 +58,7 @@ _PORTS = (
 class _ConformingGenerator:
     name = "rc_lowpass"
     version = "0.1.0"
+    function = "low_pass_filter"
 
     def envelope(self, intent):
         hz = intent.requirements.get("targets", {}).get("cutoff_hz", 0)
@@ -87,6 +88,7 @@ class _ConformingGenerator:
 class _MissingPredict:
     name = "broken"
     version = "0.1.0"
+    function = "low_pass_filter"
 
     def envelope(self, intent):
         return EnvelopeDecision.refuse("nope")
@@ -280,8 +282,8 @@ class TestConformance:
         # isinstance correctly refused it — the worst combination for whoever
         # reads the registry's error in Stage 1.
         class AllNames:
-            name = version = envelope = generate = predict = grid = None
-            dependency_closure = None
+            name = version = function = None
+            envelope = generate = predict = grid = dependency_closure = None
 
         candidate = AllNames()
         assert not isinstance(candidate, Generator)
@@ -293,7 +295,7 @@ class TestConformance:
     def test_arbitrary_object_is_not_a_generator(self):
         assert not isinstance(object(), Generator)
         assert set(conformance_gaps(object())) == {
-            "name", "version", "envelope", "generate", "predict",
+            "name", "version", "function", "envelope", "generate", "predict",
             "grid", "dependency_closure",
         }
 

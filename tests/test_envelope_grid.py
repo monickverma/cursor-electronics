@@ -52,6 +52,7 @@ class _FakeGenerator:
 
     name = "fake"
     version = "1.0.0"
+    function = "fake_function"
 
     def __init__(self, grid_values=(1.0, 2.0, 3.0), refuse_at=None):
         self._values = grid_values

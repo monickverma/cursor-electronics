@@ -55,7 +55,7 @@ _FALLBACK_PATH = Path(
 
 # Bumped whenever the row shape changes. Half of the §4.4 cache key
 # (prompt_hash + schema_version), so it must not vary per deployment.
-LOG_SCHEMA_VERSION = "1.0.0"
+LOG_SCHEMA_VERSION = "1.1.0"
 
 
 class Outcome(str, Enum):
@@ -89,9 +89,11 @@ class RequestLogRow(BaseModel):
         died before its body was read — needs neither, and must not be forced
         to invent one
 
-    When Stage 1 ships IntentIR, `intent_ir` and `generator` join the required
-    set for a row that produced a design — extend `_require_for_outcome` then
-    and bump LOG_SCHEMA_VERSION in the same commit.
+    Ratcheted in Stage 1 (LOG_SCHEMA_VERSION 1.1.0): a row carrying a
+    `circuit_id` must also carry `intent_ir` and `generator`, because a design
+    now comes from a recorded requirement dispatched to a named generator.
+    Rows written before the ratchet keep their own `schema_version`, so a
+    query can tell which contract a row was written under.
     """
 
     model_config = ConfigDict(use_enum_values=True, extra="forbid")
@@ -138,11 +140,25 @@ class RequestLogRow(BaseModel):
                     "outcome=refused requires prompt_hash — a refusal is always "
                     "a refusal of something"
                 )
-        if self.circuit_id and not self.prompt_hash:
-            raise ValueError(
-                "a row carrying circuit_id requires prompt_hash — a design that "
-                "exists came from a prompt, and the pair is the §4.4 cache key"
-            )
+        if self.circuit_id:
+            # The Stage 1 ratchet, as Stage 0 promised. A design now comes
+            # from an IntentIR dispatched to a named generator, so a row
+            # claiming a design without recording either cannot answer the
+            # §4.5 questions it exists for — which generator to author next,
+            # what a design cost, whether the form or the LLM produced it.
+            missing = [
+                field for field, value in (
+                    ("prompt_hash", self.prompt_hash),
+                    ("intent_ir", self.intent_ir),
+                    ("generator", self.generator),
+                ) if not value
+            ]
+            if missing:
+                raise ValueError(
+                    f"a row carrying circuit_id requires {missing} — a design "
+                    f"that exists came from a recorded requirement dispatched "
+                    f"to a named generator"
+                )
         if self.latency_ms < 0:
             raise ValueError("latency_ms must not be negative")
         return self

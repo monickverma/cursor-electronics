@@ -11,10 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.rate_limit import limiter
 
-from ai.circuit_reasoner import CircuitGenerationError, CircuitReasoner
 from ai.client import timeout_detail
 from ai.explainer import ExplanationEngine
-from ai.intent_parser import IntentParser
+from ai.intent_producer import IntentProducer, IntentProductionError
 from api.routes.auth import get_current_user
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
@@ -23,6 +22,7 @@ from db.models import get_db
 from generators.bom.compiler import BOMCompiler
 from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
+from generators.registry import default_registry
 from generators.schematic.kicad import KiCadSchematicGenerator
 from observability.request_log import log_ctx, prompt_hash
 from tasks.simulation_task import run_simulation
@@ -68,45 +68,67 @@ async def generate_design(
     ctx.prompt_hash = prompt_hash(body.prompt)
     ctx.user_id = str(user.id)
 
-    # 1. Parse intent
+    # 1. Transcribe the request into IntentIR.
     #
-    # IntentParser.parse and CircuitReasoner.generate are synchronous — they
-    # block on a network call to the model provider. Calling them directly in
-    # an async def blocks the whole uvicorn event loop, so one slow generation
-    # stalls every other request on the worker, including /health. They run in
-    # a threadpool for that reason; the SDK timeout in ai/client.py bounds how
+    # The model writes a *requirement*, never a design. `IntentProducer.produce`
+    # is synchronous — it blocks on a network call — and calling it directly in
+    # an async def would block the whole uvicorn event loop, so one slow
+    # transcription stalls every other request including /health. It runs in a
+    # threadpool for that reason; the SDK timeout in ai/client.py bounds how
     # long a thread can be held.
+    registry = default_registry()
     try:
         ctx.count_api_call()
-        spec = await run_in_threadpool(IntentParser().parse, body.prompt)
+        intent = await run_in_threadpool(IntentProducer(registry).produce, body.prompt)
     except anthropic.APITimeoutError as exc:
-        raise HTTPException(504, detail=timeout_detail("Intent parsing", exc))
+        raise HTTPException(504, detail=timeout_detail("Intent transcription", exc))
     except anthropic.APIError as exc:
         raise HTTPException(503, detail=f"AI service unavailable: {exc}")
-
-    # 2. Generate IR
-    try:
-        # One call counted here. The reasoner's internal retry loop can spend
-        # up to three, and they are not visible from outside — X5 retires that
-        # loop for schema failures in Stage 1, which is when this becomes
-        # exact rather than a lower bound.
-        ctx.count_api_call()
-        ir = await run_in_threadpool(CircuitReasoner().generate, spec)
-    except anthropic.APITimeoutError as exc:
-        raise HTTPException(504, detail=timeout_detail("Circuit generation", exc))
-    except anthropic.APIError as exc:
-        raise HTTPException(503, detail=f"AI service unavailable: {exc}")
-    except CircuitGenerationError as exc:
+    except IntentProductionError as exc:
         raise HTTPException(422, detail={
-            "error": "circuit_generation_failed",
-            "attempts": exc.attempt_errors,
+            "error": "intent_production_failed",
+            "message": str(exc),
         })
 
-    # 3. Validate
+    ctx.intent_ir = intent.model_dump(mode="json")
+
+    # 2. An unanswered question is put back to the user, never guessed at.
+    #    Stage 1 gate: underdetermined non-empty → ask, never generate.
+    if not intent.is_answerable:
+        ctx.underdetermined = intent.open_questions()
+        raise HTTPException(422, detail={
+            "error": "underdetermined",
+            "questions": intent.open_questions(),
+            "message": "The request does not pin these down. Supply them and resubmit.",
+        })
+
+    # 3. Dispatch to a generator whose declared envelope accepts this intent.
+    #    A refusal is a product outcome, not an error: §4.5 makes the
+    #    out-of-envelope log the generator backlog, ranked by frequency.
+    dispatch = registry.dispatch(intent)
+    if not dispatch.accepted:
+        ctx.refuse(dispatch.refusal_summary())
+        raise HTTPException(422, detail={
+            "error": "out_of_envelope",
+            "refusals": [
+                {"generator": r.generator, "reason": r.reason} for r in dispatch.refusals
+            ],
+            "catalogue": list(registry.functions()),
+        })
+
+    generator = dispatch.generator
+    ctx.generator = f"{generator.name}@{generator.version}"
+
+    # 4. The design itself is produced deterministically, with no model in the
+    #    loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
+    #    asserts mechanically.
+    ir = generator.generate(intent)
+
+    # 5. Validate
     val_result = validate_ir(ir)
     rule_result = HardwareRuleEngine().run(ir)
 
-    # 4. Generate all outputs
+    # 6. Generate all outputs
     spice_gen = SpiceNetlistGenerator()
     netlist = spice_gen.generate(ir)
 
@@ -120,7 +142,7 @@ async def generate_design(
     bom = BOMCompiler().compile(ir)
     pcb_netlist = PcbNetlistGenerator().generate(ir)
 
-    # 5. Explanation (best-effort — a failure here must not lose the design)
+    # 7. Explanation (best-effort — a failure here must not lose the design)
     explanation = ""
     try:
         ctx.count_api_call()
@@ -128,14 +150,14 @@ async def generate_design(
     except Exception:
         pass
 
-    # 6. Persist
+    # 8. Persist
     await save_design(db, ir, str(user.id))
     if firmware:
         await save_output(db, ir.circuit_id, "firmware", firmware, f"{ir.circuit_id}.ino")
     await save_output(db, ir.circuit_id, "schematic", schematic, f"{ir.circuit_id}.kicad_sch")
     await save_output(db, ir.circuit_id, "netlist", netlist, f"{ir.circuit_id}.cir")
 
-    # 7. Kick off simulation (async via Celery)
+    # 9. Kick off simulation (async via Celery)
     job_id: Optional[str] = None
     if ir.simulation_spec:
         job_id = str(uuid.uuid4())
@@ -144,7 +166,7 @@ async def generate_design(
             task_id=job_id,
         )
 
-    # 8. Build validation summary
+    # 10. Build validation summary
     all_errors = val_result.errors + rule_result.errors
     all_warnings = val_result.warnings + rule_result.warnings
     validation_summary = {

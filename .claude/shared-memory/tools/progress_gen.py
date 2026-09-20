@@ -73,14 +73,6 @@ PLANNED = {
             ("IntentParser.parse", "method", "Main entry: prompt str → DesignSpec"),
         ],
     },
-    "ai/circuit_reasoner": {
-        "file": "backend/ai/circuit_reasoner.py",
-        "test_file": "tests/test_ai_layer.py",
-        "entries": [
-            ("CircuitReasoner",          "class",  "Converts DesignSpec → CircuitIR with 3-attempt retry"),
-            ("CircuitReasoner.generate", "method", "Main entry: DesignSpec → CircuitIR"),
-        ],
-    },
     "ai/patcher": {
         "file": "backend/ai/patcher.py",
         "test_file": "tests/test_patcher.py",
@@ -336,6 +328,39 @@ PLANNED = {
             ("DerivedExplainer", "class",    "Explanation with zero API calls — Task 0.5, §4.4"),
             ("DerivedExplainer.explain", "method", "Requirements + predict() + generator justifications → prose"),
             ("explanation_markers", "function", "The consequential markers test_explainer.py enforces, reused verbatim"),
+        ],
+    },
+    "generators/registry": {
+        "file": "backend/generators/registry.py",
+        "test_file": "tests/test_registry.py",
+        "entries": [
+            ("Refusal",           "class",  "One generator's reason for declining, kept with its author"),
+            ("DispatchResult",    "class",  "What was decided, and every refusal learned deciding it"),
+            ("GeneratorRegistry", "class",  "The catalogue; registration order is dispatch order"),
+            ("GeneratorRegistry.register", "method", "Refuses non-conforming generators, naming the gaps"),
+            ("GeneratorRegistry.dispatch", "method", "First accepting envelope wins; all refusals collected"),
+            ("GeneratorRegistry.functions","method", "The catalogue, derived from what is installed"),
+            ("default_registry",  "function", "The installed catalogue"),
+        ],
+    },
+    "ai/form_producer": {
+        "file": "backend/ai/form_producer.py",
+        "test_file": "tests/test_form_producer.py",
+        "entries": [
+            ("FormField",    "class", "One field, with the range CI actually sweeps"),
+            ("FormSpec",     "class", "What the form offers for one requirements.function"),
+            ("FormProducer", "class", "The reference producer — zero API calls, works offline"),
+            ("FormProducer.catalogue", "method", "Every function the installed generators cover"),
+            ("FormProducer.build",     "method", "Form input → IntentIR; missing fields become questions"),
+        ],
+    },
+    "ai/intent_producer": {
+        "file": "backend/ai/intent_producer.py",
+        "test_file": "tests/test_intent_producer.py",
+        "entries": [
+            ("IntentProductionError", "class", "Carries the raw tool input — X5 makes the failure visible"),
+            ("IntentProducer",        "class", "Prompt → IntentIR; the convenience layer over the form"),
+            ("IntentProducer.produce","method", "One call; a retry may add but never rewrite the request"),
         ],
     },
     "core/intent_ir": {

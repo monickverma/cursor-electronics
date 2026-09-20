@@ -339,6 +339,10 @@ class MutatedGenerator:
     def version(self) -> str:
         return self._inner.version
 
+    @property
+    def function(self) -> str:
+        return self._inner.function
+
     def envelope(self, intent):
         return self._inner.envelope(intent)
 

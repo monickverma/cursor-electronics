@@ -52,7 +52,6 @@ MODULES = {
     "core/config":             {"file": "backend/core/config.py",                   "test": None,                               "phase": 1},
     "ai/client":               {"file": "backend/ai/client.py",                     "test": None,                               "phase": 1},
     "ai/intent_parser":        {"file": "backend/ai/intent_parser.py",              "test": "tests/test_ai_layer.py",           "phase": 1},
-    "ai/circuit_reasoner":     {"file": "backend/ai/circuit_reasoner.py",           "test": "tests/test_ai_layer.py",           "phase": 1},
     "ai/patcher":              {"file": "backend/ai/patcher.py",                    "test": "tests/test_patcher.py",            "phase": 1},
     "ai/explainer":            {"file": "backend/ai/explainer.py",                  "test": "tests/test_explainer.py",          "phase": 1},
     "generators/spice":        {"file": "backend/generators/netlist/spice.py",      "test": ["tests/test_simulation.py",
@@ -98,6 +97,9 @@ MODULES = {
     "validation/envelope_grid":   {"file": "backend/validation/envelope_grid.py",   "test": "tests/test_envelope_grid.py",        "phase": 2},
     "ai/derived_explainer":       {"file": "backend/ai/derived_explainer.py",       "test": "tests/test_derived_explainer.py",    "phase": 2},
     "core/intent_ir":             {"file": "backend/core/intent_ir.py",             "test": "tests/test_intent_ir.py",            "phase": 2},
+    "generators/registry":        {"file": "backend/generators/registry.py",        "test": "tests/test_registry.py",             "phase": 2},
+    "ai/form_producer":           {"file": "backend/ai/form_producer.py",           "test": "tests/test_form_producer.py",        "phase": 2},
+    "ai/intent_producer":         {"file": "backend/ai/intent_producer.py",         "test": "tests/test_intent_producer.py",      "phase": 2},
 }
 
 PHASE1_CRITERIA = [

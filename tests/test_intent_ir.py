@@ -64,6 +64,14 @@ class TestSchema:
         with pytest.raises(ValidationError):
             make(intnet_id="typo")
 
+    def test_non_json_requirements_are_rejected_at_construction(self):
+        # `requirements` is typed Any, so a set validates fine and then blows
+        # up inside requirements_hash() — sign-off and the §4.4 cache key —
+        # and again when the request log serialises the intent. Failing here
+        # names the field; failing there is a bare TypeError from elsewhere.
+        with pytest.raises(ValidationError, match="JSON-serialisable"):
+            make(requirements={"function": "f", "targets": {"x": {1, 2}}})
+
     def test_intent_is_frozen(self):
         # An editable record makes property_hash meaningless and the Stage 2
         # patch chain unreadable.

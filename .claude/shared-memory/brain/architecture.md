@@ -13,7 +13,7 @@ User Prompt
     ▼  (IntentParser — tool_use)
 DesignSpec (structured intent)
     │
-    ▼  (CircuitReasoner — tool_use, 3-attempt retry)
+    ▼  (IntentProducer — tool_use → IntentIR; registry dispatch → generator)
 CircuitIR  ←── THE LOCKED CONTRACT — all modules read from here
     │
     ├──▶ SpiceNetlistGenerator  →  .cir netlist
@@ -55,7 +55,9 @@ backend/
 │   ├── client.py              make_client() — supports Anthropic direct + OpenRouter
 │   │                          ai_model() — reads AI_MODEL env var
 │   ├── intent_parser.py       Prompt → DesignSpec via tool_use (forced, no raw text)
-│   ├── circuit_reasoner.py    DesignSpec → CircuitIR (3-attempt retry loop)
+│   ├── intent_producer.py     Prompt → IntentIR (X5 retry rules; removed the
+│   │                          LLM → CircuitIR path entirely, 2026-09-21)
+│   ├── form_producer.py       Form → IntentIR — reference producer, 0 API calls
 │   │                          Handles: APIError (no retry), JSONDecodeError, ValidationError
 │   ├── patcher.py             IR + command → changes list ONLY (never full IR)
 │   └── explainer.py           IR → consequential plain English report

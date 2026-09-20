@@ -6,10 +6,8 @@ Unit tests (DesignSpec, error formatting) run without the key.
 
 What is verified:
 - DesignSpec extracts fields correctly from the tool_use dict
-- CircuitReasoner._format_pydantic_errors produces field-path messages
-- CircuitReasoner._build_user_prompt includes key fields
 - IntentParser.parse (live): 5 prompt phrasings → valid DesignSpec fields
-- CircuitReasoner.generate (live): 5 templates → valid CircuitIR in ≤3 attempts
+- (CircuitReasoner coverage removed 2026-09-21 with the module — Stage 1 Task 1.5)
 - ExplanationEngine.explain (live): returns non-empty consequential text
 """
 
@@ -18,7 +16,6 @@ import os
 import pytest
 from pydantic import ValidationError
 
-from ai.circuit_reasoner import CircuitGenerationError, CircuitReasoner
 from ai.explainer import ExplanationEngine
 from ai.intent_parser import DesignSpec, IntentParser
 from ai.patcher import CircuitPatcher, PatchResult
@@ -67,45 +64,6 @@ class TestDesignSpec:
         assert spec.use_rs485 is True
 
 
-# ── CircuitReasoner unit tests (no API) ───────────────────────────────────────
-
-class TestCircuitReasonerUnit:
-    def test_format_pydantic_errors_includes_field_path(self):
-        from core.ir_schema import Component, ComponentType
-        try:
-            Component(
-                id="R1", type=ComponentType.RESISTOR,
-                part_number="X", manufacturer="Y", package="0402",
-                confidence=2.0,  # invalid — > 1.0
-                justification="short",  # too short
-            )
-        except ValidationError as exc:
-            formatted = CircuitReasoner._format_pydantic_errors(exc)
-            assert "confidence" in formatted
-            assert "justification" in formatted
-
-    def test_build_user_prompt_includes_intent(self):
-        spec = DesignSpec({
-            "intent": "Temperature monitoring with Modbus RTU",
-            "application_class": "modbus_rtu",
-            "target_mcu": "arduino_uno",
-            "use_rs485": True,
-            "constraints": {"modbus_baud": 9600},
-        })
-        reasoner = CircuitReasoner.__new__(CircuitReasoner)
-        prompt = reasoner._build_user_prompt(spec)
-        assert "Temperature monitoring with Modbus RTU" in prompt
-        assert "arduino_uno" in prompt
-        assert "RS-485 Modbus RTU" in prompt
-
-    def test_circuit_generation_error_stores_attempt_errors(self):
-        errors = ["attempt 1: field error", "attempt 2: ref error", "attempt 3: constraint"]
-        exc = CircuitGenerationError(errors)
-        assert len(exc.attempt_errors) == 3
-        assert "attempt 1" in exc.attempt_errors[0]
-
-
-# ── Live API tests ────────────────────────────────────────────────────────────
 
 @requires_api
 class TestIntentParserLive:
@@ -155,78 +113,6 @@ class TestIntentParserLive:
         assert threshold is not None, "threshold_temp_celsius should be extracted"
         assert float(threshold) == pytest.approx(40, abs=1)
 
-
-@requires_api
-class TestCircuitReasonerLive:
-    """5 templates → valid CircuitIR with cross-field validation passing."""
-
-    def _make_spec(self, **kwargs) -> DesignSpec:
-        defaults = {"intent": "test circuit", "application_class": "hobby_arduino"}
-        defaults.update(kwargs)
-        return DesignSpec(defaults)
-
-    def test_dht22_template_produces_valid_ir(self):
-        spec = self._make_spec(
-            intent="Temperature and humidity monitoring with DHT22 and relay alert above 40°C",
-            application_class="hobby_arduino",
-            target_mcu="arduino_uno",
-            primary_sensor="dht22",
-            constraints={"supply_voltage": 5.0, "threshold_temp_celsius": 40},
-        )
-        ir = CircuitReasoner().generate(spec)
-        assert isinstance(ir, CircuitIR)
-        assert any(c.sensor_type == "dht22" or "DHT22" in c.part_number.upper() for c in ir.components)
-
-    def test_modbus_template_produces_valid_ir(self):
-        spec = self._make_spec(
-            intent="RS-485 Modbus RTU master with MAX485 transceiver",
-            application_class="modbus_rtu",
-            target_mcu="arduino_uno",
-            use_rs485=True,
-            constraints={"supply_voltage": 5.0, "modbus_baud": 9600},
-        )
-        ir = CircuitReasoner().generate(spec)
-        assert isinstance(ir, CircuitIR)
-        has_transceiver = any(c.type == "transceiver" for c in ir.components)
-        assert has_transceiver, "Modbus design must have a transceiver"
-
-    def test_led_template_produces_valid_ir(self):
-        spec = self._make_spec(
-            intent="Arduino Uno LED blink with current-limiting resistor",
-            application_class="hobby_arduino",
-            target_mcu="arduino_uno",
-            constraints={"supply_voltage": 5.0},
-        )
-        ir = CircuitReasoner().generate(spec)
-        assert isinstance(ir, CircuitIR)
-        assert any(c.type == "led" for c in ir.components)
-
-    def test_all_component_ids_are_unique(self):
-        spec = self._make_spec(
-            intent="Temperature sensor with DHT22",
-            application_class="hobby_arduino",
-            target_mcu="arduino_uno",
-            primary_sensor="dht22",
-        )
-        ir = CircuitReasoner().generate(spec)
-        ids = [c.id for c in ir.components]
-        assert len(ids) == len(set(ids))
-
-    def test_all_connection_refs_are_valid(self):
-        spec = self._make_spec(
-            intent="Simple LED circuit",
-            application_class="hobby_arduino",
-            target_mcu="arduino_uno",
-        )
-        ir = CircuitReasoner().generate(spec)
-        comp_ids = {c.id for c in ir.components}
-        node_ids = {n.id for n in ir.nodes}
-        for conn in ir.connections:
-            assert conn.component_id in comp_ids, f"Bad component ref: {conn.component_id}"
-            assert conn.node_id in node_ids, f"Bad node ref: {conn.node_id}"
-
-
-# ── Patcher unit tests (no API) ──────────────────────────────────────────────
 
 class TestPatchResultUnit:
     def test_stores_changes_list(self):

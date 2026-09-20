@@ -158,6 +158,20 @@ class IntentIR(BaseModel):
         # can read it through IntentLike without reopening the Task 0.2
         # protocol. Raises with the same field paths a nested model would.
         Requirements.model_validate(v)
+
+        # And it has to survive `json.dumps`. `requirements` is typed `Any`, so
+        # a caller can put a set or a datetime in it — which validates fine and
+        # then blows up in `requirements_hash()` (sign-off, the §4.4 cache key)
+        # and again when the request log serialises the intent. Failing here
+        # names the field; failing there produces a bare TypeError from inside
+        # an unrelated call.
+        try:
+            json.dumps(v, sort_keys=True)
+        except TypeError as exc:
+            raise ValueError(
+                f"requirements must be JSON-serialisable — it is hashed for "
+                f"sign-off and written to the request log: {exc}"
+            ) from exc
         return v
 
     @model_validator(mode="after")

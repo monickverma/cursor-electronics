@@ -119,6 +119,41 @@ class TestRequestLogRowSchemaEnforcement:
                 circuit_id="c-1",
             )
 
+    @pytest.mark.parametrize("omit", ["intent_ir", "generator"])
+    def test_stage1_ratchet_requires_intent_and_generator(self, omit):
+        # The Stage 0 gate promised the required set would tighten as later
+        # stages landed. A design now comes from a recorded requirement
+        # dispatched to a named generator; a row claiming one without either
+        # cannot answer the §4.5 questions it exists for.
+        payload = dict(
+            route="POST /design/generate",
+            outcome=Outcome.COMPLETED,
+            latency_ms=900,
+            circuit_id="c-1",
+            prompt_hash="a" * 64,
+            intent_ir={"requirements": {"function": "low_pass_filter"}},
+            generator="rc_lowpass@0.1.0",
+        )
+        RequestLogRow(**payload)  # complete row is fine
+        payload.pop(omit)
+        with pytest.raises(ValidationError, match=omit):
+            RequestLogRow(**payload)
+
+    def test_schema_version_records_which_contract_a_row_was_written_under(self):
+        # Rows written before the ratchet keep their own version, so a query
+        # can tell which rows were held to which rule.
+        assert LOG_SCHEMA_VERSION == "1.1.0"
+        row = RequestLogRow(route="r", outcome=Outcome.FAILED, latency_ms=1)
+        assert row.schema_version == LOG_SCHEMA_VERSION
+
+    def test_rows_without_a_design_are_unaffected_by_the_ratchet(self):
+        # A refusal has no circuit_id and must not be forced to invent an
+        # intent_ir it never produced.
+        RequestLogRow(
+            route="POST /design/generate", outcome=Outcome.REFUSED, latency_ms=5,
+            prompt_hash="a" * 64, refusal_reason="out of envelope",
+        )
+
     def test_plain_read_route_needs_no_prompt_hash(self):
         # The requirement keys on what the request did, not which route it hit.
         row = RequestLogRow(route="GET /design/list", outcome=Outcome.COMPLETED, latency_ms=3)
@@ -392,6 +427,9 @@ class TestRequestLogMiddleware:
             ctx = log_ctx(request)
             ctx.prompt_hash = prompt_hash("RC filter 1kHz")
             ctx.count_api_call()
+            # Required alongside circuit_id since the Stage 1 ratchet.
+            ctx.intent_ir = {"requirements": {"function": "low_pass_filter"}}
+            ctx.generator = "rc_lowpass@0.1.0"
             ctx.complete(circuit_id="c-42")
             return {"ok": True}
 
