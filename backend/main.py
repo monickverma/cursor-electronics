@@ -9,6 +9,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from api.routes import auth, design, patch, pcb, simulate
 from core.config import settings
+from middleware.instrumentation import RequestLogMiddleware
 from middleware.rate_limit import limiter
 
 
@@ -52,6 +53,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Added last, so it is the outermost wrapper and sees every request — including
+# rate-limit rejections and unhandled exceptions. PHASE_2_PLAN_v2.md §4.5:
+# a request the system refused is data, not noise.
+app.add_middleware(RequestLogMiddleware)
 
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

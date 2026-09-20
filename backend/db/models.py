@@ -117,6 +117,40 @@ class GeneratedOutput(Base):
     design = relationship("CircuitDesign", back_populates="generated_outputs")
 
 
+class RequestLog(Base):
+    """
+    One row per request. PHASE_2_PLAN_v2.md §4.5.
+
+    Deliberately carries no foreign keys. An analytics log that participates in
+    referential integrity is an analytics log that can be rejected, or deleted
+    by someone else's cascade — and the rows worth keeping are precisely the
+    ones from requests where the design was never persisted. `user_id` and
+    `circuit_id` are recorded as plain identifiers for joining after the fact.
+    """
+
+    __tablename__ = "request_log"
+
+    request_id = Column(String(36), primary_key=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    route = Column(String(200), nullable=False)
+    outcome = Column(String(20), nullable=False, index=True)
+    latency_ms = Column(Integer, nullable=False)
+    api_calls = Column(Integer, nullable=False, default=0)
+    schema_version = Column(String(20), nullable=False)
+
+    prompt_hash = Column(String(64), index=True)
+
+    intent_ir = Column(JSONB)
+    underdetermined = Column(JSONB)
+    generator = Column(String(100), index=True)
+    refusal_reason = Column(Text)
+
+    user_id = Column(String(36), index=True)
+    circuit_id = Column(String(36), index=True)
+    status_code = Column(Integer)
+    error = Column(Text)
+
+
 # ── Async engine + session factory ───────────────────────────────────────────
 
 engine = create_async_engine(settings.database_url, echo=False, future=True)

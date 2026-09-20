@@ -24,6 +24,7 @@ from generators.bom.compiler import BOMCompiler
 from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.schematic.kicad import KiCadSchematicGenerator
+from observability.request_log import log_ctx, prompt_hash
 from tasks.simulation_task import run_simulation
 from validation.rule_engine import HardwareRuleEngine
 
@@ -61,6 +62,12 @@ async def generate_design(
     db: Annotated[AsyncSession, Depends(get_db)],
     user=Depends(get_current_user),
 ):
+    # 0. Instrumentation — §4.5. Set before anything that can fail, so a row
+    #    survives even when the request does not.
+    ctx = log_ctx(request)
+    ctx.prompt_hash = prompt_hash(body.prompt)
+    ctx.user_id = str(user.id)
+
     # 1. Parse intent
     #
     # IntentParser.parse and CircuitReasoner.generate are synchronous — they
@@ -70,6 +77,7 @@ async def generate_design(
     # a threadpool for that reason; the SDK timeout in ai/client.py bounds how
     # long a thread can be held.
     try:
+        ctx.count_api_call()
         spec = await run_in_threadpool(IntentParser().parse, body.prompt)
     except anthropic.APITimeoutError as exc:
         raise HTTPException(504, detail=timeout_detail("Intent parsing", exc))
@@ -78,6 +86,11 @@ async def generate_design(
 
     # 2. Generate IR
     try:
+        # One call counted here. The reasoner's internal retry loop can spend
+        # up to three, and they are not visible from outside — X5 retires that
+        # loop for schema failures in Stage 1, which is when this becomes
+        # exact rather than a lower bound.
+        ctx.count_api_call()
         ir = await run_in_threadpool(CircuitReasoner().generate, spec)
     except anthropic.APITimeoutError as exc:
         raise HTTPException(504, detail=timeout_detail("Circuit generation", exc))
@@ -110,6 +123,7 @@ async def generate_design(
     # 5. Explanation (best-effort — a failure here must not lose the design)
     explanation = ""
     try:
+        ctx.count_api_call()
         explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
     except Exception:
         pass
@@ -138,6 +152,8 @@ async def generate_design(
         "errors": [{"field": e.field_path, "message": e.message} for e in all_errors],
         "warnings": [{"field": w.field_path, "message": w.message} for w in all_warnings],
     }
+
+    ctx.complete(circuit_id=ir.circuit_id)
 
     return GenerateResponse(
         circuit_id=ir.circuit_id,

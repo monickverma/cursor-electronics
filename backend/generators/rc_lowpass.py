@@ -1,0 +1,526 @@
+"""
+RC low-pass generator — the first generator on the Task 0.2 contract.
+
+PHASE_2_PLAN_v2.md Stage 0: *"RC low-pass ported; `predict()` matches ngspice
+across the declared grid — empirical, G5 ≤ 2%."*
+
+This is the module that makes amendment X1 concrete rather than documentary.
+`predict()` computes `f_c = 1 / (2π·R·C)` in closed form over the component
+tolerance box, so the answer it gives is a statement about every R and C inside
+tolerance — not a measurement of the one nominal point an ngspice run would
+visit. Simulation still guards it, in CI, across the grid `grid()` declares.
+
+The band is exact rather than an over-approximation. `f_c` is monotone
+decreasing in both R and C, so the extremes sit at opposite corners of the box
+and evaluating two corners gives the true worst case. The formal-verification
+report reaches the same conclusion — "exploit monotonicity… the four tolerance
+corners give the exact worst case" — and its worked example is this circuit:
+R ∈ [1574, 1606] Ω with C ∈ [90, 110] nF yields roughly 900 to 1125 Hz. This
+module reproduces that, and `tests/test_rc_lowpass_generator.py` pins it.
+
+Component choice is deterministic: a fixed capacitor table in declaration
+order, R snapped to E96, ties broken by table position. Same intent in, same
+parts out — which is half of the determinism property in v2 §4.1. The other
+half, byte-identical CircuitIR, is blocked on `circuit_id` being a fresh uuid4
+per instantiation, and is Task 2.3's to fix rather than this module's to work
+around.
+"""
+
+from __future__ import annotations
+
+import math
+from typing import Dict, FrozenSet, Mapping, Optional, Sequence, Tuple
+
+from core.ir_schema import (
+    ApplicationClass,
+    CircuitIR,
+    Component,
+    ComponentType,
+    Connection,
+    Node,
+    SignalType,
+    SimulationAnalysis,
+    SimulationSpec,
+    ValidationRule,
+)
+from generators.protocol import (
+    ClaimScope,
+    EnvelopeDecision,
+    GridSpec,
+    IntentLike,
+    Interval,
+    PortContract,
+    Prediction,
+)
+
+NAME = "rc_lowpass"
+VERSION = "0.1.0"
+
+# The declared envelope. Below 10 Hz the capacitor gets impractically large for
+# an 0402 part; above 100 kHz the parasitics this model ignores stop being
+# ignorable, and `ClaimScope.model = mna_ideal` would be a claim the circuit
+# does not keep. The upper bound is a modelling honesty limit, not a maths one.
+MIN_CUTOFF_HZ = 10.0
+MAX_CUTOFF_HZ = 100_000.0
+
+# Series resistance is kept well above the source impedance the intent declares
+# (the loading error is R_src/R) and below the point where bias currents and
+# noise start to matter.
+MIN_SERIES_OHMS = 1_000.0
+MAX_SERIES_OHMS = 100_000.0
+
+# Tolerances carried by the parts chosen below: Yageo RC…F… is 1%, the Samsung
+# CL05 K-code is 10%. These are the same figures the project's accuracy gate
+# already names, and the pair the research report works by hand.
+R_TOLERANCE = 0.01
+C_TOLERANCE = 0.10
+
+# E96 — the 1% series. E24 would be the wrong table for an F-code part.
+_E96 = (
+    100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130,
+    133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174,
+    178, 182, 187, 191, 196, 200, 205, 210, 215, 221, 226, 232,
+    237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309,
+    316, 324, 332, 340, 348, 357, 365, 374, 383, 392, 402, 412,
+    422, 432, 442, 453, 464, 475, 487, 499, 511, 523, 536, 549,
+    562, 576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732,
+    750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976,
+)
+
+# Capacitor catalogue, in preference order. Real 0402 parts; the voltage rating
+# is load-bearing because `envelope()` refuses an intent whose supply exceeds it.
+_CAPACITORS: Tuple[Tuple[float, str, str, float], ...] = (
+    (100e-9, "100nF", "CL05B104KO5NNNC", 16.0),
+    (10e-9, "10nF", "CL05B103KB5NNNC", 50.0),
+    (1e-6, "1uF", "CL05A105KQ5NNNC", 6.3),
+    (1e-9, "1nF", "CL05B102KB5NNNC", 50.0),
+    (22e-9, "22nF", "CL05B223KO5NNNC", 16.0),
+    (220e-9, "220nF", "CL05A224KQ5NNNC", 6.3),
+    (4.7e-9, "4.7nF", "CL05B472KB5NNNC", 50.0),
+    (47e-9, "47nF", "CL05B473KO5NNNC", 16.0),
+)
+
+
+def cutoff_hz(ohms: float, farads: float) -> float:
+    """f_c = 1 / (2·pi·R·C)."""
+    return 1.0 / (2.0 * math.pi * ohms * farads)
+
+
+def snap_to_e96(ohms: float) -> float:
+    """
+    Nearest E96 value. Chooses in log space, because the series is
+    logarithmic — picking by absolute distance biases toward the larger
+    neighbour everywhere except the bottom of each decade.
+    """
+    if ohms <= 0:
+        raise ValueError("resistance must be positive")
+    decade = math.floor(math.log10(ohms))
+    best: Optional[float] = None
+    best_err = float("inf")
+    for exponent in (decade - 1, decade, decade + 1):
+        for mantissa in _E96:
+            candidate = mantissa * (10.0 ** (exponent - 2))
+            err = abs(math.log10(candidate) - math.log10(ohms))
+            if err < best_err:
+                best_err, best = err, candidate
+    return float(best)
+
+
+def _yageo_code(ohms: float) -> str:
+    """
+    Yageo's value encoding: the unit letter stands in for the decimal point.
+    1590 → 1K59, 10000 → 10K, 100 → 100R.
+    """
+    if ohms >= 1e6:
+        scaled, unit = ohms / 1e6, "M"
+    elif ohms >= 1e3:
+        scaled, unit = ohms / 1e3, "K"
+    else:
+        scaled, unit = ohms, "R"
+    text = f"{scaled:.10g}"
+    if "." in text:
+        whole, frac = text.split(".")
+        return f"{whole}{unit}{frac}"
+    return f"{text}{unit}"
+
+
+def _value_string(ohms: float) -> str:
+    """Plain ohms — unambiguous for `_parse_ohms` in the SPICE generator."""
+    return f"{ohms:.10g}"
+
+
+class _Selection:
+    """A chosen R/C pair and what it actually achieves."""
+
+    __slots__ = ("ohms", "farads", "c_value", "c_part", "c_vmax", "achieved_hz")
+
+    def __init__(self, ohms: float, farads: float, c_value: str, c_part: str, c_vmax: float):
+        self.ohms = ohms
+        self.farads = farads
+        self.c_value = c_value
+        self.c_part = c_part
+        self.c_vmax = c_vmax
+        self.achieved_hz = cutoff_hz(ohms, farads)
+
+
+def _requirements(intent: IntentLike) -> Mapping[str, object]:
+    return intent.requirements or {}
+
+
+def _target_cutoff(intent: IntentLike) -> Optional[float]:
+    targets = _requirements(intent).get("targets") or {}
+    value = targets.get("cutoff_hz") if isinstance(targets, Mapping) else None
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _tolerance_pct(intent: IntentLike) -> float:
+    targets = _requirements(intent).get("targets") or {}
+    value = targets.get("tolerance_pct") if isinstance(targets, Mapping) else None
+    return float(value) if isinstance(value, (int, float)) else 5.0
+
+
+def _supply_v(intent: IntentLike) -> float:
+    constraints = _requirements(intent).get("constraints") or {}
+    value = constraints.get("supply_v") if isinstance(constraints, Mapping) else None
+    return float(value) if isinstance(value, (int, float)) else 5.0
+
+
+def _source_impedance(intent: IntentLike) -> float:
+    constraints = _requirements(intent).get("constraints") or {}
+    value = constraints.get("source_impedance_ohm") if isinstance(constraints, Mapping) else None
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
+def select_components(target_hz: float, supply_v: float) -> Optional[_Selection]:
+    """
+    Pick R and C for a target cutoff. Deterministic: capacitors are tried in
+    table order, R is snapped to E96, and ties are broken by table position —
+    so the same target always yields the same parts.
+
+    Returns None when nothing in the catalogue lands inside the series-resistance
+    window, which is a refusal the caller turns into a named reason.
+    """
+    best: Optional[_Selection] = None
+    best_err = float("inf")
+
+    for farads, c_value, c_part, c_vmax in _CAPACITORS:
+        if supply_v > c_vmax:
+            continue
+        ideal_r = 1.0 / (2.0 * math.pi * target_hz * farads)
+        if not (MIN_SERIES_OHMS <= ideal_r <= MAX_SERIES_OHMS):
+            continue
+        ohms = snap_to_e96(ideal_r)
+        if not (MIN_SERIES_OHMS <= ohms <= MAX_SERIES_OHMS):
+            continue
+        candidate = _Selection(ohms, farads, c_value, c_part, c_vmax)
+        err = abs(candidate.achieved_hz - target_hz) / target_hz
+        # Strict `<` keeps the earlier table entry on a tie, which is what
+        # makes the choice reproducible rather than dict-order dependent.
+        if err < best_err:
+            best_err, best = err, candidate
+
+    return best
+
+
+class RCLowPassGenerator:
+    """Single-pole passive RC low-pass. Implements `generators.protocol.Generator`."""
+
+    name = NAME
+    version = VERSION
+
+    # ── envelope() ────────────────────────────────────────────────────────
+
+    def envelope(self, intent: IntentLike) -> EnvelopeDecision:
+        """
+        Accept with the interface contract, or refuse with a reason specific
+        enough to be a backlog entry. §4.5 makes the refusal log the generator
+        backlog, so "unsupported" is not an acceptable reason — the offending
+        value has to appear.
+        """
+        requirements = _requirements(intent)
+        function = requirements.get("function")
+        if function != "low_pass_filter":
+            return EnvelopeDecision.refuse(
+                f"function={function!r} is not low_pass_filter — this generator "
+                f"produces single-pole passive RC low-pass filters only"
+            )
+
+        target = _target_cutoff(intent)
+        if target is None:
+            return EnvelopeDecision.refuse(
+                "targets.cutoff_hz is missing — a low-pass filter without a "
+                "cutoff is underdetermined, not out of envelope"
+            )
+        if not (MIN_CUTOFF_HZ <= target <= MAX_CUTOFF_HZ):
+            return EnvelopeDecision.refuse(
+                f"cutoff_hz={target:g} outside declared envelope "
+                f"{MIN_CUTOFF_HZ:g} Hz – {MAX_CUTOFF_HZ:g} Hz"
+            )
+
+        supply_v = _supply_v(intent)
+        selection = select_components(target, supply_v)
+        if selection is None:
+            return EnvelopeDecision.refuse(
+                f"no catalogue R/C pair puts the series resistor inside "
+                f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g} Ω at cutoff_hz="
+                f"{target:g} with supply_v={supply_v:g}"
+            )
+
+        tolerance_pct = _tolerance_pct(intent)
+        achieved_err_pct = abs(selection.achieved_hz - target) / target * 100.0
+        if achieved_err_pct > tolerance_pct:
+            return EnvelopeDecision.refuse(
+                f"nearest E96 pair achieves {selection.achieved_hz:.1f} Hz against "
+                f"cutoff_hz={target:g}, a {achieved_err_pct:.2f}% error that exceeds "
+                f"the requested tolerance_pct={tolerance_pct:g}"
+            )
+
+        return EnvelopeDecision.accept(self._ports(intent, selection))
+
+    def _ports(self, intent: IntentLike, selection: _Selection) -> Sequence[PortContract]:
+        """
+        The interface contract. Unused until composition in Stage 3, declared
+        from the first generator so that stage does not begin by editing five
+        of these.
+
+        Input impedance is the series resistor: what the upstream stage sees.
+        Output impedance is frequency dependent and bounded above by R, which
+        is the conservative reading and the one a composition side condition
+        should use. A passive filter draws no supply current.
+        """
+        supply_v = _supply_v(intent)
+        r_lo = selection.ohms * (1 - R_TOLERANCE)
+        r_hi = selection.ohms * (1 + R_TOLERANCE)
+        return (
+            PortContract(
+                name="IN",
+                direction="input",
+                impedance_ohm=Interval(lo=r_lo, hi=r_hi, nominal=selection.ohms, units="ohm"),
+                voltage_range_v=Interval(lo=0.0, hi=supply_v, nominal=supply_v, units="V"),
+            ),
+            PortContract(
+                name="OUT",
+                direction="output",
+                impedance_ohm=Interval(lo=0.0, hi=r_hi, nominal=selection.ohms / 2.0, units="ohm"),
+                voltage_range_v=Interval(lo=0.0, hi=supply_v, nominal=supply_v, units="V"),
+                current_draw_a=Interval(lo=0.0, hi=0.0, nominal=0.0, units="A"),
+            ),
+            PortContract(name="GND", direction="ground"),
+        )
+
+    # ── predict() ─────────────────────────────────────────────────────────
+
+    def predict(
+        self, intent: IntentLike, box: Optional[Mapping[str, Interval]] = None
+    ) -> Prediction:
+        """
+        Closed-form behaviour over a parameter box.
+
+        With `box` omitted the box is the part tolerances: R ±1%, C ±10%. With
+        `box` supplied — degenerate intervals from `Interval.at` — this
+        evaluates a single point, which is how the CI harness compares against
+        one ngspice run at known component values.
+
+        `f_c` is monotone decreasing in R and in C, so the band edges are the
+        opposite corners of the box and two evaluations give the exact worst
+        case. That is why `method` is `monotone_corners` and not `sampled`:
+        EVIDENCE_CLASSES §3.2 grades those differently, and the distinction is
+        the difference between a G1 claim and a G6 one.
+        """
+        target = _target_cutoff(intent)
+        if target is None:
+            raise ValueError("predict() requires targets.cutoff_hz — call envelope() first")
+        selection = select_components(target, _supply_v(intent))
+        if selection is None:
+            raise ValueError("predict() called on an intent envelope() refuses")
+
+        r_band, c_band = self._boxes(selection, box)
+
+        # Opposite corners: smallest R with smallest C gives the highest cutoff.
+        f_hi = cutoff_hz(r_band.lo, c_band.lo)
+        f_lo = cutoff_hz(r_band.hi, c_band.hi)
+        f_nominal = cutoff_hz(r_band.nominal, c_band.nominal)
+
+        vin = _supply_v(intent)
+        # At f_c the single-pole response is exactly -3.0103 dB of the input,
+        # independent of R and C — so this band is a point however wide the
+        # component tolerances are.
+        vout_at_fc = vin / math.sqrt(2.0)
+
+        return Prediction(
+            quantities={
+                "cutoff_hz": Interval(lo=f_lo, hi=f_hi, nominal=f_nominal, units="Hz"),
+                "resistance_ohm": r_band,
+                "capacitance_f": c_band,
+                "vout_at_cutoff_v": Interval.at(vout_at_fc, "V"),
+                "attenuation_at_cutoff_db": Interval.at(-20.0 * math.log10(math.sqrt(2.0)), "dB"),
+            },
+            scope=ClaimScope(
+                parameters="nominal" if (r_band.is_point and c_band.is_point) else "tolerance_box",
+                horizon="steady_state",
+                model="mna_ideal",
+                inputs="single_stimulus",
+            ),
+            method="monotone_corners",
+        )
+
+    def _boxes(
+        self, selection: _Selection, box: Optional[Mapping[str, Interval]]
+    ) -> Tuple[Interval, Interval]:
+        """
+        Resolve the parameter box, axis by axis.
+
+        A partial box is honoured rather than ignored: pinning R alone and
+        leaving C at tolerance is a legitimate thing to ask for, and an earlier
+        version silently discarded any box that did not name both axes — so a
+        caller pinning one parameter got the full tolerance band back with no
+        indication it had been overruled. An unknown axis name is rejected
+        outright, because a typo is otherwise indistinguishable from a
+        deliberate omission.
+        """
+        known = {"R", "C"}
+        if box:
+            unknown = set(box) - known
+            if unknown:
+                raise ValueError(
+                    f"predict() box names unknown parameters {sorted(unknown)}; "
+                    f"this generator takes {sorted(known)}"
+                )
+
+        r = selection.ohms
+        c = selection.farads
+        r_band = Interval(
+            lo=r * (1 - R_TOLERANCE), hi=r * (1 + R_TOLERANCE), nominal=r, units="ohm"
+        )
+        c_band = Interval(
+            lo=c * (1 - C_TOLERANCE), hi=c * (1 + C_TOLERANCE), nominal=c, units="F"
+        )
+        if box:
+            r_band = box.get("R", r_band)
+            c_band = box.get("C", c_band)
+        return r_band, c_band
+
+    # ── generate() ────────────────────────────────────────────────────────
+
+    def generate(self, intent: IntentLike) -> CircuitIR:
+        """
+        Deterministic given (intent, version). Callers call `envelope()` first.
+
+        Not yet byte-identical across calls: `CircuitIR.circuit_id` defaults to
+        a fresh uuid4 and the fix is Task 2.3, deliberately not worked around
+        here. Everything this method controls is reproducible.
+        """
+        target = _target_cutoff(intent)
+        if target is None:
+            raise ValueError("generate() requires targets.cutoff_hz — call envelope() first")
+        supply_v = _supply_v(intent)
+        selection = select_components(target, supply_v)
+        if selection is None:
+            raise ValueError("generate() called on an intent envelope() refuses")
+
+        achieved = selection.achieved_hz
+        source_z = _source_impedance(intent)
+        loading_pct = (source_z / selection.ohms * 100.0) if selection.ohms else 0.0
+
+        r_part = f"RC0402FR-07{_yageo_code(selection.ohms)}L"
+
+        return CircuitIR(
+            intent=f"RC low-pass filter with {target:g} Hz cutoff frequency",
+            application_class=ApplicationClass.HOBBY_ARDUINO,
+            components=[
+                Component(
+                    id="R1",
+                    type=ComponentType.RESISTOR,
+                    part_number=r_part,
+                    manufacturer="Yageo",
+                    package="0402",
+                    value=_value_string(selection.ohms),
+                    supply_voltage_max=50.0,
+                    confidence=0.95,
+                    justification=(
+                        f"{selection.ohms:g}Ω, nearest E96 (1%) value to the "
+                        f"{1.0 / (2.0 * math.pi * target * selection.farads):.1f}Ω ideal. With "
+                        f"C1={selection.c_value} it gives f_c = 1/(2π·R·C) = {achieved:.1f} Hz "
+                        f"against the {target:g} Hz asked for. Raising R lowers the cutoff and "
+                        f"raises the source loading error, currently "
+                        f"{loading_pct:.2f}% at a {source_z:g}Ω source impedance; the part number "
+                        f"is encoded from the Yageo RC0402FR-07…L series and needs a stock check "
+                        f"before ordering."
+                    ),
+                ),
+                Component(
+                    id="C1",
+                    type=ComponentType.CAPACITOR,
+                    part_number=selection.c_part,
+                    manufacturer="Samsung",
+                    package="0402",
+                    value=selection.c_value,
+                    supply_voltage_max=selection.c_vmax,
+                    confidence=0.95,
+                    justification=(
+                        f"{selection.c_value} ceramic, rated {selection.c_vmax:g}V against a "
+                        f"{supply_v:g}V supply. Chosen first because it puts R1 inside "
+                        f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g}Ω. A 10% part, so it dominates "
+                        f"the cutoff tolerance — the ±1% resistor contributes roughly a tenth as "
+                        f"much spread."
+                    ),
+                ),
+            ],
+            nodes=[
+                Node(id="IN", voltage_nominal=supply_v, type=SignalType.ANALOG),
+                Node(id="OUT", type=SignalType.ANALOG),
+                Node(id="GND", voltage_nominal=0.0, type=SignalType.GROUND),
+            ],
+            connections=[
+                Connection(component_id="R1", pin="A", node_id="IN"),
+                Connection(component_id="R1", pin="B", node_id="OUT"),
+                Connection(component_id="C1", pin="+", node_id="OUT"),
+                Connection(component_id="C1", pin="-", node_id="GND"),
+            ],
+            constraints={"supply_voltage": supply_v, "cutoff_hz": target},
+            simulation_spec=SimulationSpec(
+                analyses=[
+                    SimulationAnalysis(
+                        type="ac_sweep",
+                        description=f"Verify -3dB cutoff at {achieved:.1f} Hz",
+                        f_start=max(achieved / 100.0, 0.1),
+                        f_stop=achieved * 100.0,
+                        points_per_decade=20,
+                    )
+                ],
+                expected_outputs={"OUT": supply_v / math.sqrt(2.0)},
+            ),
+            validation_rules=[
+                ValidationRule.NO_FLOATING_NODES,
+                ValidationRule.VOLTAGE_RATINGS_OK,
+            ],
+        )
+
+    # ── CI grid and locality ──────────────────────────────────────────────
+
+    def grid(self) -> GridSpec:
+        """
+        Three decades of the declared envelope. A single 1 kHz point passes on
+        a generator with a decade-scaling bug, which is the same reason the
+        criterion-11 harness sweeps rather than spot-checks.
+        """
+        return GridSpec(
+            axes={"cutoff_hz": [100.0, 330.0, 1_000.0, 3_300.0, 10_000.0, 33_000.0, 100_000.0]},
+            units={"cutoff_hz": "Hz"},
+        )
+
+    def dependency_closure(self, requirement_path: str) -> FrozenSet[str]:
+        """
+        Narrow where it can be. A conservative closure is sound but makes the
+        Stage 2 locality check vacuous, so the real dependencies are declared
+        here: only the capacitor carries a voltage rating, so a supply change
+        cannot touch R1.
+        """
+        closures: Dict[str, FrozenSet[str]] = {
+            "targets.cutoff_hz": frozenset({"R1", "C1"}),
+            "targets.tolerance_pct": frozenset({"R1", "C1"}),
+            "constraints.supply_v": frozenset({"C1"}),
+            "constraints.source_impedance_ohm": frozenset({"R1"}),
+            "preferences.package": frozenset({"R1", "C1"}),
+        }
+        return closures.get(requirement_path, frozenset({"R1", "C1"}))
