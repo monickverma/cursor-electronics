@@ -6,10 +6,12 @@ invariant that file pinned — *the patcher never returns a full IR* — becomes
 stronger here: this patcher returns operations on a requirement and cannot
 name the design type at all (`test_llm_cannot_write_circuit_ir.py` asserts it).
 
-The guard under test (decisions.md, X2 + X4, item 7): **every operation cites
-the command.** A patch is a rewrite by definition, so X5's "add, never
-rewrite" cannot govern it; what it must stop is a model that, asked for one
-change, makes two.
+The guard under test (decisions.md, X2 + X4, item 7, tightened by the Stage 2
+verification entry): **every operation cites the command in whole words, no
+two operations share words, and every value written appears in its
+citation.** A patch is a rewrite by definition, so X5's "add, never rewrite"
+cannot govern it; what it must stop is a model that, asked for one change,
+makes two.
 """
 
 import json
@@ -22,6 +24,7 @@ from ai.intent_patcher import (
     IntentPatchError,
     PatchFailure,
     cites_command,
+    quantities,
 )
 from core.intent_ir import IntentIR, Producer, Provenance
 from core.intent_patch import PatchOp
@@ -162,15 +165,150 @@ class TestTheCitationGuard:
         assert not cites_command("cutoff 20 kHz", COMMAND)
         assert not cites_command("cutoff to 2 kHz", COMMAND)
 
-    def test_what_the_guard_does_not_catch_is_pinned_too(self, patcher):
-        # A mis-transcribed value under a correct citation passes. The route
-        # returns the requirement diff so the user sees it; this test exists
-        # so nobody reads the guard as covering this case.
+    @pytest.mark.parametrize("fragment", ["e", "cut", "off 2", "kH"])
+    def test_a_citation_must_be_whole_words(self, fragment):
+        # `"e"` was accepted as a citation of "Make the cutoff 2 kHz" until the
+        # Stage 2 verification, which put an uncited supply change through it.
+        assert not cites_command(fragment, COMMAND)
+
+
+class TestTheBypassesTheVerificationFound:
+    """
+    Both got `supply_v: 5 → 12` through the first version of the guard on the
+    command "make the cutoff 2 kHz", which never mentions a supply.
+    """
+
+    def test_quoting_the_whole_command_for_a_second_change(self, patcher):
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000, "because": COMMAND},
+                {"op": "replace", "path": "/constraints/supply_v", "value": 12, "because": COMMAND},
+            ]}).propose(intent(), COMMAND, PARTS)
+        assert exc.value.kind == PatchFailure.UNGROUNDED_VALUE.value
+        assert "supply_v" in str(exc.value)
+
+    def test_quoting_a_single_letter(self, patcher):
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000, "because": "cutoff 2 kHz"},
+                {"op": "replace", "path": "/constraints/supply_v", "value": 12, "because": "e"},
+            ]}).propose(intent(), COMMAND, PARTS)
+        assert exc.value.kind == PatchFailure.UNCITED_OPERATION.value
+
+    def test_quoting_an_unrelated_whole_word(self, patcher):
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000, "because": "cutoff 2 kHz"},
+                {"op": "replace", "path": "/constraints/supply_v", "value": 12, "because": "the"},
+            ]}).propose(intent(), COMMAND, PARTS)
+        assert exc.value.kind == PatchFailure.UNGROUNDED_VALUE.value
+
+    def test_one_phrase_cannot_justify_two_changes(self, patcher):
+        # "4.7k" grounds a 4700 Hz cutoff as well as the pin — so this one is
+        # stopped by the spans, not the values.
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "add", "path": "/constraints/pinned/R1", "value": "4.7k", "because": "4.7k"},
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 4700, "because": "4.7k"},
+            ]}).propose(intent(), "Use the 4.7k resistor I have", PARTS)
+        assert exc.value.kind == PatchFailure.SHARED_CITATION.value
+
+    def test_two_changes_with_words_of_their_own_are_fine(self, patcher):
         build, _ = patcher
         proposal = build({"operations": [
-            {"op": "replace", "path": "/targets/cutoff_hz", "value": 20000, "because": "2 kHz"},
+            {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000, "because": "cutoff 2 kHz"},
+            {"op": "replace", "path": "/constraints/supply_v", "value": 12, "because": "supply 12 V"},
+        ]}).propose(intent(), "Make the cutoff 2 kHz and the supply 12 V", PARTS)
+        assert [o.value for o in proposal.ops] == [2000, 12]
+
+
+class TestValuesAreGroundedInTheCitation:
+    def test_a_mis_transcribed_value_is_refused(self, patcher):
+        # Listed as uncaught by the first version of the guard; now caught.
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 20000, "because": "2 kHz"},
+            ]}).propose(intent(), COMMAND, PARTS)
+        assert exc.value.kind == PatchFailure.UNGROUNDED_VALUE.value
+        assert "20000" in str(exc.value)
+
+    def test_a_relative_request_asks_for_the_value(self, patcher):
+        build, _ = patcher
+        with pytest.raises(IntentPatchError) as exc:
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000,
+                 "because": "double the cutoff"},
+            ]}).propose(intent(), "double the cutoff", PARTS)
+        assert exc.value.kind == PatchFailure.UNGROUNDED_VALUE.value
+        assert "state the new value" in str(exc.value)
+
+    @pytest.mark.parametrize("command, because, value", [
+        ("use the 4k7 I have", "4k7", "4.7k"),              # R-notation grounds the pin
+        ("pin C1 to 0.1 uF", "C1 to 0.1 uF", {"C1": "100nF"}),
+        ("tolerance 1%", "tolerance 1%", 1),
+        ("run it from 3.3V", "3.3V", 3.3),
+        ("make it 0603 parts", "0603", "0603"),
+    ])
+    def test_values_compare_as_quantities_across_notations(self, patcher, command, because, value):
+        build, _ = patcher
+        path = "/constraints/pinned" if isinstance(value, dict) else "/constraints/x"
+        proposal = build({"operations": [
+            {"op": "add", "path": path, "value": value, "because": because},
+        ]}).propose(intent(), command, PARTS)
+        assert proposal.ops[0].value == value
+
+    def test_case_decides_milli_versus_mega(self, patcher):
+        build, _ = patcher
+        with pytest.raises(IntentPatchError):
+            build({"operations": [
+                {"op": "replace", "path": "/targets/cutoff_hz", "value": 2e6, "because": "2 mHz"},
+            ]}).propose(intent(), "cutoff 2 mHz", PARTS)
+
+    def test_a_removal_needs_a_citation_but_no_value(self, patcher):
+        build, _ = patcher
+        proposal = build({"operations": [
+            {"op": "remove", "path": "/constraints/supply_v", "because": "drop the supply limit"},
+        ]}).propose(intent(), "drop the supply limit", PARTS)
+        assert proposal.ops[0].op == "remove"
+
+    @pytest.mark.parametrize("text, expected", [
+        ("2 kHz", [2000.0]), ("2kHz", [2000.0]), ("4k7", [4700.0]), ("4.7 kΩ", [4700.0]),
+        ("100nF", [1e-7]), ("0.1 µF", [1e-7]), ("12 V", [12.0]), ("5%", [5.0]),
+        ("2,000 Hz", [2000.0]), ("1e3", [1000.0]), ("2 MHz", [2e6]), ("-5 V", [-5.0]),
+        ("5 more", [5.0]), ("R1", []), ("3rd", []), ("4.7K5", []), ("10 kilohms", [1e4]),
+    ])
+    def test_the_quantity_reader(self, text, expected):
+        got = quantities(text)
+        assert len(got) == len(expected)
+        assert all(abs(g - e) <= 1e-12 * max(1.0, abs(e)) for g, e in zip(got, expected))
+
+
+class TestWhatTheGuardStillDoesNotCatch:
+    """
+    Pinned so nobody reads the guard as covering these. The route returns the
+    requirement diff with every patch; that is the mitigation for both.
+    """
+
+    def test_values_swapped_between_two_operations(self, patcher):
+        build, _ = patcher
+        proposal = build({"operations": [
+            {"op": "replace", "path": "/targets/cutoff_hz", "value": 12, "because": "supply 12 V"},
+            {"op": "replace", "path": "/constraints/supply_v", "value": 2000, "because": "cutoff 2 kHz"},
+        ]}).propose(intent(), "Make the cutoff 2 kHz and the supply 12 V", PARTS)
+        assert [o.value for o in proposal.ops] == [12, 2000]
+
+    def test_a_removal_citing_an_unrelated_whole_word(self, patcher):
+        build, _ = patcher
+        proposal = build({"operations": [
+            {"op": "replace", "path": "/targets/cutoff_hz", "value": 2000, "because": "cutoff 2 kHz"},
+            {"op": "remove", "path": "/constraints/supply_v", "because": "the"},
         ]}).propose(intent(), COMMAND, PARTS)
-        assert proposal.ops[0].value == 20000
+        assert proposal.ops[1].op == "remove"
 
 
 class TestFailuresAreLoudAndNamed:

@@ -908,3 +908,71 @@ now treats `model_copy(update=...)` in a model-calling module that references
   `ast.Attribute` nodes; a module that only imports the type (`ast.alias`) was
   invisible to it. The new negative control caught that before anything
   shipped on it.
+
+## [2026-09-21] Stage 2 verification — three defects closed, and the citation guard tightened
+
+**Decision:** three defects found by an independent verification of Stage 2
+are fixed, and item 7 of the X2 + X4 entry (the citation guard) is tightened.
+Items 1–15 otherwise stand. Taken by the agent on the instruction "do 1–3"
+after the verification report.
+
+**1. Two patches in flight lost one of them.** The route read v(n), computed
+v(n+1) and wrote it with `UPDATE … WHERE circuit_id = ?`. Two patches computed
+from the same v(n) both returned 200 as "v2", history got two 1 → 2 rows, and
+the second silently discarded the first while its user was told it had landed.
+`crud.update_design_revision` now takes `expected_version` and adds
+`AND version = ?`; under READ COMMITTED the second UPDATE waits on the first's
+row lock, re-checks the predicate against the committed row, and matches
+nothing. The route answers **409 `version_conflict`** and writes nothing else.
+Verified against Postgres (a stale write returns False and changes nothing) and
+by a route test that runs two patches concurrently.
+The revision write **no longer rewrites annotations.** A patch never changes
+the annotation set — orphans are kept, not dropped — so rewriting it could only
+clobber a concurrent `PUT …/annotations`, and it reordered them besides.
+*Rejected:* `SELECT … FOR UPDATE` on the read. It serialises correctly, but it
+holds a row lock across the model call on the command path, and a conflict is
+rare enough that failing fast with a reason is the better trade.
+
+**2. The documented pin flow failed on every first pin.** The patcher is told
+to emit `add /constraints/pinned/R1`; RFC 6902 §4.1 requires the parent to
+exist, and a design never pinned has no `pinned` map, so the operation failed
+with "/constraints/pinned does not exist". Each half was tested; the two were
+never composed. `core/intent_patch.py` now declares `CONTAINERS` — the three
+sections and `constraints.pinned` — whose absence means empty: an `add` into
+one creates it, and emptying one removes it, so "no pins" has one spelling and
+adding an empty pin set is not a version. Every other missing parent is still
+refused. This extends the departure the module already made for sections; it
+does not create a general "create intermediate objects" rule.
+
+**3. The citation guard did not stop the case it was written for.** Item 7
+said a model that also changes `supply_v` when the user mentioned only the
+cutoff "is refused". It was refused only when the model quoted words absent
+from the command: quoting the whole command, or `"e"`, put `supply_v: 5 → 12`
+through. A substring check proves the quote exists, not that it asked for the
+operation. The guard is now three mechanical rules:
+- **whole words** — a citation starts and ends on word boundaries;
+- **one span, one operation** — citations are assigned non-overlapping spans,
+  so the words that justified one change cannot justify a second;
+- **the value is in the span** — an operation that writes a value must cite
+  words containing it, numbers compared as quantities under SI prefixes
+  ("2 kHz" grounds 2000, not 20000; case decides milli versus mega).
+
+The third rule also closes most of what item 7 listed as uncaught — a value
+mis-transcribed from words that were cited.
+**Cost, accepted:** a relative request ("double the cutoff") grounds no value
+and is refused; the prompt now tells the model to ask for the value instead.
+This matches "refused, not negotiated".
+**Still not caught, pinned by tests so nobody reads the guard as covering it:**
+values swapped between two operations whose spans each contain the other's
+number, and a removal citing an unrelated whole word (a removal writes no value
+to ground). The requirement diff returned with every patch remains the
+mitigation. *Rejected again:* binding a span to a path by name — the lexical
+heuristic item 7 already rejected.
+
+**Not addressed here, from the same verification:** the Task 1.5 scanner is
+per-module and misses model output reached through a wrapper or written by
+in-place mutation (no such path exists today); `rc_lowpass` invents a part
+number for an off-series pinned resistor and reads `"4.7K5"` as 5.2 kΩ; the
+Stage 0 requirement readers accept `true` as a number; patch refusals are
+logged without the requested IntentIR; a failed startup migration is silent;
+and `brain/architecture.md` still describes the deleted `ai/patcher.py`.

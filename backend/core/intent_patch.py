@@ -15,7 +15,10 @@ are JSON Pointers (RFC 6901) rooted at the requirements mapping —
 `/targets/cutoff_hz`, `/constraints/pinned/R1` — so a patch cannot reach
 `intent_id`, `provenance` or `signed_off` however it is written. `move` and
 `copy` are not supported: neither corresponds to anything a user asks for, and
-an unsupported operation is refused rather than approximated.
+an unsupported operation is refused rather than approximated. One deliberate
+departure: an `add` into a missing *container* (`CONTAINERS` — the three
+sections and `constraints.pinned`) creates it, because an absent container is
+an empty one to every reader of a requirement.
 
 **A patch that changes nothing is not a version** (the Stage 2 idempotence
 gate). An empty operation list, or one whose result equals the input, returns
@@ -42,6 +45,19 @@ from core.intent_ir import IntentIR, Requirements
 
 #: Top-level members of `requirements` a pointer may start at.
 SECTIONS = ("function", "targets", "constraints", "preferences")
+
+#: Objects whose absence means "empty". RFC 6902 §4.1 requires an `add`'s
+#: parent to exist; for these, an absent parent *is* an existing empty one,
+#: which is how `Requirements` reads a missing section and how a generator
+#: reads a missing pin set. So `add /constraints/pinned/R1` works on an intent
+#: that never mentioned pinning — the form the patcher is told to emit, which
+#: failed on every first pin until the Stage 2 verification found it.
+#: Emptying one removes it (`_prune`), so "no pins" has exactly one spelling
+#: and adding an empty pin set is not a version.
+CONTAINERS = frozenset({
+    ("targets",), ("constraints",), ("preferences",),
+    ("constraints", "pinned"),
+})
 
 _UNSET = object()
 
@@ -101,15 +117,15 @@ def parse_pointer(path: str) -> List[str]:
     return tokens
 
 
-def _resolve(doc: Dict[str, Any], tokens: Sequence[str], create_section: bool) -> Tuple[Dict[str, Any], str]:
+def _resolve(doc: Dict[str, Any], tokens: Sequence[str], create_containers: bool) -> Tuple[Dict[str, Any], str]:
     """The mapping holding the final token, and that token."""
     parent: Any = doc
     for depth, token in enumerate(tokens[:-1]):
         if isinstance(parent, Mapping) and token in parent:
             parent = parent[token]
-        elif depth == 0 and create_section and token in SECTIONS:
-            # A section a producer left out is an empty section: `Requirements`
-            # defaults all three to {}. Adding into one must not fail on that.
+        elif create_containers and tuple(tokens[:depth + 1]) in CONTAINERS:
+            # An absent container is an empty one (see CONTAINERS). Any other
+            # missing parent is still an error, as RFC 6902 §4.1 requires.
             parent[token] = {}
             parent = parent[token]
         else:
@@ -124,7 +140,7 @@ def _resolve(doc: Dict[str, Any], tokens: Sequence[str], create_section: bool) -
 
 def _apply_one(doc: Dict[str, Any], op: PatchOp) -> None:
     tokens = parse_pointer(op.path)
-    parent, key = _resolve(doc, tokens, create_section=op.op == "add")
+    parent, key = _resolve(doc, tokens, create_containers=op.op == "add")
 
     if op.op == "add":
         parent[key] = copy.deepcopy(op.value)
@@ -146,9 +162,27 @@ def _apply_one(doc: Dict[str, Any], op: PatchOp) -> None:
             )
 
 
+def _prune(doc: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Drop nested containers left empty (`constraints.pinned: {}`), in place.
+
+    Sections stay: `Requirements` fills them with {} anyway, and removing one
+    a producer wrote would be churn with no meaning.
+    """
+    for path in sorted(CONTAINERS, key=len, reverse=True):
+        if len(path) < 2:
+            continue
+        parent: Any = doc
+        for token in path[:-1]:
+            parent = parent.get(token) if isinstance(parent, Mapping) else None
+        if isinstance(parent, dict) and parent.get(path[-1]) == {}:
+            del parent[path[-1]]
+    return doc
+
+
 def _normalised(requirements: Mapping[str, Any]) -> Dict[str, Any]:
-    """Requirements with defaults filled, for comparing two versions fairly."""
-    return Requirements.model_validate(dict(requirements)).model_dump()
+    """Requirements with defaults filled and empty containers dropped, for comparing two versions fairly."""
+    return Requirements.model_validate(_prune(copy.deepcopy(dict(requirements)))).model_dump()
 
 
 class PatchOutcome(BaseModel):
@@ -177,6 +211,7 @@ def apply_patch(intent: IntentIR, ops: Sequence[PatchOp]) -> PatchOutcome:
             _apply_one(doc, op)
         except PatchError as exc:
             raise PatchError(str(exc), op_index=index) from None
+    _prune(doc)
 
     try:
         unchanged = _normalised(doc) == _normalised(intent.requirements)
@@ -210,9 +245,9 @@ def flatten(requirements: Mapping[str, Any]) -> Dict[str, Any]:
         if isinstance(value, Mapping) and value:
             for key, child in value.items():
                 walk(f"{prefix}.{key}", child)
-        elif not (isinstance(value, Mapping) and prefix in SECTIONS):
-            # An empty section carries no requirement; an empty nested object
-            # is a value the user set and is kept.
+        elif not (isinstance(value, Mapping) and (prefix in SECTIONS or tuple(prefix.split(".")) in CONTAINERS)):
+            # An empty section or container carries no requirement; any other
+            # empty nested object is a value the user set and is kept.
             flat[prefix] = value
 
     for key, value in requirements.items():

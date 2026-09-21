@@ -84,21 +84,38 @@ async def update_design_revision(
     circuit_id: str,
     ir: CircuitIR,
     intent_ir: dict,
-    annotations: list,
-) -> None:
-    """A new revision: circuit, requirement and annotations move together."""
-    await db.execute(
+    expected_version: int,
+) -> bool:
+    """
+    A new revision: circuit and requirement move together — but only if the
+    stored design is still at `expected_version`, the one the patch was
+    computed from. Returns False, having written nothing, when it is not.
+
+    Without the version predicate two patches in flight both read v(n), both
+    write "v(n+1)", and the second silently discards the first while its user
+    is told it landed. Under READ COMMITTED the second UPDATE waits on the
+    first's row lock and then re-checks the predicate against the committed
+    row, so exactly one of them matches.
+
+    Annotations are not written here. A patch never changes the annotation
+    set — orphans are kept, not dropped — so rewriting it could only clobber
+    a concurrent `PUT …/annotations`.
+    """
+    result = await db.execute(
         update(CircuitDesign)
-        .where(CircuitDesign.circuit_id == circuit_id)
+        .where(
+            CircuitDesign.circuit_id == circuit_id,
+            CircuitDesign.version == expected_version,
+        )
         .values(
             ir_json=ir.model_dump(mode="json"),
             intent_ir=intent_ir,
-            annotations=annotations,
             version=ir.version,
             simulation_passed=ir.simulation_passed,
             updated_at=datetime.utcnow(),
         )
     )
+    return result.rowcount == 1
 
 
 async def update_design_annotations(db: AsyncSession, circuit_id: str, annotations: list) -> None:

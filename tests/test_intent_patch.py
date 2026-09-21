@@ -67,6 +67,47 @@ class TestOperations:
         out = apply_patch(make(), [op("add", "/constraints/pinned", {"R1": "4.7k"})])
         assert out.intent.requirements["constraints"]["pinned"] == {"R1": "4.7k"}
 
+
+class TestPinnedIsAContainer:
+    """
+    `constraints.pinned` absent means no pins, exactly as a missing section
+    means an empty one. Found by the Stage 2 verification: the patcher is told
+    to emit `add /constraints/pinned/R1`, and that failed on every design that
+    had never been pinned — which is every design on its first pin.
+    """
+
+    def test_the_first_pin_can_name_the_part_directly(self):
+        out = apply_patch(make(), [op("add", "/constraints/pinned/R1", "4.7k")])
+        assert out.intent.requirements["constraints"]["pinned"] == {"R1": "4.7k"}
+        assert out.readable == ('constraints.pinned.R1: (unset) → "4.7k"',)
+
+    def test_both_spellings_of_the_first_pin_give_the_same_requirement(self):
+        direct = apply_patch(make(), [op("add", "/constraints/pinned/R1", "4.7k")]).intent
+        whole = apply_patch(make(), [op("add", "/constraints/pinned", {"R1": "4.7k"})]).intent
+        assert direct.requirements_hash() == whole.requirements_hash()
+
+    def test_other_missing_parents_are_still_refused(self):
+        # RFC 6902 §4.1 still holds for everything that is not a container.
+        with pytest.raises(PatchError, match="does not exist"):
+            apply_patch(make(), [op("add", "/constraints/limits/max_v", 12)])
+
+    def test_removing_the_last_pin_returns_to_no_pins(self):
+        pinned = apply_patch(make(), [op("add", "/constraints/pinned/R1", "4.7k")]).intent
+        unpinned = apply_patch(pinned, [op("remove", "/constraints/pinned/R1")]).intent
+        assert "pinned" not in unpinned.requirements["constraints"]
+        assert unpinned.requirements_hash() == make().requirements_hash()
+
+    def test_an_empty_pin_set_is_not_a_version(self):
+        out = apply_patch(make(), [op("add", "/constraints/pinned", {})])
+        assert not out.changed and out.intent.revision == 1
+
+    def test_a_stored_empty_pin_set_does_not_make_a_no_op_into_a_version(self):
+        intent = make(constraints={"supply_v": 5, "source_impedance_ohm": 50, "pinned": {}})
+        out = apply_patch(intent, [op("test", "/targets/cutoff_hz", 1000)])
+        assert not out.changed
+        changed = apply_patch(intent, [op("replace", "/targets/cutoff_hz", 2000)])
+        assert changed.readable == ("targets.cutoff_hz: 1000 → 2000",)
+
     def test_remove_deletes_a_member(self):
         out = apply_patch(make(), [op("remove", "/constraints/source_impedance_ohm")])
         assert "source_impedance_ohm" not in out.intent.requirements["constraints"]

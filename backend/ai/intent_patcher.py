@@ -11,20 +11,37 @@ Like `ai/intent_producer.py`, it is a convenience layer: the patch route also
 accepts RFC 6902 operations directly, with zero model calls, which is what
 keeps patching LLM-optional (§4.2).
 
-**The guard: every operation cites the command.** X5's rule for the producer —
-a retry may add, never rewrite — cannot govern a patch, because a patch is a
-rewrite by definition. The failure it has to stop is a model that, asked to
-change the cutoff, also "helpfully" changes the supply. So each operation
-carries `because`: the exact words of the user's command that asked for it,
-checked mechanically as a substring. An operation that cannot point at the
-text that motivated it is refused with the rest of the patch.
+**The guard: every operation cites the command, and the citation carries its
+value.** X5's rule for the producer — a retry may add, never rewrite — cannot
+govern a patch, because a patch is a rewrite by definition. The failure it has
+to stop is a model that, asked to change the cutoff, also "helpfully" changes
+the supply. So each operation carries `because`, the user's words that asked
+for it, and three things are checked mechanically:
 
-What it does **not** catch, stated so nobody believes otherwise: a value
-mis-transcribed from words that were cited — "2 kHz" recorded as 20000. The
-route returns the requirement diff with every patch so the user can see it;
-the exposure is the one `brain/decisions.md` [2026-09-21] names for the
-producer. A check that the path's name appears in the command was considered
-and rejected as a heuristic dressed as a guard.
+1. **Verbatim and whole-word.** The citation is a span of the command, modulo
+   case and spacing, starting and ending on word boundaries — `"e"` is not a
+   citation of anything.
+2. **One span, one operation.** Citations are assigned non-overlapping spans
+   of the command. A model cannot justify a second change by quoting the
+   words that justified the first.
+3. **The value is in the span.** An operation that writes a value must cite
+   words containing it. Numbers compare as quantities, so "2 kHz" grounds
+   2000 and not 20000; strings compare as text. A relative request — "double
+   the cutoff" — grounds nothing, and is refused until the user states the
+   value.
+
+The first version checked only (1), without word alignment, and the Stage 2
+verification got an uncited supply change through it both by quoting the whole
+command and by quoting `"e"`. Rule 3 also closes most of what that version
+listed as uncaught: a value mis-transcribed from words that were cited.
+
+What it still does **not** catch, stated so nobody believes otherwise: values
+swapped between two operations whose spans each contain the other's number
+("cutoff 2 kHz and supply 12 V" recorded as cutoff 12, supply 2000), and a
+removal citing an unrelated whole word — a removal writes no value to ground.
+The route returns the requirement diff with every patch so the user can see
+it. A check that the path's name appears in the command was considered and
+rejected as a heuristic dressed as a guard; so is binding spans to paths.
 
 **No retries of any kind.** Schema failures raise with the raw tool input
 (X5); a patch the envelope refuses is reported and the user rephrases. A
@@ -34,9 +51,10 @@ semantic retry is where a model would negotiate the requirement until it fits.
 from __future__ import annotations
 
 import json
+import math
 import re
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from ai.client import ai_model, make_client
 from core.intent_ir import IntentIR
@@ -52,6 +70,8 @@ class PatchFailure(str, Enum):
     NO_TOOL_USE = "no_tool_use"
     MALFORMED_TOOL_INPUT = "malformed_tool_input"
     UNCITED_OPERATION = "uncited_operation"
+    UNGROUNDED_VALUE = "ungrounded_value"
+    SHARED_CITATION = "shared_citation"
 
 
 class IntentPatchError(Exception):
@@ -98,9 +118,14 @@ Pointers into the requirement: /function, /targets/<name>, \
 Rules:
 - Change only what the user asked for. Every operation must include \
 `because`: the exact words from the change request that ask for it, copied \
-verbatim. An operation you cannot justify with the user's own words must not \
-be returned.
+verbatim, and those words must contain the value you write — for 2000, cite \
+"cutoff 2 kHz", not "cutoff". Each operation cites its own words; two \
+operations may not quote the same words. An operation you cannot justify with \
+the user's own words must not be returned.
 - Never convert a value the user gave into a different one. 2 kHz is 2000.
+- If the user asks for a relative change without stating the new value \
+("double the cutoff", "a bit higher"), return no operations and ask for the \
+value in note_to_user.
 - When the user wants to use a specific part they already have, pin it: \
 add /constraints/pinned/<part id> with the value they gave, e.g. "4.7k".
 - If the request cannot be expressed as a change to the requirement, return \
@@ -123,7 +148,7 @@ _PATCH_TOOL: Dict[str, Any] = {
                         "op": {"type": "string", "enum": ["add", "remove", "replace"]},
                         "path": {"type": "string", "description": "JSON Pointer, e.g. /targets/cutoff_hz"},
                         "value": {"description": "New value; omitted for remove"},
-                        "because": {"type": "string", "description": "Verbatim words from the change request"},
+                        "because": {"type": "string", "description": "Verbatim words from the change request, containing the value written"},
                     },
                 },
             },
@@ -133,15 +158,125 @@ _PATCH_TOOL: Dict[str, Any] = {
 }
 
 
-def _normalise(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip().casefold()
+def _spaced(text: str) -> str:
+    """Whitespace collapsed, case kept — case carries meaning in "2 MHz" vs "2 mHz"."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
+Span = Tuple[int, int]
+
+
+def citation_spans(citation: Any, command: str) -> List[Span]:
+    """
+    Every place `citation` occurs in `command`, modulo case and spacing, on
+    word boundaries. Positions are in `_spaced(command)`. Overlapping
+    occurrences are all returned; choosing among them is `_assign`'s job.
+    """
+    if not isinstance(citation, str) or not citation.strip():
+        return []
+    quoted = _spaced(citation)
+    pattern = re.escape(quoted)
+    if quoted[0].isalnum():
+        pattern = r"(?<!\w)" + pattern
+    if quoted[-1].isalnum():
+        pattern += r"(?!\w)"
+    return [
+        (m.start(1), m.end(1))
+        for m in re.finditer(f"(?=({pattern}))", _spaced(command), re.IGNORECASE)
+    ]
 
 
 def cites_command(citation: Any, command: str) -> bool:
-    """True if `citation` is a non-empty verbatim span of `command`, modulo case and spacing."""
-    if not isinstance(citation, str) or not citation.strip():
+    """True if `citation` is a whole-word verbatim span of `command`, modulo case and spacing."""
+    return bool(citation_spans(citation, command))
+
+
+# ── Grounding a value in the words that asked for it ─────────────────────────
+
+_PREFIXES = {
+    "pico": 1e-12, "nano": 1e-9, "micro": 1e-6, "milli": 1e-3,
+    "kilo": 1e3, "mega": 1e6, "giga": 1e9, "meg": 1e6, "Meg": 1e6, "MEG": 1e6,
+    "p": 1e-12, "n": 1e-9, "u": 1e-6, "µ": 1e-6, "μ": 1e-6, "m": 1e-3,
+    "k": 1e3, "K": 1e3, "M": 1e6, "G": 1e9,
+}
+
+#: A number, an optional SI prefix (case-sensitive: m is milli, M is mega),
+#: optional R-notation digits ("4k7"), an optional unit, and then no letter or
+#: digit — so "5 more" is 5, "3rd" is nothing, and "R1" is nothing.
+_QUANTITY = re.compile(
+    r"(?<![\w.])"
+    r"(?P<sign>[-−+])?"
+    r"(?P<num>\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?(?:[eE][-+]?\d+)?|\.\d+)"
+    r"(?:\s*(?P<prefix>" + "|".join(sorted(map(re.escape, _PREFIXES), key=len, reverse=True)) + r")"
+    r"(?P<rdigits>\d+)?)?"
+    r"(?:\s*(?i:hz|volts?|v|amps?|a|farads?|f|ohms?|Ω|%|percent))?"
+    r"(?![A-Za-z0-9])"
+)
+
+
+def quantities(text: str) -> List[float]:
+    """Every quantity written in `text`, in SI base units: "2 kHz" → 2000.0, "4k7" → 4700.0."""
+    # "kilohm" and "megohm" share the o between prefix and unit.
+    text = re.sub(r"(?i)(?<![a-z])(?:(kil)|(meg))ohm", lambda m: "kilo ohm" if m.group(1) else "mega ohm", text)
+    found = []
+    for m in _QUANTITY.finditer(text):
+        num, prefix, rdigits = m.group("num").replace(",", ""), m.group("prefix"), m.group("rdigits")
+        if rdigits:
+            if "." in num or "e" in num.lower():
+                continue          # "4.7K5" is not a value; refuse rather than guess
+            num = f"{num}.{rdigits}"
+        value = float(num) * (_PREFIXES[prefix] if prefix else 1.0)
+        found.append(-value if m.group("sign") in ("-", "−") else value)
+    return found
+
+
+def _as_quantity(text: str) -> Optional[float]:
+    """The one quantity a string *is* ("4.7k", "100nF"), or None if it is not one."""
+    m = _QUANTITY.fullmatch(text.strip())
+    if m is None:
+        return None
+    values = quantities(text.strip())
+    return values[0] if len(values) == 1 else None
+
+
+def _squash(text: str) -> str:
+    return re.sub(r"[\W_]+", "", text.casefold())
+
+
+def grounded(value: Any, text: str) -> bool:
+    """True if `text` — the cited words — contains `value`."""
+    if isinstance(value, bool) or value is None:
+        return False                     # neither is something a user writes as a value
+    if isinstance(value, (int, float)):
+        return any(math.isclose(q, value, rel_tol=1e-9, abs_tol=1e-15) for q in quantities(text))
+    if isinstance(value, str):
+        as_number = _as_quantity(value)
+        if as_number is not None:
+            return grounded(as_number, text)
+        return bool(_squash(value)) and _squash(value) in _squash(text)
+    if isinstance(value, Mapping):
+        return all(grounded(v, text) for v in value.values())
+    if isinstance(value, (list, tuple)):
+        return all(grounded(v, text) for v in value)
+    return False
+
+
+def _assign(candidates: Sequence[Sequence[Span]]) -> Optional[List[Span]]:
+    """One span per operation, no two overlapping, or None. Patches are small; backtrack."""
+    chosen: List[Span] = []
+
+    def place(i: int) -> bool:
+        if i == len(candidates):
+            return True
+        for span in candidates[i]:
+            if all(span[1] <= s or span[0] >= e for s, e in chosen):
+                chosen.append(span)
+                if place(i + 1):
+                    return True
+                chosen.pop()
         return False
-    return _normalise(citation) in _normalise(command)
+
+    return list(chosen) if place(0) else None
 
 
 class IntentPatcher:
@@ -166,6 +301,8 @@ class IntentPatcher:
 
         ops: List[PatchOp] = []
         citations: List[str] = []
+        candidates: List[List[Span]] = []
+        spaced = _spaced(command)
         for index, item in enumerate(raw["operations"]):
             if not isinstance(item, Mapping):
                 raise IntentPatchError(
@@ -173,23 +310,44 @@ class IntentPatcher:
                     raw=raw, kind=PatchFailure.SCHEMA,
                 )
             because = item.get("because")
-            if not cites_command(because, command):
+            spans = citation_spans(because, command)
+            if not spans:
                 raise IntentPatchError(
                     f"operation {index} ({item.get('op')} {item.get('path')}) cites "
-                    f"{because!r}, which is not in the command — an operation the "
-                    f"user did not ask for is refused with the whole patch",
+                    f"{because!r}, which is not in the command as whole words — an "
+                    f"operation the user did not ask for is refused with the whole patch",
                     raw=raw, kind=PatchFailure.UNCITED_OPERATION,
                 )
             try:
-                ops.append(PatchOp.model_validate(
-                    {k: v for k, v in item.items() if k != "because"}
-                ))
+                op = PatchOp.model_validate({k: v for k, v in item.items() if k != "because"})
             except Exception as exc:  # noqa: BLE001
                 raise IntentPatchError(
                     f"operation {index} is not a valid RFC 6902 operation: {exc}",
                     raw=raw, kind=PatchFailure.SCHEMA,
                 ) from exc
+            if op.op != "remove":
+                # Grounded against the command's own text at the span, not the
+                # model's copy of it: case decides milli versus mega.
+                spans = [s for s in spans if grounded(op.value, spaced[s[0]:s[1]])]
+                if not spans:
+                    raise IntentPatchError(
+                        f"operation {index} ({op.describe()}) cites {because!r}, which "
+                        f"does not contain {json.dumps(op.value, default=str)} — every value "
+                        f"written must appear in the words that asked for it. If the "
+                        f"request was relative, state the new value (e.g. 'cutoff 2 kHz')",
+                        raw=raw, kind=PatchFailure.UNGROUNDED_VALUE,
+                    )
+            ops.append(op)
             citations.append(because)
+            candidates.append(spans)
+
+        if _assign(candidates) is None:
+            raise IntentPatchError(
+                "two operations rest on the same words of the command — each change "
+                "must be asked for by words of its own, so a quote cannot justify a "
+                "second edit the user did not make",
+                raw=raw, kind=PatchFailure.SHARED_CITATION,
+            )
 
         return ProposedPatch(ops, citations, str(raw.get("note_to_user") or ""))
 

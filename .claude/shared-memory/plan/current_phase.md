@@ -425,13 +425,31 @@ and `GET …/history`. `tests/test_intent_patcher.py`, `tests/test_patch_route.p
 
 - **Annotations are not rendered** into KiCad/BOM output. They are stored,
   returned and carried; showing them in a schematic is output work.
-- **The citation guard does not catch a mis-transcribed value** under a
-  correct citation (2 kHz → 20000). The diff is shown to the user; the exposure
-  is the one the X5 defects entry names.
+- **The citation guard does not catch values swapped between two operations**
+  whose cited words each contain the other's number, **nor a removal citing an
+  unrelated word**. Mis-transcription (2 kHz → 20000) *is* caught since the
+  verification below. The diff is shown to the user.
 - **No live-API test of the LLM patcher.** All its tests use a scripted client.
 - **The design route's own coverage is thin:** one test, that generate stores
   the requirement. It stays `test: None` in the trackers rather than being
   counted as verified on one case.
+
+## Stage 2 verification — 2026-09-21
+
+An independent check of Stage 2 (suite green, then probes past it) confirmed
+determinism across processes and a JSONB round trip, locality over 443 random
+patches, atomicity, and the version chain. It found three defects, **closed**,
+with the reasoning in `brain/decisions.md` [2026-09-21] "Stage 2 verification":
+
+1. Concurrent patches lost one of them → conditional revision write, 409 `version_conflict`.
+2. The patcher's own pin form (`add /constraints/pinned/R1`) failed on every first pin → `constraints.pinned` is a container.
+3. The citation guard let an uncited change through → whole words, one span per operation, value grounded in its span.
+
+**Open from the same check, not yet done** — listed in the decision entry:
+the Task 1.5 scanner's per-module blind spots, `rc_lowpass` pin parsing and
+invented part numbers, booleans read as numbers by the Stage 0 readers, patch
+refusals logged without their IntentIR, silent migration failure, and stale
+`brain/architecture.md` / `MENTAL_MODEL.md` entries for `ai/patcher.py`.
 
 ---
 

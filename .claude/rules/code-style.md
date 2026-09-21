@@ -143,7 +143,12 @@ Rules that follow from it:
 
 - **The LLM patcher (`ai/intent_patcher.py`) returns operations, never a design,**
   and never imports `CircuitIR`. Every operation cites the verbatim words of the
-  command that asked for it; an uncited operation refuses the whole patch.
+  command that asked for it — whole words, no two operations sharing words, and
+  containing the value it writes ("2 kHz" grounds 2000, not 20000). An
+  operation that fails any of the three refuses the whole patch. A relative
+  request ("double the cutoff") is refused until the user states the value.
+- **A revision is written only over the version it was computed from.** A
+  patch that lost a race answers 409 `version_conflict` and writes nothing.
 - **No retries on patches.** A refused patch is reported; the user rephrases.
 - **Patching is LLM-optional:** the route takes `ops` directly with zero model calls.
 - **A patch that changes nothing is not a version.**

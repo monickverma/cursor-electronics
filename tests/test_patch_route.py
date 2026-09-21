@@ -19,9 +19,12 @@ persistence itself is covered where it lives; what matters here is which
 writes happen, in what order, and which do not happen at all.
 """
 
+import asyncio
+import copy
 from datetime import datetime
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -74,12 +77,15 @@ class _Store:
     async def get_design(self, db, circuit_id):
         return self.designs.get(circuit_id)
 
-    async def update_design_revision(self, db, circuit_id, ir, intent_ir, annotations):
-        self.writes.append("revision")
+    async def update_design_revision(self, db, circuit_id, ir, intent_ir, expected_version):
+        # The same predicate as the real UPDATE: write only if the stored
+        # design is still the version the patch was computed from.
         d = self.designs[circuit_id]
-        d.ir_json, d.intent_ir, d.annotations, d.version = (
-            ir.model_dump(mode="json"), intent_ir, annotations, ir.version,
-        )
+        if d.version != expected_version:
+            return False
+        self.writes.append("revision")
+        d.ir_json, d.intent_ir, d.version = ir.model_dump(mode="json"), intent_ir, ir.version
+        return True
 
     async def update_design_annotations(self, db, circuit_id, annotations):
         self.writes.append("annotations")
@@ -247,7 +253,105 @@ class TestNothingIsWrittenUnlessTheRevisionIsGood:
         assert env.client.post(f"/design/{cid}/patch", json=body).status_code == 422
 
 
+# ── Two patches in flight ────────────────────────────────────────────────────
+
+class TestConcurrentPatches:
+    """
+    Found by the Stage 2 verification: two patches computed from the same v(n)
+    both returned 200 as "v2", history got two 1 → 2 rows, and the second
+    silently discarded the first while its user was told it had landed. The
+    revision write is now conditional on the version the patch was computed
+    from (`crud.update_design_revision`).
+    """
+
+    def test_a_stale_revision_is_409_and_writes_nothing(self, env, monkeypatch):
+        cid = env.store.add_design()
+        real_get = env.store.get_design
+
+        async def moved_on(db, circuit_id):
+            # The patch reads v1; by the time it writes, v2 has landed.
+            snapshot = copy.deepcopy(await real_get(db, circuit_id))
+            env.store.designs[circuit_id].version = 2
+            return snapshot
+
+        monkeypatch.setattr(patch_route, "get_design", moved_on)
+        res = env.client.post(f"/design/{cid}/patch", json=ops(("replace", "/targets/cutoff_hz", 2000)))
+        assert res.status_code == 409
+        detail = res.json()["detail"]
+        assert detail["error"] == "version_conflict" and detail["expected_version"] == 1
+        assert env.store.writes == [] and env.store.patches == [] and env.jobs == []
+        assert env.rows[-1].error.startswith("version_conflict")
+
+    def test_of_two_patches_in_flight_one_lands_and_one_is_refused(self, env, monkeypatch):
+        cid = env.store.add_design()
+        real_get = env.store.get_design
+
+        async def snapshot_read(db, circuit_id):
+            # A SELECT returns a snapshot and costs a round trip — long enough
+            # for both requests to read v1 before either writes.
+            snapshot = copy.deepcopy(await real_get(db, circuit_id))
+            await asyncio.sleep(0.05)
+            return snapshot
+
+        monkeypatch.setattr(patch_route, "get_design", snapshot_read)
+
+        async def both():
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+                return await asyncio.gather(
+                    client.post(f"/design/{cid}/patch", json=ops(("replace", "/targets/cutoff_hz", 2000))),
+                    client.post(f"/design/{cid}/patch", json=ops(("replace", "/constraints/supply_v", 12))),
+                )
+
+        results = asyncio.run(both())
+        assert sorted(r.status_code for r in results) == [200, 409], [r.text for r in results]
+        won = next(r for r in results if r.status_code == 200).json()
+        lost = next(r for r in results if r.status_code == 409).json()["detail"]
+        assert lost["error"] == "version_conflict"
+        # One revision, recorded once, and it is the one the winner was told about.
+        assert [(p.from_version, p.to_version) for p in env.store.patches] == [(1, 2)]
+        assert env.store.patches[0].patch_json["readable"] == won["changes"]
+        assert env.store.designs[cid].intent_ir == won["intent_ir"]
+
+    @pytest.mark.parametrize("rowcount, written", [(1, True), (0, False)])
+    def test_the_real_update_carries_the_version_predicate(self, rowcount, written):
+        # The fake store above enforces the predicate; this pins that the real
+        # statement does, and that it leaves annotations alone.
+        from sqlalchemy.dialects import postgresql
+        from db import crud
+
+        captured = {}
+
+        class _Session:
+            async def execute(self, stmt):
+                captured["stmt"] = stmt.compile(dialect=postgresql.dialect())
+                return SimpleNamespace(rowcount=rowcount)
+
+        ir = realize(RCLowPassGenerator(), IntentIR(
+            requirements={"function": "low_pass_filter", "targets": {"cutoff_hz": 1000}},
+            provenance=Provenance(producer=Producer.FORM),
+        ))
+        result = asyncio.run(crud.update_design_revision(
+            _Session(), ir.circuit_id, ir, intent_ir={}, expected_version=7,
+        ))
+        assert result is written
+        sql, params = str(captured["stmt"]), captured["stmt"].params
+        where = sql.split("WHERE", 1)[1]
+        assert "circuit_designs.version = " in where and 7 in params.values()
+        assert "annotations" not in sql
+
+
 # ── The command path ─────────────────────────────────────────────────────────
+
+
+class _ScriptedClient:
+    """A model that returns one fixed tool call — for driving the real IntentPatcher."""
+
+    def __init__(self, tool_input):
+        block = SimpleNamespace(type="tool_use", input=tool_input)
+        self.messages = SimpleNamespace(
+            create=lambda **kw: SimpleNamespace(content=[block], stop_reason="tool_use")
+        )
 
 class TestCommandPath:
     def test_one_model_call_and_the_citations_come_back(self, env, monkeypatch):
@@ -274,6 +378,32 @@ class TestCommandPath:
         assert res.json()["detail"]["kind"] == "uncited_operation"
         assert env.store.writes == []
         assert env.rows[-1].error.startswith("intent_patch_failed[uncited_operation]")
+
+    def test_the_patchers_own_pin_form_lands_on_a_design_with_no_pins(self, env, monkeypatch):
+        # The patcher's prompt tells the model to emit `add
+        # /constraints/pinned/<id>`. A design that was never pinned has no
+        # pinned map, and until the Stage 2 verification that operation failed
+        # with "/constraints/pinned does not exist" — each half was tested,
+        # never the two together. Real patcher, scripted model, real apply and
+        # realize.
+        monkeypatch.setattr("ai.intent_patcher.make_client", lambda: _ScriptedClient({"operations": [
+            {"op": "add", "path": "/constraints/pinned/R1", "value": "4.7k", "because": "use the 4.7k"},
+        ]}))
+        cid = env.store.add_design(intent=IntentIR(
+            requirements={
+                "function": "low_pass_filter",
+                "targets": {"cutoff_hz": 720, "tolerance_pct": 5},
+                "constraints": {"supply_v": 5},
+            },
+            provenance=Provenance(producer=Producer.FORM),
+        ))
+        res = env.client.post(f"/design/{cid}/patch", json={"command": "Use the 4.7k resistor I have"})
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["changes"] == ['constraints.pinned.R1: (unset) → "4.7k"']
+        assert body["version"] == 2
+        r1 = next(c for c in body["ir"]["components"] if c["id"] == "R1")
+        assert r1["value"] == "4700"
 
 
 # ── Annotations and history ──────────────────────────────────────────────────

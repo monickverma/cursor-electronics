@@ -269,12 +269,23 @@ async def patch_design(
     if new_ir.simulation_spec:
         job_id = str(uuid.uuid4())
 
-    # 7. Persist the revision, then its history row.
-    await update_design_revision(
+    # 7. Persist the revision, then its history row. The write is conditional
+    #    on the design still being the version this patch was computed from;
+    #    if another patch landed in between, this one is refused rather than
+    #    written over it, and nothing below runs.
+    written = await update_design_revision(
         db, circuit_id, new_ir,
         intent_ir=new_intent.model_dump(mode="json"),
-        annotations=[a.model_dump(mode="json") for a in report.all],
+        expected_version=design.version,
     )
+    if not written:
+        ctx.error = f"version_conflict: expected v{design.version}"
+        raise HTTPException(409, detail={
+            "error": "version_conflict",
+            "message": f"The design changed while this patch was being applied — it is "
+                       f"no longer v{design.version}. Reload it and send the change again.",
+            "expected_version": design.version,
+        })
     await record_patch(
         db,
         circuit_id=circuit_id,
