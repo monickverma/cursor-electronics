@@ -73,15 +73,6 @@ PLANNED = {
             ("IntentParser.parse", "method", "Main entry: prompt str → DesignSpec"),
         ],
     },
-    "ai/patcher": {
-        "file": "backend/ai/patcher.py",
-        "test_file": "tests/test_patcher.py",
-        "entries": [
-            ("CircuitPatcher",         "class",  "Returns only changed fields — never full IR"),
-            ("CircuitPatcher.patch",   "method", "Main entry: IR + command → PatchResult"),
-            ("PatchResult.apply_to",   "method", "Applies changes to IR, increments version"),
-        ],
-    },
     "ai/explainer": {
         "file": "backend/ai/explainer.py",
         "test_file": "tests/test_explainer.py",
@@ -378,6 +369,63 @@ PLANNED = {
             ("IntentIR.sign_off",           "method", "Signed copy, refused while anything is underdetermined"),
             ("IntentIR.is_intact",          "method", "Whether the requirements still match what was signed"),
             ("IntentIR.with_requirements",  "method", "New version; the signature does not travel with an edit"),
+        ],
+    },
+    # ── Stage 2 — patch model v2 (X2 + X4) ───────────────────────────────────
+    "core/intent_patch": {
+        "file": "backend/core/intent_patch.py",
+        "test_file": "tests/test_intent_patch.py",
+        "entries": [
+            ("PatchOp",          "class",    "One RFC 6902 operation over requirements"),
+            ("PatchOutcome",     "class",    "The patched intent, whether it changed, and the readable diff"),
+            ("apply_patch",      "function", "Atomic; a no-op is not a version; revalidated as IntentIR"),
+            ("parse_pointer",    "function", "RFC 6901 pointer, restricted to requirements"),
+            ("readable_changes", "function", "History that reads as requirements, not parts"),
+        ],
+    },
+    "core/annotations": {
+        "file": "backend/core/annotations.py",
+        "test_file": "tests/test_annotations.py",
+        "entries": [
+            ("Annotation",           "class",    "One of four kinds, anchored where it means something"),
+            ("attach",               "function", "Attached or orphaned — never dropped"),
+            ("validate_annotations", "function", "Parse and refuse duplicate ids"),
+        ],
+    },
+    "generators/realize": {
+        "file": "backend/generators/realize.py",
+        "test_file": "tests/test_realize.py",
+        "entries": [
+            ("realize",           "function", "The only route from IntentIR to a stored CircuitIR; byte-identical"),
+            ("design_circuit_id", "function", "uuid5 of the intent lineage — survives patches and upgrades"),
+            ("check_locality",    "function", "CircuitIR diff ⊆ declared dependency closure"),
+            ("predict_delta",     "function", "The comparative justification for a patch"),
+        ],
+    },
+    "ai/intent_patcher": {
+        "file": "backend/ai/intent_patcher.py",
+        "test_file": "tests/test_intent_patcher.py",
+        "entries": [
+            ("IntentPatcher",         "class",  "Command → operations; every operation cites the command"),
+            ("IntentPatcher.propose", "method", "One call, no retries; uncited operations refuse the patch"),
+            ("IntentPatchError",      "class",  "Carries the raw tool input and the failure kind"),
+        ],
+    },
+    "db/migrations": {
+        "file": "backend/db/migrations.py",
+        "test_file": "tests/test_migrations.py",
+        "entries": [
+            ("apply_migrations", "function", "Idempotent additive DDL at startup; never raises"),
+            ("is_safe",          "function", "Additive and idempotent, or refused"),
+        ],
+    },
+    "api/routes/patch": {
+        "file": "backend/api/routes/patch.py",
+        "test_file": "tests/test_patch_route.py",
+        "entries": [
+            ("patch_design",    "function", "Requirement patch → same gate as a fresh request; refusal keeps v(n)"),
+            ("put_annotations", "function", "Replace the annotation layer; never regenerates"),
+            ("get_history",     "function", "The patch chain, as requirements"),
         ],
     },
 }

@@ -70,14 +70,17 @@ class _Intent:
 
 
 def intent(cutoff=1000.0, tolerance_pct=5.0, supply_v=5.0, function="low_pass_filter",
-           source_impedance_ohm=50.0, **extra):
+           source_impedance_ohm=50.0, pinned=None, **extra):
     targets = {"tolerance_pct": tolerance_pct}
     if cutoff is not None:
         targets["cutoff_hz"] = cutoff
+    constraints = {"supply_v": supply_v, "source_impedance_ohm": source_impedance_ohm}
+    if pinned is not None:
+        constraints["pinned"] = pinned
     return _Intent(
         function=function,
         targets=targets,
-        constraints={"supply_v": supply_v, "source_impedance_ohm": source_impedance_ohm},
+        constraints=constraints,
         preferences={"package": "0402"},
         **extra,
     )
@@ -395,16 +398,102 @@ class TestGridAndLocality:
             assert MIN_CUTOFF_HZ <= point["cutoff_hz"] <= MAX_CUTOFF_HZ
             assert GEN.envelope(intent(cutoff=point["cutoff_hz"])).accepted
 
-    def test_supply_change_cannot_touch_the_resistor(self):
-        # Only the capacitor carries a voltage rating. A conservative closure
-        # would be sound and would make the Stage 2 locality check vacuous.
-        assert GEN.dependency_closure("constraints.supply_v") == frozenset({"C1"})
+    def test_supply_change_can_reach_the_resistor(self):
+        # Stage 0 declared {C1}: only the capacitor carries a rating. The
+        # Stage 2 locality sweep showed that a supply above 16 V drops the
+        # 100 nF part, picks another capacitor and re-snaps R1 around it.
+        assert GEN.dependency_closure("constraints.supply_v") == frozenset({"R1", "C1"})
+        at_5v = select_components(1_000.0, 5.0)
+        at_20v = select_components(1_000.0, 20.0)
+        assert at_5v.c_value != at_20v.c_value
+        assert at_5v.ohms != at_20v.ohms
+
+    def test_source_impedance_only_reaches_the_resistor(self):
+        # Still narrow where it is true: it changes R1's loading note only.
+        assert GEN.dependency_closure("constraints.source_impedance_ohm") == frozenset({"R1"})
+
+    def test_a_nested_path_resolves_through_its_declared_prefix(self):
+        assert GEN.dependency_closure("constraints.pinned.R1") == frozenset({"R1", "C1"})
 
     def test_cutoff_change_touches_both_passives(self):
         assert GEN.dependency_closure("targets.cutoff_hz") == frozenset({"R1", "C1"})
 
     def test_unknown_requirement_falls_back_to_everything(self):
         assert GEN.dependency_closure("something.new") == frozenset({"R1", "C1"})
+
+
+# ── Pinned parts (0.2.0) ─────────────────────────────────────────────────────
+
+class TestPinnedParts:
+    """
+    `constraints.pinned` — "use the part in my drawer". Stage 2 decision,
+    item 6: a generator honours every pin or refuses naming it.
+    """
+
+    def _parts(self, ir):
+        return {c.id: c for c in ir.components}
+
+    def test_a_pinned_resistor_is_used_as_given(self):
+        # 4.7 k is not an E96 value, so an unpinned run could never pick it.
+        req = intent(cutoff=3_386.0, pinned={"R1": "4.7k"})
+        assert GEN.envelope(req).accepted
+        r1 = self._parts(GEN.generate(req))["R1"]
+        assert float(r1.value) == 4_700.0
+        assert "pinned" in r1.justification
+
+    def test_the_capacitor_is_chosen_around_a_pinned_resistor(self):
+        req = intent(cutoff=3_386.0, pinned={"R1": 4700})
+        parts = self._parts(GEN.generate(req))
+        assert parts["C1"].value == "10nF"   # 1/(2π·4.7k·10n) = 3386 Hz
+
+    def test_a_pinned_capacitor_restricts_the_catalogue(self):
+        req = intent(cutoff=1_000.0, pinned={"C1": "10nF"})
+        parts = self._parts(GEN.generate(req))
+        assert parts["C1"].value == "10nF"
+        assert float(parts["R1"].value) == snap_to_e96(1 / (2 * math.pi * 1_000.0 * 10e-9))
+
+    def test_pins_parse_the_way_the_netlist_reads_them(self):
+        # Same parser as the SPICE generator, so "4k7" means 4700 in both.
+        for spelling in ("4.7k", "4k7", "4700", 4700.0):
+            req = intent(cutoff=3_386.0, pinned={"R1": spelling})
+            assert float(self._parts(GEN.generate(req))["R1"].value) == 4_700.0
+
+    def test_a_pin_the_target_cannot_tolerate_is_refused_with_numbers(self):
+        decision = GEN.envelope(intent(cutoff=1_000.0, pinned={"R1": "4.7k"}))
+        assert not decision.accepted
+        assert "pinned pair" in decision.reason and "tolerance_pct" in decision.reason
+
+    @pytest.mark.parametrize("pinned, fragment", [
+        ({"L1": "10uH"}, "L1"),
+        ({"R1": "banana"}, "not a resistance"),
+        ({"R1": "100"}, "series window"),
+        ({"C1": "3.3nF"}, "not in this generator's capacitor catalogue"),
+        ({"C1": "1uF"}, "rated 6.3V"),
+        ("R1=4.7k", "must map part ids"),
+    ])
+    def test_an_unhonourable_pin_is_refused_by_name(self, pinned, fragment):
+        decision = GEN.envelope(intent(cutoff=1_000.0, supply_v=12.0, pinned=pinned))
+        assert not decision.accepted
+        assert fragment in decision.reason
+
+    def test_envelope_never_raises_on_a_bad_pin(self):
+        for pinned in ({"R1": None}, {"R1": True}, {"C1": ""}, {"R1": float("nan")}, {"R1": -1}):
+            assert not GEN.envelope(intent(pinned=pinned)).accepted
+
+    def test_predict_follows_the_pinned_parts(self):
+        req = intent(cutoff=3_386.0, pinned={"R1": "4.7k"})
+        band = GEN.predict(req).quantities["resistance_ohm"]
+        assert band.nominal == 4_700.0
+
+    def test_unpinned_output_is_what_0_1_0_produced(self):
+        # The version bump is for the wider envelope, not for new output on an
+        # old intent. Checked in full against a git checkout of 0.1.0 while
+        # building (150 accepted intents, zero differences); this spot-checks
+        # the justification text, which was restructured to carry the pin.
+        parts = self._parts(GEN.generate(intent(cutoff=1_000.0)))
+        assert ", nearest E96 (1%) value to the " in parts["R1"].justification
+        assert "Chosen first because it puts R1 inside" in parts["C1"].justification
+        assert "pinned" not in parts["R1"].justification + parts["C1"].justification
 
 
 # ── The Stage 0 gate ─────────────────────────────────────────────────────────

@@ -141,6 +141,9 @@ class CircuitIR(BaseModel):
     circuit_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     version: int = 1
     intent: str                                    # Original user prompt
+    # "name@version" of the generator that realised this design (v2 §6).
+    # Stamped by generators/realize.py; None on designs built before Stage 2.
+    generator: Optional[str] = None
     application_class: ApplicationClass
     safety_class: SafetyClass = SafetyClass.GENERAL
     target_mcu: Optional[str] = None              # "arduino_uno", "esp32", "stm32f4"

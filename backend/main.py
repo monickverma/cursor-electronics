@@ -31,6 +31,12 @@ async def lifespan(app: FastAPI):
             environment=settings.environment,
             traces_sample_rate=0.1,
         )
+    # schema.sql only runs on an empty volume; columns added since then come
+    # from here. Never raises — see db/migrations.py.
+    from db.migrations import apply_migrations
+    from db.models import engine
+
+    await apply_migrations(engine)
     yield
 
 

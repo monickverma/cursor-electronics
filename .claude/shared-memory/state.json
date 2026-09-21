@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-21T02:01:16.798783Z",
-  "generated_from_commit": "2c53a3c",
+  "generated_at": "2026-09-21T08:03:41.623158Z",
+  "generated_from_commit": "3122e30",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -44,12 +44,6 @@
     "ai/intent_parser": {
       "status": "verified_done",
       "file": "backend/ai/intent_parser.py",
-      "exists": true,
-      "test_status": "passing"
-    },
-    "ai/patcher": {
-      "status": "verified_done",
-      "file": "backend/ai/patcher.py",
       "exists": true,
       "test_status": "passing"
     },
@@ -126,10 +120,10 @@
       "test_status": "no_test"
     },
     "api/routes/patch": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/api/routes/patch.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "api/routes/simulate": {
       "status": "untested",
@@ -256,13 +250,43 @@
       "file": "backend/ai/intent_producer.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "core/intent_patch": {
+      "status": "verified_done",
+      "file": "backend/core/intent_patch.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "core/annotations": {
+      "status": "verified_done",
+      "file": "backend/core/annotations.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/realize": {
+      "status": "verified_done",
+      "file": "backend/generators/realize.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/intent_patcher": {
+      "status": "verified_done",
+      "file": "backend/ai/intent_patcher.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "db/migrations": {
+      "status": "verified_done",
+      "file": "backend/db/migrations.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 758,
+    "passed": 892,
     "failed": 0,
-    "skipped": 18,
-    "total": 758
+    "skipped": 15,
+    "total": 892
   },
   "phase1_criteria": [
     {
@@ -333,13 +357,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "3122e30 fix(x5): close three defects in the intent producer",
     "2c53a3c feat(phase2): Stage 1 — IntentIR, registry, form, and hard abstention",
     "1e74609 feat(phase2): Stage 1 Task 1.1 — the IntentIR schema",
     "1fc0eec fix: address Copilot review — seven findings, all legitimate",
-    "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state",
-    "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator"
+    "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                           |   6 +-\n .claude/rules/code-style.md                 |  48 +++--\n .claude/shared-memory/brain/architecture.md |   6 +-\n .claude/shared-memory/brain/decisio",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md  |  63 +++++++\n .claude/shared-memory/progress.yaml       |   8 +-\n .claude/shared-memory/state.json          |  14 +-\n backend/ai/intent_producer.py          ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

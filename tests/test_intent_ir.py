@@ -43,10 +43,42 @@ def make(**overrides) -> IntentIR:
 class TestSchema:
     def test_matches_the_shape_the_plan_specifies(self):
         intent = make()
-        assert intent.schema_version == SCHEMA_VERSION == "2.0.0"
+        # 2.1.0: Stage 2 added `revision` for the patch chain.
+        assert intent.schema_version == SCHEMA_VERSION == "2.1.0"
         assert intent.intent_id
+        assert intent.revision == 1
         assert intent.underdetermined == []
         assert intent.signed_off is None
+
+    def test_a_2_0_0_dump_without_revision_still_loads(self):
+        # Rows written to request_log before Stage 2 carry no revision.
+        old = make().model_dump(mode="json")
+        old.pop("revision")
+        old["schema_version"] = "2.0.0"
+        loaded = IntentIR.model_validate(old)
+        assert loaded.revision == 1
+        assert loaded.schema_version == "2.0.0"
+
+    def test_editing_requirements_starts_the_next_revision(self):
+        edited = make().with_requirements(
+            {"function": "low_pass_filter", "targets": {"cutoff_hz": 2000}}
+        )
+        assert edited.revision == 2
+        assert edited.intent_id == make(intent_id=edited.intent_id).intent_id
+
+    def test_an_edit_is_revalidated_not_copied(self):
+        # model_copy skips validation; a patch that wrote a malformed
+        # requirement must not produce an IntentIR that could never be built.
+        with pytest.raises(ValidationError):
+            make().with_requirements({"targets": {"cutoff_hz": 2000}})  # no function
+
+    def test_an_edit_of_an_old_dump_is_written_in_the_current_shape(self):
+        old = make().model_dump(mode="json")
+        old["schema_version"] = "2.0.0"
+        edited = IntentIR.model_validate(old).with_requirements(
+            {"function": "low_pass_filter", "targets": {"cutoff_hz": 2000}}
+        )
+        assert edited.schema_version == SCHEMA_VERSION
 
     def test_requirements_are_validated_even_though_stored_as_a_mapping(self):
         with pytest.raises(ValidationError):

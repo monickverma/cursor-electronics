@@ -64,8 +64,9 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
       if (currentCircuitId && messages.length > 0) {
         res = await patchDesign(currentCircuitId, text, token)
         const p = res as PatchResponse
+        const delta = p.predict_delta?.length ? `\n\nPredicted: ${p.predict_delta.join('; ')}` : ''
         const summary = p.changes.length > 0
-          ? `Applied ${p.changes.length} change(s). Design is now v${p.version}.`
+          ? `Requirement changed — ${p.changes.join('; ')}. Design is now v${p.version}.${delta}`
           : p.note_to_user || 'No changes applied.'
         setMessages(prev => [...prev, { role: 'assistant', text: summary, timestamp: new Date() }])
       } else {

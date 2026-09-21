@@ -77,12 +77,19 @@ def _analyse(path: Path):
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     names = set()
     constructs_design = False
+    copies_with_update = False
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Name):
             names.add(node.id)
         elif isinstance(node, ast.Attribute):
             names.add(node.attr)
+        elif isinstance(node, ast.alias):
+            # `from core.ir_schema import CircuitIR` is a reference too, and
+            # the only one in a module that never spells the type again.
+            names.add(node.name.rsplit(".", 1)[-1])
+            if node.asname:
+                names.add(node.asname)
         # A call, not a type annotation. Annotations are how a module receives
         # a design; calls are how it makes one.
         if isinstance(node, ast.Call):
@@ -98,6 +105,17 @@ def _analyse(path: Path):
                     constructs_design = True
                 elif func.attr == _DESIGN_TYPE:
                     constructs_design = True
+                elif func.attr == "model_copy" and any(k.arg == "update" for k in node.keywords):
+                    copies_with_update = True
+
+    # `design.model_copy(update=...)` writes into an existing design without
+    # naming the type at the call site. Statically the receiver's type is not
+    # known, so a module that references CircuitIR at all and copies anything
+    # with `update=` is treated as writing one. This is how `ai/patcher.py`
+    # put model output into a CircuitIR while this scanner passed — Stage 2,
+    # decisions.md [2026-09-21] X2 + X4.
+    if copies_with_update and _DESIGN_TYPE in names:
+        constructs_design = True
 
     return names, constructs_design
 
@@ -125,6 +143,9 @@ class TestNoModuleBothCallsAModelAndBuildsADesign:
         "CircuitIR.model_validate_json(raw)",
         "CircuitIR.model_construct(**data)",
         "CircuitIR.parse_obj(data)",
+        # The form the Phase 1 patcher used, which the scanner missed until
+        # Stage 2: model output written into an existing design by copy.
+        "data.model_copy(update={'components': raw})",
     ])
     def test_the_scanner_catches_every_way_of_building_one(self, construction, tmp_path):
         # A test that can only pass proves nothing. `model_validate` is in
@@ -194,11 +215,47 @@ class TestTheRemovedPath:
         assert not offenders, f"still referencing the removed path: {offenders}"
 
 
+class TestTheRemovedPatchPath:
+    def test_circuit_patcher_no_longer_exists(self):
+        # Stage 2, X4. It wrote model output into CircuitIR component fields.
+        assert not (BACKEND / "ai" / "patcher.py").exists()
+        with pytest.raises(ModuleNotFoundError):
+            import ai.patcher  # noqa: F401
+
+    def test_the_intent_patcher_never_names_the_design_type(self):
+        # It is told part ids as plain data. Not importing CircuitIR at all is
+        # stronger than not constructing one, and it is cheap to keep true.
+        names, constructs_design = _analyse(BACKEND / "ai" / "intent_patcher.py")
+        assert "make_client" in names
+        assert _DESIGN_TYPE not in names
+        assert not constructs_design
+
+    def test_copying_a_design_without_update_is_not_a_violation(self, tmp_path):
+        # Guards the rule from over-reach: a plain copy writes nothing new.
+        module = tmp_path / "ok.py"
+        module.write_text(
+            "from ai.client import make_client\n"
+            "from core.ir_schema import CircuitIR\n"
+            "def f(ir: CircuitIR):\n"
+            "    make_client()\n"
+            "    return ir.model_copy()\n",
+            encoding="utf-8",
+        )
+        _, constructs_design = _analyse(module)
+        assert not constructs_design
+
+
 class TestTheReplacementPath:
     def test_the_design_route_generates_through_the_registry(self):
         source = (BACKEND / "api" / "routes" / "design.py").read_text(encoding="utf-8")
         assert "registry.dispatch(intent)" in source
-        assert "generator.generate(intent)" in source
+        assert "realize(generator, intent)" in source
+
+    def test_the_patch_route_regenerates_through_the_registry(self):
+        # X4: an edit goes through the same gate as a fresh request.
+        source = (BACKEND / "api" / "routes" / "patch.py").read_text(encoding="utf-8")
+        assert "registry.dispatch(new_intent)" in source
+        assert "realize(generator, new_intent)" in source
 
     def test_the_producer_writes_intent_not_design(self):
         names, constructs_design = _analyse(BACKEND / "ai" / "intent_producer.py")

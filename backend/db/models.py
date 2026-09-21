@@ -59,6 +59,12 @@ class CircuitDesign(Base):
     safety_class = Column(String(20), default="general")
     target_mcu = Column(String(50))
     ir_json = Column(JSONB, nullable=False)
+    # Stage 2 (X2): the requirement the design was realised from, and the
+    # annotations merged onto it. NULL intent_ir = a design built before
+    # Stage 2, which has no requirement to patch. Added to existing volumes by
+    # db/migrations.py.
+    intent_ir = Column(JSONB)
+    annotations = Column(JSONB)
     simulation_passed = Column(Boolean)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

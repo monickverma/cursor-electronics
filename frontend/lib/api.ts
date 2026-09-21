@@ -30,6 +30,14 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
           ? `Circuit generation failed after ${attempts.length} attempt(s):\n` +
             attempts.map((a, i) => `  ${i + 1}. ${a}`).join('\n')
           : 'Circuit generation failed with no recorded attempts.'
+      } else if (detail.error === 'out_of_envelope' && Array.isArray(detail.refusals)) {
+        // A refusal is a product outcome with reasons, not a crash.
+        const kept = detail.kept_version ? ` The design is unchanged (still v${detail.kept_version}).` : ''
+        const reasons = (detail.refusals as Array<{ generator: string; reason: string }>)
+          .map(r => `  - ${r.generator}: ${r.reason}`)
+        message = ['No generator accepts that requirement:', ...reasons].join('\n') + kept
+      } else if (typeof detail.message === 'string') {
+        message = detail.message
       } else {
         message = JSON.stringify(detail)
       }
@@ -107,7 +115,9 @@ export interface SimulationStatus {
 export interface PatchResponse {
   circuit_id: string
   version: number
-  changes: Array<{ component_id: string; field: string; new_value: unknown }>
+  // Stage 2: the requirement diff, one line per changed path —
+  // "targets.cutoff_hz: 1000 → 2000". Patches edit the requirement, not parts.
+  changes: string[]
   note_to_user: string
   validation: { passed: boolean; errors: Array<{ field: string; message: string }>; warnings: Array<{ field: string; message: string }> }
   simulation_job_id: string | null
@@ -115,6 +125,12 @@ export interface PatchResponse {
   schematic: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
+  intent_ir?: Record<string, unknown>
+  predict_delta?: string[]
+  citations?: string[]
+  generator?: string | null
+  generator_changed?: { from: string; to: string } | null
+  annotations?: { attached: unknown[]; orphaned: unknown[] }
 }
 
 export async function generateDesign(prompt: string, token: string): Promise<GenerateResponse> {

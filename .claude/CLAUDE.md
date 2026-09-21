@@ -22,6 +22,9 @@ cursor-electronics/
 │   │   ├── ir_schema.py            # THE canonical data model — never rename fields
 │   │   ├── ir_validator.py         # Pre-simulation structural validation
 │   │   ├── ir_examples.py          # 5 hardcoded IRs for tests
+│   │   ├── intent_ir.py            # IntentIR — the requirement, materialized before the design
+│   │   ├── intent_patch.py         # RFC 6902 patches over IntentIR.requirements (Stage 2)
+│   │   ├── annotations.py          # Closed-list annotation layer; never a generation input
 │   │   └── config.py               # pydantic-settings, fails fast on missing env vars
 │   ├── data/
 │   │   ├── component_constraints.py  # Python dict — zero LLM tokens
@@ -30,11 +33,12 @@ cursor-electronics/
 │   │   ├── intent_parser.py        # Prompt → DesignSpec (tool_use)
 │   │   ├── intent_producer.py      # Prompt → IntentIR (tool_use; X5 retry rules)
 │   │   ├── form_producer.py        # Form → IntentIR — the reference producer, 0 API calls
-│   │   ├── patcher.py              # IR + command → patch JSON ONLY, never full IR
+│   │   ├── intent_patcher.py       # IntentIR + command → RFC 6902 ops, each citing the command
 │   │   └── explainer.py            # IR → consequential plain English
 │   ├── generators/
 │   │   ├── protocol.py             # THE Generator contract — envelope/generate/predict
 │   │   ├── registry.py             # Deterministic dispatch; collects every refusal
+│   │   ├── realize.py              # IntentIR → stored CircuitIR; deterministic id, locality, predict delta
 │   │   ├── rc_lowpass.py           # First generator on the contract
 │   │   ├── firmware/arduino.py     # IR → .ino (Jinja2)
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
@@ -49,7 +53,7 @@ cursor-electronics/
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py, auth.py
-│   ├── db/                         # models.py, crud.py, schema.sql
+│   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/simulation_task.py    # Celery task
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/

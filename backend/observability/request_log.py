@@ -213,6 +213,11 @@ class RequestLogContext:
         if circuit_id:
             self.circuit_id = circuit_id
 
+    def patched(self, circuit_id: str) -> None:
+        """A requirement patch that produced a new revision (Stage 2)."""
+        self.outcome = Outcome.PATCHED
+        self.circuit_id = circuit_id
+
     def to_row(self, latency_ms: int) -> RequestLogRow:
         return RequestLogRow(
             route=self.route,

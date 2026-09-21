@@ -21,9 +21,19 @@ module reproduces that, and `tests/test_rc_lowpass_generator.py` pins it.
 Component choice is deterministic: a fixed capacitor table in declaration
 order, R snapped to E96, ties broken by table position. Same intent in, same
 parts out — which is half of the determinism property in v2 §4.1. The other
-half, byte-identical CircuitIR, is blocked on `circuit_id` being a fresh uuid4
-per instantiation, and is Task 2.3's to fix rather than this module's to work
-around.
+half, byte-identical CircuitIR, needs a `circuit_id` derived from the intent;
+`generators/realize.py` stamps it, so this module does not work around it.
+
+**Pinned parts (0.2.0).** `constraints.pinned` names parts the user already
+has — `{"R1": "4.7k"}`, `{"C1": "100nF"}` — and the generator either honours
+every pin or refuses naming it. Pins are requirements, not annotations: the
+Stage 2 decision in `brain/decisions.md` [2026-09-21] keeps annotations out of
+generation entirely, so this is the only place "use the part in my drawer" can
+live. A pinned value is parsed by the same functions the SPICE netlist uses to
+read it back, so a pin cannot mean one thing here and another in simulation.
+A pinned part is assumed to be from the same series as the unpinned choice
+(1% resistor, 10% capacitor); `predict()` bands say so through that tolerance.
+Unpinned intents produce exactly what 0.1.0 produced.
 """
 
 from __future__ import annotations
@@ -52,9 +62,12 @@ from generators.protocol import (
     PortContract,
     Prediction,
 )
+# The netlist's own value parsers. Pins are read with them so a pinned value
+# means the same thing here as when the SPICE netlist reads it back.
+from generators.netlist.spice import _parse_farads, _parse_ohms
 
 NAME = "rc_lowpass"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 #: The requirements.function this generator serves. The registry reads it to
 #: build the form's catalogue without probing envelope() with guesses.
 FUNCTION = "low_pass_filter"
@@ -194,11 +207,27 @@ def _source_impedance(intent: IntentLike) -> float:
     return float(value) if isinstance(value, (int, float)) else 0.0
 
 
-def select_components(target_hz: float, supply_v: float) -> Optional[_Selection]:
+#: The parts a pin may name. Anything else is refused by name — pinning a part
+#: this topology does not have is a request for a different circuit.
+PINNABLE = ("R1", "C1")
+
+_Capacitor = Tuple[float, str, str, float]
+
+
+def select_components(
+    target_hz: float,
+    supply_v: float,
+    r_pin: Optional[float] = None,
+    c_pin: Optional[_Capacitor] = None,
+) -> Optional[_Selection]:
     """
     Pick R and C for a target cutoff. Deterministic: capacitors are tried in
     table order, R is snapped to E96, and ties are broken by table position —
     so the same target always yields the same parts.
+
+    A pinned capacitor restricts the table to that one entry; a pinned
+    resistor replaces the E96 snap with the pinned value, and the capacitor is
+    then the one that gets closest to the target around it.
 
     Returns None when nothing in the catalogue lands inside the series-resistance
     window, which is a refusal the caller turns into a named reason.
@@ -206,15 +235,18 @@ def select_components(target_hz: float, supply_v: float) -> Optional[_Selection]
     best: Optional[_Selection] = None
     best_err = float("inf")
 
-    for farads, c_value, c_part, c_vmax in _CAPACITORS:
+    for farads, c_value, c_part, c_vmax in ((c_pin,) if c_pin else _CAPACITORS):
         if supply_v > c_vmax:
             continue
-        ideal_r = 1.0 / (2.0 * math.pi * target_hz * farads)
-        if not (MIN_SERIES_OHMS <= ideal_r <= MAX_SERIES_OHMS):
-            continue
-        ohms = snap_to_e96(ideal_r)
-        if not (MIN_SERIES_OHMS <= ohms <= MAX_SERIES_OHMS):
-            continue
+        if r_pin is not None:
+            ohms = r_pin
+        else:
+            ideal_r = 1.0 / (2.0 * math.pi * target_hz * farads)
+            if not (MIN_SERIES_OHMS <= ideal_r <= MAX_SERIES_OHMS):
+                continue
+            ohms = snap_to_e96(ideal_r)
+            if not (MIN_SERIES_OHMS <= ohms <= MAX_SERIES_OHMS):
+                continue
         candidate = _Selection(ohms, farads, c_value, c_part, c_vmax)
         err = abs(candidate.achieved_hz - target_hz) / target_hz
         # Strict `<` keeps the earlier table entry on a tie, which is what
@@ -223,6 +255,103 @@ def select_components(target_hz: float, supply_v: float) -> Optional[_Selection]
             best_err, best = err, candidate
 
     return best
+
+
+class _Pins:
+    """Resolved `constraints.pinned`, or the reason it cannot be honoured."""
+
+    __slots__ = ("r_ohms", "capacitor", "refusal")
+
+    def __init__(
+        self,
+        r_ohms: Optional[float] = None,
+        capacitor: Optional[_Capacitor] = None,
+        refusal: Optional[str] = None,
+    ) -> None:
+        self.r_ohms = r_ohms
+        self.capacitor = capacitor
+        self.refusal = refusal
+
+    @property
+    def any(self) -> bool:
+        return self.r_ohms is not None or self.capacitor is not None
+
+
+def _resolve_pins(intent: IntentLike, supply_v: float) -> _Pins:
+    """
+    Read `constraints.pinned` and check each pin can be honoured.
+
+    Every failure is a named refusal rather than a silent fallback to an
+    unpinned choice: a user who pinned the 4.7 k in their drawer and got a
+    4.75 k back has been handed a design they cannot build, and told nothing.
+    """
+    constraints = _requirements(intent).get("constraints") or {}
+    pinned = constraints.get("pinned") if isinstance(constraints, Mapping) else None
+    if pinned is None:
+        return _Pins()
+    if not isinstance(pinned, Mapping):
+        return _Pins(refusal=(
+            f"constraints.pinned must map part ids to values, e.g. "
+            f"{{'R1': '4.7k'}}; got {type(pinned).__name__}"
+        ))
+
+    unknown = sorted(set(pinned) - set(PINNABLE))
+    if unknown:
+        return _Pins(refusal=(
+            f"constraints.pinned names {unknown}; this generator's parts are "
+            f"{list(PINNABLE)}"
+        ))
+
+    r_ohms: Optional[float] = None
+    if "R1" in pinned:
+        r_ohms = _pinned_value(pinned["R1"], _parse_ohms)
+        if r_ohms is None or not math.isfinite(r_ohms) or r_ohms <= 0:
+            return _Pins(refusal=(
+                f"constraints.pinned.R1={pinned['R1']!r} is not a resistance "
+                f"this system can read (e.g. '4.7k', '4k7', 4700)"
+            ))
+        if not (MIN_SERIES_OHMS <= r_ohms <= MAX_SERIES_OHMS):
+            return _Pins(refusal=(
+                f"constraints.pinned.R1={r_ohms:g}Ω is outside the "
+                f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g}Ω series window this "
+                f"generator will build with"
+            ))
+
+    capacitor: Optional[_Capacitor] = None
+    if "C1" in pinned:
+        farads = _pinned_value(pinned["C1"], _parse_farads)
+        if farads is None or not math.isfinite(farads) or farads <= 0:
+            return _Pins(refusal=(
+                f"constraints.pinned.C1={pinned['C1']!r} is not a capacitance "
+                f"this system can read (e.g. '100nF', 1e-7)"
+            ))
+        capacitor = next(
+            (c for c in _CAPACITORS if math.isclose(c[0], farads, rel_tol=1e-3)),
+            None,
+        )
+        if capacitor is None:
+            return _Pins(refusal=(
+                f"constraints.pinned.C1={pinned['C1']!r} is not in this "
+                f"generator's capacitor catalogue "
+                f"({', '.join(c[1] for c in _CAPACITORS)})"
+            ))
+        if supply_v > capacitor[3]:
+            return _Pins(refusal=(
+                f"constraints.pinned.C1={capacitor[1]} is rated {capacitor[3]:g}V, "
+                f"below the supply_v={supply_v:g} it would sit across"
+            ))
+
+    return _Pins(r_ohms=r_ohms, capacitor=capacitor)
+
+
+def _pinned_value(raw: object, parse) -> Optional[float]:
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    if isinstance(raw, str) and raw.strip():
+        return parse(raw)
+    return None
 
 
 class RCLowPassGenerator:
@@ -272,7 +401,11 @@ class RCLowPassGenerator:
                 f"supply_v={supply_v:g} is not a usable positive rail voltage"
             )
 
-        selection = select_components(target, supply_v)
+        pins = _resolve_pins(intent, supply_v)
+        if pins.refusal:
+            return EnvelopeDecision.refuse(pins.refusal)
+
+        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor)
         if selection is None:
             return EnvelopeDecision.refuse(
                 f"no catalogue R/C pair puts the series resistor inside "
@@ -283,13 +416,25 @@ class RCLowPassGenerator:
         tolerance_pct = _tolerance_pct(intent)
         achieved_err_pct = abs(selection.achieved_hz - target) / target * 100.0
         if achieved_err_pct > tolerance_pct:
+            pair = "pinned pair" if pins.any else "nearest E96 pair"
             return EnvelopeDecision.refuse(
-                f"nearest E96 pair achieves {selection.achieved_hz:.1f} Hz against "
+                f"{pair} achieves {selection.achieved_hz:.1f} Hz against "
                 f"cutoff_hz={target:g}, a {achieved_err_pct:.2f}% error that exceeds "
                 f"the requested tolerance_pct={tolerance_pct:g}"
             )
 
         return EnvelopeDecision.accept(self._ports(intent, selection))
+
+    def _selection(self, intent: IntentLike) -> _Selection:
+        """The parts an accepted intent resolves to. Callers check envelope() first."""
+        supply_v = _supply_v(intent)
+        pins = _resolve_pins(intent, supply_v)
+        selection = select_components(
+            _target_cutoff(intent), supply_v, pins.r_ohms, pins.capacitor
+        )
+        if selection is None or pins.refusal:
+            raise ValueError("no selection for an intent envelope() refuses")
+        return selection
 
     def _ports(self, intent: IntentLike, selection: _Selection) -> Sequence[PortContract]:
         """
@@ -352,8 +497,7 @@ class RCLowPassGenerator:
         if not decision.accepted:
             raise ValueError(f"predict() called on a refused intent: {decision.reason}")
 
-        target = _target_cutoff(intent)
-        selection = select_components(target, _supply_v(intent))
+        selection = self._selection(intent)
 
         r_band, c_band = self._boxes(selection, box)
 
@@ -427,16 +571,17 @@ class RCLowPassGenerator:
         """
         Deterministic given (intent, version). Callers call `envelope()` first.
 
-        Not yet byte-identical across calls: `CircuitIR.circuit_id` defaults to
-        a fresh uuid4 and the fix is Task 2.3, deliberately not worked around
-        here. Everything this method controls is reproducible.
+        `circuit_id`, `version` and `generator` are stamped afterwards by
+        `generators/realize.py`, which is what makes the result byte-identical
+        across calls; everything this method controls is already reproducible.
         """
         target = _target_cutoff(intent)
         if target is None:
             raise ValueError("generate() requires targets.cutoff_hz — call envelope() first")
         supply_v = _supply_v(intent)
-        selection = select_components(target, supply_v)
-        if selection is None:
+        pins = _resolve_pins(intent, supply_v)
+        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor)
+        if selection is None or pins.refusal:
             raise ValueError("generate() called on an intent envelope() refuses")
 
         achieved = selection.achieved_hz
@@ -444,6 +589,19 @@ class RCLowPassGenerator:
         loading_pct = (source_z / selection.ohms * 100.0) if selection.ohms else 0.0
 
         r_part = f"RC0402FR-07{_yageo_code(selection.ohms)}L"
+        r_reason = (
+            f"{selection.ohms:g}Ω, pinned by the requirement (constraints.pinned.R1) — "
+            f"the part in hand, assumed from the same 1% series"
+            if pins.r_ohms is not None else
+            f"{selection.ohms:g}Ω, nearest E96 (1%) value to the "
+            f"{1.0 / (2.0 * math.pi * target * selection.farads):.1f}Ω ideal"
+        )
+        c_reason = (
+            "Pinned by the requirement (constraints.pinned.C1)."
+            if pins.capacitor is not None else
+            f"Chosen first because it puts R1 inside "
+            f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g}Ω."
+        )
 
         return CircuitIR(
             intent=f"RC low-pass filter with {target:g} Hz cutoff frequency",
@@ -459,8 +617,7 @@ class RCLowPassGenerator:
                     supply_voltage_max=50.0,
                     confidence=0.95,
                     justification=(
-                        f"{selection.ohms:g}Ω, nearest E96 (1%) value to the "
-                        f"{1.0 / (2.0 * math.pi * target * selection.farads):.1f}Ω ideal. With "
+                        f"{r_reason}. With "
                         f"C1={selection.c_value} it gives f_c = 1/(2π·R·C) = {achieved:.1f} Hz "
                         f"against the {target:g} Hz asked for. Raising R lowers the cutoff and "
                         f"raises the source loading error, currently "
@@ -480,8 +637,7 @@ class RCLowPassGenerator:
                     confidence=0.95,
                     justification=(
                         f"{selection.c_value} ceramic, rated {selection.c_vmax:g}V against a "
-                        f"{supply_v:g}V supply. Chosen first because it puts R1 inside "
-                        f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g}Ω. A 10% part, so it dominates "
+                        f"{supply_v:g}V supply. {c_reason} A 10% part, so it dominates "
                         f"the cutoff tolerance — the ±1% resistor contributes roughly a tenth as "
                         f"much spread."
                     ),
@@ -534,14 +690,33 @@ class RCLowPassGenerator:
         """
         Narrow where it can be. A conservative closure is sound but makes the
         Stage 2 locality check vacuous, so the real dependencies are declared
-        here: only the capacitor carries a voltage rating, so a supply change
-        cannot touch R1.
+        here.
+
+        **`supply_v` reaches R1, and the Stage 0 version said it could not.**
+        It declared `{C1}` on the reasoning that only the capacitor carries a
+        voltage rating. True, and incomplete: above 16 V the 100 nF part drops
+        out of the catalogue, a different capacitor is chosen, and R1 is
+        re-snapped around it. The Stage 2 locality check found it on its first
+        sweep — a closure that is too narrow is worse than a conservative one,
+        because it is believed. `test_realize.py` pins the crossing.
+
+        A path is matched exactly, then by its longest declared prefix, so
+        `constraints.pinned.R1` resolves through `constraints.pinned`.
+        Anything undeclared gets the whole design — sound, and visibly vacuous.
         """
         closures: Dict[str, FrozenSet[str]] = {
             "targets.cutoff_hz": frozenset({"R1", "C1"}),
             "targets.tolerance_pct": frozenset({"R1", "C1"}),
-            "constraints.supply_v": frozenset({"C1"}),
+            # A new rating can change the capacitor, which re-snaps R1.
+            "constraints.supply_v": frozenset({"R1", "C1"}),
             "constraints.source_impedance_ohm": frozenset({"R1"}),
+            # A pin on either part re-chooses the other around it.
+            "constraints.pinned": frozenset({"R1", "C1"}),
             "preferences.package": frozenset({"R1", "C1"}),
         }
-        return closures.get(requirement_path, frozenset({"R1", "C1"}))
+        path = requirement_path
+        while path:
+            if path in closures:
+                return closures[path]
+            path = path.rpartition(".")[0]
+        return frozenset({"R1", "C1"})

@@ -47,10 +47,14 @@ CREATE TABLE circuit_designs (
     safety_class VARCHAR(20) DEFAULT 'general',
     target_mcu VARCHAR(50),
     ir_json JSONB NOT NULL,
+    intent_ir JSONB,     -- Stage 2: the IntentIR the design was realised from; NULL = pre-Stage-2
+    annotations JSONB,   -- Stage 2: annotation layer, merged after generation
     simulation_passed BOOLEAN,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Existing volumes get the two Stage 2 columns from backend/db/migrations.py
+-- at startup; this file only runs on an empty data directory.
 
 CREATE INDEX idx_designs_circuit_id ON circuit_designs(circuit_id);
 CREATE INDEX idx_designs_user_id ON circuit_designs(user_id);

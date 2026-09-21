@@ -34,7 +34,13 @@ async def create_user(db: AsyncSession, email: str, hashed_password: str) -> Use
 
 # ── Circuit designs ───────────────────────────────────────────────────────────
 
-async def save_design(db: AsyncSession, ir: CircuitIR, user_id: str) -> CircuitDesign:
+async def save_design(
+    db: AsyncSession,
+    ir: CircuitIR,
+    user_id: str,
+    intent_ir: Optional[dict] = None,
+    annotations: Optional[list] = None,
+) -> CircuitDesign:
     design = CircuitDesign(
         circuit_id=ir.circuit_id,
         user_id=uuid.UUID(user_id),
@@ -44,6 +50,8 @@ async def save_design(db: AsyncSession, ir: CircuitIR, user_id: str) -> CircuitD
         safety_class=ir.safety_class,
         target_mcu=ir.target_mcu,
         ir_json=ir.model_dump(mode="json"),
+        intent_ir=intent_ir,
+        annotations=annotations if annotations is not None else [],
         simulation_passed=ir.simulation_passed,
     )
     db.add(design)
@@ -68,6 +76,36 @@ async def update_design_ir(db: AsyncSession, circuit_id: str, ir: CircuitIR) -> 
             simulation_passed=ir.simulation_passed,
             updated_at=datetime.utcnow(),
         )
+    )
+
+
+async def update_design_revision(
+    db: AsyncSession,
+    circuit_id: str,
+    ir: CircuitIR,
+    intent_ir: dict,
+    annotations: list,
+) -> None:
+    """A new revision: circuit, requirement and annotations move together."""
+    await db.execute(
+        update(CircuitDesign)
+        .where(CircuitDesign.circuit_id == circuit_id)
+        .values(
+            ir_json=ir.model_dump(mode="json"),
+            intent_ir=intent_ir,
+            annotations=annotations,
+            version=ir.version,
+            simulation_passed=ir.simulation_passed,
+            updated_at=datetime.utcnow(),
+        )
+    )
+
+
+async def update_design_annotations(db: AsyncSession, circuit_id: str, annotations: list) -> None:
+    await db.execute(
+        update(CircuitDesign)
+        .where(CircuitDesign.circuit_id == circuit_id)
+        .values(annotations=annotations, updated_at=datetime.utcnow())
     )
 
 
@@ -144,18 +182,28 @@ async def record_patch(
     to_version: int,
     patch_json: dict,
     prompted_by: str,
+    change_summary: Optional[str] = None,
 ) -> PatchHistory:
     patch = PatchHistory(
         circuit_id=circuit_id,
         from_version=from_version,
         to_version=to_version,
         patch_json=patch_json,
-        change_summary=f"v{from_version} → v{to_version}",
+        change_summary=change_summary or f"v{from_version} → v{to_version}",
         prompted_by=prompted_by,
     )
     db.add(patch)
     await db.flush()
     return patch
+
+
+async def list_patches(db: AsyncSession, circuit_id: str) -> list[PatchHistory]:
+    result = await db.execute(
+        select(PatchHistory)
+        .where(PatchHistory.circuit_id == circuit_id)
+        .order_by(PatchHistory.to_version.asc(), PatchHistory.created_at.asc())
+    )
+    return list(result.scalars().all())
 
 
 # ── Generated outputs ─────────────────────────────────────────────────────────

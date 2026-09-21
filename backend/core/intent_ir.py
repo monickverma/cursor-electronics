@@ -49,7 +49,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 #: Bumped when the IntentIR shape changes. Half of the §4.4 cache key
 #: (prompt_hash + schema_version), so it must not vary per deployment.
-SCHEMA_VERSION = "2.0.0"
+#: 2.1.0 (Stage 2) added `revision`; a 2.0.0 dump without it still loads.
+SCHEMA_VERSION = "2.1.0"
 
 
 class Producer(str, Enum):
@@ -146,6 +147,10 @@ class IntentIR(BaseModel):
 
     schema_version: str = SCHEMA_VERSION
     intent_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    #: Position in the patch chain. Stage 2: each accepted patch is revision
+    #: n+1, and the CircuitIR realised from it carries the same number as its
+    #: `version`. `intent_id` is the lineage and survives every revision.
+    revision: int = Field(default=1, ge=1)
     requirements: Dict[str, Any]
     underdetermined: List[str] = Field(default_factory=list)
     signed_off: Optional[SignOff] = None
@@ -259,13 +264,24 @@ class IntentIR(BaseModel):
 
     def with_requirements(self, requirements: Mapping[str, Any]) -> "IntentIR":
         """
-        A new version carrying different requirements.
+        A new version carrying different requirements, at revision n+1.
 
         The signature does not travel with it: changed requirements are by
         definition not the ones that were agreed to, and silently carrying a
         sign-off across an edit is exactly the weakening Stage 4's freeze
-        exists to stop. Stage 2 builds the patch chain on top of this.
+        exists to stop. `core/intent_patch.py` builds the patch chain on this.
+
+        Revalidated rather than `model_copy`'d: a copy skips validation, so a
+        patch that wrote a malformed requirement would otherwise produce an
+        IntentIR that could never have been constructed directly.
         """
-        return self.model_copy(
-            update={"requirements": dict(requirements), "signed_off": None}
+        data = self.model_dump()
+        data.update(
+            requirements=dict(requirements),
+            signed_off=None,
+            revision=self.revision + 1,
+            # Written by this code, so it carries this code's shape even when
+            # revision n was loaded from an older dump.
+            schema_version=SCHEMA_VERSION,
         )
+        return IntentIR.model_validate(data)

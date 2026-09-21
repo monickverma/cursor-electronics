@@ -754,3 +754,157 @@ the tree**, because the module used `CircuitIR.model_validate(last_raw)`. The
 scanner now covers every Pydantic construction form and has a parametrised
 negative control for each. A G1 claim resting on a check with a hole in it is
 worth less than no claim at all.
+
+---
+
+## [2026-09-21] X2 + X4 accepted — patches apply to IntentIR; the CircuitIR patcher is removed
+
+**Decision:** amendments X2 and X4 of `PHASE_2_PLAN_v2.md` §2 are accepted.
+A patch is an RFC 6902 operation list over `IntentIR.requirements`; the design
+is re-derived by the same `envelope() → generate() → predict()` gate a fresh
+request goes through. `ai/patcher.py`, which let a model edit CircuitIR
+component fields, is deleted. Stage 2.
+
+Taken by the agent on the instruction "do stage 2". The five-advisor council
+review of X2/X4 and two TypeSafe (Jev) passes found the direction right and
+the amendments under-specified; every point below closes one of those gaps. It
+is recorded here so it can be reversed by reading one entry.
+
+**Found while reading, before writing anything: the Task 1.5 invariant had a
+hole.** `ai/patcher.py` called a model and then wrote the model's output into a
+CircuitIR through `ir.model_copy(update=...)`. That is exactly the path the One
+Rule forbids, and `test_llm_cannot_write_circuit_ir.py` passed throughout
+because it recognises constructors (`CircuitIR(...)`, `model_validate`, …) and
+not `model_copy`. Same failure shape as the first version of that scanner: a
+G1 claim resting on a check with a hole. The module is removed and the scanner
+now treats `model_copy(update=...)` in a model-calling module that references
+`CircuitIR` as a violation, with a negative control.
+
+**The resolutions, one per gap the reviews found:**
+
+1. **IntentIR lives on the design record.** `circuit_designs` gains
+   `intent_ir JSONB` and `annotations JSONB`. Without it there is nothing to
+   patch — until now the IntentIR existed only in `request_log`. A NULL
+   `intent_ir` marks a design built before Stage 2; it cannot be patched and
+   the route says so with a 409 rather than guessing a requirement back out of
+   a circuit.
+
+2. **The repo gets an idempotent startup migration.** The [2026-09-21] X5
+   defects entry avoided a new column because `schema.sql` runs only on an
+   empty data directory, so any DDL change breaks every existing volume. That
+   constraint was going to recur at every stage. `db/migrations.py` holds
+   `ADD COLUMN IF NOT EXISTS` statements run at startup, and `schema.sql`
+   carries the same columns for fresh volumes. A migration that fails is
+   logged and does not stop the app, matching today's behaviour when Postgres
+   is down.
+
+3. **`circuit_id` is derived, not random: `uuid5(namespace, intent_id)`.**
+   The Stage 2 determinism gate cannot pass while `CircuitIR.circuit_id` is a
+   fresh `uuid4`. Derived from `intent_id` and **not** from the generator
+   version, departing from the protocol docstring's wording: `circuit_id` is
+   the design record's key and survives patches, and folding the generator
+   version in would change a design's identity every time its generator is
+   upgraded. The version is recorded instead in a new `CircuitIR.generator`
+   field (`name@version`, v2 §6). Stamping happens in one place,
+   `generators/realize.py`, so no generator works around it locally.
+
+4. **`IntentIR.revision`.** Each accepted patch is revision n+1, and
+   `CircuitIR.version` equals it. `with_requirements()` increments it.
+   `SCHEMA_VERSION` 2.0.0 → 2.1.0; old dumps without the field still load.
+
+5. **A patch that changes nothing is not a version.** Idempotence gate: an
+   empty patch, or one whose operations leave the requirements equal, returns
+   the same IntentIR and a byte-identical CircuitIR. Phase 1 recorded an empty
+   patch as a new version; that was a property of patching an output, not a
+   virtue.
+
+6. **Pinned parts are requirements: `constraints.pinned`.** The most common
+   engineer edit, *"use the 4.7 k, it's what I have in the drawer"*, is not a
+   target and must not become an annotation, because annotations are never an
+   input to generation. A generator either honours every pin or refuses naming
+   the pin. `rc_lowpass` supports R1 and C1 (0.1.0 → 0.2.0; unpinned output is
+   unchanged).
+
+7. **The LLM patcher's guard: every operation cites the command.** X5's "a
+   retry may add, never rewrite" cannot govern a patch, which is a rewrite by
+   definition. The guard is instead that each operation carries a verbatim
+   quote from the user's command that asked for it, checked mechanically. An
+   operation with no textual basis — the model also changing `supply_v` when
+   the user only mentioned the cutoff — is refused. It does **not** catch a
+   mis-transcribed value (2 kHz recorded as 20 kHz); the readable diff returned
+   with every patch is the mitigation there, and the exposure is the same one
+   the X5 defects entry names. **No semantic retry on patches**: a refused
+   patch is reported and the user rephrases, because a retry is where
+   negotiation would happen. A lexical check that the path name appears in the
+   command was rejected — it is a heuristic presented as a guard.
+
+8. **Patching is LLM-optional.** The route takes either `command` (one model
+   call) or `ops` (zero), the patch-side counterpart of the form producer.
+
+9. **A refused patch keeps v(n).** Nothing is written until the new revision
+   has passed `envelope()` and been realised. The user never loses a working
+   design in exchange for a refusal.
+
+10. **Annotations are a closed list:** `net_name`, `test_point`,
+    `placement_hint`, `comment`, each anchored to a component, a node or the
+    design. Merged after generation, never an input — asserted by a test that
+    generation is byte-identical with and without them. An annotation whose
+    anchor disappears is **orphaned and reported**, and kept, so it re-attaches
+    if the anchor returns. Rendering them into KiCad output is not Stage 2.
+
+11. **Locality is checked, and its grade is projected until Stage 3.** A
+    CircuitIR component diff outside the declared `dependency_closure` of the
+    changed requirement paths is a violation, reported with every patch and
+    swept in CI. With one two-component generator a closure is close to the
+    whole circuit, so passing proves little. It becomes evidence when a
+    generator with more than two parts exists.
+
+12. **Criterion 7 is re-earned at the IntentIR layer.** Its automation was
+    `tests/test_patcher.py::test_five_sequential_patches_keep_ir_valid`, which
+    patched CircuitIR directly and goes with the module. The replacement runs
+    five sequential requirement patches, each re-derived, and asserts the same
+    things: schema-valid, no dangling references, earlier edits survive, and
+    history that reads as requirements. `CRITERIA_TEST_MAP` points at it.
+
+13. **Old `patch_history` rows are frozen, not migrated.** They record
+    CircuitIR component edits on designs that have no IntentIR, so there is
+    nothing faithful to convert them into. New rows carry
+    `schema: "intent_patch/1"` so a reader can tell the two apart.
+
+14. **A stored design is never silently re-derived.** Its CircuitIR is the
+    record. A patch regenerates with the installed generator, and if that
+    differs from the one that built v(n), the response says so
+    (`generator_changed`) alongside the `predict()` delta. The simulation job
+    for each revision is stored with that revision's patch row, so results for
+    v(n) cannot be read as results for v(n+1).
+
+15. **The DS18B20 acceptance gate is deferred with a trigger.** *"Use a
+    DS18B20 instead"* cannot pass anywhere in Phase 2: no stage builds a
+    DS18B20 generator. Trigger: a temperature-sensor generator that offers it.
+    The acceptance test that can pass today replaces it — *"make the cutoff
+    2 kHz"* end to end, justified by the `predict()` delta rather than prose.
+
+**Alternatives rejected:**
+- *Keep the CircuitIR patcher as a tested legacy path.* It is an LLM → CircuitIR
+  path, which Stage 1 exists to remove; keeping it tested would keep it working.
+- *Store the IntentIR chain only in `patch_history`.* Uses an existing table and
+  needs no DDL, but it makes the current requirement a query over a log.
+- *`circuit_id` from a hash of the requirements.* Two users asking for the same
+  filter would collide on a unique key.
+
+**Found while building, both closed in the same change:**
+
+- **`rc_lowpass.dependency_closure("constraints.supply_v")` was too narrow.**
+  Stage 0 declared `{C1}` because only the capacitor carries a voltage rating.
+  The locality sweep's first run showed a 20 V supply changing R1 too: the
+  100 nF part is rated 16 V, so it drops out, another capacitor is chosen, and
+  R1 is re-snapped around it. Fixed to `{R1, C1}`; a negative control
+  reinstates the Stage 0 closure and must fail. A closure that is too narrow is
+  worse than a conservative one, because the locality claim built on it is
+  believed. This is the first evidence the locality gate is worth having, even
+  graded projected.
+- **The `model_copy` rule in the scanner needed imports counted as references.**
+  Its first version looked for the name `CircuitIR` among `ast.Name` and
+  `ast.Attribute` nodes; a module that only imports the type (`ast.alias`) was
+  invisible to it. The new negative control caught that before anything
+  shipped on it.

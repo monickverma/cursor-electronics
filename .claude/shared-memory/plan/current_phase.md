@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-20 (Stage 0 opened; Task 0.1 done)
+> Last updated: 2026-09-21 (Stage 2 done; Stage 3 next)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -280,7 +280,7 @@ evidence that the Stage 0 ordering call was right.
 same thing hash the same — required for the §4.4 cache and for sign-off to
 survive a round trip.
 
-## Task 1.2 — Generator registry and dispatch
+## Task 1.2 — Generator registry and dispatch ✅ DONE 2026-09-21 (`2c53a3c`)
 
 - `backend/generators/registry.py` — register generators, dispatch an intent
   to the ones whose `envelope()` accepts it
@@ -296,7 +296,7 @@ generator's envelope dispatches to it; an intent outside every envelope is
 refused with all the reasons; a non-conforming generator is rejected at
 registration with the gaps named (`conformance_gaps` already does this).
 
-## Task 1.3 — Form producer, generated from the registry
+## Task 1.3 — Form producer, generated from the registry ✅ DONE 2026-09-21 (`2c53a3c`)
 
 - `backend/ai/form_producer.py` — build the field set from the registry so the
   form *is* the envelope catalogue
@@ -306,7 +306,9 @@ registration with the gaps named (`conformance_gaps` already does this).
 IntentIR for every registered generator with 0 API calls, and the field set
 matches what the registry declares.
 
-## Task 1.4 — LLM producer, and X5 — **needs a decision first**
+## Task 1.4 — LLM producer, and X5 ✅ DONE 2026-09-21 (`2c53a3c`, defects closed in `3122e30`)
+
+X5 accepted — `brain/decisions.md` [2026-09-21]. The text below is the pre-decision note, kept.
 
 Blocked on the X5 entry in `brain/decisions.md`. Recommendation on record:
 accept X5, but make a schema failure a **loud** 422 carrying the raw tool
@@ -319,22 +321,117 @@ Note the interaction with Task 1.5: `circuit_reasoner.py` *is* a path by which
 the LLM writes CircuitIR, so X5 may apply to the new IntentIR producer rather
 than to that module's `except` clauses.
 
-## Task 1.5 — Remove every path by which the LLM can write CircuitIR
+## Task 1.5 — Remove every path by which the LLM can write CircuitIR ✅ DONE 2026-09-21 (`2c53a3c`)
+
+**Reopened and closed again in Stage 2:** `ai/patcher.py` was a second such path, written through `model_copy(update=...)`, which the scanner did not recognise. See Stage 2 below.
 
 **Success criterion:** a test asserts it, rather than prose claiming it. This
 is the architecture's load-bearing invariant and currently has no mechanical
 guard.
 
-## Task 1.6 — Labelled 200-case corpus, false-acceptance rate
+## Task 1.6 — Labelled 200-case corpus, false-acceptance rate ✅ DONE 2026-09-21 (`2c53a3c`)
 
 Reported **as a rate, with the corpus named** — v2 §1.2 calls the original
 "false acceptance at zero" unmeasurable as written.
 
-## Task 1.7 — Tighten the request-log row
+## Task 1.7 — Tighten the request-log row ✅ DONE 2026-09-21 (`2c53a3c`, LOG_SCHEMA_VERSION 1.1.0)
 
 `intent_ir` and `generator` join the required set for a row that produced a
 design; bump `LOG_SCHEMA_VERSION` in the same commit. The Stage 0 gate
 ratchets as promised.
+
+---
+
+# Phase 2 — Stage 2: Patch model v2 ✅ DONE 2026-09-21
+
+> Gates in `PHASE_2_PLAN_v2.md` §5 Stage 2. Every design decision, including
+> the fifteen gaps the council and TypeSafe reviews found in X2/X4, is in
+> `brain/decisions.md` [2026-09-21] **X2 + X4** — read it there, not here.
+
+## Task 2.1 — Record X2 + X4 before code ✅
+
+Decision entry written first, per v2 §2. Criterion 7's disposition, IntentIR on
+the design record, and deterministic `circuit_id` are in it.
+
+## Task 2.2 — IntentIR on the design record ✅
+
+`circuit_designs.intent_ir` + `.annotations` (JSONB). `backend/db/migrations.py`
+adds them to existing volumes at startup — the repo's first migration
+mechanism, because `schema.sql` only runs on an empty data directory.
+`tests/test_migrations.py`. A design with NULL `intent_ir` predates Stage 2 and
+the patch route answers 409 rather than guessing a requirement.
+
+## Task 2.3 — Deterministic `circuit_id` ✅
+
+`generators/realize.py::realize` — the one place that turns an IntentIR into a
+stored CircuitIR. `circuit_id = uuid5(namespace, intent_id)`; `version` =
+`IntentIR.revision`; new `CircuitIR.generator` = `name@version`. **Determinism
+gate met:** byte-identical across calls and across a serialisation round trip
+(`tests/test_realize.py`). Derived from `intent_id`, not the generator version,
+so a design keeps its identity through patches and generator upgrades.
+
+## Task 2.4 — RFC 6902 patching on IntentIR ✅
+
+`core/intent_patch.py` — `apply_patch`, atomic, restricted to `requirements`.
+**Idempotence gate met:** a no-op is not a version and realises a byte-identical
+design. **Readable history met:** `targets.cutoff_hz: 1000 → 2000`.
+`tests/test_intent_patch.py`, which also re-earns **criterion 7** (five
+sequential requirement patches) and is wired to it in `CRITERIA_TEST_MAP`.
+
+## Task 2.5 — Locality ✅ (grade: projected)
+
+`realize.check_locality` — CircuitIR component diff ⊆ declared closure, swept
+over every declared path. **It found a real bug on its first run:**
+`rc_lowpass.dependency_closure("constraints.supply_v")` said `{C1}`, but above
+16 V the 100 nF part drops out and R1 is re-snapped. Fixed to `{R1, C1}`, with
+a negative control that reinstates the Stage 0 closure and must fail. Graded
+projected because two parts is nearly the whole circuit; it becomes evidence
+with a larger generator.
+
+## Task 2.6 — Annotation layer ✅
+
+`core/annotations.py` — four kinds, anchored, merged after generation, never an
+input (`realize` takes no annotations; asserted). **Orphans gate met:** kept
+and reported, re-attach when the anchor returns. `tests/test_annotations.py`.
+Rendering into KiCad output is not done — Stage 3 or later.
+
+## Task 2.7 — Pinned parts ✅
+
+`rc_lowpass` 0.1.0 → 0.2.0: `constraints.pinned` for R1 and C1, honoured or
+refused by name, parsed with the SPICE netlist's own parsers. Unpinned output
+checked identical to 0.1.0 over 150 accepted intents.
+
+## Task 2.8 — LLM patcher and route ✅
+
+`ai/intent_patcher.py` replaces `ai/patcher.py` (deleted — it was an LLM →
+CircuitIR path; the AST scanner now catches `model_copy(update=...)`). Every
+operation cites the command; no retries. `api/routes/patch.py` takes `command`
+(1 call) or `ops` (0), refuses without writing, returns the requirement diff,
+`predict()` delta, locality report and annotations; adds `PUT …/annotations`
+and `GET …/history`. `tests/test_intent_patcher.py`, `tests/test_patch_route.py`
+(mutation-checked: writing before the envelope check fails it).
+
+## Stage 2 gates
+
+| Gate | Result |
+|---|---|
+| Determinism: same IntentIR + version → byte-identical CircuitIR | ✅ `test_realize.py::TestDeterminism` |
+| Idempotence: empty patch → identical output | ✅ `test_intent_patch.py::TestIdempotence` |
+| Locality: diff ⊆ declared closure | ✅ swept — **projected** until a >2-part generator |
+| Orphaned annotations surfaced, never dropped | ✅ `test_annotations.py::TestOrphans` |
+| "Use a DS18B20 instead" end to end | ⏭ **deferred with a trigger** — no Phase 2 stage builds a DS18B20 generator. Replaced by *"make the cutoff 2 kHz"* with a `predict()`-delta justification: ✅ `test_realize.py::TestAcceptanceMakeTheCutoff2kHz` |
+
+## Stage 2 — not done, and why
+
+- **Annotations are not rendered** into KiCad/BOM output. They are stored,
+  returned and carried; showing them in a schematic is output work.
+- **The citation guard does not catch a mis-transcribed value** under a
+  correct citation (2 kHz → 20000). The diff is shown to the user; the exposure
+  is the one the X5 defects entry names.
+- **No live-API test of the LLM patcher.** All its tests use a scripted client.
+- **The design route's own coverage is thin:** one test, that generate stores
+  the requirement. It stays `test: None` in the trackers rather than being
+  counted as verified on one case.
 
 ---
 

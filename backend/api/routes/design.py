@@ -22,6 +22,7 @@ from db.models import get_db
 from generators.bom.compiler import BOMCompiler
 from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
+from generators.realize import realize
 from generators.registry import default_registry
 from generators.schematic.kicad import KiCadSchematicGenerator
 from observability.request_log import log_ctx, prompt_hash
@@ -128,8 +129,9 @@ async def generate_design(
 
     # 4. The design itself is produced deterministically, with no model in the
     #    loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
-    #    asserts mechanically.
-    ir = generator.generate(intent)
+    #    asserts mechanically. realize() stamps the circuit_id derived from the
+    #    intent, so the same intent always yields a byte-identical design.
+    ir = realize(generator, intent)
 
     # 5. Validate
     val_result = validate_ir(ir)
@@ -157,8 +159,8 @@ async def generate_design(
     except Exception:
         pass
 
-    # 8. Persist
-    await save_design(db, ir, str(user.id))
+    # 8. Persist — the requirement with the design, so it can be patched (X2).
+    await save_design(db, ir, str(user.id), intent_ir=intent.model_dump(mode="json"))
     if firmware:
         await save_output(db, ir.circuit_id, "firmware", firmware, f"{ir.circuit_id}.ino")
     await save_output(db, ir.circuit_id, "schematic", schematic, f"{ir.circuit_id}.kicad_sch")

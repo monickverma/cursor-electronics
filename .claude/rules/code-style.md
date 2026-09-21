@@ -118,19 +118,39 @@ Phase 2: Qdrant RAG with full datasheet excerpts. Phase 1: static dict only.
 
 ---
 
-## Patcher Invariant
+## Patcher Invariant — Patches Edit the Requirement, Never the Circuit
 
-`CircuitPatcher.patch()` **never** returns a full IR. It returns only changed fields.
+> **Amended 2026-09-21 (Stage 2, X2 + X4).** `ai/patcher.py` is **deleted**.
+> It let a model write CircuitIR component fields through `model_copy(update=...)`
+> — an LLM → CircuitIR path the Task 1.5 scanner missed. Rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-21] X2 + X4.
+
+A patch is an RFC 6902 operation list over `IntentIR.requirements`. The design is
+**re-derived** through the same gate as a fresh request.
 
 ```python
-# CORRECT — patch returns only what changed
-{"changes": [{"component_id": "R1", "field": "value", "new_value": "4.7k"}]}
+# CORRECT — edit what was asked for; regenerate through the gate
+ops = [PatchOp(op="replace", path="/targets/cutoff_hz", value=2000)]
+outcome = apply_patch(intent, ops)             # core/intent_patch.py
+dispatch = registry.dispatch(outcome.intent)   # refused → v(n) kept, nothing written
+new_ir = realize(dispatch.generator, outcome.intent)
 
-# WRONG — patcher re-generating the entire design
-{"circuit_id": "...", "components": [...all components...], "nodes": [...]}
+# WRONG — edit what was built
+ir.model_copy(update={"components": [...]})    # a design no generator produced
 ```
 
-Returning a full IR from the patcher overwrites user customizations and makes `patch_history` meaningless. The patcher's job is surgical: change exactly what was requested, preserve everything else.
+Rules that follow from it:
+
+- **The LLM patcher (`ai/intent_patcher.py`) returns operations, never a design,**
+  and never imports `CircuitIR`. Every operation cites the verbatim words of the
+  command that asked for it; an uncited operation refuses the whole patch.
+- **No retries on patches.** A refused patch is reported; the user rephrases.
+- **Patching is LLM-optional:** the route takes `ops` directly with zero model calls.
+- **A patch that changes nothing is not a version.**
+- **"Use the part I have" is `constraints.pinned`, not an annotation.** Annotations
+  (`core/annotations.py`) are a closed list, merged after generation, never an input.
+- **Only `generators/realize.py` stamps `circuit_id`, `version` and `generator`.**
+  Generators never work around determinism locally.
 
 ---
 

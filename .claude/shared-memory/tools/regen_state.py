@@ -52,7 +52,6 @@ MODULES = {
     "core/config":             {"file": "backend/core/config.py",                   "test": None,                               "phase": 1},
     "ai/client":               {"file": "backend/ai/client.py",                     "test": None,                               "phase": 1},
     "ai/intent_parser":        {"file": "backend/ai/intent_parser.py",              "test": "tests/test_ai_layer.py",           "phase": 1},
-    "ai/patcher":              {"file": "backend/ai/patcher.py",                    "test": "tests/test_patcher.py",            "phase": 1},
     "ai/explainer":            {"file": "backend/ai/explainer.py",                  "test": "tests/test_explainer.py",          "phase": 1},
     "generators/spice":        {"file": "backend/generators/netlist/spice.py",      "test": ["tests/test_simulation.py",
                                                                                              "tests/test_simulation_accuracy.py"], "phase": 1},
@@ -71,7 +70,8 @@ MODULES = {
     "validation/rule_engine":  {"file": "backend/validation/rule_engine.py",        "test": "tests/test_rule_engine.py",        "phase": 1},
     "tasks/simulation_task":   {"file": "backend/tasks/simulation_task.py",         "test": None,                               "phase": 1},
     "api/routes/design":       {"file": "backend/api/routes/design.py",             "test": None,                               "phase": 1},
-    "api/routes/patch":        {"file": "backend/api/routes/patch.py",              "test": None,                               "phase": 1},
+    # Rewritten in Stage 2 (X4): patches the requirement, not the circuit.
+    "api/routes/patch":        {"file": "backend/api/routes/patch.py",              "test": "tests/test_patch_route.py",        "phase": 1},
     "api/routes/simulate":     {"file": "backend/api/routes/simulate.py",           "test": None,                               "phase": 1},
     "api/routes/auth":         {"file": "backend/api/routes/auth.py",               "test": "tests/test_auth.py",               "phase": 1},
     "db/crud":                 {"file": "backend/db/crud.py",                       "test": None,                               "phase": 1},
@@ -100,6 +100,13 @@ MODULES = {
     "generators/registry":        {"file": "backend/generators/registry.py",        "test": "tests/test_registry.py",             "phase": 2},
     "ai/form_producer":           {"file": "backend/ai/form_producer.py",           "test": "tests/test_form_producer.py",        "phase": 2},
     "ai/intent_producer":         {"file": "backend/ai/intent_producer.py",         "test": "tests/test_intent_producer.py",      "phase": 2},
+    # Stage 2 — patch model v2 (X2 + X4). ai/patcher.py was removed with it:
+    # it let a model write CircuitIR fields. decisions.md [2026-09-21].
+    "core/intent_patch":          {"file": "backend/core/intent_patch.py",          "test": "tests/test_intent_patch.py",         "phase": 2},
+    "core/annotations":           {"file": "backend/core/annotations.py",           "test": "tests/test_annotations.py",          "phase": 2},
+    "generators/realize":         {"file": "backend/generators/realize.py",         "test": "tests/test_realize.py",              "phase": 2},
+    "ai/intent_patcher":          {"file": "backend/ai/intent_patcher.py",          "test": "tests/test_intent_patcher.py",       "phase": 2},
+    "db/migrations":              {"file": "backend/db/migrations.py",              "test": "tests/test_migrations.py",           "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -145,6 +152,9 @@ CRITERIA_TEST_MAP = {
     3: ["tests/test_simulation.py"],
     4: ["tests/test_rule_engine.py"],
     5: ["tests/test_firmware_generator.py"],
+    # Criterion 7 re-earned at the IntentIR layer in Stage 2. Its Phase 1
+    # automation patched CircuitIR and was removed with ai/patcher.py.
+    6: ["tests/test_intent_patch.py"],
     10: ["tests/test_simulation_accuracy.py"],
 }
 
@@ -340,7 +350,7 @@ def check_criteria(test_raw: str, modules: dict):
                 status = "❌"
             else:
                 status = "✅*" if i in SUBSTITUTE_CRITERIA else "✅"
-        elif i in (1, 6, 7, 8, 9):  # verified in previous live session
+        elif i in (1, 7, 8, 9):  # verified in previous live session
             status = "✅"
         else:
             status = "⏳"  # physical/human — can't auto-check
