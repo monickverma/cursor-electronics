@@ -520,7 +520,7 @@ def main():
         for b in blockers[:3]:
             print(f"             • {b}")
     print(f"\n  To orient any agent: read AGENTS.md → follow 5-step bootstrap")
-    print(f"  To continue:         read plan/current_phase.md → Day 2-3 tasks")
+    print(f"  To continue:         read plan/current_phase.md → the open tasks")
     print("═" * 68 + "\n")
 
 

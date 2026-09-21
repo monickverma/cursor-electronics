@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-21T13:47:54.881396Z",
-  "generated_from_commit": "d1ebbca",
+  "generated_at": "2026-09-21T14:04:27.465083Z",
+  "generated_from_commit": "dc94a08",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -357,13 +357,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "dc94a08 fix(stage2): transitive CircuitIR scanner; strict rc_lowpass inputs (0.2.1)",
+    "26adf0b fix(stage2): close three defects found by the Stage 2 verification",
     "d1ebbca feat(phase2): Stage 2 — patch model v2 (X2 + X4)",
     "3122e30 fix(x5): close three defects in the intent producer",
-    "2c53a3c feat(phase2): Stage 1 — IntentIR, registry, form, and hard abstention",
-    "1e74609 feat(phase2): Stage 1 Task 1.1 — the IntentIR schema",
-    "1fc0eec fix: address Copilot review — seven findings, all legitimate"
+    "2c53a3c feat(phase2): Stage 1 — IntentIR, registry, form, and hard abstention"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                           |   8 +-\n .claude/rules/code-style.md                 |  36 ++-\n .claude/shared-memory/brain/decisions.md    | 154 +++++++++++\n .claude/shared-memory/plan/c",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    |  51 ++\n .claude/shared-memory/brain/timeline.md     |   2 +\n .claude/shared-memory/plan/current_phase.md |  15 +-\n .claude/shared-memory/progress.yaml    ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-21T13:50:15.584234Z'
+generated_at: '2026-09-21T14:06:47.261684Z'
 project: Circuit OS
 files:
   core/ir_schema:

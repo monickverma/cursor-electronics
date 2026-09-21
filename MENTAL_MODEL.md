@@ -202,8 +202,9 @@ Standing rule now in `AGENTS.md`: register every new module in **both**
 |---|---|---|
 | `backend/core/ir_schema.py` | **The contract.** Every layer reads it. Never rename fields — `component_id`/`node_id`, not `component`/`node`. | ✅ |
 | `backend/ai/intent_parser.py` | Prompt → `DesignSpec` | ✅ |
-| `backend/ai/circuit_reasoner.py` | `DesignSpec` → `CircuitIR`, 3-attempt retry | ✅ |
-| `backend/ai/patcher.py` | IR + command → **patch only, never full IR** | ✅ |
+| `backend/ai/intent_producer.py` | Prompt → `IntentIR`, a **requirement, never a design** (replaced `circuit_reasoner.py`, deleted in Stage 1) | ✅ |
+| `backend/ai/intent_patcher.py` | IntentIR + command → RFC 6902 ops on the requirement, each cited (replaced `patcher.py`, deleted in Stage 2) | ✅ |
+| `backend/generators/registry.py`, `realize.py`, `rc_lowpass.py` | Dispatch to a generator whose envelope accepts; `realize()` is the only path to a stored `CircuitIR` | ✅ |
 | `backend/ai/explainer.py` | IR → consequential plain English. **The product.** | ✅ |
 | `backend/generators/` | SPICE, KiCad, Arduino, BOM compilers | ✅ |
 | `backend/simulation/` | ngspice runner, parser, grader, monitor | ✅ |

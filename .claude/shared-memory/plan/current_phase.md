@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-21 (Stage 2 done; Stage 3 next)
+> Last updated: 2026-09-21 (Stage 2 done and verified; Stage 3 next, unplanned)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -456,6 +456,14 @@ invented part numbers, patch refusals logged without their IntentIR, silent
 migration failure, and stale `brain/architecture.md` / `MENTAL_MODEL.md`
 entries for `ai/patcher.py`.
 
+*Update 2026-09-21 (/update-memory):* the stale `brain/architecture.md` and `MENTAL_MODEL.md` entries are fixed — that item is closed.
+
+**Carried from 2026-08-23, never diagnosed:** one test in `test_simulation_accuracy.py` was flaky (timeline, 2026-08-23). It passed in every full run on 2026-09-21; that is not a diagnosis. An infrastructure hiccup may be retried; an accuracy disagreement never may.
+
+## Next — Stage 3, not yet planned at function level
+
+Gates in `PHASE_2_PLAN_v2.md` §5 Stage 3 (remaining four generators, claim objects with `kind`/`grade`/`scope`/`defeaters`, `grade_floor` in `regen_state.py`, visible not-assessed rows, waveform viewer). The planner writes the tasks here before work starts; the open verification items above are small and worth closing first.
+
 ---
 
 ## Not in Stage 0 — do not start
@@ -776,7 +784,7 @@ alone.
 
 ```bash
 # Tests
-pytest tests/ -q                    # expect 318 passed, 27 skipped
+pytest tests/ -q                    # current counts: state.json — not restated here
 
 # Memory re-sync (run after every meaningful change)
 python .claude/shared-memory/tools/regen_state.py
@@ -785,4 +793,4 @@ python .claude/shared-memory/tools/regen_state.py
 Test accounts: `test@circuitos.dev` / `TestPass123!`
 ngspice: `C:\msys64\ucrt64\bin\ngspice_con.exe`
 arduino-cli: `C:\Users\KIIT\bin\arduino-cli.exe`
-AI: `anthropic/claude-3-5-haiku-20241022` via OpenRouter (`ANTHROPIC_BASE_URL=https://openrouter.ai/api`)
+AI: the model named by `AI_MODEL` in `.env`, via OpenRouter (`ANTHROPIC_BASE_URL=https://openrouter.ai/api`) — read `.env`, not this line

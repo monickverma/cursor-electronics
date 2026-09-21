@@ -191,6 +191,8 @@ Affected files: `api/routes/design.py`, `patch.py`, `simulate.py`.
 257 passed, 24 skipped, 0 failing    (as of 2026-08-07, commit 1ae8f34)
 ```
 
+That figure is a 2026-08-07 snapshot. **Current counts live in `state.json` (derived) — do not restate them here.**
+
 - 18 skipped = live API tests (need real ANTHROPIC_API_KEY set) + were ngspice/arduino-cli
 - ngspice tests now run (ngspice installed)
 - arduino-cli tests now run (arduino-cli installed + libraries)

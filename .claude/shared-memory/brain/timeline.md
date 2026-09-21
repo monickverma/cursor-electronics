@@ -123,14 +123,10 @@
 
 **2026-09-21** — Two more findings from the Stage 2 verification closed. The Task 1.5 scanner is now transitive: it computes model-facing names to a fixed point across the repository with imports resolved, and counts in-place writes, so a design reached through `IntentPatcher` or `ExplanationEngine().client`, or edited with `ir.components[0].value = raw`, no longer passes — the third hole of the same shape in that gate, and the first found before a real violation used it. And `rc_lowpass` 0.2.1 refuses a present-but-unusable number by name: 0.2.0 had built `supply_v: "12"` at 5 V and accepted every design under `tolerance_pct: NaN`.
 
+**2026-09-21** — /update-memory re-sync: `brain/architecture.md` (bootstrap layer 2) still said the LLM writes CircuitIR and listed the deleted `ai/patcher.py`, and `MENTAL_MODEL.md` listed both deleted LLM → CircuitIR modules as trusted — both rewritten to the IntentIR → registry → `realize()` flow, with the Stage 1–2 modules added. Also retired the stale `## Upcoming` list here and pointed `knowledge.md`, `vision.md` and `current_phase.md` at `state.json` instead of restating numbers.
+
 ---
 
 ## Upcoming
 
-**Next** — Diagnose the flaky accuracy test. Suspected transient ngspice subprocess failure (~20 launches per run, 30s timeout, output read immediately after return). An infrastructure hiccup may be retried; an accuracy disagreement never may.
-
-**Then** — PCB endpoint behind a config flag and the frontend tab labelled experimental, completing decision (b).
-
-**Then** — `regen_state.py`, confirm `PHASE1_COMPLETE.md` matches, tag v0.1.0.
-
-**Phase 2 entry** — Criterion 12: external engineer cold-reads a DHT22 explanation. `CRITERION_12_REVIEW.md` has the protocol.
+Owned by `plan/current_phase.md` — read it there. (The list that stood here until 2026-09-21 had stopped being updated: the PCB flag shipped, v0.1.0 is tagged, and criterion 12 is deferred with a trigger. Its first item, the flaky `test_simulation_accuracy.py` test of 2026-08-23, has no recorded diagnosis and is carried in `current_phase.md`.)
