@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-21T08:05:45.919958Z'
+generated_at: '2026-09-21T13:50:15.584234Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -794,14 +794,14 @@ files:
         type: function
         description: f_c = 1 / (2·pi·R·C).
         signature: 'cutoff_hz(ohms: float, farads: float) -> float'
-        line: 120
+        line: 126
         test_file: tests/test_rc_lowpass_generator.py
       snap_to_e96:
         status: verified_done
         type: function
         description: Nearest E96 value. Chooses in log space, because the series is
         signature: 'snap_to_e96(ohms: float) -> float'
-        line: 125
+        line: 131
         test_file: tests/test_rc_lowpass_generator.py
       select_components:
         status: verified_done
@@ -810,21 +810,21 @@ files:
           are tried in'
         signature: 'select_components(target_hz: float, supply_v: float, r_pin: Optional[float],
           c_pin: Optional[_Capacitor]) -> Optional[_Selection]'
-        line: 217
+        line: 263
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator:
         status: verified_done
         type: class
         description: Single-pole passive RC low-pass. Implements `generators.protocol.Generator`.
         signature: null
-        line: 357
+        line: 403
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.envelope:
         status: verified_done
         type: method
         description: Accept with the interface contract, or refuse with a reason specific
         signature: 'RCLowPassGenerator.envelope(intent: IntentLike) -> EnvelopeDecision'
-        line: 366
+        line: 412
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.predict:
         status: verified_done
@@ -832,7 +832,7 @@ files:
         description: Closed-form behaviour over a parameter box.
         signature: 'RCLowPassGenerator.predict(intent: IntentLike, box: Optional[Mapping[str,
           Interval]]) -> Prediction'
-        line: 472
+        line: 520
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.generate:
         status: verified_done
@@ -840,7 +840,7 @@ files:
         description: Deterministic given (intent, version). Callers call `envelope()`
           first.
         signature: 'RCLowPassGenerator.generate(intent: IntentLike) -> CircuitIR'
-        line: 570
+        line: 618
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.grid:
         status: verified_done
@@ -848,7 +848,7 @@ files:
         description: Three decades of the declared envelope. A single 1 kHz point
           passes on
         signature: RCLowPassGenerator.grid() -> GridSpec
-        line: 678
+        line: 726
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.dependency_closure:
         status: verified_done
@@ -857,7 +857,7 @@ files:
           the
         signature: 'RCLowPassGenerator.dependency_closure(requirement_path: str) ->
           FrozenSet[str]'
-        line: 689
+        line: 737
         test_file: tests/test_rc_lowpass_generator.py
     module_status: done
   validation/envelope_grid:
@@ -1199,28 +1199,28 @@ files:
         description: One RFC 6902 operation. `value` is required for add, replace
           and test.
         signature: null
-        line: 58
+        line: 74
         test_file: tests/test_intent_patch.py
       PatchOutcome:
         status: verified_done
         type: class
         description: What a patch did to the requirement.
         signature: null
-        line: 154
+        line: 188
         test_file: tests/test_intent_patch.py
       apply_patch:
         status: verified_done
         type: function
         description: 'Apply `ops` atomically: every operation applies, or none does.'
         signature: 'apply_patch(intent: IntentIR, ops: Sequence[PatchOp]) -> PatchOutcome'
-        line: 165
+        line: 199
         test_file: tests/test_intent_patch.py
       parse_pointer:
         status: verified_done
         type: function
         description: RFC 6901 pointer → reference tokens, restricted to `requirements`.
         signature: 'parse_pointer(path: str) -> List[str]'
-        line: 81
+        line: 97
         test_file: tests/test_intent_patch.py
       readable_changes:
         status: verified_done
@@ -1228,7 +1228,7 @@ files:
         description: '`targets.cutoff_hz: 1000 → 2000`, one line per changed path.'
         signature: 'readable_changes(before: Mapping[str, Any], after: Mapping[str,
           Any], paths: Sequence[str]) -> Tuple[str, ...]'
-        line: 229
+        line: 264
         test_file: tests/test_intent_patch.py
     module_status: done
   core/annotations:
@@ -1311,7 +1311,7 @@ files:
         type: class
         description: Command → operations. Exactly one model call.
         signature: null
-        line: 147
+        line: 282
         test_file: tests/test_intent_patcher.py
       IntentPatcher.propose:
         status: verified_done
@@ -1319,7 +1319,7 @@ files:
         description: One call, no retries; uncited operations refuse the patch
         signature: 'IntentPatcher.propose(intent: IntentIR, command: str, parts: Sequence[Mapping[str,
           Any]]) -> ProposedPatch'
-        line: 154
+        line: 289
         test_file: tests/test_intent_patcher.py
       IntentPatchError:
         status: verified_done
@@ -1327,7 +1327,7 @@ files:
         description: A command that could not be turned into usable operations. Carries
           the evidence.
         signature: null
-        line: 57
+        line: 77
         test_file: tests/test_intent_patcher.py
     module_status: done
   db/migrations:
@@ -1373,7 +1373,7 @@ files:
         description: Replace the design's annotations. Never regenerates anything.
         signature: 'put_annotations(request: Request, circuit_id: str, body: AnnotationsRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 346
+        line: 357
         test_file: tests/test_patch_route.py
       get_history:
         status: verified_done
@@ -1382,7 +1382,7 @@ files:
           1 rows are shown as they were.
         signature: 'get_history(circuit_id: str, db: Annotated[AsyncSession, Depends(get_db)],
           user)'
-        line: 367
+        line: 378
         test_file: tests/test_patch_route.py
     module_status: done
 summary:

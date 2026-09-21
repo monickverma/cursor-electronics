@@ -976,3 +976,54 @@ number for an off-series pinned resistor and reads `"4.7K5"` as 5.2 kΩ; the
 Stage 0 requirement readers accept `true` as a number; patch refusals are
 logged without the requested IntentIR; a failed startup migration is silent;
 and `brain/architecture.md` still describes the deleted `ai/patcher.py`.
+
+## [2026-09-21] The Task 1.5 scanner becomes transitive; rc_lowpass reads its inputs strictly (0.2.1)
+
+**Decision:** two of the open findings from the Stage 2 verification are
+closed. Taken by the agent on the instruction "do 4 and 6".
+
+**The "no code path lets the LLM write CircuitIR" scanner, third version.**
+The G1 claim rested on a per-module check that recognised a model only by the
+client factory's name. The verification wrote three modules it passed: one
+reaching a model through `IntentPatcher`, one through
+`ExplanationEngine().client`, and one mutating a design it was given
+(`ir.components[0].value = raw`). None existed in the tree; the claim was
+still stronger than the check, for the third time in the same shape.
+`tests/test_llm_cannot_write_circuit_ir.py` now:
+- computes **model-facing names to a fixed point across the repository** —
+  a top-level function, class or module-level name that references the client
+  factory, a `.messages.create(...)` call, or another model-facing name — with
+  imports (including relative ones) resolved to the defining module, so two
+  unrelated functions called `main` cannot contaminate each other;
+- treats as a write, in any module that references a model-facing name:
+  construction under any alias, `model_copy(update=...)` whatever the
+  receiver, assignment / augmented assignment / deletion through a design field
+  name, mutating calls on one, `setattr`, `object.__setattr__`, `__dict__`;
+- takes exceptions only from `_REVIEWED`, keyed by file and exact source text,
+  each with a reason; a stale entry fails the suite. Three entries today: the
+  patch route rebuilding the stored record from Postgres, and two
+  `ctx.generator = …` request-log writes that share a field name with
+  CircuitIR.
+
+Mutation-checked: without the fixed point the wrapper controls fail; without
+write detection the mutation controls fail. **Still outside it**, and said so
+in the file: a model reached only through a parameter whose class is never
+named (unless it calls `.messages.create`), names built at runtime, and model
+output that passes through storage before another process builds a design.
+*Rejected:* intraprocedural taint tracking from model calls to design writes.
+More precise, but unsound across calls in the same way and far more code to
+trust; the conservative closure plus a reviewed allowlist fails loud instead.
+
+**rc_lowpass 0.2.0 → 0.2.1: a written value is honoured or refused, never
+replaced.** The Stage 0 readers returned the default for anything that was not
+an int or float and accepted `True` as 1. Worse than first reported:
+`supply_v: "12"` built a **5 V** design, `tolerance_pct: "1"` loosened to 5%,
+and `tolerance_pct: NaN` accepted **every** design, since every comparison
+with NaN is false. One reader, `_read_number`, now applies to all four inputs:
+absent or null takes the default; present must be a real, finite number —
+not a bool, not a string — and in range (cutoff, tolerance and supply above
+zero; source impedance zero or more), else `envelope()` refuses naming the
+path and value. Every intent 0.2.0 accepted with well-formed values yields the
+same design; the version moves because the refused set changed, and a refusal
+log has to be able to say which behaviour refused. Tests now read the version
+from the module instead of spelling it.

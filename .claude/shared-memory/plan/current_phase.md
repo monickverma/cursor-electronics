@@ -445,11 +445,16 @@ with the reasoning in `brain/decisions.md` [2026-09-21] "Stage 2 verification":
 2. The patcher's own pin form (`add /constraints/pinned/R1`) failed on every first pin → `constraints.pinned` is a container.
 3. The citation guard let an uncited change through → whole words, one span per operation, value grounded in its span.
 
-**Open from the same check, not yet done** — listed in the decision entry:
-the Task 1.5 scanner's per-module blind spots, `rc_lowpass` pin parsing and
-invented part numbers, booleans read as numbers by the Stage 0 readers, patch
-refusals logged without their IntentIR, silent migration failure, and stale
-`brain/architecture.md` / `MENTAL_MODEL.md` entries for `ai/patcher.py`.
+Also closed, second pass — `brain/decisions.md` [2026-09-21] "The Task 1.5
+scanner becomes transitive":
+
+4. The CircuitIR scanner followed model calls only within one file → model-facing names to a fixed point across the repo, in-place writes counted, reviewed exceptions by exact text.
+6. `rc_lowpass` read `"12"` as the 5 V default, `true` as 1 and accepted a NaN tolerance → strict reader, named refusals; 0.2.0 → 0.2.1.
+
+**Open from the same check, not yet done:** `rc_lowpass` pin parsing and
+invented part numbers, patch refusals logged without their IntentIR, silent
+migration failure, and stale `brain/architecture.md` / `MENTAL_MODEL.md`
+entries for `ai/patcher.py`.
 
 ---
 

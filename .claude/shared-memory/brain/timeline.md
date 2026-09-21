@@ -121,6 +121,8 @@
 
 **2026-09-21** — Stage 2 verified independently, past the green suite. Held: determinism across interpreters and hash seeds and after a Postgres JSONB round trip, locality over 443 random patches including pins, atomicity, the version chain. Three defects found and closed: concurrent patches silently lost one (now a conditional write and a 409); the patcher's own pin form failed on every first pin because RFC 6902 wants the parent to exist (now `constraints.pinned` is a container); and the citation guard accepted an uncited supply change when the model quoted the whole command or the letter "e" (now whole words, one span per operation, and the value must appear in its span — which also catches 2 kHz → 20000). Each fix mutation-checked. Six smaller findings left open and listed in `decisions.md`.
 
+**2026-09-21** — Two more findings from the Stage 2 verification closed. The Task 1.5 scanner is now transitive: it computes model-facing names to a fixed point across the repository with imports resolved, and counts in-place writes, so a design reached through `IntentPatcher` or `ExplanationEngine().client`, or edited with `ir.components[0].value = raw`, no longer passes — the third hole of the same shape in that gate, and the first found before a real violation used it. And `rc_lowpass` 0.2.1 refuses a present-but-unusable number by name: 0.2.0 had built `supply_v: "12"` at 5 V and accepted every design under `tolerance_pct: NaN`.
+
 ---
 
 ## Upcoming

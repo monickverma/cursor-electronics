@@ -34,7 +34,7 @@ from api.routes.auth import get_current_user
 from core.intent_ir import IntentIR, Producer, Provenance
 from core.intent_patch import PatchOp
 from db.models import get_db
-from generators.rc_lowpass import RCLowPassGenerator
+from generators.rc_lowpass import VERSION as RC_VERSION, RCLowPassGenerator
 from generators.realize import realize
 from main import app
 from middleware.rate_limit import limiter
@@ -164,7 +164,7 @@ class TestRequirementPatch:
         assert body["changes"] == ["targets.cutoff_hz: 1000 → 2000"]
         assert body["intent_ir"]["revision"] == 2
         assert body["ir"]["constraints"]["cutoff_hz"] == 2000
-        assert body["generator"] == "rc_lowpass@0.2.0"
+        assert body["generator"] == f"rc_lowpass@{RC_VERSION}"
         assert any(line.startswith("cutoff_hz: ") for line in body["predict_delta"])
         assert body["locality"]["ok"] is True
 
@@ -191,7 +191,7 @@ class TestRequirementPatch:
         env.client.post(f"/design/{cid}/patch", json=ops(("replace", "/targets/cutoff_hz", 2000)))
         row = env.rows[-1]
         assert row.outcome == "patched"
-        assert row.circuit_id == cid and row.generator == "rc_lowpass@0.2.0"
+        assert row.circuit_id == cid and row.generator == f"rc_lowpass@{RC_VERSION}"
         assert row.intent_ir["revision"] == 2
         assert row.api_calls == 0
         assert not (row.error or "").startswith("log_row_invalid")
@@ -212,6 +212,18 @@ class TestNothingIsWrittenUnlessTheRevisionIsGood:
         assert env.store.writes == []
         assert vars(env.store.designs[cid]) == before
         assert env.rows[-1].outcome == "refused" and env.rows[-1].refusal_reason
+
+    @pytest.mark.parametrize("value", ["12", True, -12])
+    def test_a_supply_that_is_not_a_voltage_is_refused_not_defaulted(self, env, value):
+        # Before rc_lowpass 0.2.1 "12" was built at the 5 V default and True
+        # at 1 V. A patch is the easiest way to send such a value.
+        cid = env.store.add_design()
+        res = env.client.post(f"/design/{cid}/patch", json=ops(("replace", "/constraints/supply_v", value)))
+        assert res.status_code == 422
+        detail = res.json()["detail"]
+        assert detail["error"] == "out_of_envelope" and detail["kept_version"] == 1
+        assert any("constraints.supply_v" in r["reason"] for r in detail["refusals"])
+        assert env.store.writes == []
 
     def test_an_invalid_patch_keeps_v_n(self, env):
         cid = env.store.add_design()
@@ -486,7 +498,7 @@ class TestGenerateStoresTheRequirement:
         assert res.status_code == 201, res.text
         assert saved["intent_ir"]["intent_id"] == intent.intent_id
         assert saved["ir"].circuit_id == res.json()["circuit_id"]
-        assert saved["ir"].generator == "rc_lowpass@0.2.0"
+        assert saved["ir"].generator == f"rc_lowpass@{RC_VERSION}"
         # Regenerating from the stored requirement reproduces the stored design.
         again = realize(RCLowPassGenerator(), IntentIR.model_validate(saved["intent_ir"]))
         assert again.model_dump(mode="json") == saved["ir"].model_dump(mode="json")

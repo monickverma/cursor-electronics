@@ -220,6 +220,61 @@ class TestEnvelope:
         assert "rail voltage" in d.reason
 
 
+class TestInputsAreReadStrictly:
+    """
+    0.2.1. Found by the Stage 2 verification: a requirement that was present
+    but not a number was read as the default, and `True` was read as 1.
+    `supply_v: "12"` built a 5 V design, `tolerance_pct: "1"` loosened to 5%,
+    and `tolerance_pct: NaN` accepted every design because every comparison
+    with NaN is false. A value that was written is honoured or refused by
+    name — never replaced.
+    """
+
+    FIELDS = {
+        "cutoff": "targets.cutoff_hz",
+        "tolerance_pct": "targets.tolerance_pct",
+        "supply_v": "constraints.supply_v",
+        "source_impedance_ohm": "constraints.source_impedance_ohm",
+    }
+
+    @pytest.mark.parametrize("field", list(FIELDS))
+    @pytest.mark.parametrize("value", [True, False, "12", "1 kHz", [5], {"v": 5},
+                                       float("nan"), float("inf"), -5.0])
+    def test_an_unusable_value_is_refused_by_name(self, field, value):
+        d = GEN.envelope(intent(**{field: value}))
+        assert d.accepted is False
+        assert self.FIELDS[field] in d.reason, d.reason
+
+    @pytest.mark.parametrize("field", ["cutoff", "tolerance_pct", "supply_v"])
+    def test_zero_is_refused_where_it_means_nothing(self, field):
+        d = GEN.envelope(intent(**{field: 0}))
+        assert d.accepted is False and self.FIELDS[field] in d.reason
+
+    def test_zero_source_impedance_is_an_ideal_source_and_is_accepted(self):
+        assert GEN.envelope(intent(source_impedance_ohm=0)).accepted
+
+    def test_a_string_supply_is_not_built_at_the_default(self):
+        # The worst of the four: accepted, and silently a different circuit.
+        d = GEN.envelope(intent(supply_v="12"))
+        assert d.accepted is False
+        assert "'12'" in d.reason and "not a number" in d.reason
+
+    def test_a_nan_tolerance_no_longer_accepts_everything(self):
+        assert not GEN.envelope(intent(tolerance_pct=float("nan"))).accepted
+
+    def test_null_means_absent_and_takes_the_default(self):
+        explicit = intent(tolerance_pct=5.0, supply_v=5.0, source_impedance_ohm=0.0)
+        nulls = intent(tolerance_pct=None, supply_v=None, source_impedance_ohm=None)
+        assert GEN.envelope(nulls).accepted
+        assert GEN.generate(nulls).model_dump(exclude={"circuit_id"}) == \
+            GEN.generate(explicit).model_dump(exclude={"circuit_id"})
+
+    def test_ints_and_floats_are_the_same_number(self):
+        a = GEN.generate(intent(cutoff=1000, supply_v=5, tolerance_pct=5))
+        b = GEN.generate(intent(cutoff=1000.0, supply_v=5.0, tolerance_pct=5.0))
+        assert a.model_dump(exclude={"circuit_id"}) == b.model_dump(exclude={"circuit_id"})
+
+
 # ── predict() ────────────────────────────────────────────────────────────────
 
 class TestPredict:

@@ -34,6 +34,12 @@ read it back, so a pin cannot mean one thing here and another in simulation.
 A pinned part is assumed to be from the same series as the unpinned choice
 (1% resistor, 10% capacitor); `predict()` bands say so through that tolerance.
 Unpinned intents produce exactly what 0.1.0 produced.
+
+**Strict inputs (0.2.1).** A requirement that is present but not a real,
+finite number in range — `"12"`, `true`, `NaN`, a negative tolerance — is
+refused by name instead of read as a default or as 1. Every intent 0.2.0
+accepted with well-formed values produces the same design; only the ones it
+accepted by misreading are now refused, which is why the version moves.
 """
 
 from __future__ import annotations
@@ -67,7 +73,7 @@ from generators.protocol import (
 from generators.netlist.spice import _parse_farads, _parse_ohms
 
 NAME = "rc_lowpass"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 #: The requirements.function this generator serves. The registry reads it to
 #: build the form's catalogue without probing envelope() with guesses.
 FUNCTION = "low_pass_filter"
@@ -183,28 +189,68 @@ def _requirements(intent: IntentLike) -> Mapping[str, object]:
     return intent.requirements or {}
 
 
+class _Unreadable(ValueError):
+    """A requirement that is present but is not a usable number. The message is the refusal."""
+
+
+def _read_number(
+    intent: IntentLike,
+    section: str,
+    key: str,
+    default: Optional[float],
+    *,
+    allow_zero: bool,
+    what: str,
+) -> Optional[float]:
+    """
+    A requirement read as a number. Absent (or null) gives `default`; present,
+    it must be a real, finite number in range, or `_Unreadable` names it.
+
+    **Never a silent default for a value that was written.** Until the Stage 2
+    verification these readers returned the default for anything that was not
+    an int or float and accepted `True` as 1: `supply_v: "12"` built a 5 V
+    design, `tolerance_pct: "1"` quietly loosened to 5%, `supply_v: true` built
+    a 1 V one, and `tolerance_pct: NaN` accepted every design, because every
+    comparison with NaN is false. Each of those hands back a design for a
+    requirement nobody wrote. Patches made them easy to reach — a client or the
+    patcher can send any JSON value — so envelope() now refuses them by name.
+    """
+    block = _requirements(intent).get(section) or {}
+    value = block.get(key) if isinstance(block, Mapping) else None
+    if value is None:
+        return default
+    path = f"{section}.{key}"
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise _Unreadable(
+            f"{path}={value!r} is not a number — {what} is written as a bare number"
+        )
+    number = float(value)
+    if not math.isfinite(number):
+        raise _Unreadable(f"{path}={value!r} is not a finite number — {what} must be one")
+    if number < 0 or (number == 0 and not allow_zero):
+        bound = "zero or more" if allow_zero else "greater than zero"
+        raise _Unreadable(f"{path}={number:g} is not usable — {what} must be {bound}")
+    return number
+
+
 def _target_cutoff(intent: IntentLike) -> Optional[float]:
-    targets = _requirements(intent).get("targets") or {}
-    value = targets.get("cutoff_hz") if isinstance(targets, Mapping) else None
-    return float(value) if isinstance(value, (int, float)) else None
+    return _read_number(intent, "targets", "cutoff_hz", None,
+                        allow_zero=False, what="a cutoff frequency in Hz")
 
 
 def _tolerance_pct(intent: IntentLike) -> float:
-    targets = _requirements(intent).get("targets") or {}
-    value = targets.get("tolerance_pct") if isinstance(targets, Mapping) else None
-    return float(value) if isinstance(value, (int, float)) else 5.0
+    return _read_number(intent, "targets", "tolerance_pct", 5.0,
+                        allow_zero=False, what="a tolerance in percent")
 
 
 def _supply_v(intent: IntentLike) -> float:
-    constraints = _requirements(intent).get("constraints") or {}
-    value = constraints.get("supply_v") if isinstance(constraints, Mapping) else None
-    return float(value) if isinstance(value, (int, float)) else 5.0
+    return _read_number(intent, "constraints", "supply_v", 5.0,
+                        allow_zero=False, what="a rail voltage in volts")
 
 
 def _source_impedance(intent: IntentLike) -> float:
-    constraints = _requirements(intent).get("constraints") or {}
-    value = constraints.get("source_impedance_ohm") if isinstance(constraints, Mapping) else None
-    return float(value) if isinstance(value, (int, float)) else 0.0
+    return _read_number(intent, "constraints", "source_impedance_ohm", 0.0,
+                        allow_zero=True, what="a source impedance in ohms")
 
 
 #: The parts a pin may name. Anything else is refused by name — pinning a part
@@ -378,7 +424,21 @@ class RCLowPassGenerator:
                 f"produces single-pole passive RC low-pass filters only"
             )
 
-        target = _target_cutoff(intent)
+        # Every number this generator reads is read here, before anything
+        # downstream can use it. A value that is present but unusable is a
+        # named refusal — never a default, and never an exception: a negative
+        # or non-finite supply would otherwise reach `_ports()` as
+        # Interval(lo=0, hi=supply_v), which Pydantic rejects, breaking the
+        # contract that envelope() never raises. generate() and predict() are
+        # only reached after this has accepted, so they read clean values.
+        try:
+            target = _target_cutoff(intent)
+            supply_v = _supply_v(intent)
+            tolerance_pct = _tolerance_pct(intent)
+            _source_impedance(intent)
+        except _Unreadable as exc:
+            return EnvelopeDecision.refuse(str(exc))
+
         if target is None:
             return EnvelopeDecision.refuse(
                 "targets.cutoff_hz is missing — a low-pass filter without a "
@@ -388,17 +448,6 @@ class RCLowPassGenerator:
             return EnvelopeDecision.refuse(
                 f"cutoff_hz={target:g} outside declared envelope "
                 f"{MIN_CUTOFF_HZ:g} Hz – {MAX_CUTOFF_HZ:g} Hz"
-            )
-
-        supply_v = _supply_v(intent)
-        # Checked before anything downstream can raise on it. A negative or
-        # non-finite supply reaches `_ports()` as Interval(lo=0, hi=supply_v),
-        # which Pydantic rejects — breaking the contract that envelope() never
-        # raises, and turning a bad intent into a crash rather than a named
-        # refusal.
-        if not math.isfinite(supply_v) or supply_v <= 0:
-            return EnvelopeDecision.refuse(
-                f"supply_v={supply_v:g} is not a usable positive rail voltage"
             )
 
         pins = _resolve_pins(intent, supply_v)
@@ -413,7 +462,6 @@ class RCLowPassGenerator:
                 f"{target:g} with supply_v={supply_v:g}"
             )
 
-        tolerance_pct = _tolerance_pct(intent)
         achieved_err_pct = abs(selection.achieved_hz - target) / target * 100.0
         if achieved_err_pct > tolerance_pct:
             pair = "pinned pair" if pins.any else "nearest E96 pair"
