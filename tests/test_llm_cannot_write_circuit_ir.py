@@ -182,11 +182,14 @@ class TestTheRemovedPath:
             import ai.circuit_reasoner  # noqa: F401
 
     def test_nothing_references_it(self):
+        # No carve-out. `openai_compat.py` was exempted here because three of
+        # its docstrings still described the deleted module; they now name
+        # `intent_producer` instead, which is what they were actually about.
+        # An exemption kept for convenience is how a scanner stops scanning.
         offenders = [
             _rel(p)
             for p in _python_files()
             if "circuit_reasoner" in p.read_text(encoding="utf-8")
-            and p.name != "openai_compat.py"  # docstring history, no import
         ]
         assert not offenders, f"still referencing the removed path: {offenders}"
 

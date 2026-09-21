@@ -30,9 +30,17 @@ the requirement.
 
 So a retry may **add** a value it failed to record the first time, which is
 the correction the retry exists for, but may not **change or drop** one it
-already recorded. `_requested_values` is that check. The asymmetry is
-deliberate: supplying a missing field is transcription catching up with the
-request, while altering a recorded one is the model substituting its own.
+already recorded. `_requested_values` is that check, and it covers
+`requirements.function` as well as the three value sections — a guard that
+watched only the sections could be walked straight through by rewriting
+`band_pass_filter` to `low_pass_filter` with every target untouched.
+
+*A truncated tool call is not a schema failure.* `_call` checks `stop_reason`
+before anything else, because a call cut off at the token ceiling produces a
+partial dict that fails validation for missing fields and looks exactly like
+the model getting the schema wrong. Reporting it as schema would corrupt the
+one measurement Departure 1 exists to take. `Failure` names each cause so the
+evidence can be counted by kind.
 
 The consequence is deliberate: a request genuinely outside the catalogue is
 refused, not negotiated. §4.2 says users should self-select against a visible
@@ -43,6 +51,7 @@ get refused rather than guessed at.
 from __future__ import annotations
 
 import json
+from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from ai.client import ai_model, make_client
@@ -51,6 +60,32 @@ from generators.registry import GeneratorRegistry, default_registry
 from observability.request_log import prompt_hash
 
 MAX_SEMANTIC_RETRIES = 1
+
+#: Output ceiling for one transcription. Named rather than inlined because the
+#: truncation guard below reports it: a reader who hits that error needs to
+#: know which number to raise. An IntentIR is small, so this is generous for a
+#: non-reasoning model — a model that emits long thinking blocks before its
+#: tool call may need more, and will now say so instead of failing as schema.
+MAX_OUTPUT_TOKENS = 2048
+
+
+class Failure(str, Enum):
+    """
+    Why a transcription could not be used.
+
+    X5's argument for retiring schema retries is that the failure becomes
+    *visible* instead of absorbed. Visible is not the same as classifiable: an
+    error that lumps a truncated tool call together with a genuine schema
+    violation reports that "schema failure is structurally impossible" broke
+    when in fact the token ceiling was too low. The evidence has to name which
+    thing happened or it cannot answer the question it was collected for.
+    """
+
+    SCHEMA = "schema"
+    TRUNCATED = "truncated"
+    NO_TOOL_USE = "no_tool_use"
+    MALFORMED_TOOL_INPUT = "malformed_tool_input"
+    RETRY_REWROTE_REQUEST = "retry_rewrote_request"
 
 SYSTEM_PROMPT = """\
 You transcribe a hardware request into a structured requirement. You are not \
@@ -116,12 +151,48 @@ class IntentProductionError(Exception):
     argument for retiring schema retries is that the failure should be visible
     rather than absorbed. An error without the evidence would make X5 strictly
     worse than the loop it replaces.
+
+    `kind` says which failure it was, so the evidence can be counted by cause
+    rather than by volume. See `Failure`.
     """
 
-    def __init__(self, message: str, raw: Any = None, refusals: str = "") -> None:
+    def __init__(
+        self,
+        message: str,
+        raw: Any = None,
+        refusals: str = "",
+        kind: "Failure | str" = Failure.SCHEMA,
+    ) -> None:
         self.raw = raw
         self.refusals = refusals
+        # Normalised to the plain string: `str, Enum` members format as
+        # "Failure.SCHEMA" under f-strings, which is not what should reach a
+        # log line or an HTTP body.
+        self.kind = kind.value if isinstance(kind, Enum) else str(kind)
         super().__init__(message)
+
+    def as_log_entry(self, max_raw_chars: int = 4000) -> str:
+        """
+        One line for `request_log.error`, carrying the evidence with it.
+
+        Departure 1 of X5 attaches the raw tool input to this exception so a
+        broken assumption announces itself. An exception is not a record: it
+        lives until the handler returns. This is what makes it durable, and
+        `request_log.error` is the column it fits in — `request_log` has no
+        JSONB slot for it and this repo has no migration tool, so adding one
+        would silently push *every* row to the sidecar on any existing volume
+        until someone applied the DDL by hand.
+
+        The raw is capped: a runaway tool input should not bloat every row of
+        the table that has to stay queryable to be worth writing.
+        """
+        try:
+            raw = json.dumps(self.raw, default=str, sort_keys=True)
+        except (TypeError, ValueError):  # pragma: no cover - default=str is broad
+            raw = repr(self.raw)
+        if len(raw) > max_raw_chars:
+            raw = f"{raw[:max_raw_chars]}…[truncated, {len(raw)} chars total]"
+        return f"intent_production_failed[{self.kind}]: {self} | raw={raw}"
 
 
 def _requested_values(requirements: Mapping[str, Any]) -> Dict[str, Any]:
@@ -131,8 +202,24 @@ def _requested_values(requirements: Mapping[str, Any]) -> Dict[str, Any]:
     Used to prove a retry did not rewrite the request. Preferences are
     included: a model that quietly swaps the package has also changed what was
     asked for, even if nothing downstream would refuse it.
+
+    **`function` is in here, and leaving it out was a hole in the guard.** It
+    is the one *required* field and it does not live inside a section, so the
+    original flatten never saw it. A retry told "no generator accepted this"
+    could rewrite `band_pass_filter` to `low_pass_filter` while leaving every
+    target byte-identical — passing an add-only check that never looked at the
+    field, and handing the user the wrong circuit at exactly the cutoff they
+    asked for. That is the negotiation this guard exists to forbid, routed
+    through the one field it did not cover.
     """
     flat: Dict[str, Any] = {}
+
+    # Compared stripped, because `Requirements` strips on validation: a retry
+    # returning the same name with different surrounding whitespace has
+    # changed formatting, not the request, and must not trip the guard.
+    function = requirements.get("function")
+    flat["function"] = function.strip() if isinstance(function, str) else function
+
     for section in ("targets", "constraints", "preferences"):
         values = requirements.get(section) or {}
         if isinstance(values, Mapping):
@@ -173,6 +260,7 @@ class IntentProducer:
                 raise IntentProductionError(
                     f"model returned a requirement that does not fit the schema: {exc}",
                     raw=raw,
+                    kind=Failure.SCHEMA,
                 ) from exc
 
             intent = IntentIR(
@@ -204,6 +292,7 @@ class IntentProducer:
                         "the retry changed what was asked for rather than how it "
                         f"was recorded; refusing the rewrite. altered={altered}",
                         raw=raw,
+                        kind=Failure.RETRY_REWROTE_REQUEST,
                     )
 
             # Underdetermined is a question for the user, not a retry.
@@ -231,25 +320,61 @@ class IntentProducer:
     def _call(self, messages: List[Dict[str, Any]]) -> Any:
         response = self.client.messages.create(
             model=ai_model(),
-            max_tokens=2048,
+            max_tokens=MAX_OUTPUT_TOKENS,
             system=SYSTEM_PROMPT,
             tools=[_INTENT_TOOL],
             tool_choice={"type": "tool", "name": _INTENT_TOOL["name"]},
             messages=messages,
         )
+
+        partial = self._tool_input(response)
+
+        # A tool call cut off at the token ceiling yields a *partial* dict,
+        # which then fails `Requirements` for missing fields — a symptom
+        # identical to the model getting the schema wrong. Filing it as a
+        # schema failure would make X5's own evidence lie about the one
+        # assumption it was collected to test. The module this replaced
+        # carried this guard; the rewrite lost it, so it is back.
+        #
+        # Both clients agree on the marker: `openai_compat` maps OpenAI's
+        # `finish_reason: length` onto `max_tokens`.
+        if getattr(response, "stop_reason", None) == "max_tokens":
+            raise IntentProductionError(
+                f"the model hit the {MAX_OUTPUT_TOKENS}-token ceiling and its "
+                f"tool call was truncated, so the requirement is incomplete. "
+                f"This is a budget problem, not a schema problem — raise "
+                f"MAX_OUTPUT_TOKENS in ai/intent_producer.py, or use a model "
+                f"that writes less before calling the tool "
+                f"(current: {ai_model()!r}).",
+                raw=partial,
+                kind=Failure.TRUNCATED,
+            )
+
+        if partial is not None:
+            return partial
+
+        raise IntentProductionError(
+            "model returned no tool_use block",
+            raw=[getattr(b, "type", type(b).__name__) for b in response.content],
+            kind=Failure.NO_TOOL_USE,
+        )
+
+    @staticmethod
+    def _tool_input(response: Any) -> Any:
+        """The first block carrying tool input, or None. Reasoning models put
+        a thinking block at index 0, so position is not a safe assumption."""
         for block in response.content:
             tool_input = getattr(block, "input", None)
             if tool_input is not None:
                 return tool_input
-        raise IntentProductionError(
-            "model returned no tool_use block",
-            raw=[getattr(b, "type", type(b).__name__) for b in response.content],
-        )
+        return None
 
     def _split(self, raw: Any) -> Tuple[Dict[str, Any], List[str]]:
         if not isinstance(raw, Mapping):
             raise IntentProductionError(
-                f"tool input was {type(raw).__name__}, not an object", raw=raw
+                f"tool input was {type(raw).__name__}, not an object",
+                raw=raw,
+                kind=Failure.MALFORMED_TOOL_INPUT,
             )
         payload = dict(raw)
         underdetermined = [str(x) for x in (payload.pop("underdetermined", None) or [])]

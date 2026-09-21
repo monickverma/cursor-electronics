@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-20T20:07:00.410882Z'
+generated_at: '2026-09-21T02:03:28.570526Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -1108,21 +1108,21 @@ files:
         type: class
         description: Raised when a prompt could not be turned into a usable IntentIR.
         signature: null
-        line: 111
+        line: 146
         test_file: tests/test_intent_producer.py
       IntentProducer:
         status: verified_done
         type: class
         description: Prompt → IntentIR. One model call, or two when a retry is warranted.
         signature: null
-        line: 144
+        line: 231
         test_file: tests/test_intent_producer.py
       IntentProducer.produce:
         status: verified_done
         type: method
         description: Transcribe `prompt`. Raises `IntentProductionError` if it cannot.
         signature: 'IntentProducer.produce(prompt: str) -> IntentIR'
-        line: 151
+        line: 238
         test_file: tests/test_intent_producer.py
     module_status: done
   core/intent_ir:

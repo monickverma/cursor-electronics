@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-20T20:04:59.414241Z",
-  "generated_from_commit": "1e74609",
+  "generated_at": "2026-09-21T02:01:16.798783Z",
+  "generated_from_commit": "2c53a3c",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -259,10 +259,10 @@
     }
   },
   "test_summary": {
-    "passed": 742,
+    "passed": 758,
     "failed": 0,
     "skipped": 18,
-    "total": 742
+    "total": 758
   },
   "phase1_criteria": [
     {
@@ -333,13 +333,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "2c53a3c feat(phase2): Stage 1 — IntentIR, registry, form, and hard abstention",
     "1e74609 feat(phase2): Stage 1 Task 1.1 — the IntentIR schema",
     "1fc0eec fix: address Copilot review — seven findings, all legitimate",
     "5bd3ad8 chore(memory): record Stage 0 and regenerate the derived state",
-    "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator",
-    "039ad1d fix(ai): explainer crashed on every call with a reasoning model"
+    "cb211c4 feat(phase2): Stage 0 — instrumentation, Generator contract, first generator"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/timeline.md     |   4 +\n .claude/shared-memory/plan/current_phase.md |  97 +++++++++++\n .claude/shared-memory/progress.yaml         |  97 ++++++++++-\n .claude/shared-memory",
+  "last_diff_stat": ".claude/CLAUDE.md                           |   6 +-\n .claude/rules/code-style.md                 |  48 +++--\n .claude/shared-memory/brain/architecture.md |   6 +-\n .claude/shared-memory/brain/decisio",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

@@ -85,8 +85,15 @@ async def generate_design(
     except anthropic.APIError as exc:
         raise HTTPException(503, detail=f"AI service unavailable: {exc}")
     except IntentProductionError as exc:
+        # X5 Departure 1 attaches the raw tool input to this exception so that
+        # a broken assumption announces itself. An exception announces it only
+        # to whoever is holding it — this is where it becomes a record. Without
+        # this line the evidence dies with the handler and "schema failure is
+        # structurally impossible" stays permanently unmeasured.
+        ctx.error = exc.as_log_entry()
         raise HTTPException(422, detail={
             "error": "intent_production_failed",
+            "kind": exc.kind,
             "message": str(exc),
         })
 

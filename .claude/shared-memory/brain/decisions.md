@@ -606,6 +606,69 @@ kept `scripts/review_panel.py` from being allowed to close criterion 12).
 
 ---
 
+## [2026-09-21] Three defects in the X5 implementation, found by review and closed
+
+**Decision:** the X5 guard is extended to cover `requirements.function`, the
+truncation guard lost in the rewrite is restored, and the raw tool input is
+persisted to `request_log.error`. Surfaced by a five-advisor review of the
+[2026-09-21] X5 entry below; all three were verified against the code before
+being treated as real, and two were reproduced against the pre-fix behaviour.
+
+**1. The guard did not cover `function`, so it could be walked around.**
+`_requested_values` flattened `targets`/`constraints`/`preferences` only.
+`function` is the one *required* field and the only one outside a section.
+Reproduced on the pre-fix code: a request for `band_pass_filter` at 1 kHz is
+refused, the retry returns `low_pass_filter` at 1 kHz — **every target
+byte-identical** — the add-only check sees no change, and the producer returns
+a low-pass to someone who asked for a band-pass.
+`test_retry_that_rewrites_the_request_is_refused` passed throughout. This is
+the same failure shape as the Task 1.5 AST scanner that passed while the
+violating module was still in the tree: a check with a hole is worth less than
+no check, because it is believed.
+
+**2. The truncation guard was lost in the rewrite.** `circuit_reasoner.py`
+explicitly fast-failed on `stop_reason == "max_tokens"`, reasoning that
+retrying a truncation makes it strictly worse. `intent_producer.py` did not
+carry it over. Reproduced: a tool call cut off at the ceiling yields a partial
+dict, fails `Requirements` for missing fields, and was filed as
+`kind='schema'` — so a budget problem was recorded as evidence that "schema
+failure is structurally impossible" had broken. Departure 1 exists to *measure*
+that assumption; an instrument that reports the wrong cause is worse than none.
+`Failure` now names each cause so the evidence is countable by kind.
+
+**3. The evidence never reached storage.** Departure 1 attaches the raw tool
+input to `IntentProductionError`; the route put `str(exc)` in a 422 and dropped
+`exc.raw`. Verified: the log row had `error=None`. An exception announces a
+broken assumption only to whoever is holding it.
+
+**Why `request_log.error` rather than a new column.** `request_log` has no
+JSONB slot for this and the repo has no migration tool — `schema.sql` runs only
+on an empty data directory. Adding a column would make every INSERT fail on any
+existing volume and silently push *all* logging to the JSONL sidecar until
+someone applied the DDL by hand. `error` is TEXT, exists everywhere today, and
+`as_log_entry()` writes a greppable `intent_production_failed[kind]: msg |
+raw={...}` with the raw capped at 4000 chars so one runaway input cannot bloat
+the table.
+
+**What was NOT changed, though the review argued for it.** Four of five
+advisors said the semantic retry should be **0**, not 1: with one generator the
+guard leaves only the add-a-missing-field escape hatch, at 2 API calls per
+refusal against a §4.4 table that budgets 1. That is a design change to X5, not
+a defect in it, and the live case is real — the model omits a field *and* fails
+to declare it `underdetermined`, which the retry does fix. The better answer is
+probably a structured refusal kind on `EnvelopeDecision` (`missing_field` vs
+`out_of_range`) so the retry fires only where it can help; `reason` is free text
+today. Left for the user to decide, with Stage 3 the natural point.
+
+Also left open, and the sharpest thing the review found: **nothing compares
+attempt 1 against the user's prompt.** Every guard here preserves fidelity to
+attempt 1, not to the request. A first-call mistranscription of 2 MHz as 1 kHz
+passes every check, dispatches cleanly and ships. The 0/200 abstention figure
+measured envelope matching, not transcription fidelity. That is A1's real
+exposure and no local fix closes it.
+
+---
+
 ## [2026-09-21] X5 accepted — schema retries retire, semantic retries survive with a guard
 
 **Decision:** Amendment X5 of `PHASE_2_PLAN_v2.md` §2 is accepted. The retry
