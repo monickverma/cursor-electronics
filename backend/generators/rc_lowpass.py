@@ -559,6 +559,22 @@ class RCLowPassGenerator:
                    detail=f"R_s/(R1+R_s) = {shift:.2f}%"),
         ]
 
+    # ── properties() ──────────────────────────────────────────────────────
+
+    def properties(self, intent: IntentLike):
+        """
+        Stage 4: the cutoff band, proved from the netlist's own transfer
+        function with π rationally bracketed. predict()'s band, rounded outward.
+        """
+        from proof.properties import PropertySpec, outward
+
+        band = self.predict(intent).quantities["cutoff_hz"]
+        lo, hi = outward(band.lo, band.hi)
+        return [
+            PropertySpec(id="rc.cutoff", label="the −3 dB cutoff frequency at OUT", quantity="cutoff(out)",
+                         relation="within", lo=lo, hi=hi, units="Hz", re_derives="rc.cutoff_band"),
+        ]
+
     # ── generate() ────────────────────────────────────────────────────────
 
     def generate(self, intent: IntentLike) -> CircuitIR:

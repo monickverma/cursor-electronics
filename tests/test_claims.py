@@ -69,7 +69,7 @@ class TestClaimInvariants:
                   method="closed_form", grade="G1", scope=SCOPE, defeaters=("D1",))
 
     def test_a_claim_with_no_open_defeater_holds_plainly(self):
-        # D8 is not yet applicable (no z3 proofs until Stage 4), so not open.
+        # D8 is eliminated (Stage 4 brackets pi), so citing it leaves a claim plain.
         assert row("a", defeaters=("D8",)).verdict == Verdict.HOLDS.value
 
     def test_an_unregistered_defeater_is_refused(self):
@@ -223,7 +223,9 @@ class TestDefeaterRegister:
 
     def test_the_renumbered_collisions(self):
         # EVIDENCE_CLASSES' D4 (pi) is D8; the assurance case's D-G is D9.
-        assert "pi" in REGISTER["D8"].doubt and REGISTER["D8"].status == Status.NOT_YET_APPLICABLE.value
+        # Stage 4 eliminated D8: the proof compiler brackets pi rationally.
+        assert "pi" in REGISTER["D8"].doubt and REGISTER["D8"].status == Status.ELIMINATED.value
+        assert "proof/brackets.py" in REGISTER["D8"].eliminated_by
         assert "generator bug" in REGISTER["D9"].doubt
         assert "coverage growth" in REGISTER["D4"].doubt
 

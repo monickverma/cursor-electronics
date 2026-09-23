@@ -1,6 +1,7 @@
 'use client'
 
 import ClaimsTable from '@/components/ClaimsTable'
+import PropertiesPanel from '@/components/PropertiesPanel'
 import type { ValidationCoverage } from '@/lib/api'
 
 interface ValidationData {
@@ -14,11 +15,21 @@ interface Props {
   explanation?: string
   // Stage 3 claim objects. Absent on designs built before Stage 3.
   coverage?: ValidationCoverage | null
+  // Stage 4 sign-off needs the design and the session.
+  circuitId?: string
+  token?: string
+  onCoverage?: (coverage: ValidationCoverage) => void
 }
 
-export default function ValidationReport({ validation, explanation, coverage }: Props) {
+export default function ValidationReport({ validation, explanation, coverage, circuitId, token, onCoverage }: Props) {
   return (
     <div className="h-full overflow-y-auto p-5 space-y-5">
+      {coverage && (
+        // Keyed on the set and its standing, so a message about one property
+        // set never lingers over another.
+        <PropertiesPanel key={`${coverage.properties_hash ?? ''}:${!!coverage.properties_signed}`}
+                         coverage={coverage} circuitId={circuitId} token={token} onSigned={onCoverage} />
+      )}
       {coverage && <ClaimsTable coverage={coverage} />}
 
       {/* Overall badge. With claim objects present it must not say "all rules

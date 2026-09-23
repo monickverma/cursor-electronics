@@ -98,6 +98,20 @@ def canonical_json(circuit: CircuitIR) -> str:
     return json.dumps(circuit.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
 
 
+def same_design(a: CircuitIR, b: CircuitIR) -> bool:
+    """
+    Whether two realisations are the same circuit, whatever is claimed about
+    it. Stage 4 sign-off changes `validation_coverage` and nothing else; this
+    is the check that it did not.
+    """
+    def bare(circuit: CircuitIR) -> str:
+        data = circuit.model_dump(mode="json")
+        data.pop("validation_coverage", None)
+        return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+    return bare(a) == bare(b)
+
+
 # ── Locality ─────────────────────────────────────────────────────────────────
 
 def component_diff(before: CircuitIR, after: CircuitIR) -> FrozenSet[str]:

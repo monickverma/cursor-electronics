@@ -25,8 +25,9 @@ class Status(str, Enum):
     OPEN = "open"
     DEFERRED = "deferred"
     ELIMINATED = "eliminated"
-    #: The doubt is real but nothing it attacks exists yet (D8: no z3 proofs
-    #: until Stage 4). Not open, because no claim can be defeated by it today.
+    #: The doubt is real but nothing it attacks exists yet (D6: no design is
+    #: built from two generators). Not open, because no claim can be defeated
+    #: by it today.
     NOT_YET_APPLICABLE = "not_yet_applicable"
 
 
@@ -82,9 +83,10 @@ REGISTER: Dict[str, Defeater] = {d.id: d for d in (
     Defeater(
         id="D5",
         doubt="an LLM may write the IntentIR, so the specification is untrusted",
-        applies_to="designs whose IntentIR provenance is llm",
+        applies_to="designs whose IntentIR provenance is llm and whose properties nobody has signed",
         status=Status.OPEN,
-        eliminated_by="Stage 4 back-translation, sign-off and freeze",
+        eliminated_by=("per design: a person signs the back-translated properties "
+                       "(POST /design/{id}/sign-off), which are then frozen"),
     ),
     Defeater(
         id="D6",
@@ -103,9 +105,11 @@ REGISTER: Dict[str, Defeater] = {d.id: d for d in (
     Defeater(
         id="D8",
         doubt="pi is irrational, so a z3 encoding of f_c must bracket it",
-        applies_to="z3-proved claims involving pi (Stage 4)",
-        status=Status.NOT_YET_APPLICABLE,
-        eliminated_by="rational bracketing in the proof compiler",
+        applies_to="z3-proved claims involving pi or another transcendental (Stage 4)",
+        status=Status.ELIMINATED,
+        eliminated_by=("rational bracketing in the proof compiler: proof/brackets.py encloses "
+                       "pi, ln 9 and the LED logarithms with outward-rounded interval "
+                       "arithmetic, and a refutation is certified at the bracket's adverse end"),
     ),
     Defeater(
         id="D9",

@@ -301,6 +301,38 @@ class DHT22NodeGenerator:
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),
         ]
 
+    # ── properties() ──────────────────────────────────────────────────────
+
+    def properties(self, intent: IntentLike):
+        """
+        Stage 4. Both limits on the bus, from the netlist with a test bench:
+        the cable's capacitance as a box, and DATA held low by a probe.
+        """
+        from proof.properties import BenchElement, PropertySpec, exact
+
+        spec = _read(intent)
+        pf = {w: bus_capacitance_pf(spec.cable, w) for w in ("min", "max")}
+        bus = BenchElement(
+            line=f"C_BUS dht22_data 0 {exact((pf['min'] + pf['max']) / 2, -12)}",
+            describe="the DATA line's capacitance",
+            label="DATA line capacitance",
+            basis=f"both pins, plus {spec.cable:g} m of cable at "
+                  f"{CABLE_PF_PER_M['min']:g}–{CABLE_PF_PER_M['max']:g} pF/m",
+            lo=exact(pf["min"], -12), hi=exact(pf["max"], -12),
+        )
+        probe = BenchElement(line="V_PROBE dht22_data 0 DC 0",
+                             describe="DATA held at 0 V (the MCU's start pulse, or the sensor's reply)")
+        return [
+            PropertySpec(id="dht.rise_time", label="DATA's 10–90 % rise time",
+                         quantity="rise_time(dht22_data,C_BUS)", relation="le",
+                         hi=exact(RISE_LIMIT_US, -6), units="s", bench=(bus,),
+                         re_derives="dht.rise_time", datasheet_bound=True),
+            PropertySpec(id="dht.sink_current", label="the current into whatever holds DATA low",
+                         quantity="i(V_PROBE)", relation="le",
+                         hi=exact(min(SINK_LIMIT_MA, MCU_SINK_LIMIT_MA), -3), units="A",
+                         bench=(probe,), re_derives="dht.sink_current", datasheet_bound=True),
+        ]
+
     # ── generate() ────────────────────────────────────────────────────────
 
     def generate(self, intent: IntentLike) -> CircuitIR:

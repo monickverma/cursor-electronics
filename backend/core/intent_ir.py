@@ -50,7 +50,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 #: Bumped when the IntentIR shape changes. Half of the §4.4 cache key
 #: (prompt_hash + schema_version), so it must not vary per deployment.
 #: 2.1.0 (Stage 2) added `revision`; a 2.0.0 dump without it still loads.
-SCHEMA_VERSION = "2.1.0"
+#: 2.2.0 (Stage 4) added `SignOff.properties_hash`; older dumps still load.
+SCHEMA_VERSION = "2.2.0"
 
 
 class Producer(str, Enum):
@@ -99,6 +100,11 @@ class SignOff(BaseModel):
     by: str
     at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     property_hash: str
+    #: Stage 4. The hash of the back-translated property set the signer was
+    #: shown (`proof.properties.set_hash`). Present, it is a signature on the
+    #: English sentences a design is proved against, not only on the JSON
+    #: requirements — and it is what makes those proofs count.
+    properties_hash: Optional[str] = None
 
     @field_validator("by")
     @classmethod
@@ -227,21 +233,24 @@ class IntentIR(BaseModel):
         canonical = json.dumps(self.requirements, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-    def sign_off(self, by: str) -> "IntentIR":
+    def sign_off(self, by: str, properties_hash: Optional[str] = None) -> "IntentIR":
         """
-        Return a signed copy, pinned to the requirements as they stand now.
+        Return a signed copy, pinned to the requirements as they stand now —
+        and, from Stage 4, to the property set the signer read.
 
         Refuses while anything is underdetermined, because a signature on an
         incomplete specification is worse than none: it looks like agreement.
+        The revision does not change: signing agrees to a version, it does not
+        make a new one.
         """
         if not self.is_answerable:
             raise ValueError(
                 f"cannot sign off while {sorted(self.underdetermined)} are "
                 "underdetermined — ask first"
             )
-        return self.model_copy(
-            update={"signed_off": SignOff(by=by, property_hash=self.requirements_hash())}
-        )
+        return self.model_copy(update={"signed_off": SignOff(
+            by=by, property_hash=self.requirements_hash(), properties_hash=properties_hash,
+        )})
 
     @property
     def is_signed(self) -> bool:

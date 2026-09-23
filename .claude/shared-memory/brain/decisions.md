@@ -1222,3 +1222,132 @@ the script exited 0, and `progress.yaml` reported **0/174 verified**. Fourth
 instance of the same root cause (a fixed budget outgrown by the suite, failing
 quietly). Now 1200 s, a timeout or an empty scan exits non-zero so
 `regen_state.py` prints STALE, and the outer budget sits above the inner one.
+
+---
+
+## [2026-09-23] Stage 4 — the proof compiler: properties proved from the netlist, signed off, frozen
+
+**Decision:** Stage 4 of `PHASE_2_PLAN_v2.md` is built as below. Taken by the
+agent on the instruction "do stage 4". Written before any Stage 4 code, per
+v2 §2. Dependencies approved by the user: z3-solver 5.1.0.0, sympy 1.14.0 and
+mpmath 1.3.0 (1.4.1 was proposed; sympy 1.14 requires mpmath < 1.4).
+
+**What a proof is here.** A *property* is a statement about one realised
+design — "for every R1 in [a, b] and R2 in [c, d], V(VOUT) stays within
+[lo, hi]" — and it is proved **from the design's own SPICE netlist**, not from
+the generator's `predict()`. The netlist is parsed into elements, each
+toleranced part becomes a variable over its tolerance box, symbolic nodal
+analysis (sympy) gives the quantity as a rational function of those
+variables, and z3 decides the negation over the box: UNSAT is a proof, SAT is
+a counterexample. That independence is the point: Stage 3's claims restate
+what the generator predicts; Stage 4's re-derive it from what the generator
+actually built, per design rather than per CI grid point.
+
+1. **Where the bounds come from.** Each generator declares its properties
+   through an optional `properties(intent)` (like `claims()`, not a protocol
+   member): the quantity, in netlist terms, and bounds rounded *outward* from
+   its predicted band to the three figures its English shows. The property
+   proved is exactly the sentence the user reads — never tighter.
+2. **Transcendentals are bracketed, then decided exactly.** π, ln 9 and the
+   LED's logarithms enter as variables constrained to rational enclosures
+   from `mpmath.iv` (outward-rounded interval arithmetic). If the negation is
+   UNSAT with the bracket, it is UNSAT for the true value inside it. This is
+   how v2 already treats π ("π bracketed", G1), and it eliminates **D8**.
+3. **The LED is the one nonlinear element.** A single diode in an otherwise
+   linear network: its Thevenin source (V_th, R_th) comes from nodal analysis
+   with the diode removed, and because g(I) = I·R_th + n·V_t·ln(1 + I/I_s) is
+   strictly increasing, "I ≤ c" holds exactly when g(c) ≥ V_th. The worst I_s
+   for each direction is an end of its box — a monotonicity lemma the prover
+   checks with z3 rather than assumes. What remains is polynomial in the
+   resistances and decided exactly: G1. LED dissipation is proved from the
+   proven current bound (P ≤ c²·R1), which is sound but not complete, so it
+   stays **G2** and so does the library floor. The divider's dissipation *is*
+   decided exactly and rises to G1.
+4. **`kind` is `analytic`.** v2's Stage 4 table tags these `empirical`; by
+   EVIDENCE_CLASSES §3.1's own test (can a measurement falsify a z3 UNSAT over
+   a box? no) they are analytic, and model-versus-hardware stays with D1. Same
+   reading Stage 3 used and flagged; one field if the user wants v2's word.
+5. **A property counts only once signed off.** Every property is
+   back-translated to English by template — deterministic, no model — and the
+   set is hashed. `POST /design/{id}/sign-off` takes the hash the user was
+   shown; a mismatch is a 409, so nobody signs a statement they did not read.
+   `SignOff` gains `properties_hash` (IntentIR 2.1.0 → 2.2.0). Until signed, a
+   proof is shown but is not critical and does not move the floor. Signed,
+   it is critical and the design stops carrying **D5** (an LLM wrote the
+   spec): a person has agreed to the property in words. Sign-off never
+   re-derives the design: if the installed generator differs from the one
+   that built it, sign-off is refused and the user is told to patch first.
+6. **Frozen after sign-off; the refine loop cannot touch it.** The prover
+   runs a list of strategies — direct decision, then box bisection when z3
+   answers *unknown* — and after each one checks the result is for the frozen
+   property's hash. A strategy that returns a proof of anything else, a
+   weaker bound included, raises `FrozenPropertyViolation`. An edit to the
+   requirement already drops the signature (Stage 1), so the only way to
+   change a signed property is to ask for something different and sign again.
+7. **Every property must be falsifiable by a wrong part.** The mutation test
+   scales each toleranced part the property depends on, and each DC source
+   in the design, by ×10⁻³, ×0.1, ×½, ×2, ×10 and ×10³ — a wrong neighbour, a
+   wrong decade, a wrong multiplier letter — and re-runs the proof on the
+   mutated netlist; at least one must be refuted. A property no wrong value
+   can break says nothing, and fails the test. This is why rail-budget
+   claims are not turned into properties: no single part swap moves a 55 mA
+   rail past 500 mA. (Amended while building: ×0.1 … ×10 on parts alone
+   cannot break a 62.5 mW rating on a low-current divider; a rail ten times
+   too high can.)
+8. **Test benches, as in Stage 3.** A property may add bench elements the
+   board does not contain — the divider's load, the RS-485 far-end
+   terminator, the DHT22's cable capacitance, a probe holding DATA low — with
+   their own boxes. They are part of the property and its English.
+9. **Performance.** Proofs run inside `realize()` so determinism covers them,
+   cached on what a proof reads — the netlist, the parts, how they connect —
+   never on the design's identity. Measured: 64 properties across every
+   generator's CI grid prove in 4.4 s (15–40 ms each; the RS-485 pair
+   ~250–400 ms); importing sympy costs ~1.7 s once per process.
+10. **A refutation is certified, never inferred.** An obligation with a
+   bracket in it is a relaxation, so a z3 counterexample to it can sit in the
+   bracket's slack. Each such obligation carries a *refuter* — the same
+   inequality with every bracket collapsed to its adverse end, and I_s taken
+   inside its true box — and only a counterexample to that is `refuted`. The
+   LED dissipation proof goes through a current bound, so a point where the
+   bound fails is not a point where the dissipation does; there, a witness
+   check evaluates I²·R > P_max exactly at the failing point and at every
+   corner. What neither proves nor certifies is `unknown`, shown G7.
+11. **A refuted proof is critical, signed or not.** Sign-off decides whether
+   a property is the one the user wants; a certified counterexample to a
+   property the system itself derived from `predict()` is a failure either
+   way, and a disagreement between `predict()` and the netlist `generate()`
+   emitted.
+12. **Proofs do not inherit D9.** D9 doubts `predict()`. A proof is checked
+   against the netlist `generate()` emitted, with bounds taken from
+   `predict()` — so a generator bug that makes the two disagree is exactly
+   what refutes it.
+
+**Alternatives rejected:**
+- *Prove the generator's `predict()` formula instead of the netlist.* Cheaper,
+  and it proves only that predict() agrees with itself.
+- *dReal or interval branch-and-bound for the LED.* Sound, but it would make
+  every LED claim G2; the monotone reduction keeps the current claims exact.
+- *Generate the English with a model.* Then the thing signed would not be
+  guaranteed to be the thing proved.
+
+**Found building it:**
+- *The netlist writes 47 nF as `4.7000000000000004e-08`.* A tolerance box
+  centred on that prints "42.31 nF" in the sentence a person signs. Boxes
+  are centred on the part value to 12 significant figures, and the prover
+  checks the netlist's own value lies inside the box.
+- *Removing the diode to analyse a linear quantity would prove a different
+  circuit.* `v()`, `i()`, `power()` on a network with a diode are refused,
+  not approximated; the LED is reached only through `diode_current()` and
+  `series_power()`.
+- *The first cache key included `circuit_id`*, which derives from the
+  intent's lineage — every new intent re-proved an identical circuit.
+- *Bench elements read twice.* A boxed bench element appeared as a range and
+  again as a condition ("every the far-end 120 Ω terminator … with the
+  far-end 120 Ω terminator"). It now reads once, as a range with its own
+  label and basis.
+- *The route briefly wrote a CircuitIR copy in `patch.py`*, a module that
+  calls a model; the Task 1.5 scanner caught it. The comparison moved to
+  `realize.same_design()`, which writes nothing.
+- *A property the prover cannot compile would have failed generation.* It
+  is now a visible not-assessed row (G7), and a set containing one cannot be
+  signed — the X8 rule: what was not checked is printed.

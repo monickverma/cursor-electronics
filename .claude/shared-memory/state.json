@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-23T13:50:58.919041Z",
-  "generated_from_commit": "9a4ecc6",
+  "generated_at": "2026-09-23T14:59:52.819417Z",
+  "generated_from_commit": "9dbdc1e",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -346,13 +346,43 @@
       "file": "backend/validation/grid_adapters.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "proof/brackets": {
+      "status": "verified_done",
+      "file": "backend/proof/brackets.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/netlist": {
+      "status": "verified_done",
+      "file": "backend/proof/netlist.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/mna": {
+      "status": "verified_done",
+      "file": "backend/proof/mna.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/properties": {
+      "status": "verified_done",
+      "file": "backend/proof/properties.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/prover": {
+      "status": "verified_done",
+      "file": "backend/proof/prover.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 1377,
+    "passed": 1446,
     "failed": 0,
     "skipped": 15,
-    "total": 1377
+    "total": 1446
   },
   "phase1_criteria": [
     {
@@ -457,7 +487,12 @@
           "rc.source_loading",
           "rule.no_floating_nodes",
           "rule.voltage_ratings_ok"
-        ]
+        ],
+        "proofs": {
+          "declared": 1,
+          "proven": 1,
+          "floor_if_signed": "G1"
+        }
       },
       "voltage_divider": {
         "grade_floor": "G2",
@@ -469,7 +504,12 @@
         "not_assessed": [],
         "floor_claims": [
           "divider.resistor_dissipation"
-        ]
+        ],
+        "proofs": {
+          "declared": 3,
+          "proven": 3,
+          "floor_if_signed": "G1"
+        }
       },
       "led_indicator": {
         "grade_floor": "G2",
@@ -482,7 +522,12 @@
         "not_assessed": [],
         "floor_claims": [
           "led.resistor_dissipation"
-        ]
+        ],
+        "proofs": {
+          "declared": 4,
+          "proven": 4,
+          "floor_if_signed": "G2"
+        }
       },
       "dht22_node": {
         "grade_floor": "G1",
@@ -500,7 +545,12 @@
           "dht.rail_current",
           "rule.no_floating_nodes",
           "rule.voltage_ratings_ok"
-        ]
+        ],
+        "proofs": {
+          "declared": 2,
+          "proven": 2,
+          "floor_if_signed": "G1"
+        }
       },
       "rs485_node": {
         "grade_floor": "G1",
@@ -520,7 +570,12 @@
           "rule.voltage_ratings_ok",
           "rule.rs485_termination_present",
           "rule.rs485_bias_resistors"
-        ]
+        ],
+        "proofs": {
+          "declared": 2,
+          "proven": 2,
+          "floor_if_signed": "G1"
+        }
       }
     }
   },
@@ -530,13 +585,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "9dbdc1e feat(phase2): Stage 3 — claims table, waveform viewer, and a tracker that cannot go blind",
     "9a4ecc6 feat(phase2): Stage 3 — four generators, claim objects, grade floor (X6 + X8)",
     "0c0ce3b brain: /update-memory — architecture and mental model re-synced to IntentIR flow; 1003 passing",
     "dc94a08 fix(stage2): transitive CircuitIR scanner; strict rc_lowpass inputs (0.2.1)",
-    "26adf0b fix(stage2): close three defects found by the Stage 2 verification",
-    "d1ebbca feat(phase2): Stage 2 — patch model v2 (X2 + X4)"
+    "26adf0b fix(stage2): close three defects found by the Stage 2 verification"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 153 +++++++++\n .claude/shared-memory/tools/progress_gen.py |  79 +++++\n .claude/shared-memory/tools/regen_state.py  |  89 +++++\n backend/ai/form_producer.",
+  "last_diff_stat": ".claude/CLAUDE.md                           |  20 +-\n .claude/rules/simulation.md                 |  17 ++\n .claude/shared-memory/brain/decisions.md    |  42 ++++\n .claude/shared-memory/plan/current_p",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

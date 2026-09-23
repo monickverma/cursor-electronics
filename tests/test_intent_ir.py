@@ -44,7 +44,8 @@ class TestSchema:
     def test_matches_the_shape_the_plan_specifies(self):
         intent = make()
         # 2.1.0: Stage 2 added `revision` for the patch chain.
-        assert intent.schema_version == SCHEMA_VERSION == "2.1.0"
+        # 2.2.0: Stage 4 added `SignOff.properties_hash`.
+        assert intent.schema_version == SCHEMA_VERSION == "2.2.0"
         assert intent.intent_id
         assert intent.revision == 1
         assert intent.underdetermined == []

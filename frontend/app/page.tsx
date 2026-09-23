@@ -10,7 +10,7 @@ import SimulationResults from '@/components/SimulationResults'
 import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
 import PCBViewer from '@/components/PCBViewer'
-import { GenerateResponse, PatchResponse, fetchHealth } from '@/lib/api'
+import { GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth } from '@/lib/api'
 
 const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
 
@@ -58,6 +58,11 @@ export default function Home() {
   const handleResult = useCallback((res: GenerateResponse | PatchResponse) => {
     setResult(res)
     setActiveTab('schematic')
+  }, [])
+
+  // Sign-off changes what is claimed, never the design: only the coverage moves.
+  const handleCoverage = useCallback((coverage: ValidationCoverage) => {
+    setResult(r => (r ? { ...r, validation_coverage: coverage } : r))
   }, [])
 
   const errorCount = result?.validation?.errors?.length ?? 0
@@ -194,6 +199,9 @@ export default function Home() {
                   validation={result.validation}
                   coverage={result.validation_coverage}
                   explanation={(result as GenerateResponse).explanation}
+                  circuitId={result.circuit_id}
+                  token={token}
+                  onCoverage={handleCoverage}
                 />
               )}
             </>

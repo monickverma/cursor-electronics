@@ -59,13 +59,19 @@ cursor-electronics/
 │   │   └── monitor.py              # Structured failure logger
 │   ├── validation/
 │   │   ├── rule_engine.py          # HardwareRuleEngine (RS-485, PWM, etc.)
-│   │   ├── claims.py               # Claim objects + validation_coverage (X6, X8)
+│   │   ├── claims.py               # Claim objects + validation_coverage (X6, X8, Stage 4 proofs)
 │   │   ├── defeaters.py            # The defeater register, D1–D9
 │   │   ├── envelope_grid.py        # CI grid harness + M1 fault injection
 │   │   └── grid_adapters.py        # Per-generator ngspice adapters and probes
+│   ├── proof/                      # Stage 4 — properties proved from the design's netlist
+│   │   ├── brackets.py             # π, ln, expm1 as exact rational enclosures (D8)
+│   │   ├── netlist.py              # The SPICE text back into exact elements
+│   │   ├── mna.py                  # sympy nodal analysis: DC, transfer, Thevenin
+│   │   ├── properties.py           # PropertySpec → Statement; English by template; hashes
+│   │   └── prover.py               # z3 over tolerance boxes; frozen refine loop; mutation gate
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
-│   ├── api/routes/                 # design.py, simulate.py, patch.py, auth.py
+│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/simulation_task.py    # Celery task
 │   └── middleware/rate_limit.py    # slowapi

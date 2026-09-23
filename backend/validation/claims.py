@@ -28,18 +28,28 @@ happened to run — so a design that checks less cannot look better verified.
 **X6 is derived, never remembered.** If the design's own netlist contains an
 `R_MCU_` element, every behavioural claim's model gains `mcu_as_100R` and
 cites D2; `R_PIN_` adds `mcu_pin_thevenin`. A generator cannot forget to say so.
+
+**Stage 4: proofs count once a person has signed them.** A generator's
+`properties(intent)` are proved from the design's own netlist
+(`proof/prover.py`) and appear as `proof.<id>` rows, each with the English
+sentence that was proved. Until the property set is signed — its hash in
+`IntentIR.signed_off.properties_hash` — those rows are shown and do not move
+the floor. Signed, they are critical; the design stops carrying D5; and a
+Stage 3 claim a signed proof re-derives at an equal or better grade is kept
+visible but no longer critical. A refuted proof is critical either way: a
+certified counterexample is never advisory.
 """
 
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, NamedTuple, Optional, Sequence, Tuple
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from core.ir_schema import CircuitIR, SignalType, ValidationRule
 from core.ir_validator import validate_ir
-from generators.netlist.models import MODEL_MCU_PIN, MODEL_MCU_SUPPLY
+from generators.netlist.models import MODEL_LED, MODEL_MCU_PIN, MODEL_MCU_SUPPLY
 from generators.protocol import ClaimScope
 from validation.defeaters import REGISTER
 
@@ -186,6 +196,21 @@ def graded(
 
 # ── Coverage ─────────────────────────────────────────────────────────────────
 
+class PropertyView(BaseModel):
+    """One Stage 4 property as a person sees it before signing: the sentence, and its fate."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str
+    english: str
+    hash: str
+    status: str                    # proven | refuted | unknown
+    method: str
+    grade: Optional[str] = None
+    re_derives: Optional[str] = None
+    counterexample: Optional[Dict[str, str]] = None
+
+
 class ValidationCoverage(BaseModel):
     """EVIDENCE_CLASSES §5, revised `validation_coverage`. Three numbers, never fused."""
 
@@ -197,9 +222,22 @@ class ValidationCoverage(BaseModel):
     open_defeaters: Tuple[str, ...]
     not_assessed: Tuple[str, ...]
     out_of_scope: Tuple[str, ...]
+    #: Stage 4. The properties proved from the netlist, the hash of the set —
+    #: what a sign-off must quote — and whether that set is signed.
+    properties: Tuple[PropertyView, ...] = ()
+    properties_hash: Optional[str] = None
+    properties_signed: bool = False
+    signed_by: Optional[str] = None
 
     @classmethod
-    def summarise(cls, claims: Sequence[Claim]) -> "ValidationCoverage":
+    def summarise(
+        cls,
+        claims: Sequence[Claim],
+        properties: Sequence[PropertyView] = (),
+        properties_hash: Optional[str] = None,
+        properties_signed: bool = False,
+        signed_by: Optional[str] = None,
+    ) -> "ValidationCoverage":
         critical = [
             c for c in claims
             if c.critical and c.verdict not in (Verdict.NOT_APPLICABLE.value, Verdict.OUT_OF_SCOPE.value)
@@ -215,6 +253,10 @@ class ValidationCoverage(BaseModel):
             open_defeaters=tuple(sorted(cited, key=lambda d: int(d[1:]))),
             not_assessed=tuple(c.id for c in claims if c.verdict == Verdict.NOT_ASSESSED.value),
             out_of_scope=tuple(c.id for c in claims if c.verdict == Verdict.OUT_OF_SCOPE.value),
+            properties=tuple(properties),
+            properties_hash=properties_hash,
+            properties_signed=properties_signed,
+            signed_by=signed_by,
         )
 
     @property
@@ -368,6 +410,112 @@ def _accounting_rows(
     return rows
 
 
+# ── Stage 4: proofs ──────────────────────────────────────────────────────────
+
+class _Proved(NamedTuple):
+    spec: Any
+    statement: Any                 # None when the property could not be compiled
+    result: Any
+    error: Optional[str] = None
+
+
+def prove_properties(generator: Any, intent: Any, circuit: CircuitIR) -> List[_Proved]:
+    """
+    Every property the generator declares, proved from this design's netlist.
+    A property the prover cannot compile — a netlist line it cannot read, a
+    node that is not there — becomes a visible not-assessed row, never a
+    failed generation and never a silent omission.
+    """
+    produce = getattr(generator, "properties", None)
+    if not callable(produce):
+        return []
+    from generators.netlist.spice import SpiceNetlistGenerator
+    from proof.prover import check
+
+    netlist = SpiceNetlistGenerator().generate(circuit)
+    out: List[_Proved] = []
+    for spec in produce(intent):
+        try:
+            statement, _, result = check(circuit, spec, netlist)
+        except (ValueError, KeyError, ArithmeticError) as exc:
+            out.append(_Proved(spec, None, None, f"{type(exc).__name__}: {exc}"))
+            continue
+        out.append(_Proved(spec, statement, result))
+    return out
+
+
+def properties_hash(proved: Sequence[_Proved]) -> Optional[str]:
+    """The hash one sign-off covers. None — unsignable — if any property failed to compile."""
+    from proof.properties import set_hash
+
+    if not proved or any(p.statement is None for p in proved):
+        return None
+    return set_hash([p.statement for p in proved])
+
+
+def _proof_claim(p: _Proved, signed: bool, extra: Sequence[str]) -> Claim:
+    if p.statement is None:
+        return Claim(id=f"proof.{p.spec.id}", claim=_uncompiled_sentence(p.spec), kind=Kind.ANALYTIC,
+                     verdict=Verdict.NOT_ASSESSED, grade="G7", critical=False,
+                     detail=f"the prover could not compile this property ({p.error}); nothing about it "
+                            f"is proved, and the property set cannot be signed")
+    statement, result = p.statement, p.result
+    quantity = statement.spec.quantity
+    diode = quantity.startswith(("diode_current", "series_power"))
+    model = "+".join(["netlist_mna"] + list(statement.mcu_models) + ([MODEL_LED] if diode else []))
+    scope = ClaimScope(parameters="tolerance_box", horizon="steady_state", model=model)
+    defeaters = ["D1"]
+    if statement.mcu_models:
+        defeaters.append("D2")
+    if statement.datasheet:
+        defeaters.append("D7")
+    if statement.bracketed:
+        defeaters.append("D8")      # eliminated: cited to show where it was answered
+    defeaters += [d for d in extra if d not in defeaters]
+    standing = "signed off" if signed else "awaiting sign-off: shown, not counted"
+    if result.status == "unknown":
+        return Claim(id=f"proof.{p.spec.id}", claim=statement.english, kind=Kind.ANALYTIC,
+                     verdict=Verdict.NOT_ASSESSED, grade="G7", critical=signed,
+                     detail=f"{result.detail} ({standing})")
+    detail = result.detail
+    if result.counterexample:
+        detail += " at " + ", ".join(f"{k}={v}" for k, v in sorted(result.counterexample.items()))
+    return graded(
+        f"proof.{p.spec.id}", statement.english, result.status == "proven", result.method, scope,
+        defeaters=defeaters, detail=f"{detail} ({standing})",
+        # A certified counterexample is never advisory, signed or not.
+        critical=signed or result.status == "refuted",
+    )
+
+
+def _uncompiled_sentence(spec: Any) -> str:
+    bounds = {"le": f"at most {spec.hi}", "ge": f"at least {spec.lo}",
+              "within": f"between {spec.lo} and {spec.hi}"}[spec.relation]
+    return f"{spec.label} ({spec.quantity}) stays {bounds} {spec.units}"
+
+
+def _supersede(physics: List[Claim], proved: Sequence[_Proved], proofs: Sequence[Claim]) -> List[Claim]:
+    """Stage 3 claims a signed proof re-derives at an equal or better grade stop being critical."""
+    by_target: Dict[str, List[Claim]] = {}
+    for p, claim in zip(proved, proofs):
+        if p.spec.re_derives:
+            by_target.setdefault(p.spec.re_derives, []).append(claim)
+    out = []
+    for claim in physics:
+        proofs_for = by_target.get(claim.id, [])
+        if (proofs_for and claim.critical and claim.grade is not None
+                and all(c.critical and c.verdict in (Verdict.HOLDS.value, Verdict.HOLDS_DEFEASIBLE.value)
+                        for c in proofs_for)
+                and max(GRADES.index(c.grade) for c in proofs_for) <= GRADES.index(claim.grade)):
+            data = claim.model_dump()
+            data["critical"] = False
+            data["detail"] = ((claim.detail + "; ") if claim.detail else "") + \
+                "superseded by " + ", ".join(c.id for c in proofs_for) + " (signed proofs)"
+            claim = Claim.model_validate(data)
+        out.append(claim)
+    return out
+
+
 # ── Assessment ───────────────────────────────────────────────────────────────
 
 def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverage:
@@ -376,27 +524,48 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
 
     `generator.claims(intent)` supplies the physics; this adds what no
     generator may be trusted to remember — MCU models from the netlist (X6),
-    D5 for a model-written specification, D9 for a generator outside the M1
-    matrix — and the full rule catalogue (X8).
+    D5 for a model-written specification nobody has signed, D9 for a
+    generator outside the M1 matrix — the full rule catalogue (X8), and the
+    Stage 4 proofs of `generator.properties(intent)`.
     """
     from validation.grid_adapters import M1_COVERED
 
     produce: Optional[Callable] = getattr(generator, "claims", None)
     physics: List[Claim] = list(produce(intent)) if callable(produce) else []
 
+    proved = prove_properties(generator, intent, circuit)
+    set_hash = properties_hash(proved)
+    signature = getattr(intent, "signed_off", None)
+    intact = getattr(intent, "is_intact", lambda: True)()
+    signed = bool(set_hash) and signature is not None and intact and \
+        getattr(signature, "properties_hash", None) == set_hash
+
     extra: List[str] = []
     producer = getattr(getattr(intent, "provenance", None), "producer", None)
-    if getattr(producer, "value", producer) == "llm":
+    if getattr(producer, "value", producer) == "llm" and not signed:
         extra.append("D5")
+    models = netlist_models(circuit)
+    # D9 is a doubt about predict(); a proof is checked against the netlist
+    # generate() emitted, so it does not inherit D9.
+    proofs = [_proof_claim(p, signed, extra) for p in proved]
     if generator.name not in M1_COVERED:
         extra.append("D9")
-
-    models = netlist_models(circuit)
     physics = [_with_models(c, models, extra) for c in physics]
+    physics = _supersede(physics, proved, proofs)
 
     decision = generator.envelope(intent)
     ports = tuple(p.name for p in decision.ports) if decision.accepted else ()
-    rows = physics + _rule_claims(circuit, ports) + _accounting_rows(
+    rows = physics + proofs + _rule_claims(circuit, ports) + _accounting_rows(
         physics, getattr(generator, "not_applicable_rules", {}) or {}
     )
-    return ValidationCoverage.summarise(rows)
+    views = [
+        PropertyView(id=p.spec.id, english=c.claim, hash=p.statement.hash if p.statement else "",
+                     status=p.result.status if p.result else "unknown",
+                     method=p.result.method if p.result else "not_compiled", grade=c.grade,
+                     re_derives=p.spec.re_derives, counterexample=p.result.counterexample if p.result else None)
+        for p, c in zip(proved, proofs)
+    ]
+    return ValidationCoverage.summarise(
+        rows, properties=views, properties_hash=set_hash, properties_signed=signed,
+        signed_by=signature.by if signed else None,
+    )

@@ -410,6 +410,38 @@ class VoltageDividerGenerator:
             ),
         ]
 
+    # ── properties() ──────────────────────────────────────────────────────
+
+    def properties(self, intent: IntentLike):
+        """
+        Stage 4: what the proof compiler proves from this design's netlist.
+        The band is predict()'s, rounded outward to what the English shows;
+        the ratings are the datasheet's. Dissipation is decided exactly here,
+        where predict() could only enclose it.
+        """
+        from proof.properties import BenchElement, PropertySpec, exact, outward, si
+
+        spec = _read(intent)
+        sel = select(spec)
+        band = self._vout_band(spec, sel)
+        bench = () if spec.load is None else (BenchElement(
+            line=f"R_BENCH_LOAD vout 0 {exact(spec.load)}",
+            describe=f"a {si(exact(spec.load), 'ohm')} load on VOUT",
+        ),)
+        lo, hi = outward(band.lo, band.hi)
+        rating = exact(RESISTOR_POWER_W)
+        return [
+            PropertySpec(id="divider.vout", label="the voltage at VOUT", quantity="v(vout)",
+                         relation="within", lo=lo, hi=hi, units="V", bench=bench,
+                         re_derives="divider.vout_band"),
+            PropertySpec(id="divider.r1_power", label="R1's dissipation", quantity="power(R_R1)",
+                         relation="le", hi=rating, units="W", bench=bench,
+                         re_derives="divider.resistor_dissipation", datasheet_bound=True),
+            PropertySpec(id="divider.r2_power", label="R2's dissipation", quantity="power(R_R2)",
+                         relation="le", hi=rating, units="W", bench=bench,
+                         re_derives="divider.resistor_dissipation", datasheet_bound=True),
+        ]
+
     # ── generate() ────────────────────────────────────────────────────────
 
     def generate(self, intent: IntentLike) -> CircuitIR:

@@ -123,6 +123,12 @@ MODULES = {
     "validation/defeaters":       {"file": "backend/validation/defeaters.py",       "test": "tests/test_claims.py",               "phase": 2},
     "simulation/waveforms":       {"file": "backend/simulation/waveforms.py",       "test": "tests/test_waveforms.py",            "phase": 2},
     "validation/grid_adapters":   {"file": "backend/validation/grid_adapters.py",   "test": "tests/test_generator_library.py",   "phase": 2},
+    # Stage 4 — the proof compiler. decisions.md [2026-09-23].
+    "proof/brackets":             {"file": "backend/proof/brackets.py",             "test": "tests/test_proof.py",                "phase": 2},
+    "proof/netlist":              {"file": "backend/proof/netlist.py",              "test": "tests/test_proof.py",                "phase": 2},
+    "proof/mna":                  {"file": "backend/proof/mna.py",                  "test": "tests/test_proof.py",                "phase": 2},
+    "proof/properties":           {"file": "backend/proof/properties.py",           "test": ["tests/test_proof.py", "tests/test_sign_off.py"], "phase": 2},
+    "proof/prover":               {"file": "backend/proof/prover.py",               "test": ["tests/test_proof.py", "tests/test_sign_off.py"], "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -424,10 +430,18 @@ out = {}
 for g in default_registry().generators:
     grid = g.grid()
     req = intent_at(g.function, next(iter(grid.points())), grid.sections).requirements
-    cov = realize(g, IntentIR(requirements=req, provenance=Provenance(producer=Producer.FORM))).validation_coverage
+    intent = IntentIR(requirements=req, provenance=Provenance(producer=Producer.FORM))
+    cov = realize(g, intent).validation_coverage
     out[g.name] = {k: cov[k] for k in ("grade_floor", "coverage_le_g2", "open_defeaters", "not_assessed")}
     out[g.name]["floor_claims"] = [c["id"] for c in cov["claims"]
                                    if c["critical"] and c["grade"] == cov["grade_floor"]]
+    # Stage 4: proofs count only once signed, so the floor is reported both
+    # ways — as it stands, and as it would stand with the properties signed.
+    props = cov.get("properties") or []
+    signed = (realize(g, intent.sign_off("regen_state", properties_hash=cov["properties_hash"])).validation_coverage
+              if props else cov)
+    out[g.name]["proofs"] = {"declared": len(props), "proven": sum(p["status"] == "proven" for p in props),
+                             "floor_if_signed": signed["grade_floor"]}
 print(json.dumps(out))
 """
 
@@ -487,8 +501,10 @@ def main():
     print("🧾  Library grade floor (EVIDENCE_CLASSES §5):")
     validation = library_grades()
     for name, v in validation.get("generators", {}).items():
+        proofs = v.get("proofs") or {}
         print(f"  {name:18} floor {v['grade_floor']}  coverage≤G2 {v['coverage_le_g2']:.0%}  "
-              f"open {', '.join(v['open_defeaters']) or '—'}")
+              f"open {', '.join(v['open_defeaters']) or '—'}  "
+              f"proofs {proofs.get('proven', 0)}/{proofs.get('declared', 0)} → {proofs.get('floor_if_signed')} signed")
 
     # ── Write state.json ──────────────────────────────────────────────────────
     state = {
@@ -593,6 +609,12 @@ def main():
         print(f"             open defeaters (fan-out): {opened or 'none'} — claims are defeasible")
         if validation.get("not_assessed"):
             print(f"             NOT ASSESSED: {validation['not_assessed']}")
+        proofs = [v.get("proofs") or {} for v in validation["generators"].values()]
+        signed_floors = [p["floor_if_signed"] for p in proofs if p.get("floor_if_signed")]
+        order = ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"]
+        print(f"  Proofs   : {sum(p.get('proven', 0) for p in proofs)}/{sum(p.get('declared', 0) for p in proofs)} "
+              f"properties proven from the netlist; count only once signed "
+              f"(floor if all signed: {max(signed_floors, key=order.index) if signed_floors else '—'})")
     else:
         print("  Floor    : not derived — see the grade-floor probe output above")
     print(f"  Commit   : {commit}")

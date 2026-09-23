@@ -514,6 +514,55 @@ PLANNED = {
             ("intent_at",   "function", "A grid point placed in the sections its generator declares"),
         ],
     },
+    # Stage 4 — the proof compiler. decisions.md [2026-09-23].
+    "proof/brackets": {
+        "file": "backend/proof/brackets.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("pi",          "function", "π as an exact rational bracket (mpmath.iv, outward) — eliminates D8"),
+            ("ln",          "function", "ln of a rational, enclosed"),
+            ("expm1_ratio", "function", "exp(a/b) − 1, enclosed; the LED's saturation-current box"),
+        ],
+    },
+    "proof/netlist": {
+        "file": "backend/proof/netlist.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("spice_value", "function", "A SPICE number read exactly, digit for digit"),
+            ("parse",       "function", "The netlist ngspice is given, back into elements; unknown lines refused"),
+        ],
+    },
+    "proof/mna": {
+        "file": "backend/proof/mna.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("System",   "class",    "Symbolic modified nodal analysis of a parsed netlist"),
+            ("transfer", "function", "V(node)/V_ac in s — the RC cutoff's source"),
+            ("thevenin", "function", "(V_th, R_th) with an element removed — how the LED is reduced"),
+        ],
+    },
+    "proof/properties": {
+        "file": "backend/proof/properties.py",
+        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py"],
+        "entries": [
+            ("PropertySpec",   "class",    "A generator's property: quantity, relation, bounds, bench"),
+            ("Statement",      "class",    "A property resolved against one design; its hash is what is signed"),
+            ("back_translate", "function", "The English a person signs, by template — never by a model"),
+            ("outward",        "function", "Bounds rounded away from the band, to the figures shown"),
+            ("set_hash",       "function", "The hash one sign-off covers"),
+        ],
+    },
+    "proof/prover": {
+        "file": "backend/proof/prover.py",
+        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py"],
+        "entries": [
+            ("compile_statement",       "function", "Netlist + property → Statement and z3 obligations"),
+            ("prove",                   "function", "The refine loop; refuses any result for another property"),
+            ("FrozenPropertyViolation", "class",    "Stage 4's adversarial weakening gate"),
+            ("falsify",                 "function", "The mutation gate: a wrong part must refute the property"),
+            ("check",                   "function", "One property of one design, cached on what the proof reads"),
+        ],
+    },
 }
 
 STATUS_ICON = {

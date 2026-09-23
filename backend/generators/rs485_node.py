@@ -321,6 +321,35 @@ class RS485NodeGenerator:
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),
         ]
 
+    # ── properties() ──────────────────────────────────────────────────────
+
+    def properties(self, intent: IntentLike):
+        """
+        Stage 4. Fail-safe bias and driver load on the idle bus, with the
+        far-end terminator — a bus condition, not a board part — as a bench
+        element in its own 1% box when the requirement declares it.
+        """
+        from proof.properties import BenchElement, PropertySpec, exact
+
+        spec = _read(intent)
+        bench = (BenchElement(
+            line=f"R_FAR rs485_a rs485_b {exact(TERMINATION_OHM)}",
+            describe=f"the far-end {TERMINATION_OHM:g} Ω terminator",
+            label="far-end terminator",
+            basis=f"{RESISTOR_TOLERANCE * 100:g}%, at the other end of the bus",
+            tolerance=exact(RESISTOR_TOLERANCE),
+        ),) if spec.far_end else ()
+        return [
+            PropertySpec(id="rs485.failsafe_bias", label="the idle bus voltage V(A) − V(B)",
+                         quantity="vdiff(rs485_a,rs485_b)", relation="ge",
+                         lo=exact(THRESHOLD_MV, -3), units="V", bench=bench,
+                         re_derives="rs485.failsafe_bias", datasheet_bound=True),
+            PropertySpec(id="rs485.driver_load", label="the resistance the driver sees across A–B",
+                         quantity="rth(rs485_a,rs485_b)", relation="ge",
+                         lo=exact(RATED_LOAD_OHM), units="ohm", bench=bench,
+                         re_derives="rs485.driver_load", datasheet_bound=True),
+        ]
+
     # ── generate() ────────────────────────────────────────────────────────
 
     def generate(self, intent: IntentLike) -> CircuitIR:

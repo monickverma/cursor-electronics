@@ -4,6 +4,7 @@ Patching a design by patching its requirement. PHASE_2_PLAN_v2.md §4.1, Stage 2
     POST /design/{circuit_id}/patch        — command (1 model call) or ops (0)
     PUT  /design/{circuit_id}/annotations  — the annotation layer
     GET  /design/{circuit_id}/history      — the patch chain, as requirements
+    POST /design/{circuit_id}/sign-off     — Stage 4: agree to the proved properties
 
 The edit goes through the same gate as a fresh request: the patched IntentIR
 must pass `envelope()`, and the design is re-realised from it. Nothing is
@@ -44,7 +45,7 @@ from db.models import get_db
 from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.pcb import PcbNetlistGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
-from generators.realize import check_locality, generator_tag, predict_delta, realize
+from generators.realize import check_locality, generator_tag, predict_delta, realize, same_design
 from generators.registry import default_registry
 from generators.schematic.kicad import KiCadSchematicGenerator
 from observability.request_log import log_ctx, prompt_hash
@@ -101,6 +102,12 @@ class PatchResponse(BaseModel):
 
 class AnnotationsRequest(BaseModel):
     annotations: List[Dict[str, Any]]
+
+
+class SignOffRequest(BaseModel):
+    """The hash of the property set the user was shown — never computed for them."""
+
+    properties_hash: str
 
 
 # ── Shared plumbing ──────────────────────────────────────────────────────────
@@ -405,4 +412,104 @@ async def get_history(
         "current_version": design.version,
         "patchable": design.intent_ir is not None,
         "entries": entries,
+    }
+
+
+# ── POST /{circuit_id}/sign-off ──────────────────────────────────────────────
+
+@router.post("/{circuit_id}/sign-off")
+@limiter.limit("30/hour")
+async def sign_off_design(
+    request: Request,
+    circuit_id: str,
+    body: SignOffRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    user=Depends(get_current_user),
+):
+    """
+    Agree to a design's back-translated properties. Stage 4; `brain/decisions.md`
+    [2026-09-23] item 5.
+
+    The client sends the hash of the sentences it displayed. It must equal the
+    stored design's, or the answer is 409 and nothing is signed — nobody signs
+    a statement they did not read. Sign-off never re-derives the design: the
+    signed requirement is realised again only to confirm it yields the same
+    circuit under the installed generator, and if it does not, the user is
+    told to patch first. The revision does not change.
+    """
+    design = await _load_owned(db, circuit_id, user)
+    if design.intent_ir is None:
+        raise HTTPException(409, detail={
+            "error": "no_requirement_on_record",
+            "message": "This design predates requirement patching; there is no stored "
+                       "requirement to sign. Generate it again.",
+        })
+    intent = IntentIR.model_validate(design.intent_ir)
+    current = CircuitIR.model_validate(design.ir_json)
+    shown = (current.validation_coverage or {}).get("properties_hash")
+    if not shown:
+        raise HTTPException(409, detail={
+            "error": "no_properties",
+            "message": "This design carries no proved properties to sign — it was built "
+                       "before Stage 4, or by a generator that declares none.",
+        })
+    if body.properties_hash != shown:
+        raise HTTPException(409, detail={
+            "error": "properties_changed",
+            "message": "The properties you were shown are not this design's current ones. "
+                       "Reload the design and read them again before signing.",
+            "current_hash": shown,
+        })
+
+    name = (current.generator or "").split("@")[0]
+    generator = default_registry().by_name(name) if name else None
+    if generator is None or generator_tag(generator) != current.generator:
+        raise HTTPException(409, detail={
+            "error": "generator_changed",
+            "message": f"This design was built by {current.generator}; the installed generator is "
+                       f"{generator_tag(generator) if generator else 'missing'}. Its properties "
+                       f"cannot be re-established as shown — patch the design first.",
+        })
+
+    if intent.signed_off is not None and intent.signed_off.properties_hash == shown and intent.is_intact():
+        return {
+            "circuit_id": circuit_id, "version": current.version, "signed_by": intent.signed_off.by,
+            "properties_hash": shown, "validation_coverage": current.validation_coverage,
+            "intent_ir": intent.model_dump(mode="json"),
+        }
+
+    try:
+        signed = intent.sign_off(by=user.email, properties_hash=shown)
+    except ValueError as exc:
+        raise HTTPException(422, detail={"error": "not_signable", "message": str(exc)})
+
+    # Deterministic: the same circuit, now with the proofs counted.
+    new_ir = await run_in_threadpool(realize, generator, signed)
+    coverage = new_ir.validation_coverage or {}
+    if not same_design(new_ir, current) or not coverage.get("properties_signed"):
+        raise HTTPException(409, detail={
+            "error": "design_changed",
+            "message": "Realising the signed requirement did not reproduce this design and its "
+                       "properties. Nothing was signed; patch the design first.",
+        })
+
+    written = await update_design_revision(
+        db, circuit_id, new_ir,
+        intent_ir=signed.model_dump(mode="json"),
+        expected_version=design.version,
+    )
+    if not written:
+        raise HTTPException(409, detail={
+            "error": "version_conflict",
+            "message": f"The design changed while it was being signed — it is no longer "
+                       f"v{design.version}. Reload it and read its properties again.",
+            "expected_version": design.version,
+        })
+    return {
+        "circuit_id": circuit_id,
+        "version": new_ir.version,
+        "signed_by": signed.signed_off.by,
+        "properties_hash": shown,
+        "validation_coverage": coverage,
+        "intent_ir": signed.model_dump(mode="json"),
     }

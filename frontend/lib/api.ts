@@ -104,6 +104,20 @@ export interface Claim {
   covers: string[]
 }
 
+// ── Stage 4: proved properties (backend/proof, validation/claims.py) ────────
+
+export interface PropertyView {
+  id: string
+  /** The sentence proved, generated from the formula by template — what is signed. */
+  english: string
+  hash: string
+  status: 'proven' | 'refuted' | 'unknown'
+  method: string
+  grade: string | null
+  re_derives: string | null
+  counterexample: Record<string, string> | null
+}
+
 export interface ValidationCoverage {
   claims: Claim[]
   coverage_le_g2: number
@@ -111,6 +125,27 @@ export interface ValidationCoverage {
   open_defeaters: string[]
   not_assessed: string[]
   out_of_scope: string[]
+  // Stage 4. Absent on designs built before it.
+  properties?: PropertyView[]
+  properties_hash?: string | null
+  properties_signed?: boolean
+  signed_by?: string | null
+}
+
+export interface SignOffResponse {
+  circuit_id: string
+  version: number
+  signed_by: string
+  properties_hash: string
+  validation_coverage: ValidationCoverage
+  intent_ir: Record<string, unknown>
+}
+
+/** Sign the properties the user was shown. The hash is the one displayed, never recomputed. */
+export async function signOffDesign(
+  circuitId: string, propertiesHash: string, token: string,
+): Promise<SignOffResponse> {
+  return apiPost(`/design/${circuitId}/sign-off`, { properties_hash: propertiesHash }, token)
 }
 
 // ── Stage 3: waveform data (backend/simulation/waveforms.py) ────────────────

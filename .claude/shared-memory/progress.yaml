@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-23T13:58:34.678009Z'
+generated_at: '2026-09-23T15:04:30.077302Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -833,7 +833,7 @@ files:
         description: Deterministic given (intent, version). Callers call `envelope()`
           first.
         signature: 'RCLowPassGenerator.generate(intent: IntentLike) -> CircuitIR'
-        line: 564
+        line: 580
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.grid:
         status: verified_done
@@ -841,7 +841,7 @@ files:
         description: Three decades of the declared envelope. A single 1 kHz point
           passes on
         signature: RCLowPassGenerator.grid() -> GridSpec
-        line: 672
+        line: 688
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.dependency_closure:
         status: verified_done
@@ -850,7 +850,7 @@ files:
           the
         signature: 'RCLowPassGenerator.dependency_closure(requirement_path: str) ->
           FrozenSet[str]'
-        line: 683
+        line: 699
         test_file: tests/test_rc_lowpass_generator.py
     module_status: done
   validation/envelope_grid:
@@ -1103,14 +1103,14 @@ files:
         description: 'Which of the two producers wrote this. §4.2: the form is the
           reference'
         signature: null
-        line: 56
+        line: 57
         test_file: tests/test_intent_ir.py
       Requirements:
         status: verified_done
         type: class
         description: What was asked for, split by how each part constrains the design.
         signature: null
-        line: 68
+        line: 69
         test_file: tests/test_intent_ir.py
       SignOff:
         status: verified_done
@@ -1118,7 +1118,7 @@ files:
         description: A human agreeing to a specification, and to exactly this version
           of it.
         signature: null
-        line: 94
+        line: 95
         test_file: tests/test_intent_ir.py
       Provenance:
         status: verified_done
@@ -1126,50 +1126,51 @@ files:
         description: Where this IntentIR came from. Needed to answer the §4.5 questions
           —
         signature: null
-        line: 112
+        line: 118
         test_file: tests/test_intent_ir.py
       IntentIR:
         status: verified_done
         type: class
         description: The requirement as an artifact. Satisfies `generators.protocol.IntentLike`.
         signature: null
-        line: 136
+        line: 142
         test_file: tests/test_intent_ir.py
       IntentIR.is_answerable:
         status: verified_done
         type: method
         description: Whether this intent can be built from as it stands.
         signature: IntentIR.is_answerable() -> bool
-        line: 202
+        line: 208
         test_file: tests/test_intent_ir.py
       IntentIR.open_questions:
         status: verified_done
         type: method
         description: The fields the user still has to supply, in declared order.
         signature: IntentIR.open_questions() -> List[str]
-        line: 212
+        line: 218
         test_file: tests/test_intent_ir.py
       IntentIR.requirements_hash:
         status: verified_done
         type: method
         description: Stable hash of the requirements alone.
         signature: IntentIR.requirements_hash() -> str
-        line: 218
+        line: 224
         test_file: tests/test_intent_ir.py
       IntentIR.sign_off:
         status: verified_done
         type: method
         description: Return a signed copy, pinned to the requirements as they stand
-          now.
-        signature: 'IntentIR.sign_off(by: str) -> ''IntentIR'''
-        line: 230
+          now —
+        signature: 'IntentIR.sign_off(by: str, properties_hash: Optional[str]) ->
+          ''IntentIR'''
+        line: 236
         test_file: tests/test_intent_ir.py
       IntentIR.is_intact:
         status: verified_done
         type: method
         description: Whether the requirements still match what was signed.
         signature: IntentIR.is_intact() -> bool
-        line: 250
+        line: 259
         test_file: tests/test_intent_ir.py
       IntentIR.with_requirements:
         status: verified_done
@@ -1177,7 +1178,7 @@ files:
         description: A new version carrying different requirements, at revision n+1.
         signature: 'IntentIR.with_requirements(requirements: Mapping[str, Any]) ->
           ''IntentIR'''
-        line: 265
+        line: 274
         test_file: tests/test_intent_ir.py
     module_status: done
   core/intent_patch:
@@ -1282,7 +1283,7 @@ files:
           of the'
         signature: 'check_locality(generator: Generator, changed_paths: Iterable[str],
           before: CircuitIR, after: CircuitIR) -> LocalityReport'
-        line: 136
+        line: 150
         test_file: tests/test_realize.py
       predict_delta:
         status: verified_done
@@ -1290,7 +1291,7 @@ files:
         description: Every predicted quantity whose band moved, before → after.
         signature: 'predict_delta(before_generator: Optional[Generator], before: Optional[IntentIR],
           after_generator: Generator, after: IntentIR) -> List[QuantityDelta]'
-        line: 194
+        line: 208
         test_file: tests/test_realize.py
     module_status: done
   ai/intent_patcher:
@@ -1358,7 +1359,7 @@ files:
           v(n)
         signature: 'patch_design(request: Request, circuit_id: str, body: PatchRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 154
+        line: 161
         test_file: tests/test_patch_route.py
       put_annotations:
         status: verified_done
@@ -1366,7 +1367,7 @@ files:
         description: Replace the design's annotations. Never regenerates anything.
         signature: 'put_annotations(request: Request, circuit_id: str, body: AnnotationsRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 362
+        line: 369
         test_file: tests/test_patch_route.py
       get_history:
         status: verified_done
@@ -1375,7 +1376,7 @@ files:
           1 rows are shown as they were.
         signature: 'get_history(circuit_id: str, db: Annotated[AsyncSession, Depends(get_db)],
           user)'
-        line: 383
+        line: 390
         test_file: tests/test_patch_route.py
     module_status: done
   generators/common:
@@ -1562,7 +1563,7 @@ files:
         type: class
         description: One row of EVIDENCE_CLASSES Table A.
         signature: null
-        line: 110
+        line: 120
         test_file: *id006
       ValidationCoverage:
         status: verified_done
@@ -1570,7 +1571,7 @@ files:
         description: EVIDENCE_CLASSES §5, revised `validation_coverage`. Three numbers,
           never fused.
         signature: null
-        line: 189
+        line: 214
         test_file: *id006
       graded:
         status: verified_done
@@ -1580,7 +1581,7 @@ files:
         signature: 'graded(id: str, claim: str, holds: bool, method: str, scope: ClaimScope,
           defeaters: Iterable[str], detail: Optional[str], kind: Kind, critical: bool,
           covers: Iterable[str]) -> Claim'
-        line: 159
+        line: 169
         test_file: *id006
       assess:
         status: verified_done
@@ -1588,7 +1589,7 @@ files:
         description: Every claim for one realised design. Deterministic, no simulator,
           no model.
         signature: 'assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverage'
-        line: 373
+        line: 521
         test_file: *id006
       netlist_models:
         status: verified_done
@@ -1596,7 +1597,7 @@ files:
         description: MCU models the design's own netlist uses. Read from the netlist
           text.
         signature: 'netlist_models(circuit: CircuitIR) -> Tuple[str, ...]'
-        line: 227
+        line: 269
         test_file: *id006
     module_status: done
   validation/defeaters:
@@ -1610,7 +1611,7 @@ files:
         type: class
         description: A recorded doubt with a status and what eliminates it
         signature: null
-        line: 33
+        line: 34
         test_file: tests/test_claims.py
     module_status: done
   simulation/waveforms:
@@ -1650,11 +1651,193 @@ files:
         line: 44
         test_file: tests/test_generator_library.py
     module_status: done
+  proof/brackets:
+    file: backend/proof/brackets.py
+    exists: true
+    test_file: tests/test_proof.py
+    test_file_status: passing
+    entries:
+      pi:
+        status: verified_done
+        type: function
+        description: π as an exact rational bracket (mpmath.iv, outward) — eliminates
+          D8
+        signature: pi() -> Bracket
+        line: 53
+        test_file: tests/test_proof.py
+      ln:
+        status: verified_done
+        type: function
+        description: ln(value) for a positive rational.
+        signature: 'ln(value: Fraction) -> Bracket'
+        line: 59
+        test_file: tests/test_proof.py
+      expm1_ratio:
+        status: verified_done
+        type: function
+        description: exp(numerator/denominator) − 1, enclosed.
+        signature: 'expm1_ratio(numerator: Fraction, denominator: Fraction) -> Bracket'
+        line: 68
+        test_file: tests/test_proof.py
+    module_status: done
+  proof/netlist:
+    file: backend/proof/netlist.py
+    exists: true
+    test_file: tests/test_proof.py
+    test_file_status: passing
+    entries:
+      spice_value:
+        status: verified_done
+        type: function
+        description: '`1G` → 10⁹, `4.7k` → 4700, `1e-07` → exactly the float''s rational.'
+        signature: 'spice_value(text: str) -> Fraction'
+        line: 27
+        test_file: tests/test_proof.py
+      parse:
+        status: verified_done
+        type: function
+        description: The netlist ngspice is given, back into elements; unknown lines
+          refused
+        signature: 'parse(text: str, allow_partial: bool) -> Netlist'
+        line: 96
+        test_file: tests/test_proof.py
+    module_status: done
+  proof/mna:
+    file: backend/proof/mna.py
+    exists: true
+    test_file: tests/test_proof.py
+    test_file_status: passing
+    entries:
+      System:
+        status: verified_done
+        type: class
+        description: One stamped MNA system. `values` maps element name → sympy value.
+        signature: null
+        line: 36
+        test_file: tests/test_proof.py
+      transfer:
+        status: verified_done
+        type: function
+        description: V(node) per unit of the AC source, in s. The netlist's AC source
+          drives it.
+        signature: 'transfer(netlist: Netlist, values: Mapping[str, sympy.Expr], node:
+          str) -> sympy.Expr'
+        line: 135
+        test_file: tests/test_proof.py
+      thevenin:
+        status: verified_done
+        type: function
+        description: (V_th, R_th) between nodes a and b, with `remove` taken out of
+          the network.
+        signature: 'thevenin(netlist: Netlist, values: Mapping[str, sympy.Expr], a:
+          str, b: str, remove: Iterable[str]) -> Tuple[sympy.Expr, sympy.Expr]'
+        line: 144
+        test_file: tests/test_proof.py
+    module_status: done
+  proof/properties:
+    file: backend/proof/properties.py
+    exists: true
+    test_file: &id007
+    - tests/test_proof.py
+    - tests/test_sign_off.py
+    test_file_status: passing
+    entries:
+      PropertySpec:
+        status: verified_done
+        type: class
+        description: 'A generator''s property: quantity, relation, bounds, bench'
+        signature: null
+        line: 50
+        test_file: *id007
+      Statement:
+        status: verified_done
+        type: class
+        description: A property resolved against one design. Frozen; its hash is what
+          is signed.
+        signature: null
+        line: 92
+        test_file: *id007
+      back_translate:
+        status: verified_done
+        type: function
+        description: The sentence a person signs. Built from the structure, nothing
+          else.
+        signature: 'back_translate(spec: PropertySpec, variables: List[Variable],
+          conditions: List[str]) -> str'
+        line: 191
+        test_file: *id007
+      outward:
+        status: verified_done
+        type: function
+        description: Round a band away from its interior to `digits` significant figures.
+        signature: 'outward(lo: Optional[float], hi: Optional[float], digits: int)
+          -> Tuple[Optional[str], Optional[str]]'
+        line: 163
+        test_file: *id007
+      set_hash:
+        status: verified_done
+        type: function
+        description: The hash of a design's whole property set — what one sign-off
+          covers.
+        signature: 'set_hash(statements: List[Statement]) -> str'
+        line: 123
+        test_file: *id007
+    module_status: done
+  proof/prover:
+    file: backend/proof/prover.py
+    exists: true
+    test_file: &id008
+    - tests/test_proof.py
+    - tests/test_sign_off.py
+    test_file_status: passing
+    entries:
+      compile_statement:
+        status: verified_done
+        type: function
+        description: Netlist + property → Statement and z3 obligations
+        signature: 'compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text:
+          str) -> Tuple[Statement, Problem]'
+        line: 300
+        test_file: *id008
+      prove:
+        status: verified_done
+        type: function
+        description: Run strategies in order; every result must be for the frozen
+          statement.
+        signature: 'prove(statement: Statement, problem: Problem, strategies: Sequence[Strategy])
+          -> ProofResult'
+        line: 649
+        test_file: *id008
+      FrozenPropertyViolation:
+        status: verified_done
+        type: class
+        description: A refine strategy returned a result for something other than
+          the frozen property.
+        signature: null
+        line: 69
+        test_file: *id008
+      falsify:
+        status: verified_done
+        type: function
+        description: The first wrong value that refutes the property, or None if none
+          does.
+        signature: 'falsify(circuit: CircuitIR, spec: PropertySpec, netlist_text:
+          Optional[str]) -> Optional[Mutation]'
+        line: 750
+        test_file: *id008
+      check:
+        status: verified_done
+        type: function
+        description: (Statement, Problem, ProofResult) for one property of one design.
+        signature: 'check(circuit: CircuitIR, spec: PropertySpec, netlist_text: Optional[str])'
+        line: 687
+        test_file: *id008
+    module_status: done
 summary:
-  entries_total: 173
-  entries_verified_done: 155
+  entries_total: 191
+  entries_verified_done: 173
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 89.6
+  pct_verified: 90.6

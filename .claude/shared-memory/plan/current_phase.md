@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-23 (Stage 3 done; Stage 4 next, unplanned)
+> Last updated: 2026-09-23 (Stage 4 done; Stage 5 next, unplanned)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -540,11 +540,78 @@ backend stores the points (`simulation/waveforms.py`, transient parsing in
   filter produces an AC sweep; nothing yet produces a transient, so the
   transient view shows data only for a netlist that asks for one.
 
-## Next — Stage 4, the proof compiler
+## Task 4.1 — Record Stage 4 before code ✅
 
-Not yet planned at function level. Before it: settle `kind` on the proof
-gates (above), and consider lifting the two G2 claims first, since they set
-the floor.
+`brain/decisions.md` [2026-09-23]: proofs from the design's own netlist, not
+from `predict()`; bounds from `properties(intent)` rounded outward;
+transcendentals bracketed; the LED by monotone reduction; sign-off by hash;
+the frozen refine loop; the mutation gate. Dependencies approved by the user:
+z3-solver 5.1.0.0, sympy 1.14.0, mpmath 1.3.0 (1.4.1 conflicts with sympy).
+
+## Task 4.2 — The proof compiler ✅
+
+`backend/proof/`: `brackets.py` (π, ln, expm1 as exact rational enclosures,
+128-bit interval arithmetic), `netlist.py` (the SPICE text back into exact
+elements; anything unreadable refused), `mna.py` (sympy nodal analysis: DC,
+transfer function, Thevenin), `properties.py` (specs, statements, English,
+hashes), `prover.py` (compile → z3 obligations → refine loop → certified
+verdict; `falsify` for the mutation gate). `tests/test_proof.py`.
+
+## Task 4.3 — Properties on all five generators ✅
+
+13 properties per default design set, 64 across the CI grids, all proven:
+divider V_out band and both dissipations (G1); LED current band, 20 mA pin
+limit, 25 mA LED rating (G1) and R1 dissipation (G2, through a proven
+current bound); RC cutoff band with π bracketed (G1); DHT22 rise time and
+sink current (G1, cable capacitance and a DATA-low probe as test benches);
+RS-485 fail-safe bias and driver load (G1, the far-end terminator in its own
+1% box).
+
+## Task 4.4 — Sign-off and freeze ✅
+
+`IntentIR` 2.2.0: `SignOff.properties_hash`. `POST /design/{id}/sign-off`
+takes the hash the user was shown — 409 on any other, on a generator
+version change, or on a lost race; nothing written. Signed proofs become
+critical, retire the Stage 3 claims they re-derive at an equal or better
+grade, and remove D5. An edit drops the signature (Stage 1). The panel in
+`frontend/components/PropertiesPanel.tsx` shows each sentence and signs the
+set. `tests/test_sign_off.py`.
+
+## Stage 4 gates
+
+| Gate | Result |
+|---|---|
+| Divider and LED claims proven over full tolerance (G1) | ✅ every grid point; LED dissipation G2 by construction |
+| RC cutoff proven over full tolerance, π bracketed (G1) | ✅ all 7 grid points; the bracket checked against π at 80 digits |
+| Every property back-translated and signed off before it counts (G1) | ✅ unsigned proofs are non-critical; floor moves only on a signature |
+| Adversarial weakening: the refine loop cannot change a frozen property (G1) | ✅ looser bound, weakened obligation, dropped obligation all raise `FrozenPropertyViolation` |
+| Every proven property fails under an injected wrong value (G1) | ✅ 64/64, each by a certified counterexample |
+
+**D8 eliminated.** **Divider floor G1 once signed**; the library floor stays
+**G2** — the LED's R1 dissipation is proved through a current bound, which is
+sound and not complete.
+
+## Stage 4 — not done, and why
+
+- **The LED dissipation stays G2.** Deciding I(R1)²·R1 ≤ P_max exactly needs
+  the diode equation and R1 together, not a bound on I then a bound on R1.
+  P peaks where R1 equals the rest of the loop's resistance; splitting R1's
+  box there would leave each half monotone, and exact.
+- **`kind` stays `analytic`** for the proofs, against v2's `empirical`, by
+  EVIDENCE_CLASSES §3.1's own test; one field if the user wants v2's word.
+- **The property set is signed whole.** Signing some properties and not
+  others is not supported; a set with one refuted property can be signed,
+  and its failure then stands as a signed, critical row.
+- **No proof checker (G0).** z3's UNSAT is trusted; no certificate is checked
+  independently.
+- **Termination dissipation (RS-485) and the rail budgets are not
+  properties.** The first needs a driven-bus bench; the second no single
+  wrong part can break (decision item 7).
+- **No automated frontend test** — the panel was checked by eye, as in Stage 3.
+
+## Next — Stage 5, multi-MCU firmware
+
+Not yet planned at function level.
 
 ---
 

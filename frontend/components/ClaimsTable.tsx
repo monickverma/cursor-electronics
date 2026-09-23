@@ -98,7 +98,16 @@ function Row({ claim }: { claim: Claim }) {
         {claim.scope ? `${claim.scope.parameters} · ${claim.scope.model}` : '—'}
       </td>
       <td className="px-3 py-2 text-xs font-mono text-muted">{claim.method ?? '—'}</td>
-      <td className="px-3 py-2 text-xs font-mono text-cream">{claim.grade ?? '—'}</td>
+      <td className="px-3 py-2 text-xs font-mono text-cream">
+        {claim.grade ?? '—'}
+        {/* Stage 4: unsigned proofs and superseded claims are shown, but the
+            floor does not look at them — say so where the grade is read. */}
+        {!claim.critical && !quiet && claim.grade && (
+          <span className="block text-[10px] text-muted whitespace-nowrap" title="not counted toward the grade floor">
+            not counted
+          </span>
+        )}
+      </td>
       <td className="px-3 py-2 text-xs font-mono text-muted">
         {[...claim.defeaters].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1))).join(' ') || '—'}
       </td>

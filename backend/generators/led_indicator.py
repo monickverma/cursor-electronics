@@ -330,6 +330,34 @@ class LedIndicatorGenerator:
                    covers=("power_supply_adequate",)),
         ]
 
+    # ── properties() ──────────────────────────────────────────────────────
+
+    def properties(self, intent: IntentLike):
+        """
+        Stage 4. The LED current is decided exactly through the diode's
+        Thevenin reduction; R1's dissipation is proved from a proven current
+        bound, which is sound but not complete — G2, as predict() already says.
+        """
+        from proof.properties import PropertySpec, exact, outward
+
+        spec = _read(intent)
+        band = self._current_band(spec, select_r1(spec))
+        lo, hi = outward(band.lo / 1000, band.hi / 1000)
+        return [
+            PropertySpec(id="led.current", label="the LED current", quantity="diode_current(D_LED1)",
+                         relation="within", lo=lo, hi=hi, units="A", re_derives="led.current_band"),
+            PropertySpec(id="led.gpio_current", label="the current U1's pin sources",
+                         quantity="diode_current(D_LED1)", relation="le",
+                         hi=exact(GPIO_RECOMMENDED_MA, -3), units="A",
+                         re_derives="led.gpio_current_limit", datasheet_bound=True),
+            PropertySpec(id="led.led_current", label="the LED current", quantity="diode_current(D_LED1)",
+                         relation="le", hi=exact(LED_MAX_MA, -3), units="A",
+                         re_derives="led.led_current_limit", datasheet_bound=True),
+            PropertySpec(id="led.r1_power", label="R1's dissipation", quantity="series_power(R_R1,D_LED1)",
+                         relation="le", hi=exact(RESISTOR_POWER_W), units="W",
+                         re_derives="led.resistor_dissipation", datasheet_bound=True),
+        ]
+
     # ── generate() ────────────────────────────────────────────────────────
 
     def generate(self, intent: IntentLike) -> CircuitIR:
