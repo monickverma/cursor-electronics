@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-23T15:57:10.280819Z'
+generated_at: '2026-09-23T16:32:15.056955Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -794,7 +794,7 @@ files:
         type: function
         description: f_c = 1 / (2·pi·R·C).
         signature: 'cutoff_hz(ohms: float, farads: float) -> float'
-        line: 129
+        line: 139
         test_file: tests/test_rc_lowpass_generator.py
       select_components:
         status: verified_done
@@ -802,22 +802,23 @@ files:
         description: 'Pick R and C for a target cutoff. Deterministic: capacitors
           are tried in'
         signature: 'select_components(target_hz: float, supply_v: float, r_pin: Optional[float],
-          c_pin: Optional[_Capacitor]) -> Optional[_Selection]'
-        line: 175
+          c_pin: Optional[_Capacitor], source_ohms: float, tolerance_pct: Optional[float])
+          -> Optional[_Selection]'
+        line: 190
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator:
         status: verified_done
         type: class
         description: Single-pole passive RC low-pass. Implements `generators.protocol.Generator`.
         signature: null
-        line: 315
+        line: 349
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.envelope:
         status: verified_done
         type: method
         description: Accept with the interface contract, or refuse with a reason specific
         signature: 'RCLowPassGenerator.envelope(intent: IntentLike) -> EnvelopeDecision'
-        line: 331
+        line: 365
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.predict:
         status: verified_done
@@ -825,7 +826,7 @@ files:
         description: Closed-form behaviour over a parameter box.
         signature: 'RCLowPassGenerator.predict(intent: IntentLike, box: Optional[Mapping[str,
           Interval]]) -> Prediction'
-        line: 448
+        line: 486
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.generate:
         status: verified_done
@@ -833,7 +834,7 @@ files:
         description: Deterministic given (intent, version). Callers call `envelope()`
           first.
         signature: 'RCLowPassGenerator.generate(intent: IntentLike) -> CircuitIR'
-        line: 596
+        line: 634
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.grid:
         status: verified_done
@@ -841,7 +842,7 @@ files:
         description: Three decades of the declared envelope. A single 1 kHz point
           passes on
         signature: RCLowPassGenerator.grid() -> GridSpec
-        line: 704
+        line: 743
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.dependency_closure:
         status: verified_done
@@ -850,7 +851,7 @@ files:
           the
         signature: 'RCLowPassGenerator.dependency_closure(requirement_path: str) ->
           FrozenSet[str]'
-        line: 715
+        line: 754
         test_file: tests/test_rc_lowpass_generator.py
     module_status: done
   validation/envelope_grid:

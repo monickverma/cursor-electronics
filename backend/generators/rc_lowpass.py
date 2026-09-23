@@ -47,6 +47,16 @@ accepted by misreading are now refused, which is why the version moves.
 shift as failing on the design it had just produced — an accepted design
 carrying its own failed claim. Found by the Stage 3 + 4 verification. Every
 design 0.2.1 produced with the shift inside tolerance is unchanged.
+
+**…and swamped before it is refused (0.2.3).** When the source would move f_c
+past tolerance, a smaller catalogue capacitor is chosen so R1 is large enough
+to keep the source's effect inside it — what the series-resistance comment
+below always said and nothing did. Refused only when no catalogue pair
+manages it, or when a pin fixes R1. Every design 0.2.2 accepted is unchanged;
+at 1 kHz and 5% the largest source handled goes from 179 Ω to about 1.8 kΩ.
+Compensating R1 by R_s was rejected: it changes every design that declares a
+source, and makes the design depend on a declared value nobody verified.
+Chosen with a TypeSafe (Jev) consultation; `brain/decisions.md` [2026-09-23].
 """
 
 from __future__ import annotations
@@ -88,7 +98,7 @@ from generators.protocol import (
 from generators.netlist.spice import _parse_farads, _parse_ohms
 
 NAME = "rc_lowpass"
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 #: The requirements.function this generator serves. The registry reads it to
 #: build the form's catalogue without probing envelope() with guesses.
 FUNCTION = "low_pass_filter"
@@ -101,8 +111,8 @@ MIN_CUTOFF_HZ = 10.0
 MAX_CUTOFF_HZ = 100_000.0
 
 # Series resistance is kept well above the source impedance the intent declares
-# (the loading error is R_src/R) and below the point where bias currents and
-# noise start to matter.
+# (the loading error is R_src/(R+R_src); `select_components` swamps it since
+# 0.2.3) and below the point where bias currents and noise start to matter.
 MIN_SERIES_OHMS = 1_000.0
 MAX_SERIES_OHMS = 100_000.0
 
@@ -172,11 +182,18 @@ PINNABLE = ("R1", "C1")
 _Capacitor = Tuple[float, str, str, float]
 
 
+def source_shift_pct(source_ohms: float, series_ohms: float) -> float:
+    """How far a source in series with R1 lowers f_c, in percent."""
+    return source_ohms / (series_ohms + source_ohms) * 100.0 if source_ohms else 0.0
+
+
 def select_components(
     target_hz: float,
     supply_v: float,
     r_pin: Optional[float] = None,
     c_pin: Optional[_Capacitor] = None,
+    source_ohms: float = 0.0,
+    tolerance_pct: Optional[float] = None,
 ) -> Optional[_Selection]:
     """
     Pick R and C for a target cutoff. Deterministic: capacitors are tried in
@@ -187,11 +204,19 @@ def select_components(
     resistor replaces the E96 snap with the pinned value, and the capacitor is
     then the one that gets closest to the target around it.
 
+    With a declared source and tolerance (0.2.3): if the closest pair lets
+    the source move f_c past tolerance, the closest pair that keeps both the
+    source's shift and its own error inside tolerance is taken instead — a
+    smaller capacitor, a larger R1. Nothing changes for a pair that already
+    passes, and nothing is swapped around a pin. If no pair passes, the
+    closest is returned and `envelope()` refuses it by name.
+
     Returns None when nothing in the catalogue lands inside the series-resistance
     window, which is a refusal the caller turns into a named reason.
     """
     best: Optional[_Selection] = None
     best_err = float("inf")
+    candidates = []
 
     for farads, c_value, c_part, c_vmax in ((c_pin,) if c_pin else _CAPACITORS):
         if supply_v > c_vmax:
@@ -207,11 +232,20 @@ def select_components(
                 continue
         candidate = _Selection(ohms, farads, c_value, c_part, c_vmax)
         err = abs(candidate.achieved_hz - target_hz) / target_hz
+        candidates.append((err, candidate))
         # Strict `<` keeps the earlier table entry on a tie, which is what
         # makes the choice reproducible rather than dict-order dependent.
         if err < best_err:
             best_err, best = err, candidate
 
+    swampable = (best is not None and source_ohms and tolerance_pct is not None
+                 and r_pin is None and c_pin is None)
+    if swampable and source_shift_pct(source_ohms, best.ohms) > tolerance_pct:
+        passing = [(err, c) for err, c in candidates
+                   if err * 100.0 <= tolerance_pct and source_shift_pct(source_ohms, c.ohms) <= tolerance_pct]
+        if passing:
+            # min() keeps the first of equals: table order again.
+            best = min(passing, key=lambda pair: pair[0])[1]
     return best
 
 
@@ -354,7 +388,7 @@ class RCLowPassGenerator:
             target = _target_cutoff(intent)
             supply_v = _supply_v(intent)
             tolerance_pct = _tolerance_pct(intent)
-            _source_impedance(intent)
+            source = _source_impedance(intent)
         except _Unreadable as exc:
             return EnvelopeDecision.refuse(str(exc))
 
@@ -373,7 +407,8 @@ class RCLowPassGenerator:
         if pins.refusal:
             return EnvelopeDecision.refuse(pins.refusal)
 
-        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor)
+        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor,
+                                      source, tolerance_pct)
         if selection is None:
             return EnvelopeDecision.refuse(
                 f"no catalogue R/C pair puts the series resistor inside "
@@ -390,13 +425,15 @@ class RCLowPassGenerator:
                 f"the requested tolerance_pct={tolerance_pct:g}"
             )
 
-        source = _source_impedance(intent)
-        shift_pct = source / (selection.ohms + source) * 100.0
+        shift_pct = source_shift_pct(source, selection.ohms)
         if shift_pct > tolerance_pct:
+            why = ("R1 or C1 is pinned, so R1 cannot be raised" if pins.any
+                   else f"no catalogue capacitor allows an R1 (≤ {MAX_SERIES_OHMS / 1000:g} kΩ) large "
+                        f"enough to swamp it")
             return EnvelopeDecision.refuse(
                 f"a {source:g} Ω source in series with R1={selection.ohms:g} Ω lowers f_c by "
-                f"{shift_pct:.2f}%, beyond tolerance_pct={tolerance_pct:g} — buffer the source, "
-                f"or allow more tolerance"
+                f"{shift_pct:.2f}%, beyond tolerance_pct={tolerance_pct:g}, and {why} — buffer the "
+                f"source, or allow more tolerance"
             )
 
         return EnvelopeDecision.accept(self._ports(intent, selection))
@@ -406,7 +443,8 @@ class RCLowPassGenerator:
         supply_v = _supply_v(intent)
         pins = _resolve_pins(intent, supply_v)
         selection = select_components(
-            _target_cutoff(intent), supply_v, pins.r_ohms, pins.capacitor
+            _target_cutoff(intent), supply_v, pins.r_ohms, pins.capacitor,
+            _source_impedance(intent), _tolerance_pct(intent),
         )
         if selection is None or pins.refusal:
             raise ValueError("no selection for an intent envelope() refuses")
@@ -606,7 +644,8 @@ class RCLowPassGenerator:
             raise ValueError("generate() requires targets.cutoff_hz — call envelope() first")
         supply_v = _supply_v(intent)
         pins = _resolve_pins(intent, supply_v)
-        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor)
+        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor,
+                                      _source_impedance(intent), _tolerance_pct(intent))
         if selection is None or pins.refusal:
             raise ValueError("generate() called on an intent envelope() refuses")
 
@@ -735,7 +774,8 @@ class RCLowPassGenerator:
             "targets.tolerance_pct": frozenset({"R1", "C1"}),
             # A new rating can change the capacitor, which re-snaps R1.
             "constraints.supply_v": frozenset({"R1", "C1"}),
-            "constraints.source_impedance_ohm": frozenset({"R1"}),
+            # Since 0.2.3 a large source swaps the capacitor to raise R1.
+            "constraints.source_impedance_ohm": frozenset({"R1", "C1"}),
             # A pin on either part re-chooses the other around it.
             "constraints.pinned": frozenset({"R1", "C1"}),
             "preferences.package": frozenset({"R1", "C1"}),

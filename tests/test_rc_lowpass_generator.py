@@ -463,9 +463,48 @@ class TestGridAndLocality:
         assert at_5v.c_value != at_20v.c_value
         assert at_5v.ohms != at_20v.ohms
 
-    def test_source_impedance_only_reaches_the_resistor(self):
-        # Still narrow where it is true: it changes R1's loading note only.
-        assert GEN.dependency_closure("constraints.source_impedance_ohm") == frozenset({"R1"})
+    def test_source_impedance_reaches_both_parts(self):
+        # 0.2.3: a source too large for the closest pair swaps the capacitor to
+        # raise R1, so the path can reach C1. A closure that is too narrow is
+        # worse than a wide one, because it is believed.
+        assert GEN.dependency_closure("constraints.source_impedance_ohm") == frozenset({"R1", "C1"})
+
+
+class TestSourceIsSwamped:
+    """
+    0.2.3. A declared source that would move f_c past tolerance is swamped by
+    a larger R1 — a smaller catalogue capacitor — and refused only when no
+    pair manages it. Chosen over compensating R1 by R_s after a TypeSafe
+    consultation: brain/decisions.md [2026-09-23].
+    """
+
+    @pytest.mark.parametrize("target", [10.0, 100.0, 1_000.0, 10_000.0, 100_000.0])
+    @pytest.mark.parametrize("source", [0.0, 25.0, 50.0])
+    def test_a_design_that_already_passed_is_unchanged(self, target, source):
+        plain = select_components(target, 5.0)
+        with_source = select_components(target, 5.0, None, None, source, 5.0)
+        if source / (plain.ohms + source) <= 0.05:
+            assert (with_source.ohms, with_source.c_value) == (plain.ohms, plain.c_value)
+
+    def test_a_600_ohm_line_source_at_1khz_is_swamped(self):
+        spec = intent(cutoff=1_000.0, source_impedance_ohm=600.0)
+        assert GEN.envelope(spec).accepted
+        parts = {c.id: c for c in GEN.generate(spec).components}
+        plain = select_components(1_000.0, 5.0)
+        assert parts["C1"].value != plain.c_value                 # a smaller capacitor…
+        r1 = float(parts["R1"].value.rstrip("Ω"))
+        assert r1 > plain.ohms                                     # …and a larger R1
+        assert 600.0 / (r1 + 600.0) <= 0.05
+
+    def test_a_source_nothing_can_swamp_is_refused_by_name(self):
+        decision = GEN.envelope(intent(cutoff=1_000.0, source_impedance_ohm=10_000.0))
+        assert not decision.accepted
+        assert "lowers f_c" in decision.reason and "swamp" in decision.reason
+
+    def test_nothing_is_swapped_around_a_pin(self):
+        decision = GEN.envelope(intent(cutoff=1_000.0, source_impedance_ohm=600.0,
+                                       pinned={"C1": "100n"}))
+        assert not decision.accepted and "pinned" in decision.reason
 
     def test_a_nested_path_resolves_through_its_declared_prefix(self):
         assert GEN.dependency_closure("constraints.pinned.R1") == frozenset({"R1", "C1"})

@@ -1425,3 +1425,49 @@ the literal `realize(generator, intent)`; they now also accept
 this environment — the conditional UPDATE is the patch route's, whose
 predicate is tested); live-LLM paths (no key); hardware (D1 stays open —
 ngspice agreeing with the prover is model against model).
+
+---
+
+## [2026-09-23] RC source swamping (rc_lowpass 0.2.3) and the LED bound — decided with TypeSafe
+
+**Decision:** The two calls the Stage 3 + 4 verification left to the user were
+put to TypeSafe (Jev, `jev-1.13.0`) with the whole scenario as state, on the
+user's instruction ("give it the whole scenario and then make the decision").
+The agent then decided, reading the answers against TypeSafe's own confidence
+guidance (>0.9 act, 0.5–0.9 act with care, <0.5 a person should decide).
+
+**What was sent.** About 10.6k characters of state: how a design is made and
+graded, the invariant that an accepted design never carries a failing claim,
+versioning, the one-engineer team, and for each decision its history, the
+measured facts and every option with its benefits and costs side by side.
+The request script is `typesafe_rc_led.py` (session scratchpad). Questions:
+two Choices and three Nouls. Raw answers:
+
+| Question | Answer |
+|---|---|
+| `rc_option` (choice) | **swamp_with_larger_r1 0.87**, refuse 0.13, compensate 0.00 — confidence 0.83 |
+| `led_option` (choice) | **conservative_now_exact_later 0.58**, exact_now 0.36, keep_conservative 0.06 — confidence 0.44 |
+| `rc_refusal_blocks_common_requests` (noul) | 0.62 |
+| `led_loss_is_material` (noul) | 0.26 |
+| `led_grade_upgrade_worth_doing_now` (noul) | 0.47 |
+
+1. **RC: swamp with a larger R1 — implemented, rc_lowpass 0.2.3.** Confidence
+   0.83, and the agent's own reading agrees: designs that pass today do not
+   change (0 of 36 checked), the design stays right if the declared source is
+   somewhat off, and it is what the generator's comment always claimed.
+   When the source would move f_c past tolerance, the closest catalogue pair
+   that keeps both the source shift and its own error inside tolerance is
+   taken — a smaller capacitor, a larger R1. Refused when none does, or when
+   a pin fixes R1. Largest source at 5%: 179 Ω → 1.79 kΩ at 1 kHz, 1.79 →
+   3.76 kΩ at 100 Hz; unchanged at 100 kHz (83 Ω). `dependency_closure` for
+   `constraints.source_impedance_ohm` widens to {R1, C1}: the source can now
+   change the capacitor. *Rejected:* compensating R1 by R_s (Jev 0.00) —
+   every source-declaring design changes, and correctness hangs on a declared
+   value with no tolerance that an LLM may have written (D5).
+2. **LED: keep the conservative bound now; exact worst case scheduled.**
+   Confidence 0.44 is below TypeSafe's own threshold for acting, so the agent
+   decided, taking the reversible option: the wrongly refused requests do not
+   matter to users (0.26 — only 16.3–16.5 mA at 5.25 V, true worst 62.0 mW),
+   and doing the G1 upgrade now is a coin flip (0.47). Recorded as a
+   scheduled task in `plan/current_phase.md`. **The user may overrule** — the
+   cost of doing it now is one generator, its claim and its proof.

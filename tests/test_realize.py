@@ -129,7 +129,8 @@ LOCALITY_SWEEP = [
 ] + [
     # 60 Ω, not 600: against R1 ≈ 1.6 kΩ, 600 Ω moves f_c 27% and rc_lowpass
     # 0.2.2 refuses it — the sweep would silently skip the path.
-    ("/constraints/source_impedance_ohm", v) for v in (0, 60)
+    # 600 Ω at 1 kHz is swamped (0.2.3): the capacitor changes, so C1 is in scope.
+    ("/constraints/source_impedance_ohm", v) for v in (0, 60, 600)
 ]
 
 
@@ -175,11 +176,18 @@ class TestLocality:
         report = check_locality(Stage0Closure(), out.changed_paths, realize(GEN, base), realize(GEN, out.intent))
         assert report.violations == ("R1",)
 
-    def test_a_narrow_path_stays_narrow(self):
+    def test_a_small_source_touches_only_r1(self):
+        # Inside tolerance nothing is re-chosen: only R1's loading note moves.
         base = make()
         out = patched(base, "/constraints/source_impedance_ohm", 60)
         report = check_locality(GEN, out.changed_paths, realize(GEN, base), realize(GEN, out.intent))
-        assert report.diff == ("R1",) and report.closure == ("R1",)
+        assert report.diff == ("R1",) and report.ok
+
+    def test_a_swamped_source_reaches_c1_and_its_closure_says_so(self):
+        base = make()
+        out = patched(base, "/constraints/source_impedance_ohm", 600)
+        report = check_locality(GEN, out.changed_paths, realize(GEN, base), realize(GEN, out.intent))
+        assert set(report.diff) == {"R1", "C1"} and report.ok
 
     def test_component_diff_sees_additions_and_removals(self):
         design = realize(GEN, make())

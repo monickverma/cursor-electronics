@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-23T15:52:31.674805Z",
-  "generated_from_commit": "60e68f7",
+  "generated_at": "2026-09-23T16:27:16.416676Z",
+  "generated_from_commit": "0afa72c",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -379,10 +379,10 @@
     }
   },
   "test_summary": {
-    "passed": 1588,
+    "passed": 1608,
     "failed": 0,
     "skipped": 15,
-    "total": 1588
+    "total": 1608
   },
   "phase1_criteria": [
     {
@@ -585,13 +585,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "0afa72c fix(stage3+4): close five defects found by the Stage 3 + 4 verification",
     "60e68f7 feat(phase2): Stage 4 — proof compiler, sign-off and freeze",
     "9dbdc1e feat(phase2): Stage 3 — claims table, waveform viewer, and a tracker that cannot go blind",
     "9a4ecc6 feat(phase2): Stage 3 — four generators, claim objects, grade floor (X6 + X8)",
-    "0c0ce3b brain: /update-memory — architecture and mental model re-synced to IntentIR flow; 1003 passing",
-    "dc94a08 fix(stage2): transitive CircuitIR scanner; strict rc_lowpass inputs (0.2.1)"
+    "0c0ce3b brain: /update-memory — architecture and mental model re-synced to IntentIR flow; 1003 passing"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                           |  10 +-\n .claude/shared-memory/brain/decisions.md    | 129 +++++\n .claude/shared-memory/plan/current_phase.md |  77 ++-\n .claude/shared-memory/progress.yam",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    |  74 ++++++++++++\n .claude/shared-memory/plan/current_phase.md |  32 ++++-\n .claude/shared-memory/progress.yaml         |  37 +++---\n .claude/shared-memory",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

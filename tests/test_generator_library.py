@@ -219,8 +219,9 @@ BAD_INPUTS = {
                    ({"constraints": {"cable_length_m": 20.0}}, "no pull-up meets"),
                    ({"constraints": {"supply_v": 3.3}}, "needs 4.5 V"),
                    ({"preferences": {"alert_threshold_c": "hot"}}, "not a temperature")],
-    # Stage 3 + 4 verification: a source that moves f_c past tolerance, accepted by 0.2.1.
-    "rc_lowpass": [({"constraints": {"source_impedance_ohm": 2000.0}}, "lowers f_c")],
+    # Stage 3 + 4 verification: a source that moves f_c past tolerance, accepted by
+    # 0.2.1. Since 0.2.3 a larger R1 swamps what it can; 10 kΩ it cannot.
+    "rc_lowpass": [({"constraints": {"source_impedance_ohm": 10_000.0}}, "lowers f_c")],
     "rs485_node": [({"constraints": {"baud": 115200}}, "SoftwareSerial"),
                    ({"constraints": {"supply_v": 3.3}}, "MAX3485"),
                    ({"constraints": {"far_end_terminated": "yes"}}, "true or false"),

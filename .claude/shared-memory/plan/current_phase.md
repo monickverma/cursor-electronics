@@ -630,7 +630,8 @@ verification.
 **Defects found and fixed:** (1) the refine loop accepted a proof over a
 smaller box — the Stage 4 weakening gate was only partly met; (2)
 denominators were not proved non-zero (none was zero; nothing enforced it);
-(3) rc_lowpass 0.2.2 refuses a source that moves f_c past tolerance; (4)
+(3) rc_lowpass 0.2.2 refuses a source that moves f_c past tolerance (0.2.3,
+decided afterwards, swamps it with a larger R1 first); (4)
 led_indicator 0.1.1 refuses an R1 that can exceed its rating (64.7 mW at
 17 mA / 5.25 V was accepted) and drops the reverse-voltage figure it carried
 as a supply rating; (5) `realize()` moved off the event loop in the generate
@@ -638,6 +639,25 @@ and patch routes.
 
 **Not verified here:** sign-off against a real PostgreSQL (none available);
 live-LLM paths; hardware (D1).
+
+## Decided after the verification — 2026-09-23
+
+With TypeSafe (Jev), `brain/decisions.md` [2026-09-23] RC source swamping:
+
+- **rc_lowpass 0.2.3** swamps a large declared source with a larger R1 (a
+  smaller capacitor) before refusing. Implemented; designs that passed are
+  unchanged.
+- **LED dissipation stays conservative for now.** Scheduled below.
+
+## Task 4.5 — Exact LED dissipation (scheduled, not started)
+
+Split R1's tolerance range where I(R1)²·R1 peaks so each half is monotone,
+and use it in `led_indicator.envelope()`, `predict()` / `led.resistor_dissipation`
+and the `series_power` proof. Gains: 16.3–16.5 mA at 5.25 V accepted (true
+worst 62.0 mW), LED dissipation G2 → G1, and with it the library's signed
+floor G2 → G1 — the last G2 claim in the library. Trigger: before the
+library floor is quoted to anyone as a headline number, or when Stage 5 is
+done, whichever comes first.
 
 ## Next — Stage 5, multi-MCU firmware
 
