@@ -209,6 +209,8 @@ BAD_INPUTS = {
                         ({"constraints": {"supply_v": 60.0}}, "rating")],
     "led_indicator": [({"targets": {"led_current_ma": "10"}}, "not a number"),
                       ({"targets": {"led_current_ma": 30.0}}, "recommended per-pin"),
+                      # Stage 3 + 4 verification: 64.7 mW in a 62.5 mW part, accepted by 0.1.0.
+                      ({"targets": {"led_current_ma": 17.0}, "constraints": {"supply_v": 5.25}}, "mW rating"),
                       ({"constraints": {"supply_v": 3.3}}, "characterised at 5 V"),
                       ({"preferences": {"gpio_pin": "D0"}}, "not an Arduino Uno digital pin"),
                       ({"preferences": {"colour": "blue"}}, "no tabulated LED")],
@@ -217,6 +219,8 @@ BAD_INPUTS = {
                    ({"constraints": {"cable_length_m": 20.0}}, "no pull-up meets"),
                    ({"constraints": {"supply_v": 3.3}}, "needs 4.5 V"),
                    ({"preferences": {"alert_threshold_c": "hot"}}, "not a temperature")],
+    # Stage 3 + 4 verification: a source that moves f_c past tolerance, accepted by 0.2.1.
+    "rc_lowpass": [({"constraints": {"source_impedance_ohm": 2000.0}}, "lowers f_c")],
     "rs485_node": [({"constraints": {"baud": 115200}}, "SoftwareSerial"),
                    ({"constraints": {"supply_v": 3.3}}, "MAX3485"),
                    ({"constraints": {"far_end_terminated": "yes"}}, "true or false"),
@@ -244,6 +248,30 @@ class TestRefusedByName:
     def test_an_unknown_pin_is_refused(self, name):
         decision = GENERATORS[name].envelope(form_intent(name, constraints={"pinned": {"Q9": "1k"}}))
         assert not decision.accepted and "Q9" in decision.reason
+
+
+class TestFoundByTheStage34Verification:
+    """An accepted design must never carry a failed claim of its own."""
+
+    @pytest.mark.parametrize("supply", [4.75, 5.0, 5.25])
+    def test_the_led_passes_its_rating_rule_across_its_supply_window(self, supply):
+        intent = form_intent("led_indicator", constraints={"supply_v": supply})
+        claims = {c["id"]: c for c in realize(GENERATORS["led_indicator"], intent).validation_coverage["claims"]}
+        assert claims["rule.voltage_ratings_ok"]["verdict"] in ("holds", "holds_defeasible")
+
+    def test_every_accepted_led_keeps_r1_inside_its_rating(self):
+        g = GENERATORS["led_indicator"]
+        for supply in (4.75, 5.0, 5.25):
+            for tenths in range(10, 201, 5):
+                intent = form_intent("led_indicator", targets={"led_current_ma": tenths / 10},
+                                     constraints={"supply_v": supply})
+                if g.envelope(intent).accepted:
+                    assert g.predict(intent).quantities["r1_power_mw"].hi <= 62.5, (supply, tenths / 10)
+
+    def test_an_rc_source_inside_tolerance_is_accepted_and_its_claim_holds(self):
+        intent = form_intent("rc_lowpass", constraints={"source_impedance_ohm": 300.0})
+        claims = {c["id"]: c for c in realize(GENERATORS["rc_lowpass"], intent).validation_coverage["claims"]}
+        assert claims["rc.source_loading"]["verdict"] != "fails"
 
 
 class TestPinsHonoured:

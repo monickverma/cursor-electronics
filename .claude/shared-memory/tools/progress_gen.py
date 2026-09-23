@@ -554,7 +554,7 @@ PLANNED = {
     },
     "proof/prover": {
         "file": "backend/proof/prover.py",
-        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py"],
+        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py", "tests/test_proof_oracle.py"],
         "entries": [
             ("compile_statement",       "function", "Netlist + property → Statement and z3 obligations"),
             ("prove",                   "function", "The refine loop; refuses any result for another property"),

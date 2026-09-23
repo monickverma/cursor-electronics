@@ -1351,3 +1351,77 @@ actually built, per design rather than per CI grid point.
 - *A property the prover cannot compile would have failed generation.* It
   is now a visible not-assessed row (G7), and a set containing one cannot be
   signed — the X8 rule: what was not checked is printed.
+
+---
+
+## [2026-09-23] Stage 3 + 4 verification — five defects, closed
+
+**Decision:** On the instruction "test whether all the work done is fine … do a
+rigorous check for all of Stage 3 and 4", Stages 3 and 4 were checked against
+things that do not share their code, and five defects were fixed. Found and
+fixed by the agent; the design choices below are recorded for the user to
+overrule.
+
+**How it was checked.** ngspice, driven through its own control language, not
+the project's parser: every Stage 3 band against the corner extremes of the
+same tolerance box (85 comparisons, exact to 10⁻⁵); every Stage 4 property at
+every corner and random interior points (64 properties, 624 evaluations);
+tightness (a bound 10⁻⁶ inside the observed extreme must be refuted, 10⁻⁶
+outside proven); every mutation counterexample replayed as a real violation
+(64/64). Designs and property hashes compared across four PYTHONHASHSEEDs
+(identical — a signature survives a restart). A few hundred random
+requirements fuzzed through `realize()`. Adversarial strategies against the
+refine loop. Older IntentIR dumps (2.0.0, 2.1.0) load.
+
+1. **The refine loop accepted a proof over a smaller box.** It checked the
+   statement and obligation hashes, never the region decided: a strategy that
+   decided only the nominal point returned "proven" for a property false over
+   the box, and was accepted. Stage 4's adversarial-weakening gate was
+   reported met; it was only partly met. Now every result carries a
+   certificate — per obligation, the boxes decided UNSAT — and `prove()`
+   checks they tile the frozen box (inside it, interiors disjoint, volumes
+   summing to its volume) and re-decides each box itself. A box z3 cannot
+   re-decide in time downgrades the result to `unknown`, never raises.
+2. **Denominators were not proved non-zero.** z3 reads x/0 as any value. All
+   89 denominators on the grid were positive, so no existing proof was wrong;
+   nothing enforced it. Each distinct denominator is now a lemma.
+3. **rc_lowpass 0.2.2: a declared source impedance was read and ignored.**
+   The envelope accepted a source that moved f_c past tolerance, and
+   `rc.source_loading` then failed on the design just produced. Now refused
+   by name. *Rejected alternative:* compensating R1 by R_s — a better design
+   for the user, but it changes every source-declaring design; left for the
+   user to choose.
+4. **led_indicator 0.1.1: R1 could overheat inside the envelope.** At 17 mA
+   from a 5.25 V pin, ngspice puts the worst corner at 64.7 mW in a 62.5 mW
+   part. The envelope checked pin and LED current, never dissipation. It now
+   refuses when the sound (G2) bound exceeds the rating — the divider's test.
+   This is conservative: 16.45 mA at 5.24 V (true worst 61.7 mW, bound
+   62.9 mW) is now refused too. And LED1 carried its 5 V *reverse* rating as
+   `supply_voltage_max`, so the voltage-rating rule failed every accepted LED
+   above 5.0 V; it now has no supply rating.
+5. **`realize()` ran on the event loop** in the generate and patch routes.
+   With Stage 4 proofs that is 0.1–1.7 s of CPU per request blocking every
+   other request. Both now use `run_in_threadpool`, as sign-off already did.
+
+Kept as regressions: `tests/test_accepted_designs.py` (a seeded corpus; on
+the pre-fix code it fails 10 designs, 4 RC and 6 LED), `tests/test_proof_oracle.py`
+(ngspice at every corner of every default property, and every
+counterexample replayed), certificate and denominator tests in
+`tests/test_proof.py`, refusals in `tests/test_generator_library.py`, and
+sign-then-patch through the routes in `tests/test_sign_off.py`.
+
+**Existing tests changed, and why.** Three fixtures used a 600 Ω source as an
+arbitrary "touches only R1" value: the criterion-7 patch chain
+(`test_intent_patch.py`) and two locality / predict-delta tests
+(`test_realize.py`). Against R1 ≈ 1.6 kΩ that is a 27% cutoff shift — those
+designs had carried a failing `rc.source_loading` claim all along, unseen
+because the tests do not read claims — and 0.2.2 now refuses them. They use
+200 Ω and 60 Ω, inside tolerance; what each test checks is unchanged. Two
+tests in `test_llm_cannot_write_circuit_ir.py` matched the route source for
+the literal `realize(generator, intent)`; they now also accept
+`run_in_threadpool(realize, generator, intent)`, the same path off the loop.
+
+**Not verifiable here:** sign-off against a real PostgreSQL (no database in
+this environment — the conditional UPDATE is the patch route's, whose
+predicate is tested); live-LLM paths (no key); hardware (D1 stays open —
+ngspice agreeing with the prover is model against model).

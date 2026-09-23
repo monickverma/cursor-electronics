@@ -195,12 +195,26 @@ class _Store:
         d.ir_json, d.intent_ir, d.version = ir.model_dump(mode="json"), intent_ir, ir.version
         return True
 
+    # The patch route's other seams, for the sign-then-patch test.
+    async def record_patch(self, db, **row):
+        self.writes.append("patch")
+
+    async def save_output(self, db, *args):
+        pass
+
 
 @pytest.fixture
 def env(monkeypatch):
     store = _Store()
-    monkeypatch.setattr(patch_route, "get_design", store.get_design)
-    monkeypatch.setattr(patch_route, "update_design_revision", store.update_design_revision)
+    for seam in ("get_design", "update_design_revision", "record_patch", "save_output"):
+        monkeypatch.setattr(patch_route, seam, getattr(store, seam))
+    monkeypatch.setattr(patch_route.run_simulation, "apply_async", lambda **kw: None)
+
+    async def no_log(self, row):
+        return True
+
+    from observability.request_log import RequestLogger
+    monkeypatch.setattr(RequestLogger, "record", no_log)
     app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=USER, email=EMAIL)
     app.dependency_overrides[get_db] = lambda: None
     was_enabled = limiter.enabled
@@ -270,6 +284,29 @@ class TestSignOffRoute:
         assert first.status_code == second.status_code == 200
         assert env.store.writes == ["revision"]
         assert second.json()["validation_coverage"] == first.json()["validation_coverage"]
+
+    def test_a_patch_after_sign_off_is_an_unsigned_revision(self, env):
+        cid = env.store.add()
+        signed_hash = shown(env.store, cid)
+        assert env.client.post(f"/design/{cid}/sign-off",
+                               json={"properties_hash": signed_hash}).status_code == 200
+        res = env.client.post(f"/design/{cid}/patch",
+                              json={"ops": [{"op": "replace", "path": "/targets/vout_v", "value": 1.8}]})
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["version"] == 2
+        assert body["intent_ir"]["signed_off"] is None
+        assert body["validation_coverage"]["properties_signed"] is False
+        # The signature does not travel: v2's properties are new sentences awaiting their own.
+        assert body["validation_coverage"]["properties_hash"] != signed_hash
+
+    def test_a_no_op_patch_after_sign_off_keeps_the_signature(self, env):
+        cid = env.store.add()
+        env.client.post(f"/design/{cid}/sign-off", json={"properties_hash": shown(env.store, cid)})
+        res = env.client.post(f"/design/{cid}/patch",
+                              json={"ops": [{"op": "replace", "path": "/targets/vout_v", "value": 3.3}]})
+        assert res.status_code == 200 and res.json()["version"] == 1
+        assert res.json()["validation_coverage"]["properties_signed"] is True
 
     def test_someone_elses_design_is_403(self, env):
         cid = env.store.add(user="00000000-0000-0000-0000-000000000002")

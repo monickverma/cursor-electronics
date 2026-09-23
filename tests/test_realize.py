@@ -127,7 +127,9 @@ LOCALITY_SWEEP = [
 ] + [
     ("/constraints/supply_v", v) for v in (3.3, 12, 16, 20, 45)
 ] + [
-    ("/constraints/source_impedance_ohm", v) for v in (0, 600)
+    # 60 Ω, not 600: against R1 ≈ 1.6 kΩ, 600 Ω moves f_c 27% and rc_lowpass
+    # 0.2.2 refuses it — the sweep would silently skip the path.
+    ("/constraints/source_impedance_ohm", v) for v in (0, 60)
 ]
 
 
@@ -175,7 +177,7 @@ class TestLocality:
 
     def test_a_narrow_path_stays_narrow(self):
         base = make()
-        out = patched(base, "/constraints/source_impedance_ohm", 600)
+        out = patched(base, "/constraints/source_impedance_ohm", 60)
         report = check_locality(GEN, out.changed_paths, realize(GEN, base), realize(GEN, out.intent))
         assert report.diff == ("R1",) and report.closure == ("R1",)
 
@@ -197,7 +199,7 @@ class TestLocality:
 class TestPredictDelta:
     def test_only_quantities_that_moved_are_reported(self):
         base = make()
-        out = patched(base, "/constraints/source_impedance_ohm", 600)
+        out = patched(base, "/constraints/source_impedance_ohm", 60)
         # Source impedance changes R1's note, not a predicted quantity.
         assert predict_delta(GEN, base, GEN, out.intent) == []
 

@@ -134,7 +134,8 @@ async def generate_design(
     #    loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
     #    asserts mechanically. realize() stamps the circuit_id derived from the
     #    intent, so the same intent always yields a byte-identical design.
-    ir = realize(generator, intent)
+    # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
+    ir = await run_in_threadpool(realize, generator, intent)
 
     # 5. Validate
     val_result = validate_ir(ir)

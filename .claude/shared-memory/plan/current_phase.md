@@ -584,7 +584,7 @@ set. `tests/test_sign_off.py`.
 | Divider and LED claims proven over full tolerance (G1) | ✅ every grid point; LED dissipation G2 by construction |
 | RC cutoff proven over full tolerance, π bracketed (G1) | ✅ all 7 grid points; the bracket checked against π at 80 digits |
 | Every property back-translated and signed off before it counts (G1) | ✅ unsigned proofs are non-critical; floor moves only on a signature |
-| Adversarial weakening: the refine loop cannot change a frozen property (G1) | ✅ looser bound, weakened obligation, dropped obligation all raise `FrozenPropertyViolation` |
+| Adversarial weakening: the refine loop cannot change a frozen property (G1) | ✅ looser bound, weakened obligation, dropped obligation, **smaller box** all raise `FrozenPropertyViolation` — the last only since the verification below |
 | Every proven property fails under an injected wrong value (G1) | ✅ 64/64, each by a certified counterexample |
 
 **D8 eliminated.** **Divider floor G1 once signed**; the library floor stays
@@ -608,6 +608,36 @@ sound and not complete.
   properties.** The first needs a driven-bus bench; the second no single
   wrong part can break (decision item 7).
 - **No automated frontend test** — the panel was checked by eye, as in Stage 3.
+
+## Stage 3 + 4 verification — 2026-09-23
+
+Checked against things that share no code with what they check; details and
+the design choices in `brain/decisions.md` [2026-09-23] Stage 3 + 4
+verification.
+
+| Check | Result |
+|---|---|
+| Full suite before the fixes | 1446 passed, 15 skipped (live API ×13, test DB ×1, PCB golden regen ×1) |
+| Full suite after the fixes | 1588 passed, 0 failing, 15 skipped (same three reasons) |
+| Stage 3 bands vs ngspice corner extremes | 85/85 exact to 10⁻⁵ |
+| Stage 4 properties vs ngspice (corners + interior) | 64 properties, 624 evaluations, 0 outside the proven bounds |
+| Tightness (10⁻⁶ inside refuted, outside proven) | 83 refuted + 1 undecided (LED enclosure, by design); 42/42 proven |
+| Mutation counterexamples replayed in ngspice | 64/64 real violations |
+| Determinism and hashes across 4 hash seeds | identical, every signature accepted |
+| Fuzzed requirements through `realize()` | 549 accepted designs clean after the fixes |
+| Next.js production build | compiles, types and lint pass |
+
+**Defects found and fixed:** (1) the refine loop accepted a proof over a
+smaller box — the Stage 4 weakening gate was only partly met; (2)
+denominators were not proved non-zero (none was zero; nothing enforced it);
+(3) rc_lowpass 0.2.2 refuses a source that moves f_c past tolerance; (4)
+led_indicator 0.1.1 refuses an R1 that can exceed its rating (64.7 mW at
+17 mA / 5.25 V was accepted) and drops the reverse-voltage figure it carried
+as a supply rating; (5) `realize()` moved off the event loop in the generate
+and patch routes.
+
+**Not verified here:** sign-off against a real PostgreSQL (none available);
+live-LLM paths; hardware (D1).
 
 ## Next — Stage 5, multi-MCU firmware
 

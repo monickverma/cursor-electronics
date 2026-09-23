@@ -20,8 +20,17 @@ so the band edges are two opposite corners — `monotone_corners`, G1.
 
 The claims that matter are limits, and the envelope refuses anything that
 would break them: GPIO current at most the ATmega's 20 mA recommended per pin
-(40 mA is the absolute maximum, and designing to it is how pins die), and LED
-current at most its continuous rating.
+(40 mA is the absolute maximum, and designing to it is how pins die), LED
+current at most its continuous rating, and R1's dissipation at most its
+rating.
+
+**0.1.1**, from the Stage 3 + 4 verification. (1) The envelope did not check
+R1's dissipation: at 17 mA from a 5.25 V pin, ngspice puts the worst corner at
+64.7 mW in a 62.5 mW part. It now refuses when the sound bound exceeds the
+rating — conservative, the same test the divider uses. (2) LED1 carried its
+5 V *reverse* rating as `supply_voltage_max`, so the voltage-ratings rule
+failed every accepted design above 5.0 V. An LED has no supply rating; in
+this circuit it is never reverse-biased.
 """
 
 from __future__ import annotations
@@ -84,7 +93,7 @@ from generators.protocol import (
 )
 
 NAME = "led_indicator"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 FUNCTION = "led_indicator"
 
 LED_PART = "67-21URC/S530-A3/TR8"
@@ -218,6 +227,12 @@ class LedIndicatorGenerator:
             return EnvelopeDecision.refuse(
                 f"the LED could carry up to {band.hi:.2f} mA, above its {LED_MAX_MA:g} mA rating"
             )
+        r1_power_hi = self._r1_power_hi(r1, band)
+        if r1_power_hi > RESISTOR_POWER_W * 1000:
+            return EnvelopeDecision.refuse(
+                f"R1={r1:g}Ω could dissipate up to {r1_power_hi:.1f} mW over part tolerance, above "
+                f"the {RESISTOR_POWER_W * 1000:g} mW rating of an 0402 resistor — ask for less current"
+            )
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power",
                          voltage_range_v=Interval.at(spec.supply, "V"),
@@ -243,6 +258,11 @@ class LedIndicatorGenerator:
             r1_band, rout = box.get("R1", r1_band), box.get("R_out", rout)
         return r1_band, rout
 
+    def _r1_power_hi(self, r1: float, band: Interval, box=None) -> float:
+        """mW. Largest current with largest resistance: sound, loose (G2)."""
+        r1_band, _ = self._boxes(r1, box)
+        return (band.hi / 1000) ** 2 * r1_band.hi * 1000
+
     def _current_band(self, spec: _Spec, r1: float, box=None) -> Interval:
         """mA. Monotone: falls with R1 and R_out, rises as V_f falls."""
         r1_band, rout = self._boxes(r1, box)
@@ -265,7 +285,7 @@ class LedIndicatorGenerator:
         vf = diode_voltage(i_nom, i_s, n)
         # I²·R1 is not monotone in R1, so bound it outwardly: largest current
         # with largest resistance. Sound, loose — the claim says G2.
-        p_hi = (current.hi / 1000) ** 2 * r1_band.hi * 1000
+        p_hi = self._r1_power_hi(r1, current, box)
         p_lo = (current.lo / 1000) ** 2 * r1_band.lo * 1000
         p_nom = i_nom ** 2 * r1 * 1000
         rail = mcu_rail_ma(spec.supply)
@@ -383,7 +403,9 @@ class LedIndicatorGenerator:
                 Component(
                     id="LED1", type=ComponentType.LED, part_number=LED_PART,
                     manufacturer="Everlight", package="0805",
-                    supply_voltage_max=_LED["reverse_voltage_max"], current_draw_ma=round(band.nominal, 3),
+                    # No supply rating: the 5 V figure is reverse voltage, and this
+                    # circuit never reverse-biases the LED.
+                    supply_voltage_max=None, current_draw_ma=round(band.nominal, 3),
                     confidence=0.9, lcsc_pn="C72038",
                     justification=(
                         f"Red LED, V_f {vf:.2f} V at {band.nominal:.3g} mA on its fitted diode model "

@@ -268,7 +268,9 @@ class TestCriterion7:
     SEQUENCE = [
         [op("replace", "/targets/cutoff_hz", 2000)],
         [op("replace", "/targets/tolerance_pct", 3)],
-        [op("replace", "/constraints/source_impedance_ohm", 600)],
+        # 200 Ω, not 600: rc_lowpass 0.2.2 refuses a source that moves f_c past
+        # tolerance, and 600 Ω against R1 ≈ 17 kΩ at 3% did.
+        [op("replace", "/constraints/source_impedance_ohm", 200)],
         [op("replace", "/constraints/supply_v", 12)],
         [op("add", "/constraints/pinned", {"C1": "10nF"})],
     ]
@@ -305,7 +307,7 @@ class TestCriterion7:
         req = intent.requirements
         assert req["targets"] == {"cutoff_hz": 2000, "tolerance_pct": 3}
         assert req["constraints"] == {
-            "supply_v": 12, "source_impedance_ohm": 600, "pinned": {"C1": "10nF"},
+            "supply_v": 12, "source_impedance_ohm": 200, "pinned": {"C1": "10nF"},
         }
 
     def test_the_final_design_honours_every_accumulated_edit(self):
@@ -314,7 +316,7 @@ class TestCriterion7:
         parts = {c.id: c for c in final.components}
         assert parts["C1"].value == "10nF"                   # patch 5
         assert final.constraints["supply_voltage"] == 12     # patch 4
-        assert "600Ω source impedance" in parts["R1"].justification  # patch 3
+        assert "200Ω source impedance" in parts["R1"].justification  # patch 3
         assert final.constraints["cutoff_hz"] == 2000        # patch 1
 
     def test_connection_refs_still_resolve_after_patching(self):
@@ -330,7 +332,7 @@ class TestCriterion7:
         assert history == [
             "targets.cutoff_hz: 1000 → 2000",
             "targets.tolerance_pct: 5 → 3",
-            "constraints.source_impedance_ohm: 50 → 600",
+            "constraints.source_impedance_ohm: 50 → 200",
             "constraints.supply_v: 5 → 12",
             'constraints.pinned.C1: (unset) → "10nF"',
         ]

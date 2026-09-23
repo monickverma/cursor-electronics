@@ -53,6 +53,7 @@ a design from it.
 """
 
 import ast
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -649,13 +650,15 @@ class TestTheReplacementPath:
     def test_the_design_route_generates_through_the_registry(self):
         source = (BACKEND / "api" / "routes" / "design.py").read_text(encoding="utf-8")
         assert "registry.dispatch(intent)" in source
-        assert "realize(generator, intent)" in source
+        # Directly, or off the event loop (Stage 4 proofs made realize() CPU-heavy).
+        assert re.search(r"realize\(generator, intent\)|run_in_threadpool\(realize, generator, intent\)", source)
 
     def test_the_patch_route_regenerates_through_the_registry(self):
         # X4: an edit goes through the same gate as a fresh request.
         source = (BACKEND / "api" / "routes" / "patch.py").read_text(encoding="utf-8")
         assert "registry.dispatch(new_intent)" in source
-        assert "realize(generator, new_intent)" in source
+        assert re.search(r"realize\(generator, new_intent\)|run_in_threadpool\(realize, generator, new_intent\)",
+                         source)
 
     def test_the_producer_writes_intent_not_design(self):
         facts = _analyse(BACKEND / "ai" / "intent_producer.py")

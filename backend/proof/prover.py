@@ -29,11 +29,22 @@ certified either way is `unknown`.
 
 **The refine loop cannot weaken a frozen property.** Strategies run in order —
 direct decision, then box bisection when z3 says *unknown*. Each returns the
-hash of the statement it proved and of every obligation it discharged; the
-loop checks both against hashes it computed itself before any strategy ran. A
-strategy that proves anything else — a looser bound, a smaller box, one
-obligation fewer — raises `FrozenPropertyViolation`. Stage 4's adversarial
-weakening gate is that exception.
+hash of the statement it proved, the hash of every obligation it discharged,
+and a *certificate*: for each obligation, the boxes it was decided UNSAT on.
+The loop trusts none of it. It checks the hashes against ones it computed
+before any strategy ran; it checks the certificate's boxes tile the frozen
+box exactly (inside it, interiors disjoint, volumes summing to its volume);
+and it re-decides every certificate box itself against the frozen
+obligation. A strategy that proves anything else — a looser bound, one
+obligation fewer, a smaller box — raises `FrozenPropertyViolation`. Stage 4's
+adversarial weakening gate is that exception. (Found by the Stage 3 + 4
+verification: the loop once checked hashes only, and a strategy that decided
+the nominal point alone was accepted as a proof over the whole box.)
+
+**Every denominator is proved non-zero.** z3 reads x/0 as an unconstrained
+value, so a quantity whose denominator could vanish in the box could be
+"proved" by that value. Each distinct denominator becomes a lemma, decided
+like any other; if it fails, the property is `unknown`.
 """
 
 from __future__ import annotations
@@ -77,7 +88,7 @@ class Obligation(BaseModel):
 
     label: str
     expr: str                      # sympy srepr, so the obligation is data
-    op: str                        # "ge" | "le" | "gt"
+    op: str                        # "ge" | "le" | "gt" | "ne"
     bound: str                     # sympy srepr
     brackets: Tuple[Tuple[str, str, str], ...] = ()   # (name, lo, hi) as exact fraction strings
     lemma: bool = False
@@ -132,6 +143,9 @@ class ProofResult(BaseModel):
     discharged: Tuple[str, ...] = ()      # obligation hashes
     counterexample: Optional[Dict[str, str]] = None
     detail: str = ""
+    #: Per discharged obligation hash, the boxes it was decided UNSAT on —
+    #: each box as ((variable, lo, hi), …) with exact fraction strings.
+    certificate: Tuple[Tuple[str, Tuple[Tuple[Tuple[str, str, str], ...], ...]], ...] = ()
 
 
 # ── Boxes: what each part may be ─────────────────────────────────────────────
@@ -436,6 +450,7 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
     else:  # pragma: no cover - _args already refused it
         raise ValueError(kind)
 
+    obligations = _denominator_lemmas(obligations) + obligations
     used = set()
     for ob in obligations:
         used |= {s.name for s in _expr(ob.expr).free_symbols}
@@ -454,6 +469,24 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
                           uses_pi=uses_pi, bracketed=kind in ("cutoff", "rise_time", "diode_current", "series_power"),
                           datasheet=datasheet or spec.datasheet_bound, mcu_models=models)
     return statement, Problem(obligations=tuple(obligations), method=method, witness=witness)
+
+
+def _denominator_lemmas(obligations: List[Obligation]) -> List[Obligation]:
+    """One lemma per distinct symbolic denominator, in obligations and their refuters: it is never zero."""
+    seen, out = set(), []
+    for ob in obligations + [o.refute for o in obligations if o.refute is not None]:
+        _, den = sympy.fraction(sympy.together(_expr(ob.expr)))
+        if not den.free_symbols:
+            continue
+        key = sympy.srepr(den)
+        if key in seen:
+            continue
+        seen.add(key)
+        names = {s.name for s in den.free_symbols}
+        out.append(Obligation(label=f"denominator {den} is never zero over the box", expr=key, op="ne",
+                              bound=sympy.srepr(sympy.Integer(0)),
+                              brackets=tuple(b for b in ob.brackets if b[0] in names), lemma=True))
+    return out
 
 
 def _floor_sqrt(x: Fraction, digits: int = 9) -> Fraction:
@@ -520,7 +553,7 @@ def decide(ob: Obligation, box: Dict[str, Tuple[Fraction, Fraction]]):
         lo, hi = bracket if bracket else box[name]
         solver.add(var >= z3.Q(lo.numerator, lo.denominator), var <= z3.Q(hi.numerator, hi.denominator))
     e, b = _to_z3(expr, env), _to_z3(bound, env)
-    solver.add({"ge": e < b, "le": e > b, "gt": e <= b}[ob.op])
+    solver.add({"ge": e < b, "le": e > b, "gt": e <= b, "ne": e == b}[ob.op])
     verdict = solver.check()
     if verdict == z3.unsat:
         return "unsat", None, None
@@ -578,18 +611,31 @@ class Strategy:
         raise NotImplementedError
 
 
+def _box_key(box) -> Tuple[Tuple[str, str, str], ...]:
+    return tuple((name, str(lo), str(hi)) for name, (lo, hi) in sorted(box.items()))
+
+
 def _verdict(statement, problem, box, strategy_name, decide_fn) -> ProofResult:
+    """
+    Decide every obligation with `decide_fn`, which returns (outcome, shown,
+    point) — or, for a strategy that splits the box, a fourth element: the
+    sub-boxes it decided UNSAT. Those go into the certificate.
+    """
     discharged = []
+    certificate = []
     for ob in problem.obligations:
-        outcome, shown, point = decide_fn(ob, box)
+        decided = decide_fn(ob, box)
+        outcome, shown, point = decided[:3]
         if outcome == "unsat":
+            covered = decided[3] if len(decided) > 3 else [box]
             discharged.append(ob.hash)
+            certificate.append((ob.hash, tuple(_box_key(b) for b in covered)))
             continue
 
         def result(status: str, detail: str, counterexample=None) -> ProofResult:
             return ProofResult(property_id=statement.spec.id, statement_hash=statement.hash, status=status,
                                method=problem.method, strategy=strategy_name, discharged=tuple(discharged),
-                               counterexample=counterexample, detail=detail)
+                               counterexample=counterexample, detail=detail, certificate=tuple(certificate))
 
         if ob.lemma:
             return result("unknown", f"lemma not established: {ob.label}")
@@ -598,7 +644,7 @@ def _verdict(statement, problem, box, strategy_name, decide_fn) -> ProofResult:
         if ob.exact:
             return result("refuted", f"{ob.label}: counterexample found", shown)
         if ob.refute is not None:
-            r_outcome, r_shown, _ = decide_fn(ob.refute, box)
+            r_outcome, r_shown = decide_fn(ob.refute, box)[:2]
             if r_outcome == "sat":
                 return result("refuted", f"{ob.label}: counterexample found, certified outside "
                                          f"the bracket slack", r_shown)
@@ -611,7 +657,8 @@ def _verdict(statement, problem, box, strategy_name, decide_fn) -> ProofResult:
         return result("unknown", f"{ob.label}: not established, and no counterexample could be certified")
     return ProofResult(property_id=statement.spec.id, statement_hash=statement.hash, status="proven",
                        method=problem.method, strategy=strategy_name, discharged=tuple(discharged),
-                       detail=f"{len(discharged)} obligation(s) UNSAT over the box")
+                       detail=f"{len(discharged)} obligation(s) UNSAT over the box",
+                       certificate=tuple(certificate))
 
 
 class Direct(Strategy):
@@ -629,17 +676,20 @@ class Bisect(Strategy):
     def run(self, statement, problem, box):
         def split_decide(ob, sub, depth=0):
             outcome, witness, point = decide(ob, sub)
-            if outcome != "unknown" or depth >= BISECT_DEPTH:
-                return outcome, witness, point
+            if outcome == "unsat":
+                return outcome, None, None, [sub]
+            if outcome == "sat" or depth >= BISECT_DEPTH or not sub:
+                return outcome, witness, point, []
             widest = max(sub, key=lambda k: (sub[k][1] - sub[k][0]) / max(abs(sub[k][1]), Fraction(1, 10**30)))
             lo, hi = sub[widest]
             mid = (lo + hi) / 2
-            results = [split_decide(ob, {**sub, widest: (lo, mid)}, depth + 1),
-                       split_decide(ob, {**sub, widest: (mid, hi)}, depth + 1)]
-            for outcome, witness, point in results:
+            leaves = []
+            for half in ({**sub, widest: (lo, mid)}, {**sub, widest: (mid, hi)}):
+                outcome, witness, point, covered = split_decide(ob, half, depth + 1)
                 if outcome != "unsat":
-                    return outcome, witness, point
-            return "unsat", None, None
+                    return outcome, witness, point, []
+                leaves += covered
+            return "unsat", None, None, leaves
         return _verdict(statement, problem, box, self.name, split_decide)
 
 
@@ -669,9 +719,78 @@ def prove(statement: Statement, problem: Problem,
             raise FrozenPropertyViolation(
                 f"strategy {strategy.name!r} reported a proof without discharging every obligation"
             )
+        if result.status == "proven" and not _certificate_holds(result, problem, box, strategy.name):
+            # Not a violation: z3 could not re-decide a box in time. A proof
+            # the loop cannot confirm is not a proof.
+            result = result.model_copy(update={
+                "status": "unknown", "detail": "the proof's certificate could not be re-checked"})
         if result.status != "unknown":
             return result
     return result
+
+
+def _certificate_holds(result: ProofResult, problem: Problem, frozen: Dict[str, Tuple[Fraction, Fraction]],
+                       strategy: str) -> bool:
+    """
+    Check a proof's certificate against the frozen problem. Raises
+    `FrozenPropertyViolation` on anything a strategy could use to weaken the
+    property; returns False only when z3 cannot re-decide a box.
+    """
+    obligations = {ob.hash: ob for ob in problem.obligations}
+    certificate = dict(result.certificate)
+    if set(certificate) != set(obligations):
+        raise FrozenPropertyViolation(f"strategy {strategy!r}: the certificate does not cover every obligation")
+    confirmed = True
+    for h, boxes in certificate.items():
+        parsed = [{name: (Fraction(lo), Fraction(hi)) for name, lo, hi in b} for b in boxes]
+        _check_tiling(parsed, frozen, strategy)
+        for b in parsed:
+            outcome = decide(obligations[h], b)[0]
+            if outcome == "sat":
+                raise FrozenPropertyViolation(
+                    f"strategy {strategy!r}: {obligations[h].label} is not UNSAT on a certificate box — "
+                    f"the proof does not hold over part of the frozen box")
+            if outcome == "unknown":
+                confirmed = False
+    return confirmed
+
+
+def _check_tiling(boxes: List[Dict[str, Tuple[Fraction, Fraction]]],
+                  frozen: Dict[str, Tuple[Fraction, Fraction]], strategy: str) -> None:
+    """
+    The boxes cover the frozen box exactly: each inside it, interiors pairwise
+    disjoint, volumes summing to its volume. A closed union with the full
+    volume and no gap of positive measure is the whole box.
+    """
+    def fail(why: str):
+        raise FrozenPropertyViolation(f"strategy {strategy!r}: the certificate {why} — a proof over less "
+                                      f"than the frozen box is not a proof of the frozen property")
+
+    if not boxes:
+        fail("is empty")
+    live = [n for n, (lo, hi) in frozen.items() if lo < hi]
+    for b in boxes:
+        if set(b) != set(frozen):
+            fail("ranges over different variables")
+        for name, (flo, fhi) in frozen.items():
+            lo, hi = b[name]
+            if not (flo <= lo <= hi <= fhi):
+                fail(f"reaches outside the frozen range of {name}")
+            if flo == fhi and (lo, hi) != (flo, fhi):
+                fail(f"moves the fixed value of {name}")
+
+    def volume(b) -> Fraction:
+        v = Fraction(1)
+        for n in live:
+            v *= b[n][1] - b[n][0]
+        return v
+
+    for i in range(len(boxes)):
+        for j in range(i + 1, len(boxes)):
+            if all(max(boxes[i][n][0], boxes[j][n][0]) < min(boxes[i][n][1], boxes[j][n][1]) for n in live):
+                fail("counts part of the box twice")
+    if sum((volume(b) for b in boxes), Fraction(0)) != volume(frozen):
+        fail("leaves part of the frozen box undecided")
 
 
 # ── The entry point, cached ──────────────────────────────────────────────────

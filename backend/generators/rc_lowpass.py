@@ -40,6 +40,13 @@ finite number in range — `"12"`, `true`, `NaN`, a negative tolerance — is
 refused by name instead of read as a default or as 1. Every intent 0.2.0
 accepted with well-formed values produces the same design; only the ones it
 accepted by misreading are now refused, which is why the version moves.
+
+**Source loading is refused, not only reported (0.2.2).** A declared
+`source_impedance_ohm` adds in series with R1 and lowers f_c by R_s/(R1+R_s).
+0.2.1 read the value, accepted any, and let `rc.source_loading` report the
+shift as failing on the design it had just produced — an accepted design
+carrying its own failed claim. Found by the Stage 3 + 4 verification. Every
+design 0.2.1 produced with the shift inside tolerance is unchanged.
 """
 
 from __future__ import annotations
@@ -81,7 +88,7 @@ from generators.protocol import (
 from generators.netlist.spice import _parse_farads, _parse_ohms
 
 NAME = "rc_lowpass"
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 #: The requirements.function this generator serves. The registry reads it to
 #: build the form's catalogue without probing envelope() with guesses.
 FUNCTION = "low_pass_filter"
@@ -381,6 +388,15 @@ class RCLowPassGenerator:
                 f"{pair} achieves {selection.achieved_hz:.1f} Hz against "
                 f"cutoff_hz={target:g}, a {achieved_err_pct:.2f}% error that exceeds "
                 f"the requested tolerance_pct={tolerance_pct:g}"
+            )
+
+        source = _source_impedance(intent)
+        shift_pct = source / (selection.ohms + source) * 100.0
+        if shift_pct > tolerance_pct:
+            return EnvelopeDecision.refuse(
+                f"a {source:g} Ω source in series with R1={selection.ohms:g} Ω lowers f_c by "
+                f"{shift_pct:.2f}%, beyond tolerance_pct={tolerance_pct:g} — buffer the source, "
+                f"or allow more tolerance"
             )
 
         return EnvelopeDecision.accept(self._ports(intent, selection))

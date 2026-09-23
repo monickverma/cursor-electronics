@@ -262,7 +262,8 @@ async def patch_design(
         })
 
     generator = dispatch.generator
-    new_ir = realize(generator, new_intent)
+    # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
+    new_ir = await run_in_threadpool(realize, generator, new_intent)
     tag = generator_tag(generator)
 
     # 6. Justification and checks, all derived rather than written.

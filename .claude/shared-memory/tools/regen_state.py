@@ -128,7 +128,7 @@ MODULES = {
     "proof/netlist":              {"file": "backend/proof/netlist.py",              "test": "tests/test_proof.py",                "phase": 2},
     "proof/mna":                  {"file": "backend/proof/mna.py",                  "test": "tests/test_proof.py",                "phase": 2},
     "proof/properties":           {"file": "backend/proof/properties.py",           "test": ["tests/test_proof.py", "tests/test_sign_off.py"], "phase": 2},
-    "proof/prover":               {"file": "backend/proof/prover.py",               "test": ["tests/test_proof.py", "tests/test_sign_off.py"], "phase": 2},
+    "proof/prover":               {"file": "backend/proof/prover.py",               "test": ["tests/test_proof.py", "tests/test_sign_off.py", "tests/test_proof_oracle.py"], "phase": 2},
 }
 
 PHASE1_CRITERIA = [

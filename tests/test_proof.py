@@ -423,7 +423,7 @@ class TestFrozenProperty:
 
     def test_a_proof_that_drops_an_obligation_is_refused(self):
         _, _, _, statement, problem = _frozen()
-        assert len(problem.obligations) == 2
+        assert len(problem.obligations) >= 2      # the bounds, plus a denominator lemma
 
         class Drop(Strategy):
             name = "drop"
@@ -450,6 +450,104 @@ class TestFrozenProperty:
             statement.spec.hi = "100"          # noqa: B018 - pydantic frozen
         with pytest.raises(Exception):
             problem.obligations[0].bound = "0"
+
+
+def _false_band():
+    """A property that is false over its box: the 10% capacitor breaks [900, 1130] Hz."""
+    _, _, circuit = design("low_pass_filter")
+    spec = PropertySpec(id="rc.hand_band", label="the cutoff", quantity="cutoff(out)",
+                        relation="within", lo="900", hi="1130", units="Hz")
+    return compile_statement(circuit, spec, SpiceNetlistGenerator().generate(circuit))
+
+
+class TestTheCertificateIsChecked:
+    """
+    Found by the Stage 3 + 4 verification: the loop checked hashes only, so a
+    strategy that decided the nominal point alone returned "proven" for a
+    property that is false over the box — and was accepted. The loop now
+    checks the certificate tiles the frozen box and re-decides every box.
+    """
+
+    def test_the_honest_loop_refutes_the_false_band(self):
+        statement, problem = _false_band()
+        assert prove(statement, problem).status == "refuted"
+
+    def test_a_proof_over_a_smaller_box_is_refused(self):
+        statement, problem = _false_band()
+
+        class Nominal(Strategy):
+            name = "nominal-only"
+
+            def run(self, s, p, box):
+                point = {k: ((lo + hi) / 2, (lo + hi) / 2) for k, (lo, hi) in box.items()}
+                return _verdict(s, p, point, self.name, decide)
+
+        with pytest.raises(FrozenPropertyViolation, match="undecided"):
+            prove(statement, problem, (Nominal(),))
+
+    def test_a_certificate_that_counts_half_the_box_twice_is_refused(self):
+        # A true property, so every half really is UNSAT: only the tiling
+        # check can see that the other half was never decided.
+        _, _, _, statement, problem = _frozen()
+
+        class Twice(Strategy):
+            name = "twice"
+
+            def run(self, s, p, box):
+                name = sorted(box)[0]
+                lo, hi = box[name]
+                half = {**box, name: (lo, (lo + hi) / 2)}
+                return _verdict(s, p, box, self.name, lambda ob, b: (*decide(ob, half), [half, half]))
+
+        with pytest.raises(FrozenPropertyViolation, match="twice"):
+            prove(statement, problem, (Twice(),))
+
+    def test_a_certificate_box_that_is_not_unsat_is_refused(self):
+        statement, problem = _false_band()
+
+        class Claims(Strategy):
+            name = "claims-without-deciding"
+
+            def run(self, s, p, box):
+                return _verdict(s, p, box, self.name, lambda ob, b: ("unsat", None, None))
+
+        with pytest.raises(FrozenPropertyViolation, match="not UNSAT"):
+            prove(statement, problem, (Claims(),))
+
+    def test_an_honest_bisection_certificate_is_accepted(self, monkeypatch):
+        import proof.prover as prover
+
+        _, _, _, statement, problem = _frozen()
+        real = prover.decide
+        full = {prover._symbol(v.element).name: (Fraction(v.lo), Fraction(v.hi)) for v in statement.variables}
+        # z3 "cannot decide" the whole box, so Direct gives up and Bisect splits it.
+        monkeypatch.setattr(prover, "decide", lambda ob, box: ("unknown", None, None) if box == full else real(ob, box))
+        result = prove(statement, problem)
+        assert result.status == "proven" and result.strategy == "bisect"
+        assert all(len(boxes) > 1 for _, boxes in result.certificate)
+
+    def test_every_proof_carries_a_certificate_for_every_obligation(self):
+        _, _, _, statement, problem = _frozen()
+        result = prove(statement, problem)
+        assert {h for h, _ in result.certificate} == {ob.hash for ob in problem.obligations}
+
+
+class TestDenominators:
+    """z3 reads x/0 as any value; a denominator that can vanish must not yield a proof."""
+
+    def test_every_symbolic_denominator_is_a_lemma(self):
+        _, _, _, _, problem = _frozen()
+        labels = [ob.label for ob in problem.obligations if ob.lemma]
+        assert any("denominator" in label for label in labels)
+
+    def test_a_denominator_that_can_vanish_makes_the_property_unknown(self):
+        _, intent, circuit = design("voltage_divider")
+        # A negative "resistor" puts a pole inside R1's box: R1 − 3400 = 0 at nominal.
+        netlist = "V_VIN vin 0 DC 5\nR_R1 vin vout 3400.0\nR_NEG vout 0 -3400\n.op\n.end"
+        spec = PropertySpec(id="x", label="the voltage at VOUT", quantity="v(vout)", relation="le",
+                            hi="1000", units="V")
+        _, _, result = check(circuit, spec, netlist)
+        assert result.status == "unknown" and "denominator" in result.detail
 
 
 # ── Mutation ─────────────────────────────────────────────────────────────────
