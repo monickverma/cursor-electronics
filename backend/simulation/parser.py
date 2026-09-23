@@ -24,6 +24,14 @@ _DC_COLUMNAR_PATTERN = re.compile(
     r'^\s+([\w][\w_]*)\s{2,}([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*$',
 )
 
+# Matches ngspice's operating-point "Source Current" table: "v_vcc#branch  -5.05e-02".
+# The value is the current flowing *into* the source's positive terminal, so a
+# supply delivering current reads negative.
+_BRANCH_CURRENT_PATTERN = re.compile(
+    r'^\s*([\w][\w_]*)#branch\s+([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*$',
+    re.IGNORECASE,
+)
+
 # Matches column header tokens like "v(out)", "v(vcc_5v)"
 _V_COL_PATTERN = re.compile(r'^v\(([^)]+)\)$', re.IGNORECASE)
 
@@ -32,6 +40,9 @@ _V_COL_PATTERN = re.compile(r'^v\(([^)]+)\)$', re.IGNORECASE)
 class SimulationData:
     dc_voltages: Dict[str, float] = field(default_factory=dict)
     ac_points: List[Tuple[float, Dict[str, float]]] = field(default_factory=list)
+    #: Voltage-source branch currents from the operating point, by source name
+    #: (lowercased). Stage 3: the grid gate measures rail and probe currents.
+    branch_currents: Dict[str, float] = field(default_factory=dict)
     raw_stdout: str = ""
     raw_stderr: str = ""
 
@@ -50,6 +61,10 @@ class SpiceResultParser:
         _SKIP_WORDS = {"node", "voltage", "source", "current", "model", "device", "resistor"}
         in_node_table = False
         for line in stdout.splitlines():
+            current = _BRANCH_CURRENT_PATTERN.match(line)
+            if current:
+                data.branch_currents[current.group(1).lower()] = float(current.group(2))
+                continue
             # v(nodename)  value  — from .print directive output
             m = _DC_NODE_PATTERN.match(line)
             if m:

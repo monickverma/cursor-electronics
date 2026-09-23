@@ -13,6 +13,19 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "pullup_to": "VCC",
         "protocol": "single_wire_dht",
         "min_sample_interval_ms": 2000,
+        # Bus-timing inputs for the DHT22 generator's rise-time and sink-current
+        # claims (Stage 3). Aosong's datasheet gives the protocol timing (a "0"
+        # bit is 26-28 us high) but not these; they are stated assumptions,
+        # recorded here once and cited through defeater D7.
+        #  - cable capacitance: 50-100 pF/m covers ribbon to twisted pair
+        #  - input capacitance: ~10 pF each for the MCU pin and the sensor
+        #  - rise time: <= 5 us, a 5x margin inside the 26 us short-bit window
+        #  - sink current: <= 4 mA through the sensor's open-drain output, the
+        #    conservative figure open-drain buses (I2C: 3 mA) are designed to
+        "bus_capacitance_pf_per_m": {"min": 50.0, "max": 100.0},
+        "input_capacitance_pf": 10.0,
+        "rise_time_limit_us": 5.0,
+        "open_drain_sink_limit_ma": 4.0,
         "notes": [
             "DATA pin requires 10kΩ pull-up to VCC (3.3V or 5V)",
             "Cannot be read faster than once every 2 seconds",
@@ -47,6 +60,14 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "bias_a_to": "VCC",
         "bias_b_to": "GND",
         "decoupling_cap_nf": 100,
+        # Bus figures for the RS-485 generator's fail-safe and load claims
+        # (Stage 3). TIA-485-A: a receiver must resolve |V_AB| >= 200 mV, and a
+        # driver is specified into a 54 ohm differential load (two 120 ohm
+        # terminators and 32 unit loads). The driver cannot swing more than
+        # its supply, so V_CC bounds the terminator's worst-case dissipation.
+        # Datasheet/standard-derived: defeater D7.
+        "receiver_threshold_mv": 200.0,
+        "driver_rated_load_ohm": 54.0,
         "notes": [
             "DE and RE pins must be tied together and driven by one MCU GPIO",
             "HIGH = transmit mode, LOW = receive mode",
@@ -83,6 +104,13 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "adc_pins": ["A0", "A1", "A2", "A3", "A4", "A5"],
         "flash_kb": 32,
         "ram_bytes": 2048,
+        # Output drive, for the Thevenin pin model (Stage 3, `mcu_pin_thevenin`).
+        # Datasheet §28.2: V_OH >= 4.2 V at I_OH = 20 mA, VCC = 5 V -> at most
+        # (5 - 4.2) / 0.02 = 40 ohm. Typical curves sit near 25 ohm. Read by
+        # both spice.py and the LED generator, so the netlist and predict()
+        # cannot disagree about the pin. Datasheet-derived: defeater D7.
+        "gpio_output_resistance_ohm": {"min": 15.0, "typ": 25.0, "max": 40.0},
+        "gpio_recommended_current_ma": 20,
         "notes": [
             "Max 40mA per GPIO pin — LED without current limiter will damage the MCU",
             "Max 200mA total from all I/O pins combined",
@@ -240,6 +268,22 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
             "General purpose rectifier diode",
             "Use as flyback diode across relay coils and inductive loads",
             "Cathode band toward positive supply (for flyback: cathode to VCC, anode to coil terminal)",
+        ],
+    },
+    # Everlight red LED used by the LED generator (Stage 3). The diode model in
+    # spice.py and predict() are both fitted from these figures: Shockley with
+    # ideality `ideality`, saturation current chosen so V_f(test_current) is the
+    # typical forward voltage. The min/max bound the tolerance box. Datasheet-
+    # derived: defeater D7.
+    "67-21URC/S530-A3/TR8": {
+        "forward_voltage_v": {"min": 1.7, "typ": 2.0, "max": 2.4},
+        "test_current_ma": 20,
+        "ideality": 2.0,
+        "max_continuous_current_ma": 25,
+        "reverse_voltage_max": 5.0,
+        "notes": [
+            "Red LED, V_f 2.0 V typical (1.7-2.4 V) at 20 mA",
+            "25 mA continuous maximum; 5 V reverse maximum",
         ],
     },
     "SMBJ5.0A": {

@@ -224,8 +224,17 @@ def default_registry() -> GeneratorRegistry:
     stays importable without pulling in every generator — which matters for
     the conformance tests, and will matter more as the library grows.
     """
+    from generators.dht22_node import DHT22NodeGenerator
+    from generators.led_indicator import LedIndicatorGenerator
     from generators.rc_lowpass import RCLowPassGenerator
+    from generators.rs485_node import RS485NodeGenerator
+    from generators.voltage_divider import VoltageDividerGenerator
 
     registry = GeneratorRegistry()
     registry.register(RCLowPassGenerator())
+    # Stage 3: the four Phase 1 templates, back in coverage on the contract.
+    registry.register(VoltageDividerGenerator())
+    registry.register(LedIndicatorGenerator())
+    registry.register(DHT22NodeGenerator())
+    registry.register(RS485NodeGenerator())
     return registry

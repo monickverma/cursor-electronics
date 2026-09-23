@@ -162,6 +162,11 @@ class CircuitIR(BaseModel):
     simulation_passed: Optional[bool] = None
     simulation_results: Optional[Dict] = None
     validation_results: Optional[Dict] = None
+    # Stage 3 (v2 §6): claims with kind/grade/scope/defeaters, grade_floor,
+    # open defeaters, not-assessed and out-of-scope rows. Attached by
+    # generators/realize.py; a dict so this schema does not import the
+    # validation layer. None on designs built before Stage 3.
+    validation_coverage: Optional[Dict] = None
 
     @field_validator("components")
     @classmethod

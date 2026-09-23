@@ -107,6 +107,18 @@ MODULES = {
     "generators/realize":         {"file": "backend/generators/realize.py",         "test": "tests/test_realize.py",              "phase": 2},
     "ai/intent_patcher":          {"file": "backend/ai/intent_patcher.py",          "test": "tests/test_intent_patcher.py",       "phase": 2},
     "db/migrations":              {"file": "backend/db/migrations.py",              "test": "tests/test_migrations.py",           "phase": 2},
+    # Stage 3 — the generator library, claims, and the defeater register.
+    # decisions.md [2026-09-21] X6 + X8.
+    "generators/common":          {"file": "backend/generators/common.py",          "test": ["tests/test_rc_lowpass_generator.py", "tests/test_generator_library.py"], "phase": 2},
+    "generators/arduino_parts":   {"file": "backend/generators/arduino_parts.py",   "test": "tests/test_generator_library.py",   "phase": 2},
+    "generators/netlist_models":  {"file": "backend/generators/netlist/models.py",  "test": ["tests/test_claims.py", "tests/test_generator_library.py"], "phase": 2},
+    "generators/voltage_divider": {"file": "backend/generators/voltage_divider.py", "test": "tests/test_generator_library.py",   "phase": 2},
+    "generators/led_indicator":   {"file": "backend/generators/led_indicator.py",   "test": "tests/test_generator_library.py",   "phase": 2},
+    "generators/dht22_node":      {"file": "backend/generators/dht22_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
+    "generators/rs485_node":      {"file": "backend/generators/rs485_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
+    "validation/claims":          {"file": "backend/validation/claims.py",          "test": ["tests/test_claims.py", "tests/test_generator_library.py"], "phase": 2},
+    "validation/defeaters":       {"file": "backend/validation/defeaters.py",       "test": "tests/test_claims.py",               "phase": 2},
+    "validation/grid_adapters":   {"file": "backend/validation/grid_adapters.py",   "test": "tests/test_generator_library.py",   "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -386,6 +398,60 @@ def read_blockers():
     return blockers
 
 
+# ── Stage 3: the library's grade floor ──────────────────────────────────────
+#
+# EVIDENCE_CLASSES §5: overall certainty is the *lowest* grade among critical
+# claims — never an average — and it is the number at the top of any summary.
+# Derived here, like everything else in this file: every registered generator
+# is realised at the first point of its own CI grid and its claims summarised.
+# Run in a subprocess so importing the backend (which validates settings at
+# import) cannot disturb this tool's own environment.
+_LIBRARY_PROBE = r"""
+import json, os, sys
+for k, v in {"ANTHROPIC_API_KEY": "", "DATABASE_URL": "postgresql+asyncpg://x:x@localhost/x",
+             "REDIS_URL": "redis://localhost:6379/0", "SECRET_KEY": "x" * 40}.items():
+    os.environ.setdefault(k, v)
+sys.path.insert(0, "backend")
+from core.intent_ir import IntentIR, Producer, Provenance
+from generators.realize import realize
+from generators.registry import default_registry
+from validation.grid_adapters import intent_at
+out = {}
+for g in default_registry().generators:
+    grid = g.grid()
+    req = intent_at(g.function, next(iter(grid.points())), grid.sections).requirements
+    cov = realize(g, IntentIR(requirements=req, provenance=Provenance(producer=Producer.FORM))).validation_coverage
+    out[g.name] = {k: cov[k] for k in ("grade_floor", "coverage_le_g2", "open_defeaters", "not_assessed")}
+    out[g.name]["floor_claims"] = [c["id"] for c in cov["claims"]
+                                   if c["critical"] and c["grade"] == cov["grade_floor"]]
+print(json.dumps(out))
+"""
+
+
+def library_grades() -> dict:
+    """Per-generator coverage and the library floor. Empty dict if it cannot run."""
+    code, out, err = run(["python", "-c", _LIBRARY_PROBE], cwd=PROJECT_ROOT, timeout=300)
+    if code != 0:
+        print(f"  ❌ grade-floor probe FAILED (exit {code}) — floor not derived")
+        for line in (err or out).strip().splitlines()[-4:]:
+            print(f"     {line}")
+        return {}
+    per = json.loads(out.strip().splitlines()[-1])
+    order = ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"]
+    floors = [v["grade_floor"] for v in per.values() if v["grade_floor"]]
+    fan_out: dict = {}
+    for name, v in per.items():
+        for d in v["open_defeaters"]:
+            fan_out.setdefault(d, []).append(name)
+    return {
+        "grade_floor": max(floors, key=order.index) if floors else None,
+        "coverage_le_g2_min": min(v["coverage_le_g2"] for v in per.values()) if per else 0.0,
+        "open_defeaters": {d: sorted(n) for d, n in sorted(fan_out.items(), key=lambda kv: int(kv[0][1:]))},
+        "not_assessed": {n: v["not_assessed"] for n, v in per.items() if v["not_assessed"]},
+        "generators": per,
+    }
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     print("\n🔄  regen_state.py — Circuit OS\n")
@@ -412,6 +478,13 @@ def main():
         print(f"  {entry}")
 
     blockers = read_blockers()
+
+    print()
+    print("🧾  Library grade floor (EVIDENCE_CLASSES §5):")
+    validation = library_grades()
+    for name, v in validation.get("generators", {}).items():
+        print(f"  {name:18} floor {v['grade_floor']}  coverage≤G2 {v['coverage_le_g2']:.0%}  "
+              f"open {', '.join(v['open_defeaters']) or '—'}")
 
     # ── Write state.json ──────────────────────────────────────────────────────
     state = {
@@ -454,6 +527,8 @@ def main():
             "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · "
             "❌ failing · ⏳ needs a human or physical hardware"
         ),
+        # Stage 3: the weakest-link headline and its companions, never fused.
+        "validation": validation,
         "blockers": blockers,
         "recent_commits": log,
         "last_diff_stat": diff,
@@ -500,6 +575,20 @@ def main():
     print("  REVIEWER SUMMARY  — paste into any new session to orient instantly")
     print("═" * 68)
     print(f"  Project  : Circuit OS  (AI hardware compiler: NL → circuit + firmware)")
+    # The honest headline goes first (EVIDENCE_CLASSES §5): the worst grade
+    # among critical claims across the library, with what makes it defeasible
+    # printed beside it rather than folded into it.
+    if validation.get("grade_floor"):
+        weakest = [n for n, v in validation["generators"].items()
+                   if v["grade_floor"] == validation["grade_floor"]]
+        print(f"  Floor    : {validation['grade_floor']}  (weakest: {', '.join(weakest)})  "
+              f"· coverage≤G2 ≥ {validation['coverage_le_g2_min']:.0%}")
+        opened = ", ".join(f"{d}×{len(n)}" for d, n in validation["open_defeaters"].items())
+        print(f"             open defeaters (fan-out): {opened or 'none'} — claims are defeasible")
+        if validation.get("not_assessed"):
+            print(f"             NOT ASSESSED: {validation['not_assessed']}")
+    else:
+        print("  Floor    : not derived — see the grade-floor probe output above")
     print(f"  Commit   : {commit}")
     print(f"  Tests    : {tests['passed']} passing  /  {tests['failed']} failing  /  {tests['skipped']} skipped")
     print(f"  Phase    : 2 — Validation Engine")

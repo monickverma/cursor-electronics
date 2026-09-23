@@ -131,10 +131,11 @@ class FormProducer:
 
         fields: List[FormField] = []
         derived_names = set()
+        sections = self._grid_sections(generators)
         for name, (minimum, maximum, units) in self._grid_bounds(generators).items():
             derived_names.add(name)
             fields.append(FormField(
-                name=name, section="targets", units=units,
+                name=name, section=sections[name], units=units,
                 minimum=minimum, maximum=maximum, required=True,
             ))
 
@@ -173,6 +174,24 @@ class FormProducer:
                 else:
                     bounds[axis] = (low, high, units)
         return bounds
+
+    def _grid_sections(self, generators: Sequence[Any]) -> Dict[str, str]:
+        """
+        Which section each axis belongs in. Two generators placing one axis in
+        different sections is a catalogue bug, refused rather than resolved:
+        whichever won, one generator would read the value from the wrong place.
+        """
+        sections: Dict[str, str] = {}
+        for generator in generators:
+            grid = generator.grid()
+            for axis in grid.axes:
+                section = grid.section_of(axis)
+                if sections.setdefault(axis, section) != section:
+                    raise ValueError(
+                        f"generators disagree on the section of {axis!r}: "
+                        f"{sections[axis]!r} vs {section!r}"
+                    )
+        return sections
 
     # ── Production ────────────────────────────────────────────────────────
 

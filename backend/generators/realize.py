@@ -80,12 +80,17 @@ def realize(generator: Generator, intent: IntentIR) -> CircuitIR:
     decision = generator.envelope(intent)
     if not decision.accepted:
         raise RefusedIntent(generator.name, decision.reason or "")
-    circuit = generator.generate(intent)
-    return circuit.model_copy(update={
+    circuit = generator.generate(intent).model_copy(update={
         "circuit_id": design_circuit_id(intent),
         "version": intent.revision,
         "generator": generator_tag(generator),
     })
+    # Stage 3: every design carries its claims (v2 §6). Deterministic, so the
+    # byte-identity gate covers them too.
+    from validation.claims import assess
+
+    coverage = assess(generator, intent, circuit)
+    return circuit.model_copy(update={"validation_coverage": coverage.model_dump(mode="json")})
 
 
 def canonical_json(circuit: CircuitIR) -> str:

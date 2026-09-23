@@ -1027,3 +1027,156 @@ path and value. Every intent 0.2.0 accepted with well-formed values yields the
 same design; the version moves because the refused set changed, and a refusal
 log has to be able to say which behaviour refused. Tests now read the version
 from the module instead of spelling it.
+
+---
+
+## [2026-09-21] X6 + X8 accepted, the defeater register is renumbered, and Stage 3 is scoped
+
+**Decision:** amendments X6 and X8 of `PHASE_2_PLAN_v2.md` §2 are accepted, the
+defeater IDs are made unique, and the Stage 3 build is fixed as below. Taken by
+the agent on the instruction "move to stage 3", after the council verdict on
+X6/X8 and the TypeSafe pass that flagged X8 as due earlier than Stage 3. Written
+before any Stage 3 code, per v2 §2.
+
+**Found while reading, before deciding:**
+
+- **X8's silent pass is wider than the council described.** The council's
+  concern was that `HardwareRuleEngine.run()` skips rules a design does not
+  list. Worse: four of the ten `ValidationRule` values have **no
+  implementation anywhere** — `current_limits_ok`, `pullup_on_open_drain`,
+  `power_supply_adequate`, `operating_temp_range`. `IR_001` lists two of them
+  and `IR_002` lists one, and all three "pass" by never being run. A listed
+  rule that nobody checks reads as a checked rule.
+- **The LED template's simulation never lit the LED.** `IR_002`'s GPIO node has
+  no source, so ngspice ties it down through 1 GΩ and the LED carries ~0 mA;
+  and the netlist's single diode model (`Is=1e-9 n=1.8`) gives ~0.8 V forward
+  drop, not the 2.0 V the design's justification reasons from. The Phase 1
+  simulation of that template could not have confirmed its own claim.
+
+### X6 — the MCU model becomes a declared scope
+
+Accepted with the council's conditions:
+- **Derived, never remembered.** A claim's `scope.model` gains `mcu_as_100R`
+  whenever the design's own netlist contains an `R_MCU_` element, computed from
+  the netlist text; a test fails if a design with an MCU produces a claim
+  without it. Likewise `mcu_pin_thevenin` whenever it contains an `R_PIN_`
+  element (below).
+- **"Promote" does not mean "delete".** The rule that the MCU must never be a
+  voltage source stays as an implementation rule; it is why this model exists.
+- **D2 is widened to name both simplifications** — the 100 Ω supply load and
+  the Thevenin GPIO pin — since both are "the ATmega328P represented by a
+  model, not the device", and both are eliminated by the same future work.
+  Nothing is scheduled to close D2 in Phase 2; the register says so.
+
+### X8 — validation rules become graded claims
+
+Accepted with the council's conditions:
+- **"Not assessed" is the catalogue minus what was actually checked** — every
+  `ValidationRule` value, minus the rules that ran *and have an
+  implementation*. Computing it from "the rules that ran" would let a design
+  that checks less look better verified.
+- **Grades follow from method, never typed per claim.** One table maps a
+  method to a grade — `exact_graph_check` and `monotone_corners` → G1,
+  `ngspice_nominal` → G5, `sampled` → G6, `asserted` → G7 — and each rule and
+  each prediction declares its method. A rule reading a datasheet-derived table
+  (`pwm_pin_valid`'s pin list, `voltage_ratings_ok`'s ratings) carries D7.
+- **The four unimplemented rules are not implemented here.** They are shown as
+  *not assessed* rows, which is the honest state. Where a generator's own
+  claims cover the physics (the LED generator's GPIO-current claim covers what
+  `current_limits_ok` was named for), the claim carries it and the rule row
+  still says not assessed.
+- **Rule IDs are kept**, so existing tests and stored designs still read.
+
+### The X6 × X8 interaction
+
+The council warned that an open D2 on every MCU design would flatten
+`grade_floor`. It does not, under the weakest-link rule as EVIDENCE_CLASSES
+§3.2 states it: a model assumption is a **defeater**, not a lower grade — "a G1
+proof over an unvalidated model is G1 carrying a model defeater". So
+`grade_floor` reports the worst *grade*, `open_defeaters` reports D2 separately,
+and the two are never fused (§5). A claim with an open defeater has verdict
+**holds, defeasible**, never plain "holds".
+
+### The defeater register — one namespace
+
+v2 §7 owns IDs D1–D7. Two other documents reused the namespace:
+- EVIDENCE_CLASSES Table C's **D4** ("π is irrational; the z3 encoding must
+  bracket it") becomes **D8**. Its status is *not yet applicable*: no claim is
+  proved by z3 until Stage 4, which is where it gets eliminated.
+- ARCHITECTURE_ASSURANCE_CASE's **D-G** ("a generator bug makes `predict()`
+  confidently wrong, and nothing catches it") is imported as **D9**. v2 carried
+  the harness that refutes it without registering the doubt. It is *eliminated
+  per generator* by passing the M1 mutation matrix; a generator that has not
+  passed it carries D9 open.
+
+The register lives in code (`validation/defeaters.py`) so claims can cite IDs
+and `regen_state.py` can count open defeaters and fan-out; v2 §7 is the prose
+view of it.
+
+### Stage 3 build decisions
+
+1. **Four generators, one per Phase 1 template:** `voltage_divider`,
+   `led_indicator`, `dht22_node`, `rs485_node`. Each on the Stage 0 contract,
+   each with the pin/strict-input discipline `rc_lowpass` 0.2.1 set.
+2. **What each predicts, and what ngspice checks.** The grid gate compares
+   quantities a DC or AC run can measure; anything else is a closed-form claim
+   with no simulation cross-check, and its row says so.
+   - divider: `vout_v` (monotone corners), output impedance, bleed current,
+     resistor dissipation.
+   - LED: `led_current_ma` from the Shockley diode and a Thevenin GPIO pin,
+     solved by bisection on a monotone scalar equation (exact to the float), so
+     corners still bound it; GPIO current against the 20 mA recommended / 40 mA
+     absolute limit.
+   - DHT22: the pull-up's sink current with the line held low, idle data-line
+     level, and rail current (under `mcu_as_100R` — D2).
+   - RS-485: idle differential bus voltage `v_ab` against the ±200 mV receiver
+     threshold (the fail-safe bias calculation), total bus load against the
+     54 Ω the standard specifies a driver into.
+3. **The netlist learns two models, both opt-in and backward compatible.**
+   `spice.py` models (a) a node driven by an MCU *output* connection that
+   carries a `voltage_nominal` as the pin's Thevenin source (`V_PIN_` + `R_PIN_`,
+   `R_out` from the component table), and (b) an LED whose part number is in
+   the component table with a diode model fitted to its datasheet forward
+   voltage. A node without `voltage_nominal`, or an LED not in the table, emits
+   exactly what it did before. **Correction, found on first run:** `IR_002`'s
+   LED *is* the tabulated part, so its netlist changes — the generic
+   `DLED (Is=1e-9 n=1.8)`, which drops ~0.8 V, becomes the fitted model, which
+   drops 2.0 V at 20 mA. That is the fix the finding above calls for, not a
+   regression; the other four example netlists are byte-identical. `predict()`
+   and `spice.py` read the same table entry: one owner per fact.
+4. **Test benches belong to the grid adapter, not the design.** Where the
+   quantity only exists under a stimulus — the DHT22 line held low, the RS-485
+   far-end terminator — the CI adapter appends probe elements to the design's
+   own netlist, the way a scope probe attaches to a board. The product netlist
+   is never altered. Adapters move to `backend/validation/grid_adapters.py` so
+   `regen_state.py` and later stages can run the whole library.
+5. **The parser reads branch currents** from ngspice's `Source Current` table.
+6. **Claims** (`validation/claims.py`): four fields plus a verdict, generated by
+   each generator's `claims()` from its prediction and the intent, plus rule
+   claims from X8. `realize()` attaches `validation_coverage` to the CircuitIR —
+   it is deterministic, so the byte-identity gate now covers the claims too.
+   `claims()` is not added to the protocol's required members (every fake
+   generator in the tests would break); every *registered* generator is
+   required to implement it, by test.
+7. **`GridSpec` gains `sections`**, mapping an axis to its requirement section.
+   The form producer placed every grid axis in `targets`, which would have put a
+   divider's `supply_v` in the wrong section.
+8. **`grade_floor`** is derived in `regen_state.py` from each registered
+   generator's claims at a canonical point of its grid, and printed at the top
+   of the summary with `coverage_le_g2` and the open defeaters beside it.
+9. **The waveform viewer** renders AC magnitude, DC node voltages, and
+   transient traces from stored simulation data, as inline SVG — no chart
+   dependency. The simulation task now stores the points, not only their count.
+
+**Alternatives rejected:**
+- *Implement the four missing rules now.* Each needs physics a generator
+  already computes; a second, structural implementation would be a second
+  source of truth for the same number. Not-assessed rows are honest.
+- *Lower a claim's grade for an open model defeater.* Fuses two numbers
+  EVIDENCE_CLASSES §5 says never to fuse, and makes every MCU design read G7.
+- *Put LED Vf and pin resistance on `Component` as new fields.* Needs every
+  downstream compiler touched (code-style.md) for data that belongs in the
+  static component table, which already exists for exactly this.
+- *Skip the grid gate for DHT22/RS-485 because DC idle states are trivial.*
+  The mutation arm would then detect nothing on them — the pull-up is invisible
+  at idle. Probes make the quantity that matters observable.

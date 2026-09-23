@@ -48,7 +48,9 @@ class TestCatalogueIsDerived:
         # A hand-maintained "what we support" list is the stale-copy failure
         # this project keeps hitting, one layer out. Here it is not expressible.
         producer = FormProducer()
-        assert [s.function for s in producer.catalogue()] == ["low_pass_filter"]
+        assert tuple(s.function for s in producer.catalogue()) == default_registry().functions()
+        # Stage 3: all five Phase 1 templates are back in coverage.
+        assert len(producer.catalogue()) == 5
 
     def test_field_ranges_come_from_the_declared_grid(self):
         spec = FormProducer().spec_for("low_pass_filter")
@@ -135,8 +137,14 @@ class TestProducesValidIntent:
         registry = default_registry()
         producer = FormProducer(registry)
         for spec in producer.catalogue():
-            intent = producer.build(spec.function, {"cutoff_hz": 1000, "supply_v": 5})
-            assert registry.dispatch(intent).accepted, spec.function
+            # Values from the generator's own first grid point, which CI
+            # sweeps, plus a 5 V rail where the grid does not set one.
+            generator = registry.for_function(spec.function)[0]
+            values = dict(next(iter(generator.grid().points())))
+            values.setdefault("supply_v", 5)
+            intent = producer.build(spec.function, values)
+            assert intent.is_answerable, (spec.function, intent.open_questions())
+            assert registry.dispatch(intent).accepted, (spec.function, registry.dispatch(intent).refusal_summary())
 
     def test_form_built_intent_drives_a_real_generation(self):
         registry = default_registry()

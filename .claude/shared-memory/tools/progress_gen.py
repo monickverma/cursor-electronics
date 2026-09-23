@@ -428,6 +428,85 @@ PLANNED = {
             ("get_history",     "function", "The patch chain, as requirements"),
         ],
     },
+    # ── Stage 3 — the generator library and claims ───────────────────────────
+    "generators/common": {
+        "file": "backend/generators/common.py",
+        "test_file": ["tests/test_rc_lowpass_generator.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("snap_to_e96",   "function", "Nearest E96 in log space — one owner for the series"),
+            ("read_number",   "function", "A written requirement is honoured or refused, never defaulted"),
+            ("read_pins",     "function", "constraints.pinned, shape-checked and limited to real parts"),
+            ("worst_corners", "function", "Exact band over a box when monotone in every argument"),
+        ],
+    },
+    "generators/netlist_models": {
+        "file": "backend/generators/netlist/models.py",
+        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("led_parameters",     "function", "Shockley fit to the datasheet V_f — read by netlist and predict()"),
+            ("solve_series_diode", "function", "Exact LED current by bisection on a monotone equation"),
+            ("pin_resistance",     "function", "mcu_pin_thevenin output resistance (D2, D7)"),
+            ("load_ohms",          "function", "Sensor/transceiver load model, shared with predict()"),
+        ],
+    },
+    "generators/voltage_divider": {
+        "file": "backend/generators/voltage_divider.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("VoltageDividerGenerator", "class", "TPL_005 on the contract; dissipation bound is G2"),
+            ("select", "function", "E96 pair: within 0.5% the requested bleed current decides"),
+        ],
+    },
+    "generators/led_indicator": {
+        "file": "backend/generators/led_indicator.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("LedIndicatorGenerator", "class", "TPL_003 on the contract; the Phase 1 LED was never lit"),
+            ("select_r1", "function", "E96 R1 for the target current at typical parts"),
+        ],
+    },
+    "generators/dht22_node": {
+        "file": "backend/generators/dht22_node.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("DHT22NodeGenerator", "class", "TPL_001 on the contract; rise time vs sink current"),
+            ("select_pullup", "function", "10 kΩ unless the cable forces stronger; else refused"),
+        ],
+    },
+    "generators/rs485_node": {
+        "file": "backend/generators/rs485_node.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("RS485NodeGenerator", "class", "TPL_002 on the contract; fail-safe bias is the claim"),
+            ("select", "function", "Largest bias pair keeping idle V_AB 25% over threshold"),
+        ],
+    },
+    "validation/claims": {
+        "file": "backend/validation/claims.py",
+        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("Claim",              "class",    "kind / grade / scope / defeaters + an honest verdict"),
+            ("ValidationCoverage", "class",    "coverage_le_g2, grade_floor, open_defeaters — never fused"),
+            ("graded",             "function", "A claim whose grade is derived from its method"),
+            ("assess",             "function", "Every claim for a design: physics, X6 models, X8 catalogue"),
+            ("netlist_models",     "function", "X6 — MCU models read from the netlist, never remembered"),
+        ],
+    },
+    "validation/defeaters": {
+        "file": "backend/validation/defeaters.py",
+        "test_file": "tests/test_claims.py",
+        "entries": [
+            ("Defeater", "class", "A recorded doubt with a status and what eliminates it"),
+        ],
+    },
+    "validation/grid_adapters": {
+        "file": "backend/validation/grid_adapters.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("with_probes", "function", "CI test benches appended to a design's netlist, never the product"),
+            ("intent_at",   "function", "A grid point placed in the sections its generator declares"),
+        ],
+    },
 }
 
 STATUS_ICON = {

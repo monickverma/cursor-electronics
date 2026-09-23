@@ -283,6 +283,10 @@ class GridSpec(BaseModel):
 
     axes: Dict[str, Sequence[float]]
     units: Dict[str, str] = Field(default_factory=dict)
+    #: Which requirement section each axis lives in. Stage 3: the form producer
+    #: had put every axis in `targets`, which would have made a divider's input
+    #: rail a target. Absent axes default to `targets`, as before.
+    sections: Dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _non_empty(self) -> "GridSpec":
@@ -291,7 +295,15 @@ class GridSpec(BaseModel):
         for name, values in self.axes.items():
             if not values:
                 raise ValueError(f"grid axis {name!r} has no values")
+        for name, section in self.sections.items():
+            if name not in self.axes:
+                raise ValueError(f"sections names {name!r}, which is not an axis")
+            if section not in ("targets", "constraints", "preferences"):
+                raise ValueError(f"axis {name!r} is placed in unknown section {section!r}")
         return self
+
+    def section_of(self, axis: str) -> str:
+        return self.sections.get(axis, "targets")
 
     def points(self) -> Iterator[Dict[str, float]]:
         """Cartesian product of the axes, in declaration order."""

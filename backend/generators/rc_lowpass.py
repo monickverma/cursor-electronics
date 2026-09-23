@@ -59,6 +59,14 @@ from core.ir_schema import (
     SimulationSpec,
     ValidationRule,
 )
+from generators.common import (
+    Unreadable as _Unreadable,
+    read_number as _read_number,
+    requirements as _requirements,
+    snap_to_e96,
+    value_string as _value_string,
+    yageo_code as _yageo_code,
+)
 from generators.protocol import (
     ClaimScope,
     EnvelopeDecision,
@@ -97,18 +105,6 @@ MAX_SERIES_OHMS = 100_000.0
 R_TOLERANCE = 0.01
 C_TOLERANCE = 0.10
 
-# E96 — the 1% series. E24 would be the wrong table for an F-code part.
-_E96 = (
-    100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130,
-    133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174,
-    178, 182, 187, 191, 196, 200, 205, 210, 215, 221, 226, 232,
-    237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309,
-    316, 324, 332, 340, 348, 357, 365, 374, 383, 392, 402, 412,
-    422, 432, 442, 453, 464, 475, 487, 499, 511, 523, 536, 549,
-    562, 576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732,
-    750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976,
-)
-
 # Capacitor catalogue, in preference order. Real 0402 parts; the voltage rating
 # is load-bearing because `envelope()` refuses an intent whose supply exceeds it.
 _CAPACITORS: Tuple[Tuple[float, str, str, float], ...] = (
@@ -128,49 +124,6 @@ def cutoff_hz(ohms: float, farads: float) -> float:
     return 1.0 / (2.0 * math.pi * ohms * farads)
 
 
-def snap_to_e96(ohms: float) -> float:
-    """
-    Nearest E96 value. Chooses in log space, because the series is
-    logarithmic — picking by absolute distance biases toward the larger
-    neighbour everywhere except the bottom of each decade.
-    """
-    if ohms <= 0:
-        raise ValueError("resistance must be positive")
-    decade = math.floor(math.log10(ohms))
-    best: Optional[float] = None
-    best_err = float("inf")
-    for exponent in (decade - 1, decade, decade + 1):
-        for mantissa in _E96:
-            candidate = mantissa * (10.0 ** (exponent - 2))
-            err = abs(math.log10(candidate) - math.log10(ohms))
-            if err < best_err:
-                best_err, best = err, candidate
-    return float(best)
-
-
-def _yageo_code(ohms: float) -> str:
-    """
-    Yageo's value encoding: the unit letter stands in for the decimal point.
-    1590 → 1K59, 10000 → 10K, 100 → 100R.
-    """
-    if ohms >= 1e6:
-        scaled, unit = ohms / 1e6, "M"
-    elif ohms >= 1e3:
-        scaled, unit = ohms / 1e3, "K"
-    else:
-        scaled, unit = ohms, "R"
-    text = f"{scaled:.10g}"
-    if "." in text:
-        whole, frac = text.split(".")
-        return f"{whole}{unit}{frac}"
-    return f"{text}{unit}"
-
-
-def _value_string(ohms: float) -> str:
-    """Plain ohms — unambiguous for `_parse_ohms` in the SPICE generator."""
-    return f"{ohms:.10g}"
-
-
 class _Selection:
     """A chosen R/C pair and what it actually achieves."""
 
@@ -183,54 +136,6 @@ class _Selection:
         self.c_part = c_part
         self.c_vmax = c_vmax
         self.achieved_hz = cutoff_hz(ohms, farads)
-
-
-def _requirements(intent: IntentLike) -> Mapping[str, object]:
-    return intent.requirements or {}
-
-
-class _Unreadable(ValueError):
-    """A requirement that is present but is not a usable number. The message is the refusal."""
-
-
-def _read_number(
-    intent: IntentLike,
-    section: str,
-    key: str,
-    default: Optional[float],
-    *,
-    allow_zero: bool,
-    what: str,
-) -> Optional[float]:
-    """
-    A requirement read as a number. Absent (or null) gives `default`; present,
-    it must be a real, finite number in range, or `_Unreadable` names it.
-
-    **Never a silent default for a value that was written.** Until the Stage 2
-    verification these readers returned the default for anything that was not
-    an int or float and accepted `True` as 1: `supply_v: "12"` built a 5 V
-    design, `tolerance_pct: "1"` quietly loosened to 5%, `supply_v: true` built
-    a 1 V one, and `tolerance_pct: NaN` accepted every design, because every
-    comparison with NaN is false. Each of those hands back a design for a
-    requirement nobody wrote. Patches made them easy to reach — a client or the
-    patcher can send any JSON value — so envelope() now refuses them by name.
-    """
-    block = _requirements(intent).get(section) or {}
-    value = block.get(key) if isinstance(block, Mapping) else None
-    if value is None:
-        return default
-    path = f"{section}.{key}"
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise _Unreadable(
-            f"{path}={value!r} is not a number — {what} is written as a bare number"
-        )
-    number = float(value)
-    if not math.isfinite(number):
-        raise _Unreadable(f"{path}={value!r} is not a finite number — {what} must be one")
-    if number < 0 or (number == 0 and not allow_zero):
-        bound = "zero or more" if allow_zero else "greater than zero"
-        raise _Unreadable(f"{path}={number:g} is not usable — {what} must be {bound}")
-    return number
 
 
 def _target_cutoff(intent: IntentLike) -> Optional[float]:
@@ -406,6 +311,13 @@ class RCLowPassGenerator:
     name = NAME
     version = VERSION
     function = FUNCTION
+
+    #: X8 accounting (Stage 3): unimplemented rules this topology cannot violate.
+    not_applicable_rules = {
+        "current_limits_ok": "a passive filter driven by its source; no GPIO or current-rated part",
+        "power_supply_adequate": "no supply rail: IN is a signal port, not a rail",
+        "pullup_on_open_drain": "no open-drain line",
+    }
 
     # ── envelope() ────────────────────────────────────────────────────────
 
@@ -612,6 +524,40 @@ class RCLowPassGenerator:
             r_band = box.get("R", r_band)
             c_band = box.get("C", c_band)
         return r_band, c_band
+
+    # ── claims() ──────────────────────────────────────────────────────────
+
+    def claims(self, intent: IntentLike):
+        """
+        Stage 3 claim objects. The band is the EVIDENCE_CLASSES Table A example
+        row; source loading is a claim of its own because `predict()`'s
+        `mna_ideal` model drives IN from an ideal source and so cannot see it.
+        """
+        from validation.claims import graded
+
+        pred = self.predict(intent)
+        band, scope = pred.quantities["cutoff_hz"], pred.scope
+        target, tolerance = _target_cutoff(intent), _tolerance_pct(intent)
+        error = abs(band.nominal - target) / target * 100.0
+        source = _source_impedance(intent)
+        r1 = pred.quantities["resistance_ohm"].nominal
+        # The source adds in series with R1: f_c' = 1/(2π(R1+R_s)C).
+        shift = source / (r1 + source) * 100.0
+        nominal = scope.model_copy(update={"parameters": "nominal"})
+        return [
+            graded("rc.cutoff_nominal",
+                   f"f_c at nominal parts is within ±{tolerance:g}% of {target:g} Hz",
+                   error <= tolerance, "closed_form", nominal,
+                   detail=f"{band.nominal:.1f} Hz ({error:.2f}% from target)"),
+            graded("rc.cutoff_band",
+                   f"f_c lies in [{band.lo:.1f}, {band.hi:.1f}] Hz for every R within 1% and C within 10%",
+                   True, "monotone_corners", scope,
+                   detail="the 10% capacitor dominates; a 2% C0G part would narrow it fivefold"),
+            graded("rc.source_loading",
+                   f"a {source:g} Ω source lowers f_c by no more than ±{tolerance:g}%",
+                   shift <= tolerance, "closed_form", nominal,
+                   detail=f"R_s/(R1+R_s) = {shift:.2f}%"),
+        ]
 
     # ── generate() ────────────────────────────────────────────────────────
 
