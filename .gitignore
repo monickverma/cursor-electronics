@@ -45,3 +45,7 @@ Thumbs.db
 
 # Generated app captures — regenerate with scripts/capture_explanation.py
 captures/
+
+# Playwright (frontend/e2e)
+frontend/test-results/
+frontend/playwright-report/

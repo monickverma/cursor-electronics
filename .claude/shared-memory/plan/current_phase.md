@@ -528,8 +528,12 @@ backend stores the points (`simulation/waveforms.py`, transient parsing in
 
 ## Stage 3 — not done, and why
 
-- **No automated frontend test.** Playwright is installed but unconfigured; the
-  UI gates were checked by eye in the browser against real backend output.
+- ~~**No automated frontend test.**~~ — `frontend/e2e/validation.spec.ts` since
+  2026-09-24 (`npm run test:e2e`): claims ordering, not-assessed and
+  out-of-scope rows, sign-off and its 409, the AC waveform. The backend is
+  mocked with JSON exported from the real pipeline
+  (`scripts/export_ui_fixtures.py`); re-export when a response shape changes.
+  Each test was seen to fail against a deliberately broken component.
 - **Two claims sit at G2.** Resistor dissipation is not monotone in R, so it is
   bounded by interval arithmetic. Evaluating the interior critical point
   (R1 = R2′) alongside the corners would make it exact — G1. *Since then:*
@@ -611,7 +615,7 @@ sound and not complete.
 - **Termination dissipation (RS-485) and the rail budgets are not
   properties.** The first needs a driven-bus bench; the second no single
   wrong part can break (decision item 7).
-- **No automated frontend test** — the panel was checked by eye, as in Stage 3.
+- ~~**No automated frontend test**~~ — see Stage 3: Playwright since 2026-09-24.
 
 ## Stage 3 + 4 verification — 2026-09-23
 
