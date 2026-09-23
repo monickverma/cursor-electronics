@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-21T14:04:27.465083Z",
-  "generated_from_commit": "dc94a08",
+  "generated_at": "2026-09-23T13:50:58.919041Z",
+  "generated_from_commit": "9a4ecc6",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -280,13 +280,79 @@
       "file": "backend/db/migrations.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "generators/common": {
+      "status": "verified_done",
+      "file": "backend/generators/common.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/arduino_parts": {
+      "status": "verified_done",
+      "file": "backend/generators/arduino_parts.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/netlist_models": {
+      "status": "verified_done",
+      "file": "backend/generators/netlist/models.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/voltage_divider": {
+      "status": "verified_done",
+      "file": "backend/generators/voltage_divider.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/led_indicator": {
+      "status": "verified_done",
+      "file": "backend/generators/led_indicator.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/dht22_node": {
+      "status": "verified_done",
+      "file": "backend/generators/dht22_node.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/rs485_node": {
+      "status": "verified_done",
+      "file": "backend/generators/rs485_node.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/claims": {
+      "status": "verified_done",
+      "file": "backend/validation/claims.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/defeaters": {
+      "status": "verified_done",
+      "file": "backend/validation/defeaters.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "simulation/waveforms": {
+      "status": "verified_done",
+      "file": "backend/simulation/waveforms.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/grid_adapters": {
+      "status": "verified_done",
+      "file": "backend/validation/grid_adapters.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 1003,
+    "passed": 1377,
     "failed": 0,
     "skipped": 15,
-    "total": 1003
+    "total": 1377
   },
   "phase1_criteria": [
     {
@@ -351,19 +417,126 @@
     }
   ],
   "phase1_criteria_legend": "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · ❌ failing · ⏳ needs a human or physical hardware",
+  "validation": {
+    "grade_floor": "G2",
+    "coverage_le_g2_min": 1.0,
+    "open_defeaters": {
+      "D1": [
+        "dht22_node",
+        "led_indicator",
+        "rc_lowpass",
+        "rs485_node",
+        "voltage_divider"
+      ],
+      "D2": [
+        "dht22_node",
+        "led_indicator",
+        "rs485_node"
+      ],
+      "D7": [
+        "dht22_node",
+        "led_indicator",
+        "rc_lowpass",
+        "rs485_node",
+        "voltage_divider"
+      ]
+    },
+    "not_assessed": {},
+    "generators": {
+      "rc_lowpass": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "rc.cutoff_nominal",
+          "rc.cutoff_band",
+          "rc.source_loading",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok"
+        ]
+      },
+      "voltage_divider": {
+        "grade_floor": "G2",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "divider.resistor_dissipation"
+        ]
+      },
+      "led_indicator": {
+        "grade_floor": "G2",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "led.resistor_dissipation"
+        ]
+      },
+      "dht22_node": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "dht.pullup_present",
+          "dht.rise_time",
+          "dht.sink_current",
+          "dht.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok"
+        ]
+      },
+      "rs485_node": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "rs485.failsafe_bias",
+          "rs485.driver_load",
+          "rs485.termination_dissipation",
+          "rs485.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.rs485_termination_present",
+          "rule.rs485_bias_resistors"
+        ]
+      }
+    }
+  },
   "blockers": [
     "PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`)",
     "OpenRouter rate limit (10/hr IP)",
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "9a4ecc6 feat(phase2): Stage 3 — four generators, claim objects, grade floor (X6 + X8)",
+    "0c0ce3b brain: /update-memory — architecture and mental model re-synced to IntentIR flow; 1003 passing",
     "dc94a08 fix(stage2): transitive CircuitIR scanner; strict rc_lowpass inputs (0.2.1)",
     "26adf0b fix(stage2): close three defects found by the Stage 2 verification",
-    "d1ebbca feat(phase2): Stage 2 — patch model v2 (X2 + X4)",
-    "3122e30 fix(x5): close three defects in the intent producer",
-    "2c53a3c feat(phase2): Stage 1 — IntentIR, registry, form, and hard abstention"
+    "d1ebbca feat(phase2): Stage 2 — patch model v2 (X2 + X4)"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    |  51 ++\n .claude/shared-memory/brain/timeline.md     |   2 +\n .claude/shared-memory/plan/current_phase.md |  15 +-\n .claude/shared-memory/progress.yaml    ",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 153 +++++++++\n .claude/shared-memory/tools/progress_gen.py |  79 +++++\n .claude/shared-memory/tools/regen_state.py  |  89 +++++\n backend/ai/form_producer.",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

@@ -41,6 +41,14 @@ Two voltage sources on the same node = singular matrix = ngspice error. If the p
 
 The MCU draws current, it does not supply voltage. 100Ω gives 50mA at 5V — close to ATmega328P typical quiescent draw.
 
+> **Amended 2026-09-21 (Stage 3, X6).** This model is now a *declared scope*:
+> any claim on a design whose netlist contains `R_MCU_` names `mcu_as_100R`
+> and cites defeater D2, derived from the netlist text. A second MCU model,
+> `mcu_pin_thevenin`, is opt-in: a node an MCU drives through an `output`
+> connection **and** that declares `voltage_nominal` is emitted as
+> `V_PIN_<node>` behind `R_PIN_<node>` (the datasheet output resistance). Both
+> models live in `generators/netlist/models.py`, which `predict()` reads too.
+
 ---
 
 ## Rule: ngspice Batch Output Is Columnar, Not `v(x) = y`
@@ -120,6 +128,15 @@ This is added during `SpiceNetlistGenerator.generate()` by counting element appe
 | `pwm_pin_valid` | PWM signals on Arduino Uno PWM-capable pins only (3,5,6,9,10,11) | rule_engine.py |
 
 `HardwareRuleEngine.run(ir)` only checks rules listed in `ir.validation_rules`. A circuit without RS-485 nodes does not run the RS-485 rule.
+
+> **Amended 2026-09-21 (Stage 3, X8).** Listing no longer decides what is
+> checked. `validation/claims.py::assess` runs **every implemented rule on
+> every design** and turns each into a graded claim; four `ValidationRule`
+> values have no implementation (`current_limits_ok`, `pullup_on_open_drain`,
+> `power_supply_adequate`, `operating_temp_range`) and are either covered by a
+> generator's physics claim, declared not applicable or out of scope, or
+> printed as **not assessed (G7)**. An unchecked rule is never a passed one.
+> `HardwareRuleEngine.run` keeps its old semantics for the tests that pin them.
 
 ---
 

@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-21T14:06:47.261684Z'
+generated_at: '2026-09-23T13:58:34.678009Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -117,14 +117,14 @@ files:
         description: Translates a CircuitIR into an ngspice-compatible SPICE netlist
           string.
         signature: null
-        line: 41
+        line: 48
         test_file: *id001
       SpiceNetlistGenerator.generate:
         status: verified_done
         type: method
         description: 'Main entry: MCU=100Ω, floating→1GΩ tie-down'
         signature: 'SpiceNetlistGenerator.generate(ir: CircuitIR) -> str'
-        line: 44
+        line: 51
         test_file: *id001
     module_status: done
   generators/firmware:
@@ -206,14 +206,14 @@ files:
         description: Parses ngspice -b output. Node names are lowercased in all returned
           dicts.
         signature: null
-        line: 39
+        line: 53
         test_file: *id003
       SpiceResultParser.parse:
         status: verified_done
         type: method
         description: Handles DC columnar table + AC multi-table complex
         signature: 'SpiceResultParser.parse(stdout: str, stderr: str) -> SimulationData'
-        line: 42
+        line: 56
         test_file: *id003
     module_status: done
   simulation/grader:
@@ -757,7 +757,7 @@ files:
         type: method
         description: Cartesian product of the axes, in declaration order.
         signature: GridSpec.points() -> Iterator[Dict[str, float]]
-        line: 296
+        line: 308
         test_file: tests/test_generator_protocol.py
       Generator:
         status: verified_done
@@ -765,7 +765,7 @@ files:
         description: Structural, not inherited. A generator is anything with these
           members.
         signature: null
-        line: 313
+        line: 325
         test_file: tests/test_generator_protocol.py
       conservative_closure:
         status: verified_done
@@ -773,14 +773,14 @@ files:
         description: Every component. Sound but vacuous — a locality check against
           this passes
         signature: 'conservative_closure(ir: CircuitIR) -> FrozenSet[str]'
-        line: 402
+        line: 414
         test_file: tests/test_generator_protocol.py
       conformance_gaps:
         status: verified_done
         type: function
         description: Which parts of the contract `candidate` is missing, by name.
         signature: 'conformance_gaps(candidate: Any) -> List[str]'
-        line: 416
+        line: 428
         test_file: tests/test_generator_protocol.py
     module_status: done
   generators/rc_lowpass:
@@ -794,14 +794,7 @@ files:
         type: function
         description: f_c = 1 / (2·pi·R·C).
         signature: 'cutoff_hz(ohms: float, farads: float) -> float'
-        line: 126
-        test_file: tests/test_rc_lowpass_generator.py
-      snap_to_e96:
-        status: verified_done
-        type: function
-        description: Nearest E96 value. Chooses in log space, because the series is
-        signature: 'snap_to_e96(ohms: float) -> float'
-        line: 131
+        line: 122
         test_file: tests/test_rc_lowpass_generator.py
       select_components:
         status: verified_done
@@ -810,21 +803,21 @@ files:
           are tried in'
         signature: 'select_components(target_hz: float, supply_v: float, r_pin: Optional[float],
           c_pin: Optional[_Capacitor]) -> Optional[_Selection]'
-        line: 263
+        line: 168
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator:
         status: verified_done
         type: class
         description: Single-pole passive RC low-pass. Implements `generators.protocol.Generator`.
         signature: null
-        line: 403
+        line: 308
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.envelope:
         status: verified_done
         type: method
         description: Accept with the interface contract, or refuse with a reason specific
         signature: 'RCLowPassGenerator.envelope(intent: IntentLike) -> EnvelopeDecision'
-        line: 412
+        line: 324
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.predict:
         status: verified_done
@@ -832,7 +825,7 @@ files:
         description: Closed-form behaviour over a parameter box.
         signature: 'RCLowPassGenerator.predict(intent: IntentLike, box: Optional[Mapping[str,
           Interval]]) -> Prediction'
-        line: 520
+        line: 432
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.generate:
         status: verified_done
@@ -840,7 +833,7 @@ files:
         description: Deterministic given (intent, version). Callers call `envelope()`
           first.
         signature: 'RCLowPassGenerator.generate(intent: IntentLike) -> CircuitIR'
-        line: 618
+        line: 564
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.grid:
         status: verified_done
@@ -848,7 +841,7 @@ files:
         description: Three decades of the declared envelope. A single 1 kHz point
           passes on
         signature: RCLowPassGenerator.grid() -> GridSpec
-        line: 726
+        line: 672
         test_file: tests/test_rc_lowpass_generator.py
       RCLowPassGenerator.dependency_closure:
         status: verified_done
@@ -857,7 +850,7 @@ files:
           the
         signature: 'RCLowPassGenerator.dependency_closure(requirement_path: str) ->
           FrozenSet[str]'
-        line: 737
+        line: 683
         test_file: tests/test_rc_lowpass_generator.py
     module_status: done
   validation/envelope_grid:
@@ -1067,7 +1060,7 @@ files:
         description: Turn form input into an IntentIR. Never calls a model.
         signature: 'FormProducer.build(function: str, values: Mapping[str, Any]) ->
           IntentIR'
-        line: 179
+        line: 198
         test_file: tests/test_form_producer.py
     module_status: done
   ai/intent_producer:
@@ -1289,7 +1282,7 @@ files:
           of the'
         signature: 'check_locality(generator: Generator, changed_paths: Iterable[str],
           before: CircuitIR, after: CircuitIR) -> LocalityReport'
-        line: 131
+        line: 136
         test_file: tests/test_realize.py
       predict_delta:
         status: verified_done
@@ -1297,7 +1290,7 @@ files:
         description: Every predicted quantity whose band moved, before → after.
         signature: 'predict_delta(before_generator: Optional[Generator], before: Optional[IntentIR],
           after_generator: Generator, after: IntentIR) -> List[QuantityDelta]'
-        line: 189
+        line: 194
         test_file: tests/test_realize.py
     module_status: done
   ai/intent_patcher:
@@ -1365,7 +1358,7 @@ files:
           v(n)
         signature: 'patch_design(request: Request, circuit_id: str, body: PatchRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 151
+        line: 154
         test_file: tests/test_patch_route.py
       put_annotations:
         status: verified_done
@@ -1373,7 +1366,7 @@ files:
         description: Replace the design's annotations. Never regenerates anything.
         signature: 'put_annotations(request: Request, circuit_id: str, body: AnnotationsRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 357
+        line: 362
         test_file: tests/test_patch_route.py
       get_history:
         status: verified_done
@@ -1382,14 +1375,286 @@ files:
           1 rows are shown as they were.
         signature: 'get_history(circuit_id: str, db: Annotated[AsyncSession, Depends(get_db)],
           user)'
-        line: 378
+        line: 383
         test_file: tests/test_patch_route.py
     module_status: done
+  generators/common:
+    file: backend/generators/common.py
+    exists: true
+    test_file: &id004
+    - tests/test_rc_lowpass_generator.py
+    - tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      snap_to_e96:
+        status: verified_done
+        type: function
+        description: Nearest E96 value. Chooses in log space, because the series is
+        signature: 'snap_to_e96(ohms: float) -> float'
+        line: 40
+        test_file: *id004
+      read_number:
+        status: verified_done
+        type: function
+        description: A requirement read as a number. Absent (or null) gives `default`;
+          present,
+        signature: 'read_number(intent: IntentLike, section: str, key: str, default:
+          Optional[float]) -> Optional[float]'
+        line: 109
+        test_file: *id004
+      read_pins:
+        status: verified_done
+        type: function
+        description: '`constraints.pinned`, checked for shape and for naming only
+          real parts.'
+        signature: 'read_pins(intent: IntentLike, pinnable: Sequence[str]) -> Dict[str,
+          Any]'
+        line: 149
+        test_file: *id004
+      worst_corners:
+        status: verified_done
+        type: function
+        description: min and max of `fn` over every corner of a box.
+        signature: 'worst_corners(fn: Callable[..., float], boxes: Sequence[Sequence[float]])
+          -> tuple'
+        line: 189
+        test_file: *id004
+    module_status: done
+  generators/netlist_models:
+    file: backend/generators/netlist/models.py
+    exists: true
+    test_file: &id005
+    - tests/test_claims.py
+    - tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      led_parameters:
+        status: verified_done
+        type: function
+        description: (Is, n) for a tabulated LED, fitted so V_f at the test current
+          equals the
+        signature: 'led_parameters(part_number: str, forward_voltage: str) -> Optional[Tuple[float,
+          float]]'
+        line: 44
+        test_file: *id005
+      solve_series_diode:
+        status: verified_done
+        type: function
+        description: 'Current in V → R → diode → ground: the root of'
+        signature: 'solve_series_diode(v_source: float, r_series: float, i_s: float,
+          n: float) -> float'
+        line: 68
+        test_file: *id005
+      pin_resistance:
+        status: verified_done
+        type: function
+        description: Output resistance of a GPIO driven high (`mcu_pin_thevenin`).
+        signature: 'pin_resistance(mcu_part: Optional[str], which: str) -> float'
+        line: 92
+        test_file: *id005
+      load_ohms:
+        status: verified_done
+        type: function
+        description: The resistive load a sensor, transceiver or relay is modelled
+          as between
+        signature: 'load_ohms(current_draw_ma: Optional[float], supply_voltage_max:
+          Optional[float]) -> float'
+        line: 103
+        test_file: *id005
+    module_status: done
+  generators/voltage_divider:
+    file: backend/generators/voltage_divider.py
+    exists: true
+    test_file: tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      VoltageDividerGenerator:
+        status: verified_done
+        type: class
+        description: Two-resistor divider. Implements `generators.protocol.Generator`.
+        signature: null
+        line: 184
+        test_file: tests/test_generator_library.py
+      select:
+        status: verified_done
+        type: function
+        description: Deterministic E96 pair. None if nothing lands inside the value
+          window.
+        signature: 'select(spec: _Spec) -> Optional[_Selection]'
+        line: 140
+        test_file: tests/test_generator_library.py
+    module_status: done
+  generators/led_indicator:
+    file: backend/generators/led_indicator.py
+    exists: true
+    test_file: tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      LedIndicatorGenerator:
+        status: verified_done
+        type: class
+        description: One LED on one Uno GPIO. Implements `generators.protocol.Generator`.
+        signature: null
+        line: 163
+        test_file: tests/test_generator_library.py
+      select_r1:
+        status: verified_done
+        type: function
+        description: E96 value giving the target current at typical parts. Deterministic.
+        signature: 'select_r1(spec: _Spec) -> Optional[float]'
+        line: 146
+        test_file: tests/test_generator_library.py
+    module_status: done
+  generators/dht22_node:
+    file: backend/generators/dht22_node.py
+    exists: true
+    test_file: tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      DHT22NodeGenerator:
+        status: verified_done
+        type: class
+        description: Uno + DHT22 + pull-up + bypass. Implements `generators.protocol.Generator`.
+        signature: null
+        line: 167
+        test_file: tests/test_generator_library.py
+      select_pullup:
+        status: verified_done
+        type: function
+        description: 10 kΩ unless the cable forces a stronger pull-up. None if nothing
+          works.
+        signature: 'select_pullup(spec: _Spec) -> Optional[float]'
+        line: 148
+        test_file: tests/test_generator_library.py
+    module_status: done
+  generators/rs485_node:
+    file: backend/generators/rs485_node.py
+    exists: true
+    test_file: tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      RS485NodeGenerator:
+        status: verified_done
+        type: class
+        description: Uno + MAX485 + termination + fail-safe bias. Implements the Generator
+          protocol.
+        signature: null
+        line: 196
+        test_file: tests/test_generator_library.py
+      select:
+        status: verified_done
+        type: function
+        description: (R1, R2, R3). Largest equal bias pair meeting the fail-safe margin.
+        signature: 'select(spec: _Spec)'
+        line: 182
+        test_file: tests/test_generator_library.py
+    module_status: done
+  validation/claims:
+    file: backend/validation/claims.py
+    exists: true
+    test_file: &id006
+    - tests/test_claims.py
+    - tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      Claim:
+        status: verified_done
+        type: class
+        description: One row of EVIDENCE_CLASSES Table A.
+        signature: null
+        line: 110
+        test_file: *id006
+      ValidationCoverage:
+        status: verified_done
+        type: class
+        description: EVIDENCE_CLASSES §5, revised `validation_coverage`. Three numbers,
+          never fused.
+        signature: null
+        line: 189
+        test_file: *id006
+      graded:
+        status: verified_done
+        type: function
+        description: A checked claim, with its grade looked up and its verdict made
+          honest.
+        signature: 'graded(id: str, claim: str, holds: bool, method: str, scope: ClaimScope,
+          defeaters: Iterable[str], detail: Optional[str], kind: Kind, critical: bool,
+          covers: Iterable[str]) -> Claim'
+        line: 159
+        test_file: *id006
+      assess:
+        status: verified_done
+        type: function
+        description: Every claim for one realised design. Deterministic, no simulator,
+          no model.
+        signature: 'assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverage'
+        line: 373
+        test_file: *id006
+      netlist_models:
+        status: verified_done
+        type: function
+        description: MCU models the design's own netlist uses. Read from the netlist
+          text.
+        signature: 'netlist_models(circuit: CircuitIR) -> Tuple[str, ...]'
+        line: 227
+        test_file: *id006
+    module_status: done
+  validation/defeaters:
+    file: backend/validation/defeaters.py
+    exists: true
+    test_file: tests/test_claims.py
+    test_file_status: passing
+    entries:
+      Defeater:
+        status: verified_done
+        type: class
+        description: A recorded doubt with a status and what eliminates it
+        signature: null
+        line: 33
+        test_file: tests/test_claims.py
+    module_status: done
+  simulation/waveforms:
+    file: backend/simulation/waveforms.py
+    exists: true
+    test_file: tests/test_waveforms.py
+    test_file_status: passing
+    entries:
+      waveforms_from:
+        status: verified_done
+        type: function
+        description: The viewer's input, from a `SimulationData`.
+        signature: 'waveforms_from(parsed: Any, max_points: int) -> Dict[str, Any]'
+        line: 53
+        test_file: tests/test_waveforms.py
+    module_status: done
+  validation/grid_adapters:
+    file: backend/validation/grid_adapters.py
+    exists: true
+    test_file: tests/test_generator_library.py
+    test_file_status: passing
+    entries:
+      with_probes:
+        status: verified_done
+        type: function
+        description: The design's netlist with test-bench elements added before `.end`.
+        signature: 'with_probes(netlist: str, probes: Sequence[str]) -> str'
+        line: 55
+        test_file: tests/test_generator_library.py
+      intent_at:
+        status: verified_done
+        type: function
+        description: Place each grid axis in the section its generator declares.
+        signature: 'intent_at(function: str, point: Mapping[str, float], sections:
+          Mapping[str, str], base: Optional[Mapping[str, Mapping[str, object]]]) ->
+          _Requirements'
+        line: 44
+        test_file: tests/test_generator_library.py
+    module_status: done
 summary:
-  entries_total: 149
-  entries_verified_done: 131
+  entries_total: 173
+  entries_verified_done: 155
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 87.9
+  pct_verified: 89.6

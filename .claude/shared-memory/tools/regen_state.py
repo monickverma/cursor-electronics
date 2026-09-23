@@ -61,7 +61,9 @@ MODULES = {
     "simulation/runner":       {"file": "backend/simulation/runner.py",             "test": ["tests/test_simulation.py",
                                                                                              "tests/test_simulation_accuracy.py"], "phase": 1},
     "simulation/parser":       {"file": "backend/simulation/parser.py",             "test": ["tests/test_simulation.py",
-                                                                                             "tests/test_simulation_accuracy.py"], "phase": 1},
+                                                                                             "tests/test_simulation_accuracy.py",
+                                                                                             "tests/test_waveforms.py",
+                                                                                             "tests/test_claims.py"], "phase": 1},
     # grader is deliberately NOT covered by test_simulation_accuracy.py — that
     # file compares against closed-form equations directly, bypassing the 15%
     # grader on purpose. Do not add it here.
@@ -93,7 +95,8 @@ MODULES = {
     "observability/request_log":  {"file": "backend/observability/request_log.py",  "test": "tests/test_request_log.py",        "phase": 2},
     "middleware/instrumentation": {"file": "backend/middleware/instrumentation.py", "test": "tests/test_request_log.py",        "phase": 2},
     "generators/protocol":        {"file": "backend/generators/protocol.py",        "test": "tests/test_generator_protocol.py", "phase": 2},
-    "generators/rc_lowpass":      {"file": "backend/generators/rc_lowpass.py",      "test": "tests/test_rc_lowpass_generator.py", "phase": 2},
+    "generators/rc_lowpass":      {"file": "backend/generators/rc_lowpass.py",      "test": ["tests/test_rc_lowpass_generator.py",
+                                                                                                "tests/test_generator_library.py"], "phase": 2},
     "validation/envelope_grid":   {"file": "backend/validation/envelope_grid.py",   "test": "tests/test_envelope_grid.py",        "phase": 2},
     "ai/derived_explainer":       {"file": "backend/ai/derived_explainer.py",       "test": "tests/test_derived_explainer.py",    "phase": 2},
     "core/intent_ir":             {"file": "backend/core/intent_ir.py",             "test": "tests/test_intent_ir.py",            "phase": 2},
@@ -118,6 +121,7 @@ MODULES = {
     "generators/rs485_node":      {"file": "backend/generators/rs485_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
     "validation/claims":          {"file": "backend/validation/claims.py",          "test": ["tests/test_claims.py", "tests/test_generator_library.py"], "phase": 2},
     "validation/defeaters":       {"file": "backend/validation/defeaters.py",       "test": "tests/test_claims.py",               "phase": 2},
+    "simulation/waveforms":       {"file": "backend/simulation/waveforms.py",       "test": "tests/test_waveforms.py",            "phase": 2},
     "validation/grid_adapters":   {"file": "backend/validation/grid_adapters.py",   "test": "tests/test_generator_library.py",   "phase": 2},
 }
 
@@ -554,7 +558,9 @@ def main():
         # silently too small once the suite passed two minutes — caught only
         # because the exit-code check below now reports it. Third instance of
         # this root cause; the first two were silent.
-        code, out, err = run(["python", str(prog_script)], timeout=900)
+        # Above progress_gen.py's own 1200 s test budget, so its loud
+        # failure can surface instead of being cut off by this one.
+        code, out, err = run(["python", str(prog_script)], timeout=1500)
         # The exit code used to be discarded, and the keyword filter below does
         # not match a Python traceback — so when progress_gen.py started dying
         # on a Windows encoding error this step printed nothing and looked

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { pollSimulation, SimulationStatus } from '@/lib/api'
+import WaveformChart, { si } from '@/components/WaveformChart'
 
 interface Props {
   circuitId: string | null
@@ -58,7 +59,9 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
     )
   }
 
-  const dcVoltages = status.results?.dc_voltages as Record<string, number> | undefined
+  const dcVoltages = status.results?.dc_voltages
+  const waveforms = status.results?.waveforms
+  const currents = waveforms?.dc.currents ?? {}
 
   return (
     <div className="h-full overflow-y-auto p-5 space-y-5">
@@ -90,6 +93,19 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
         </div>
       )}
 
+      {/* Waveforms (Stage 3). Results stored before Stage 3 carry none. */}
+      {status.status === 'complete' && !waveforms && (
+        <p className="text-xs text-muted">
+          This result was stored before waveform capture existed; re-run the simulation to plot it.
+        </p>
+      )}
+      {waveforms && waveforms.ac.x.length > 1 && (
+        <WaveformChart title="AC sweep" sweep={waveforms.ac} logX xUnit="Hz" yUnit="V" />
+      )}
+      {waveforms && waveforms.tran.x.length > 1 && (
+        <WaveformChart title="Transient" sweep={waveforms.tran} xUnit="s" yUnit="V" />
+      )}
+
       {/* DC voltages */}
       {dcVoltages && Object.keys(dcVoltages).length > 0 && (
         <div>
@@ -106,6 +122,23 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
                 <tr key={node} className="border-b border-border/50">
                   <td className="py-1.5 pr-4 font-mono text-xs text-cream-dim">{node}</td>
                   <td className="py-1.5 text-right font-mono text-xs text-lavender">{v.toFixed(4)} V</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Source currents — a supply delivering current reads negative */}
+      {Object.keys(currents).length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium text-cream mb-2">Source currents</h3>
+          <table className="w-full text-sm">
+            <tbody>
+              {Object.entries(currents).map(([source, amps]) => (
+                <tr key={source} className="border-b border-border/50">
+                  <td className="py-1.5 pr-4 font-mono text-xs text-cream-dim">{source}</td>
+                  <td className="py-1.5 text-right font-mono text-xs text-lavender">{si(amps, 'A')}</td>
                 </tr>
               ))}
             </tbody>

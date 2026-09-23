@@ -53,6 +53,9 @@ class GenerateResponse(BaseModel):
     explanation: str
     pcb_netlist: Optional[dict] = None
     ir: dict
+    #: Stage 3 claim objects: kind/grade/scope/defeaters per claim, the grade
+    #: floor, open defeaters, and the not-assessed / out-of-scope rows.
+    validation_coverage: Optional[dict] = None
 
 
 @router.post("/generate", response_model=GenerateResponse, status_code=201)
@@ -200,6 +203,7 @@ async def generate_design(
         explanation=explanation,
         pcb_netlist=pcb_netlist,
         ir=ir.model_dump(mode="json"),
+        validation_coverage=ir.validation_coverage,
     )
 
 

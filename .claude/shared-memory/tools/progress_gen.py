@@ -287,7 +287,7 @@ PLANNED = {
         "test_file": "tests/test_rc_lowpass_generator.py",
         "entries": [
             ("cutoff_hz",          "function", "f_c = 1/(2·pi·R·C) — the closed form X1 makes the truth"),
-            ("snap_to_e96",        "function", "Nearest 1% series value, chosen in log space"),
+            # snap_to_e96 moved to generators/common.py in Stage 3; tracked there.
             ("select_components",  "function", "Deterministic R/C choice; catalogue order breaks ties"),
             ("RCLowPassGenerator", "class",    "First generator on the Task 0.2 contract"),
             ("RCLowPassGenerator.envelope",           "method", "Accept with ports, or refuse naming the offending value"),
@@ -499,6 +499,13 @@ PLANNED = {
             ("Defeater", "class", "A recorded doubt with a status and what eliminates it"),
         ],
     },
+    "simulation/waveforms": {
+        "file": "backend/simulation/waveforms.py",
+        "test_file": "tests/test_waveforms.py",
+        "entries": [
+            ("waveforms_from", "function", "AC / transient / DC shaped for the viewer; strided, never interpolated"),
+        ],
+    },
     "validation/grid_adapters": {
         "file": "backend/validation/grid_adapters.py",
         "test_file": "tests/test_generator_library.py",
@@ -596,17 +603,26 @@ def extract_symbols(filepath: Path) -> dict:
 
 
 # ── Test runner ───────────────────────────────────────────────────────────────
+#: Headroom for the whole suite. Stage 3 took it past the old 180 s, and the
+#: timeout used to return {} silently — every module then read "untested", the
+#: script exited 0, and progress.yaml reported 0/174 verified with nothing to
+#: say why. Fourth instance of this root cause (see regen_state.py).
+TEST_TIMEOUT_S = 1200
+
+
 def run_tests_by_file() -> dict:
-    """Returns {test_filename: 'passing'|'failing'|'empty'}."""
+    """Returns {test_filename: 'passing'|'failing'|'empty'}. Exits non-zero if it cannot run."""
     env = {**os.environ, "PYTHONPATH": str(BACKEND)}
     try:
         r = subprocess.run(
             ["python", "-m", "pytest", "tests/", "--tb=no", "-v", "--no-header"],
             capture_output=True, text=True, cwd=PROJECT_ROOT,
-            env=env, timeout=180,
+            env=env, timeout=TEST_TIMEOUT_S,
         )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return {}
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        # Loud, and a non-zero exit so regen_state.py reports progress.yaml as
+        # STALE instead of writing a file where nothing is verified.
+        raise SystemExit(f"progress_gen.py: could not run the test suite — {type(exc).__name__}: {exc}")
 
     raw = r.stdout + r.stderr
     file_status = {}
@@ -621,6 +637,13 @@ def run_tests_by_file() -> dict:
         has_failures = any("FAILED" in line and name in line for line in lines)
         file_status[name] = "failing" if has_failures else "passing"
 
+    # The other silent path: pytest ran but named no test file (a collection
+    # crash, an import error at conftest). Every module would read "untested".
+    if file_status and all(st == "empty" for st in file_status.values()):
+        tail = "\n".join(raw.splitlines()[-8:])
+        raise SystemExit(
+            f"progress_gen.py: pytest output named no test files — collection failed?\n{tail}"
+        )
     return file_status
 
 

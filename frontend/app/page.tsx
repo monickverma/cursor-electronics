@@ -192,6 +192,7 @@ export default function Home() {
               {activeTab === 'validation' && (
                 <ValidationReport
                   validation={result.validation}
+                  coverage={result.validation_coverage}
                   explanation={(result as GenerateResponse).explanation}
                 />
               )}

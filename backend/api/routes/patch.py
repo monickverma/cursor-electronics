@@ -94,6 +94,9 @@ class PatchResponse(BaseModel):
     annotations: dict = {}
     generator: Optional[str] = None
     generator_changed: Optional[dict] = None
+    #: Stage 3 claim objects for the returned revision. None for a design
+    #: built before Stage 3 that a no-op patch returns unchanged.
+    validation_coverage: Optional[dict] = None
 
 
 class AnnotationsRequest(BaseModel):
@@ -235,6 +238,7 @@ async def patch_design(
             citations=citations,
             annotations=_annotation_view(attach(current, annotations)),
             generator=current.generator,
+            validation_coverage=current.validation_coverage,
         )
 
     new_intent = outcome.intent
@@ -347,6 +351,7 @@ async def patch_design(
         annotations=_annotation_view(report),
         generator=tag,
         generator_changed=generator_changed,
+        validation_coverage=new_ir.validation_coverage,
     )
 
 

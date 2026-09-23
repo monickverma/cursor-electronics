@@ -43,6 +43,9 @@ class SimulationData:
     #: Voltage-source branch currents from the operating point, by source name
     #: (lowercased). Stage 3: the grid gate measures rail and probe currents.
     branch_currents: Dict[str, float] = field(default_factory=dict)
+    #: Transient analysis rows: (time_s, {node: volts}). Stage 3, for the
+    #: waveform viewer.
+    tran_points: List[Tuple[float, Dict[str, float]]] = field(default_factory=list)
     raw_stdout: str = ""
     raw_stderr: str = ""
 
@@ -56,6 +59,10 @@ class SpiceResultParser:
         # AC sweep: look for the frequency table first
         if re.search(r'\bfrequency\b', stdout, re.IGNORECASE):
             data.ac_points = self._parse_ac_table(stdout)
+
+        # Transient: an "Index  time  v(a)  v(b) ..." table.
+        if re.search(r'^\s*Index\s+time\b', stdout, re.IGNORECASE | re.MULTILINE):
+            data.tran_points = self._parse_tran_table(stdout)
 
         # DC: scan every line for the "v(node)  value" columnar pattern
         _SKIP_WORDS = {"node", "voltage", "source", "current", "model", "device", "resistor"}
@@ -89,7 +96,7 @@ class SpiceResultParser:
                         data.dc_voltages[node] = float(m2.group(2))
 
         # DC fallback: tabular format from .print dc (Index v(node1) v(node2) ...)
-        if not data.dc_voltages and not data.ac_points:
+        if not data.dc_voltages and not data.ac_points and not data.tran_points:
             data.dc_voltages = self._parse_dc_table(stdout)
 
         return data
@@ -223,3 +230,33 @@ class SpiceResultParser:
                 result.append((freq, values))
 
         return result
+
+    # ── Transient table ───────────────────────────────────────────────────────
+
+    def _parse_tran_table(self, stdout: str) -> List[Tuple[float, Dict[str, float]]]:
+        """
+        Parse `.print tran` output: one table whose header names every column
+        ("Index  time  v(in)  v(out)"), paginated with the header repeated.
+        Rows are keyed by index, so a repeated page cannot duplicate a sample.
+        """
+        rows: Dict[int, Tuple[float, Dict[str, float]]] = {}
+        columns: List[Optional[str]] = []
+        for line in stdout.splitlines():
+            parts = line.split()
+            if len(parts) >= 3 and parts[0].lower() == "index" and parts[1].lower() == "time":
+                columns = []
+                for token in parts[2:]:
+                    m = _V_COL_PATTERN.match(token)
+                    columns.append(m.group(1).lower() if m else None)
+                continue
+            if not columns or not parts:
+                continue
+            try:
+                nums = [float(x) for x in parts]
+            except ValueError:
+                continue
+            if len(nums) < 2 + len(columns) or nums[0] != int(nums[0]):
+                continue
+            values = {name: nums[2 + i] for i, name in enumerate(columns) if name}
+            rows[int(nums[0])] = (nums[1], values)
+        return [rows[i] for i in sorted(rows)]

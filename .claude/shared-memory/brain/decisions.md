@@ -1180,3 +1180,45 @@ view of it.
 - *Skip the grid gate for DHT22/RS-485 because DC idle states are trivial.*
   The mutation arm would then detect nothing on them — the pull-up is invisible
   at idle. Probes make the quantity that matters observable.
+
+**Found while building Stage 3, all closed in it:**
+
+- **Phase 1's `IR_005` wired the MAX485 to D0/D1** — the hardware UART —
+  while `modbus_master.ino.j2` drives it with SoftwareSerial on D10/D11
+  ([2026-06-02]). The schematic and the firmware disagreed about which pins
+  carry the bus. `rs485_node` wires what the firmware drives, and a test
+  checks the two against each other.
+- **The RS-485 terminator must be 1206.** A driver can swing the pair to V_CC:
+  5 V across 120 Ω is 208 mW, over three times an 0402's 62.5 mW. The Phase 1
+  template placed an 0402.
+- **Three dependency closures were too narrow, each found by the locality
+  sweep on first run:** `led_indicator`'s `gpio_pin` (U1's justification
+  names the pin), `rs485_node`'s `supply_v` (R1's justification states its
+  dissipation at that supply), on top of `rc_lowpass`'s `supply_v` from
+  Stage 2. The sweep is earning its place.
+- **The validation report contradicted its own claims table.** With three
+  checks not assessed, the old badge still said "✓ All rules passed … No issues
+  found" — exactly the silent pass X8 exists to end. It now counts them.
+- **The RS-485 M1 margin is thin:** a 5% terminator fault moves idle V_AB by
+  2.3%, just over the 2% gate. Pinned by a test, so a model change that pushed
+  it under would fail loudly instead of leaving the matrix blind.
+
+**Two things settled here that were open, flagged for the user to reverse:**
+
+- **`kind` for exact closed-form claims is `analytic`.** v2's Stage 4 table
+  tags z3-proved claims `empirical`; by EVIDENCE_CLASSES §3.1's own test (could
+  a measurement falsify it? no) they are analytic, and the model-versus-reality
+  gap is carried by D1 instead. Stage 3's claims follow that reading. If the
+  user prefers v2's wording, it is one field per generator.
+- **The library floor is G2**, set by the two resistor-dissipation claims:
+  dissipation is not monotone in R, so they use interval arithmetic
+  (`sound_enclosure`). Adding the interior critical point to the corner
+  evaluation would make them exact and the floor G1.
+
+**Found closing the stage: the tracker went blind again.** `progress_gen.py`
+ran the suite under a 180 s timeout, Stage 3 pushed the suite past it, and the
+timeout returned an empty result *silently* — every module read "untested",
+the script exited 0, and `progress.yaml` reported **0/174 verified**. Fourth
+instance of the same root cause (a fixed budget outgrown by the suite, failing
+quietly). Now 1200 s, a timeout or an empty scan exits non-zero so
+`regen_state.py` prints STALE, and the outer budget sits above the inner one.

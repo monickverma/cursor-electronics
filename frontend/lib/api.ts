@@ -81,6 +81,49 @@ export interface GenerateResponse {
   explanation: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
+  validation_coverage?: ValidationCoverage | null
+}
+
+// ── Stage 3: claim objects (EVIDENCE_CLASSES.md §3) ─────────────────────────
+
+export type Verdict =
+  | 'holds' | 'holds_defeasible' | 'fails'
+  | 'not_applicable' | 'not_assessed' | 'out_of_scope'
+
+export interface Claim {
+  id: string
+  claim: string
+  kind: 'analytic' | 'empirical' | 'projected'
+  verdict: Verdict
+  method: string | null
+  grade: string | null
+  scope: { parameters: string; horizon: string; model: string; inputs: string } | null
+  defeaters: string[]
+  critical: boolean
+  detail: string | null
+  covers: string[]
+}
+
+export interface ValidationCoverage {
+  claims: Claim[]
+  coverage_le_g2: number
+  grade_floor: string | null
+  open_defeaters: string[]
+  not_assessed: string[]
+  out_of_scope: string[]
+}
+
+// ── Stage 3: waveform data (backend/simulation/waveforms.py) ────────────────
+
+export interface Sweep {
+  x: number[]
+  series: Record<string, Array<number | null>>
+}
+
+export interface Waveforms {
+  dc: { voltages: Record<string, number>; currents: Record<string, number> }
+  ac: Sweep
+  tran: Sweep
 }
 
 export interface BOMRow {
@@ -107,7 +150,12 @@ export interface SimulationStatus {
   circuit_id: string
   status: string
   duration_ms?: number
-  results?: Record<string, unknown>
+  results?: {
+    dc_voltages?: Record<string, number>
+    ac_points_count?: number
+    // Absent on results stored before Stage 3.
+    waveforms?: Waveforms | null
+  }
   grade?: { passed: boolean; failures: string[]; notes: string[] }
   error?: string
 }
@@ -131,6 +179,7 @@ export interface PatchResponse {
   generator?: string | null
   generator_changed?: { from: string; to: string } | null
   annotations?: { attached: unknown[]; orphaned: unknown[] }
+  validation_coverage?: ValidationCoverage | null
 }
 
 export async function generateDesign(prompt: string, token: string): Promise<GenerateResponse> {

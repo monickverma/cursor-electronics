@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-21 (Stage 2 done and verified; Stage 3 next, unplanned)
+> Last updated: 2026-09-23 (Stage 3 done; Stage 4 next, unplanned)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -460,9 +460,91 @@ entries for `ai/patcher.py`.
 
 **Carried from 2026-08-23, never diagnosed:** one test in `test_simulation_accuracy.py` was flaky (timeline, 2026-08-23). It passed in every full run on 2026-09-21; that is not a diagnosis. An infrastructure hiccup may be retried; an accuracy disagreement never may.
 
-## Next — Stage 3, not yet planned at function level
+---
 
-Gates in `PHASE_2_PLAN_v2.md` §5 Stage 3 (remaining four generators, claim objects with `kind`/`grade`/`scope`/`defeaters`, `grade_floor` in `regen_state.py`, visible not-assessed rows, waveform viewer). The planner writes the tasks here before work starts; the open verification items above are small and worth closing first.
+# Phase 2 — Stage 3: The generator library, claim objects, grade floor ✅ DONE 2026-09-23
+
+> Gates in `PHASE_2_PLAN_v2.md` §5 Stage 3. The decisions — X6, X8, the
+> defeater renumbering, and how each generator is checked — are in
+> `brain/decisions.md` [2026-09-21] **X6 + X8**, written before any code.
+> Backend committed as `9a4ecc6`; viewer and claims UI in the commit after.
+
+## Task 3.1 — Record X6 + X8 before code ✅
+
+Also renumbered the defeater register into one namespace (EVIDENCE_CLASSES' π
+defeater → D8, the assurance case's D-G → D9) and fixed the build plan: what
+each generator predicts, and what ngspice can check.
+
+## Task 3.2 — Four generators on the contract ✅
+
+`voltage_divider` (TPL_005), `led_indicator` (TPL_003), `dht22_node`
+(TPL_001), `rs485_node` (TPL_002), registered after `rc_lowpass`. Shared
+helpers in `generators/common.py` and `generators/arduino_parts.py`; device
+models in `generators/netlist/models.py`, read by the netlist **and**
+`predict()`. `tests/test_generator_library.py`.
+
+## Task 3.3 — Grid gate for all five ✅
+
+`validation/grid_adapters.py` — one adapter per generator, probes as CI test
+benches. **Met:** every generator within 2% of ngspice at every grid point
+(worst 0.0004%); every M1 seeded fault (P5, P20, X10) detected. Thinnest
+margin: a 5% RS-485 terminator fault moves idle V_AB 2.3% — pinned by a test
+so it cannot silently fall under the gate.
+
+## Task 3.4 — Claim objects (X6, X8) ✅
+
+`validation/claims.py`, `validation/defeaters.py`; `realize()` attaches
+`validation_coverage`. Grades derived from method; open defeaters force
+"holds, defeasible"; every `ValidationRule` accounted for on every design;
+MCU models read from the netlist. `tests/test_claims.py`.
+
+## Task 3.5 — grade_floor in regen_state.py ✅
+
+Derived per generator and for the library, printed first in the summary with
+coverage and defeater fan-out beside it. **Library floor today: G2** — the
+divider's and LED's resistor-dissipation bounds (interval arithmetic: sound,
+not tight). Everything else is G1.
+
+## Task 3.6 — Visible rows and the waveform viewer ✅
+
+`frontend/components/ClaimsTable.tsx` renders every claim, with *not assessed*
+and *out of scope* as rows, most urgent first. `WaveformChart.tsx` draws AC
+(log frequency) and transient traces as inline SVG; DC stays tabular. The
+backend stores the points (`simulation/waveforms.py`, transient parsing in
+`simulation/parser.py`). Checked in the browser against real ngspice output.
+`tests/test_waveforms.py`.
+
+## Stage 3 gates
+
+| Gate | Result |
+|---|---|
+| All five at the Stage 0 grid gate (G5 ≤ 2%) | ✅ `test_generator_library.py::TestGridGate` |
+| Every design emits claims with kind/grade/scope/defeaters | ✅ at every grid point of every generator |
+| `grade_floor` derived in `regen_state.py`, reported first | ✅ G2 |
+| "Not assessed" and "out of scope" rendered as visible rows | ✅ `ClaimsTable.tsx`, browser-checked |
+| Waveform viewer renders AC / transient / DC | ✅ browser-checked with real ngspice data |
+
+## Stage 3 — not done, and why
+
+- **No automated frontend test.** Playwright is installed but unconfigured; the
+  UI gates were checked by eye in the browser against real backend output.
+- **Two claims sit at G2.** Resistor dissipation is not monotone in R, so it is
+  bounded by interval arithmetic. Evaluating the interior critical point
+  (R1 = R2′) alongside the corners would make it exact — G1.
+- **`kind` is `analytic` for exact closed-form claims.** That answers, for
+  Stage 3, the open question about the Stage 4 gate table (which says
+  `empirical`) — flagged for the user rather than settled.
+- **The DHT22 rise-time and sink limits are stated assumptions** (component
+  table, D7), not datasheet figures; Aosong publishes neither.
+- **Generated designs are simulated as DC operating points.** Only the RC
+  filter produces an AC sweep; nothing yet produces a transient, so the
+  transient view shows data only for a netlist that asks for one.
+
+## Next — Stage 4, the proof compiler
+
+Not yet planned at function level. Before it: settle `kind` on the proof
+gates (above), and consider lifting the two G2 claims first, since they set
+the floor.
 
 ---
 

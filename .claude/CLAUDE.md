@@ -39,7 +39,14 @@ cursor-electronics/
 │   │   ├── protocol.py             # THE Generator contract — envelope/generate/predict
 │   │   ├── registry.py             # Deterministic dispatch; collects every refusal
 │   │   ├── realize.py              # IntentIR → stored CircuitIR; deterministic id, locality, predict delta
-│   │   ├── rc_lowpass.py           # First generator on the contract
+│   │   ├── rc_lowpass.py           # TPL_004 — first generator on the contract
+│   │   ├── voltage_divider.py      # TPL_005 on the contract (Stage 3)
+│   │   ├── led_indicator.py        # TPL_003 — Thevenin GPIO + fitted LED diode
+│   │   ├── dht22_node.py           # TPL_001 — pull-up vs cable rise time
+│   │   ├── rs485_node.py           # TPL_002 — fail-safe bias; wired as its firmware drives
+│   │   ├── common.py               # E96, strict requirement reader, pins — one owner
+│   │   ├── arduino_parts.py        # Shared ATmega328P + bypass cap + rail model
+│   │   ├── netlist/models.py       # Device models read by BOTH spice.py and predict()
 │   │   ├── firmware/arduino.py     # IR → .ino (Jinja2)
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
 │   │   ├── schematic/kicad.py      # IR → .kicad_sch (net labels only)
@@ -48,8 +55,14 @@ cursor-electronics/
 │   │   ├── runner.py               # ngspice async subprocess
 │   │   ├── parser.py               # Columnar batch output parser
 │   │   ├── grader.py               # Pass/fail grader (15% tolerance)
+│   │   ├── waveforms.py            # AC / transient / DC shaped for the viewer
 │   │   └── monitor.py              # Structured failure logger
-│   ├── validation/rule_engine.py   # HardwareRuleEngine (RS-485, PWM, etc.)
+│   ├── validation/
+│   │   ├── rule_engine.py          # HardwareRuleEngine (RS-485, PWM, etc.)
+│   │   ├── claims.py               # Claim objects + validation_coverage (X6, X8)
+│   │   ├── defeaters.py            # The defeater register, D1–D9
+│   │   ├── envelope_grid.py        # CI grid harness + M1 fault injection
+│   │   └── grid_adapters.py        # Per-generator ngspice adapters and probes
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py, auth.py
@@ -108,7 +121,8 @@ Do not add these — they are Phase 2+ scope:
 - Live Digikey/LCSC pricing API
 - Qdrant vector DB / RAG (use `component_constraints.py`)
 - ESP32 or STM32 firmware (Arduino Uno only)
-- Simulation waveform graphs (text pass/fail only)
+- ~~Simulation waveform graphs~~ — **exist since Phase 2 Stage 3** (AC, transient,
+  DC; inline SVG, no chart dependency). `PHASE_2_PLAN_v2.md` takes precedence here.
 - Analog power electronics
 - Team collaboration / multi-user
 - Design version history UI
