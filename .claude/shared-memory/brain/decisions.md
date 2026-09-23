@@ -1471,3 +1471,58 @@ two Choices and three Nouls. Raw answers:
    and doing the G1 upgrade now is a coin flip (0.47). Recorded as a
    scheduled task in `plan/current_phase.md`. **The user may overrule** — the
    cost of doing it now is one generator, its claim and its proof.
+
+---
+
+## [2026-09-23] The unverified three — PostgreSQL, the live model, hardware
+
+**Decision:** On the instruction to close what the Stage 3 + 4 verification
+left unverified, each of the three was run as far as this machine allows.
+
+**PostgreSQL — verified.** The project's own `db` container (cached
+`postgres:16-alpine`), a separate `circuitos_test` database so development
+data is untouched. `tests/test_postgres_signoff.py` runs the routes, `get_db`,
+`crud` and the conditional UPDATE against it and reads every result back
+through a fresh connection: the signature is stored and survives a restart
+(the design rebuilt from the stored intent is identical and still signed);
+a wrong hash writes nothing; signing twice writes once; sign-then-patch
+stores an unsigned v2 and its history row; and a real race — writer 2's
+UPDATE blocking on writer 1's row lock, then matching nothing — lands exactly
+one. The existing `test_request_log.py` Postgres round trip, skipped until
+now, passes too. Redis could not start: Windows reserves ports 6292–6391
+(WinNAT), which covers 6379 — a system setting the agent does not change.
+
+**The live model — two defects found and fixed; one decision for the user.**
+Nothing had ever exercised the Phase 2 LLM paths live; `tests/test_live_llm_paths.py`
+now does (auto-skipped without a key). Against the configured model
+(`anthropic/claude-opus-5` via OpenRouter):
+
+1. *The producer was told function names only,* so it invented field names
+   (`targets.output_v` for `targets.vout_v`) and listed fields no generator
+   reads as underdetermined — every plain request came back as questions.
+   The prompt now carries each function's fields (path, units, required) from
+   the form catalogue, and `underdetermined` keeps only what the model flags
+   that is a *required* field of the chosen function and really unset. A
+   missing field the model neither records nor flags still goes to the
+   envelope and X5's one retry, unchanged. An uncatalogued function asks
+   nothing — it is refused. After the fix: all five plain requests reach
+   their generator and prove; a buck converter is refused, not bent; "2 kHz"
+   becomes a cited operation; "double the cutoff" returns no operations and
+   asks for the value; generate → sign-off → patch passes end to end on
+   PostgreSQL.
+2. *The explainer's 2048-token ceiling* was consumed by thinking: two calls in
+   three returned no text, the third a report cut off mid-table, shown as if
+   whole. Now 8192, and a call that stops at the ceiling raises instead of
+   returning half a report (the route already treats explanation as
+   best-effort).
+
+**For the user:** with this model an explanation takes 110–130 s and ~$0.20,
+and the largest design (RS-485) still exceeds 8192 tokens — so generation
+cannot meet the 15 s launch target. The likely fix — thinking disabled for
+the explainer call — could not be tried: the OpenRouter account returned 402
+`in_flight_budget_exhausted` (credits). Options: top up and try it; a faster
+model for explanations; or explanations off the request path.
+
+**Hardware — cannot be done here.** `docs/BENCH_D1.md` is a one-hour bench
+session for three designs (RC 1 kHz, divider, LED) with their exact parts,
+the proven bands as pass criteria, and a results table. D1 stays open.

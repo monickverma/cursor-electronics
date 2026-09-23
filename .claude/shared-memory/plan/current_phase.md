@@ -638,7 +638,12 @@ as a supply rating; (5) `realize()` moved off the event loop in the generate
 and patch routes.
 
 **Not verified here:** sign-off against a real PostgreSQL (none available);
-live-LLM paths; hardware (D1).
+live-LLM paths; hardware (D1). *Closed the same day, as far as possible:*
+PostgreSQL verified (`tests/test_postgres_signoff.py`); the live Phase 2 LLM
+paths verified after fixing two producer defects (`tests/test_live_llm_paths.py`);
+the explainer's truncation fixed, its latency with the configured model left
+to the user (OpenRouter credits exhausted); hardware as a bench sheet,
+`docs/BENCH_D1.md`. `brain/decisions.md` [2026-09-23] The unverified three.
 
 ## Decided after the verification — 2026-09-23
 

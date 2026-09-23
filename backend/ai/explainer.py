@@ -54,6 +54,13 @@ CONSEQUENTIAL_MARKERS = [
     "otherwise", "breaks", "risk",
 ]
 
+#: Output ceiling for one explanation, thinking included. 2048 was sized for a
+#: non-reasoning model; against the configured reasoning model (Stage 3 + 4
+#: verification, live) every call hit it — two in three spent all 2048 tokens
+#: thinking and returned no text, the third returned a report cut off
+#: mid-table. Measured use is ~2–4k thinking plus ~1.5k of report.
+EXPLANATION_MAX_TOKENS = 8192
+
 #: How many distinct markers an explanation must hit to count as consequential.
 CONSEQUENTIAL_MARKER_BAR = 3
 
@@ -101,10 +108,17 @@ class ExplanationEngine:
         user_content = self._build_prompt(ir, validation_result, simulation_results)
         response = self.client.messages.create(
             model=ai_model(),
-            max_tokens=2048,
+            max_tokens=EXPLANATION_MAX_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_content}],
         )
+        # A report cut off at the ceiling must not be shown as a report: the
+        # consequences it would have warned about may be in the missing part.
+        if getattr(response, "stop_reason", None) == "max_tokens":
+            raise ValueError(
+                f"explanation truncated at the {EXPLANATION_MAX_TOKENS}-token ceiling — raise "
+                f"EXPLANATION_MAX_TOKENS for this model rather than show half a report"
+            )
         return _first_text(response)
 
     def _build_prompt(

@@ -42,6 +42,20 @@ the model getting the schema wrong. Reporting it as schema would corrupt the
 one measurement Departure 1 exists to take. `Failure` names each cause so the
 evidence can be counted by kind.
 
+**The field catalogue, and questions decided by code** (Stage 3 + 4
+verification, live). The model used to be told the catalogue's function
+names only, so it invented field names — `targets.output_v` for the divider's
+`targets.vout_v` — and listed as "underdetermined" fields no generator reads
+(`targets.order`, `stopband_attenuation_db`). With the Stage 1 rule
+"underdetermined → ask, never generate", every plain request came back as a
+page of questions. The prompt now carries each function's fields — path,
+units, required or optional — from the form catalogue, which is the envelope
+catalogue; and `underdetermined` keeps only what the model flags that is a
+REQUIRED field of the chosen function and really unset — invented, optional
+and already-recorded fields are dropped. A required field the model neither
+records nor flags goes to the envelope and X5's retry, as before. An
+uncatalogued function has nothing to ask — the registry refuses it.
+
 The consequence is deliberate: a request genuinely outside the catalogue is
 refused, not negotiated. §4.2 says users should self-select against a visible
 catalogue, and §4.6 defers the labelled ring precisely so uncovered requests
@@ -98,13 +112,18 @@ Record only what the user actually asked for.
 the request does not match any catalogue entry, record the closest honest \
 description anyway; refusing is the system's job, not yours, and inventing a \
 match hides a gap in the catalogue.
+- For a catalogue function, record each value under the exact field path the \
+catalogue lists for it, in the listed units — 2 kHz is 2000 for a field in \
+Hz. Do not rename a listed field. A value the user gave that fits none of the \
+listed fields may be recorded under a short snake_case name in its section.
 - `targets` are the numbers the design will be checked against.
 - `constraints` bound the design without being goals.
 - `preferences` may be traded away.
-- `underdetermined` lists fields the request does not pin down, as \
-`section.field` paths. Leave a field out of the requirement AND name it here \
-rather than guessing a value. A guessed value becomes a target the user never \
-set.
+- `underdetermined` lists REQUIRED catalogue fields of the chosen function \
+that the request does not state, as `section.field` paths. Leave such a field \
+out of the requirement AND name it here rather than guessing a value — a \
+guessed value becomes a target the user never set. Optional fields the \
+request does not mention are simply left out; they are not questions.
 
 Never convert a value the user gave into a different one. If they said 2 MHz, \
 record 2000000, even if it looks out of range.\
@@ -232,8 +251,11 @@ class IntentProducer:
     """Prompt → IntentIR. One model call, or two when a retry is warranted."""
 
     def __init__(self, registry: Optional[GeneratorRegistry] = None) -> None:
+        from ai.form_producer import FormProducer
+
         self.client = make_client()
         self._registry = registry if registry is not None else default_registry()
+        self._forms = FormProducer(self._registry)
 
     def produce(self, prompt: str) -> IntentIR:
         """
@@ -251,7 +273,8 @@ class IntentProducer:
 
         for attempt in range(MAX_SEMANTIC_RETRIES + 1):
             raw = self._call(messages)
-            requirements, underdetermined = self._split(raw)
+            requirements, claimed = self._split(raw)
+            underdetermined = self._questions(requirements, claimed)
 
             # Schema: validated once, never re-prompted. X5.
             try:
@@ -310,10 +333,46 @@ class IntentProducer:
 
     # ── Plumbing ──────────────────────────────────────────────────────────
 
+    def _questions(self, requirements: Mapping[str, Any], claimed: List[str]) -> List[str]:
+        """
+        What to ask the user: fields the model says the request does not state
+        (its judgment — only it has read the prose), restricted by code to the
+        chosen function's REQUIRED catalogue fields the requirement leaves
+        unset. Invented, optional and already-recorded fields are dropped. A
+        required field that is missing but *not* claimed is the model failing
+        to record what the user said: it goes to the envelope, which refuses
+        it by name, and X5's one retry adds it.
+        """
+        try:
+            spec = self._forms.spec_for(str(requirements.get("function")))
+        except ValueError:
+            return []          # uncatalogued: the registry refuses it with reasons
+        wanted = set(claimed)
+        out = []
+        for field in spec.required_fields():
+            path = f"{field.section}.{field.name}"
+            section = requirements.get(field.section)
+            unset = not isinstance(section, Mapping) or section.get(field.name) is None
+            if unset and path in wanted:
+                out.append(path)
+        return out
+
+    def catalogue_text(self) -> str:
+        """Each function the system builds, and the fields it reads."""
+        lines = []
+        for spec in self._forms.catalogue():
+            fields = "; ".join(
+                f"{f.section}.{f.name}" + (f" [{f.units}]" if f.units else "")
+                + (" required" if f.required else " optional")
+                for f in spec.fields
+            )
+            lines.append(f"- {spec.function}: {fields}")
+        return "\n".join(lines) or "(nothing installed)"
+
     def _user_content(self, prompt: str) -> str:
-        catalogue = ", ".join(self._registry.functions()) or "(nothing installed)"
         return (
-            f"CATALOGUE (functions this system builds): {catalogue}\n\n"
+            f"CATALOGUE (functions this system builds, and the fields each reads):\n"
+            f"{self.catalogue_text()}\n\n"
             f"REQUEST:\n{prompt}"
         )
 

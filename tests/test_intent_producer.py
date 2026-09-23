@@ -266,11 +266,50 @@ class TestSemanticRetry:
 
     def test_underdetermined_intent_is_returned_without_a_retry(self, monkeypatch):
         # An unanswered question is for the user, not for another model call.
-        payload = {**IN_ENVELOPE, "underdetermined": ["constraints.supply_v"]}
+        payload = {"function": "low_pass_filter", "targets": {"cutoff_hz": 1000},
+                   "underdetermined": ["constraints.supply_v"]}
         p, rec = producer([payload], monkeypatch=monkeypatch)
         intent = p.produce("a low-pass filter")
         assert not intent.is_answerable
+        assert intent.open_questions() == ["constraints.supply_v"]
         assert len(rec["calls"]) == 1
+
+
+class TestQuestionsAreDecidedByCode:
+    """
+    Found live (Stage 3 + 4 verification): the model, told only function
+    names, invented field names and listed fields no generator reads as
+    underdetermined — so every plain request came back as questions.
+    """
+
+    def test_fields_the_model_invents_are_not_questions(self, monkeypatch):
+        payload = {**IN_ENVELOPE, "underdetermined": ["targets.order", "targets.stopband_attenuation_db",
+                                                      "constraints.max_series_resistance_ohms"]}
+        p, _ = producer([payload], monkeypatch=monkeypatch)
+        intent = p.produce("RC low-pass at 1 kHz on 5 V")
+        assert intent.is_answerable and intent.open_questions() == []
+
+    def test_a_required_field_the_model_flags_is_asked_and_the_rest_dropped(self, monkeypatch):
+        payload = {"function": "low_pass_filter", "targets": {"cutoff_hz": 1000},
+                   "underdetermined": ["targets.order", "constraints.supply_v", "targets.tolerance_pct"]}
+        p, rec = producer([payload], monkeypatch=monkeypatch)
+        # supply_v: required and unset. order: invented. tolerance_pct: optional.
+        assert p.produce("RC low-pass at 1 kHz").open_questions() == ["constraints.supply_v"]
+        assert len(rec["calls"]) == 1
+
+    def test_an_uncatalogued_function_asks_nothing(self, monkeypatch):
+        payload = {"function": "buck_converter", "targets": {"vout_v": 3.3},
+                   "underdetermined": ["targets.efficiency_pct"]}
+        p, _ = producer([payload, payload], monkeypatch=monkeypatch)
+        intent = p.produce("12 V to 3.3 V buck")
+        assert intent.open_questions() == []
+
+    def test_the_prompt_carries_every_field_path(self, monkeypatch):
+        p, rec = producer([IN_ENVELOPE], monkeypatch=monkeypatch)
+        p.produce("RC low-pass at 1 kHz on 5 V")
+        sent = str(rec["calls"][0])
+        for path in ("targets.cutoff_hz", "constraints.supply_v", "targets.tolerance_pct"):
+            assert path in sent
 
 
 class TestRequestedValues:
