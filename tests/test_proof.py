@@ -274,8 +274,9 @@ class TestGates:
             for spec in g.properties(it):
                 statement, _, result = check(circuit, spec)
                 assert result.status == "proven", (point, spec.id, result.detail)
-                expected = "G2" if spec.id == "led.r1_power" else "G1"
-                assert METHOD_GRADE[result.method] == expected, spec.id
+                # R1's dissipation too, since Task 4.5: decided at the end of
+                # R1's range a proven lemma puts the peak at.
+                assert METHOD_GRADE[result.method] == "G1", spec.id
                 labels = {v.label for v in statement.variables}
                 assert {"R1", "U1 pin resistance"} <= labels
                 assert "forward voltage anywhere in its datasheet range of 1.7–2.4 V" in statement.english
@@ -324,24 +325,47 @@ class TestGates:
 # ── Certified refutation ─────────────────────────────────────────────────────
 
 class TestRefutationIsCertified:
-    def test_an_enclosure_that_is_too_loose_is_undecided_not_refuted(self):
+    def test_led_dissipation_is_decided_exactly_either_side_of_its_worst_case(self):
         """
-        R1's dissipation is proved through a current bound. Choose P_max above
-        the true worst case but below what the bound can reach: the enclosure
-        fails, no point exceeds P_max, and the answer must be `unknown`.
+        Task 4.5. The bound the old enclosure could not decide — above the true
+        worst case, below largest-current × largest-R1 — is now proven, and a
+        hair under the true worst case is refuted with a certified point.
         """
         g, intent, circuit = design("led_indicator")
-        pred = g.predict(intent)
-        i_hi = pred.quantities["led_current_ma"].hi / 1000
-        r1 = pred.quantities["r1_power_mw"]
-        r1_nominal = float(parse(SpiceNetlistGenerator().generate(circuit)).element("R_R1").value)
-        p_between = exact(round(i_hi ** 2 * r1_nominal * 1.0001, 9))
+        worst = g.predict(intent).quantities["r1_power_mw"].hi / 1000
+        for factor, status in ((1.0001, "proven"), (0.9999, "refuted")):
+            spec = PropertySpec(id="led.tight_power", label="R1's dissipation",
+                                quantity="series_power(R_R1,D_LED1)", relation="le",
+                                hi=exact(round(worst * factor, 9)), units="W")
+            _, problem, result = check(circuit, spec)
+            assert result.status == status, (factor, result.detail)
+            assert problem.method == "z3_unsat" and problem.witness is None
+        assert "certified" in result.detail
+
+    def test_an_enclosure_that_is_too_loose_is_undecided_not_refuted(self):
+        """
+        With R1 close to the rest of the loop's resistance, R1's range straddles
+        the peak of I²·R1: neither monotone lemma holds, and the proof falls back
+        to a current bound (G2). Choose P_max above the true worst case but
+        below what that bound reaches: no point exceeds P_max, and the answer
+        must be `unknown`.
+        """
+        from generators.led_indicator import r1_power_max_w
+        from proof.prover import mutate
+
+        _, _, circuit = design("led_indicator")
+        text = SpiceNetlistGenerator().generate(circuit)
+        r1 = float(parse(text).element("R_R1").value)
+        factor = Fraction(30) / Fraction(str(r1))
+        text = mutate(text, "R_R1", factor)
+        r1 = float(parse(text).element("R_R1").value)
+        worst = r1_power_max_w(5.0, r1 * 0.99, r1 * 1.01, 15.0, "min")
         spec = PropertySpec(id="led.tight_power", label="R1's dissipation", quantity="series_power(R_R1,D_LED1)",
-                            relation="le", hi=p_between, units="W")
-        _, _, result = check(circuit, spec)
+                            relation="le", hi=exact(round(worst * 1.003, 9)), units="W")
+        _, problem, result = check(circuit, spec, text)
+        assert problem.method == "sound_enclosure" and problem.witness is not None
         assert result.status == "unknown", result.detail
         assert result.counterexample is None
-        assert r1.hi / 1000 > float(p_between)   # predict()'s own enclosure could not decide it either
 
     def test_a_counterexample_inside_the_bracket_slack_is_not_a_counterexample(self):
         g, intent, circuit = design("low_pass_filter")

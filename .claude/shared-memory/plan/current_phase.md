@@ -423,13 +423,15 @@ and `GET …/history`. `tests/test_intent_patcher.py`, `tests/test_patch_route.p
 
 ## Stage 2 — not done, and why
 
-- **Annotations are not rendered** into KiCad/BOM output. They are stored,
-  returned and carried; showing them in a schematic is output work.
+- ~~**Annotations are not rendered**~~ — drawn in the KiCad schematic since
+  2026-09-24, as text beside their anchor (never as a label). Not in the BOM.
+  `test_schematic_generator.py`; `brain/decisions.md` [2026-09-24].
 - **The citation guard does not catch values swapped between two operations**
   whose cited words each contain the other's number, **nor a removal citing an
   unrelated word**. Mis-transcription (2 kHz → 20000) *is* caught since the
   verification below. The diff is shown to the user.
-- **No live-API test of the LLM patcher.** All its tests use a scripted client.
+- ~~**No live-API test of the LLM patcher.**~~ — `tests/test_live_llm_paths.py`
+  since 2026-09-23 (skipped without a key, like every live test).
 - **The design route's own coverage is thin:** one test, that generate stores
   the requirement. It stays `test: None` in the trackers rather than being
   counted as verified on one case.
@@ -530,7 +532,9 @@ backend stores the points (`simulation/waveforms.py`, transient parsing in
   UI gates were checked by eye in the browser against real backend output.
 - **Two claims sit at G2.** Resistor dissipation is not monotone in R, so it is
   bounded by interval arithmetic. Evaluating the interior critical point
-  (R1 = R2′) alongside the corners would make it exact — G1.
+  (R1 = R2′) alongside the corners would make it exact — G1. *Since then:*
+  the divider's is decided exactly by its signed Stage 4 proof; the LED's is
+  exact everywhere since Task 4.5.
 - **`kind` is `analytic` for exact closed-form claims.** That answers, for
   Stage 3, the open question about the Stage 4 gate table (which says
   `empirical`) — flagged for the user rather than settled.
@@ -654,15 +658,14 @@ With TypeSafe (Jev), `brain/decisions.md` [2026-09-23] RC source swamping:
   unchanged.
 - **LED dissipation stays conservative for now.** Scheduled below.
 
-## Task 4.5 — Exact LED dissipation (scheduled, not started)
+## Task 4.5 — Exact LED dissipation ✅ DONE 2026-09-24
 
-Split R1's tolerance range where I(R1)²·R1 peaks so each half is monotone,
-and use it in `led_indicator.envelope()`, `predict()` / `led.resistor_dissipation`
-and the `series_power` proof. Gains: 16.3–16.5 mA at 5.25 V accepted (true
-worst 62.0 mW), LED dissipation G2 → G1, and with it the library's signed
-floor G2 → G1 — the last G2 claim in the library. Trigger: before the
-library floor is quoted to anyone as a headline number, or when Stage 5 is
-done, whichever comes first.
+led_indicator 0.1.2. `envelope()`, `predict()` / `led.resistor_dissipation`
+and the `series_power` proof decide I²·R1 exactly — a proven monotonicity
+lemma instead of splitting the box, same result, certificate checker
+unchanged. 16.3–16.5 mA at 5.25 V accepted (true worst 62.0 mW); LED
+dissipation G1; the library's signed floor G1. `test_proof.py`,
+`test_sign_off.py`. Why the lemma: `brain/decisions.md` [2026-09-24].
 
 ## Next — Stage 5, multi-MCU firmware
 

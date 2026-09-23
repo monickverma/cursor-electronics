@@ -435,6 +435,24 @@ class TestAnnotationsAndHistory:
         assert [a["id"] for a in body["annotations"]["orphaned"]] == ["u7"]
         assert {a["id"] for a in env.store.designs[cid].annotations} == {"c1", "u7"}
 
+    def test_annotations_appear_in_the_schematic_and_leave_the_design_alone(self, env):
+        cid = env.store.add_design()
+        before = dict(env.store.designs[cid].ir_json)
+        res = env.client.put(f"/design/{cid}/annotations", json={"annotations": [
+            {"id": "c1", "kind": "comment", "anchor": {"kind": "component", "id": "C1"}, "text": "X7R only"},
+            {"id": "u7", "kind": "comment", "anchor": {"kind": "component", "id": "U7"}, "text": "gone"},
+        ]})
+        body = res.json()
+        assert "note: X7R only" in body["schematic"]
+        assert "ORPHANED note on component U7" in body["schematic"]
+        # The drawing is re-rendered and stored; the design is not touched.
+        assert env.store.writes == ["annotations", "output"]
+        assert env.store.outputs[-1][1] == "schematic"
+        assert env.store.designs[cid].ir_json == before and body["version"] == env.store.designs[cid].version
+
+        patched = env.client.post(f"/design/{cid}/patch", json=ops(("replace", "/targets/cutoff_hz", 2000))).json()
+        assert "note: X7R only" in patched["schematic"]
+
     def test_a_bad_annotation_is_422(self, env):
         cid = env.store.add_design()
         res = env.client.put(f"/design/{cid}/annotations", json={"annotations": [

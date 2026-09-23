@@ -1526,3 +1526,63 @@ model for explanations; or explanations off the request path.
 **Hardware — cannot be done here.** `docs/BENCH_D1.md` is a one-hour bench
 session for three designs (RC 1 kHz, divider, LED) with their exact parts,
 the proven bands as pass criteria, and a results table. D1 stays open.
+
+---
+
+## [2026-09-24] Task 4.5 — exact LED dissipation; annotations drawn in the schematic
+
+**Decision 1 — R1's dissipation is decided exactly (led_indicator 0.1.2).**
+Scheduled at [2026-09-23] RC source swamping; done before Stage 5 lands.
+
+- *The fact it rests on.* In V → R_out → R1 → LED, dP/dR1 =
+  I²·(R_out + r_d − R1)/(R_out + R1 + r_d) with r_d = n·V_t/(I + I_s). The
+  bracket falls strictly in R1 (r_d rises, but by less than R1 does), so
+  I²·R1 has one peak, at R1 = R_out + r_d. At a fixed R1 the power rises with
+  I, so R_out and V_f sit at the current band's corners.
+- *predict() and envelope().* `r1_power_max_w` evaluates the peak if R1's
+  range straddles it (bisection on the bracket) and the right end if not.
+  Checked against a 20 001-point sweep, straddling ranges included: equal to
+  the float. Method `monotone_corners`, G1. Gain as scheduled: 16.3–16.5 mA
+  from a 5.25 V pin is accepted, true worst 62.0 mW in a 62.5 mW part.
+- *The proof.* `series_power(R, D)` now proves a monotonicity lemma over the
+  whole box — "R ≥ R_rest + n·V_t/I_lo" with I ≥ I_lo proved beside it (falls),
+  or "R ≤ R_rest + n·V_t/(I_hi + I_s,max)" with I ≤ I_hi (rises) — and then
+  decides the property at the end of R's range the lemma names: proved at
+  ⌊√(P_max/R)⌋, refuted *for certain* at ⌈√(P_max/R)⌉. Lemma bounds are
+  float guesses and are carried as obligations, so nothing trusts them
+  unproven. Only a series R whose range straddles the peak falls back to the
+  old current bound (`sound_enclosure`, G2, witness-certified refutation).
+  The reduction applies only when ∂R_th/∂R = 1 and ∂V_th/∂R = 0 — R in series
+  with the diode — checked symbolically, never assumed.
+- *Result.* Every LED property G1 at every grid point; a P_max 0.01% above
+  the true worst case is proven and 0.01% below is refuted with a certified
+  point; the ngspice oracle (`test_proof_oracle.py`) passes unchanged. The
+  library's signed floor is G1: the LED's `proof.led.r1_power` was the last
+  G2 row. (Unsigned designs still show the divider's Stage 3 G2 interval
+  bound until their proofs are signed — unchanged, by design.)
+
+**Decision 2 — annotations appear in the schematic, as text only.**
+Stage 2 left them "stored and returned but not drawn".
+
+- `KiCadSchematicGenerator.generate(ir, annotations=())`. Merged after
+  generation; `realize()` still takes none (X2), and with none the output is
+  byte-identical to before.
+- A net name is written *beside* the node's label, never as the label. In
+  KiCad a label is connectivity: an annotation that renamed a net — or named
+  it after another net — would merge nets, an input to the design by the
+  back door. Test points, placement hints and comments sit by their anchor.
+- Design comments, orphans and anything cut short inline go in an
+  "Annotations" block under the parts, in up to two columns on the A4
+  sheet; if even that overflows, the last row counts what did not fit. The
+  full list is always in the API response. Orphans are drawn as ORPHANED,
+  never dropped.
+- `PUT /design/{id}/annotations` re-renders and stores the schematic (the
+  drawing, not the design: circuit, version and claims untouched) and
+  returns it. Patches draw the stored annotations into the new revision.
+
+**Alternatives rejected:**
+- *Split R1's box at the peak and prove each half.* The certificate checker
+  requires every obligation to be decided over the frozen box; per-half
+  obligations would need a domain field on `Obligation` and a tiling rule per
+  field. The lemma reaches the same exactness with the checker unchanged.
+- *Render a net name as the KiCad label.* Collides on connectivity (above).

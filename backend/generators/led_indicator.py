@@ -31,6 +31,13 @@ rating — conservative, the same test the divider uses. (2) LED1 carried its
 5 V *reverse* rating as `supply_voltage_max`, so the voltage-ratings rule
 failed every accepted design above 5.0 V. An LED has no supply rating; in
 this circuit it is never reverse-biased.
+
+**0.1.2**, Task 4.5: R1's dissipation is exact, not an interval bound. For a
+fixed R1, I²·R1 rises with I, so its extremes sit at the current band's
+corners in R_out and V_f; along R1 it has one peak, at R1 = R_out + r_d
+(`r1_power_max_w`). The claim is G1, and the envelope accepts what the old
+bound refused for no reason — 16.3–16.5 mA from a 5.25 V pin, true worst
+62.0 mW in a 62.5 mW part.
 """
 
 from __future__ import annotations
@@ -78,6 +85,7 @@ from generators.netlist.models import (
     MODEL_MCU_PIN,
     diode_voltage,
     led_parameters,
+    VT,
     pin_resistance,
     solve_series_diode,
 )
@@ -93,7 +101,7 @@ from generators.protocol import (
 )
 
 NAME = "led_indicator"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 FUNCTION = "led_indicator"
 
 LED_PART = "67-21URC/S530-A3/TR8"
@@ -150,6 +158,35 @@ def _read(intent: IntentLike) -> _Spec:
 def led_current_a(supply: float, r1: float, r_out: float, vf: str = "typ") -> float:
     i_s, n = led_parameters(LED_PART, vf)
     return solve_series_diode(supply, r_out + r1, i_s, n)
+
+
+def r1_power_max_w(supply: float, r1_lo: float, r1_hi: float, r_out: float, vf: str) -> float:
+    """
+    The largest I²·R1 for R1 in [r1_lo, r1_hi], exactly (Task 4.5).
+
+    dP/dR1 = I²·(R_out + r_d − R1)/(R_out + R1 + r_d), with r_d = n·V_t/(I + I_s)
+    the diode's incremental resistance. The bracket falls strictly with R1 (r_d
+    rises, but by less than R1 does), so P has at most one peak: at an end when
+    the bracket keeps one sign, at its root otherwise — found by bisection.
+    """
+    i_s, n = led_parameters(LED_PART, vf)
+
+    def rising(r1: float) -> float:
+        i = led_current_a(supply, r1, r_out, vf)
+        return r_out + n * VT / (i + i_s) - r1
+
+    def power(r1: float) -> float:
+        return led_current_a(supply, r1, r_out, vf) ** 2 * r1
+
+    if rising(r1_lo) <= 0:
+        return power(r1_lo)
+    if rising(r1_hi) >= 0:
+        return power(r1_hi)
+    lo, hi = r1_lo, r1_hi
+    for _ in range(200):
+        mid = (lo + hi) / 2.0
+        lo, hi = (mid, hi) if rising(mid) > 0 else (lo, mid)
+    return power((lo + hi) / 2.0)
 
 
 def select_r1(spec: _Spec) -> Optional[float]:
@@ -227,7 +264,7 @@ class LedIndicatorGenerator:
             return EnvelopeDecision.refuse(
                 f"the LED could carry up to {band.hi:.2f} mA, above its {LED_MAX_MA:g} mA rating"
             )
-        r1_power_hi = self._r1_power_hi(r1, band)
+        r1_power_hi = self._r1_power(spec, r1).hi
         if r1_power_hi > RESISTOR_POWER_W * 1000:
             return EnvelopeDecision.refuse(
                 f"R1={r1:g}Ω could dissipate up to {r1_power_hi:.1f} mW over part tolerance, above "
@@ -258,10 +295,18 @@ class LedIndicatorGenerator:
             r1_band, rout = box.get("R1", r1_band), box.get("R_out", rout)
         return r1_band, rout
 
-    def _r1_power_hi(self, r1: float, band: Interval, box=None) -> float:
-        """mW. Largest current with largest resistance: sound, loose (G2)."""
-        r1_band, _ = self._boxes(r1, box)
-        return (band.hi / 1000) ** 2 * r1_band.hi * 1000
+    def _r1_power(self, spec: _Spec, r1: float, box=None) -> Interval:
+        """
+        mW, exact. For a fixed R1, I²·R1 rises with I, so the extremes sit at
+        the current band's corners in R_out and V_f; along R1 it is unimodal
+        (`r1_power_max_w`), so the top is its peak and the bottom an end.
+        """
+        r1_band, rout = self._boxes(r1, box)
+        vf_lo, vf_hi = ("typ", "typ") if box else ("min", "max")
+        hi = r1_power_max_w(spec.supply, r1_band.lo, r1_band.hi, rout.lo, vf_lo)
+        lo = min(led_current_a(spec.supply, r, rout.hi, vf_hi) ** 2 * r for r in (r1_band.lo, r1_band.hi))
+        nominal = led_current_a(spec.supply, r1_band.nominal, rout.nominal) ** 2 * r1_band.nominal
+        return Interval(lo=lo * 1000, hi=hi * 1000, nominal=nominal * 1000, units="mW")
 
     def _current_band(self, spec: _Spec, r1: float, box=None) -> Interval:
         """mA. Monotone: falls with R1 and R_out, rises as V_f falls."""
@@ -279,15 +324,10 @@ class LedIndicatorGenerator:
         spec = _read(intent)
         r1 = select_r1(spec)
         current = self._current_band(spec, r1, box)
-        r1_band, rout = self._boxes(r1, box)
+        _, rout = self._boxes(r1, box)
         i_s, n = led_parameters(LED_PART, "typ")
         i_nom = current.nominal / 1000
         vf = diode_voltage(i_nom, i_s, n)
-        # I²·R1 is not monotone in R1, so bound it outwardly: largest current
-        # with largest resistance. Sound, loose — the claim says G2.
-        p_hi = self._r1_power_hi(r1, current, box)
-        p_lo = (current.lo / 1000) ** 2 * r1_band.lo * 1000
-        p_nom = i_nom ** 2 * r1 * 1000
         rail = mcu_rail_ma(spec.supply)
         return Prediction(
             quantities={
@@ -295,7 +335,7 @@ class LedIndicatorGenerator:
                 "gpio_current_ma": current,
                 "led_forward_v": Interval.at(vf, "V"),
                 "pin_voltage_v": Interval.at(spec.supply - i_nom * rout.nominal, "V"),
-                "r1_power_mw": Interval(lo=min(p_lo, p_nom), hi=max(p_hi, p_nom), nominal=p_nom, units="mW"),
+                "r1_power_mw": self._r1_power(spec, r1, box),
                 "supply_current_ma": Interval(lo=rail + current.lo, hi=rail + current.hi,
                                               nominal=rail + current.nominal, units="mA"),
             },
@@ -340,8 +380,8 @@ class LedIndicatorGenerator:
                    detail=f"worst case {current.hi:.3g} mA", defeaters=("D1", "D2", "D7")),
             graded("led.resistor_dissipation",
                    f"R1 stays below its {RESISTOR_POWER_W * 1000:g} mW rating",
-                   q["r1_power_mw"].hi <= RESISTOR_POWER_W * 1000, "sound_enclosure", scope,
-                   detail=f"≤ {q['r1_power_mw'].hi:.3g} mW (interval bound)", defeaters=("D1", "D7")),
+                   q["r1_power_mw"].hi <= RESISTOR_POWER_W * 1000, "monotone_corners", scope,
+                   detail=f"worst case {q['r1_power_mw'].hi:.3g} mW", defeaters=("D1", "D7")),
             graded("led.rail_current",
                    f"the rail stays within its {spec.budget:g} mA budget",
                    q["supply_current_ma"].hi <= spec.budget, "monotone_corners", scope,
@@ -355,8 +395,8 @@ class LedIndicatorGenerator:
     def properties(self, intent: IntentLike):
         """
         Stage 4. The LED current is decided exactly through the diode's
-        Thevenin reduction; R1's dissipation is proved from a proven current
-        bound, which is sound but not complete — G2, as predict() already says.
+        Thevenin reduction; R1's dissipation at the end of R1's range that a
+        proven monotonicity lemma names (Task 4.5) — G1, as predict() says.
         """
         from proof.properties import PropertySpec, exact, outward
 

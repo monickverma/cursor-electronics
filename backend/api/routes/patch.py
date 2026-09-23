@@ -15,7 +15,7 @@ X2 + X4.
 
 import json
 import uuid
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional, Sequence
 
 import anthropic
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -28,7 +28,7 @@ from middleware.rate_limit import limiter
 from ai.client import timeout_detail
 from ai.intent_patcher import IntentPatcher, IntentPatchError
 from api.routes.auth import get_current_user
-from core.annotations import attach, validate_annotations
+from core.annotations import Annotation, attach, validate_annotations
 from core.intent_ir import IntentIR
 from core.intent_patch import PatchError, PatchOp, apply_patch
 from core.ir_schema import CircuitIR
@@ -133,7 +133,7 @@ def _validation_summary(ir: CircuitIR) -> dict:
     }
 
 
-def _outputs(ir: CircuitIR) -> Dict[str, Any]:
+def _outputs(ir: CircuitIR, annotations: Sequence[Annotation] = ()) -> Dict[str, Any]:
     firmware: Optional[str] = None
     try:
         firmware = ArduinoFirmwareGenerator().generate(ir)
@@ -142,7 +142,8 @@ def _outputs(ir: CircuitIR) -> Dict[str, Any]:
     return {
         "netlist": SpiceNetlistGenerator().generate(ir),
         "firmware": firmware,
-        "schematic": KiCadSchematicGenerator().generate(ir),
+        # Annotations are merged into the drawing only — never into the design.
+        "schematic": KiCadSchematicGenerator().generate(ir, annotations),
         "pcb_netlist": PcbNetlistGenerator().generate(ir),
     }
 
@@ -227,7 +228,7 @@ async def patch_design(
 
     # 4. A patch that changes nothing is not a version (idempotence).
     if not outcome.changed:
-        outputs = _outputs(current)
+        outputs = _outputs(current, annotations)
         ctx.complete()
         return PatchResponse(
             circuit_id=circuit_id,
@@ -275,7 +276,7 @@ async def patch_design(
         {"from": current.generator, "to": tag} if current.generator and current.generator != tag else None
     )
     validation = _validation_summary(new_ir)
-    outputs = _outputs(new_ir)
+    outputs = _outputs(new_ir, annotations)
 
     job_id: Optional[str] = None
     if new_ir.simulation_spec:
@@ -374,15 +375,23 @@ async def put_annotations(
     db: Annotated[AsyncSession, Depends(get_db)],
     user=Depends(get_current_user),
 ):
-    """Replace the design's annotations. Never regenerates anything."""
+    """
+    Replace the design's annotations. Never regenerates the design: the
+    circuit, its version and its claims are untouched. Only the schematic
+    drawing is re-rendered, because that is where annotations appear.
+    """
     design = await _load_owned(db, circuit_id, user)
     try:
         annotations = validate_annotations(body.annotations)
     except Exception as exc:  # noqa: BLE001 — a bad annotation is the caller's error
         raise HTTPException(422, detail={"error": "invalid_annotations", "message": str(exc)})
-    report = attach(CircuitIR.model_validate(design.ir_json), annotations)
+    ir = CircuitIR.model_validate(design.ir_json)
+    report = attach(ir, annotations)
     await update_design_annotations(db, circuit_id, [a.model_dump(mode="json") for a in report.all])
-    return {"circuit_id": circuit_id, "version": design.version, **_annotation_view(report)}
+    schematic = KiCadSchematicGenerator().generate(ir, report.all)
+    await save_output(db, circuit_id, "schematic", schematic, f"{circuit_id}_v{design.version}.kicad_sch")
+    return {"circuit_id": circuit_id, "version": design.version, "schematic": schematic,
+            **_annotation_view(report)}
 
 
 # ── GET /{circuit_id}/history ────────────────────────────────────────────────

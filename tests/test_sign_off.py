@@ -92,15 +92,15 @@ class TestASignatureOnExactlyTheseProperties:
         assert not dissipation.critical and "superseded by" in dissipation.detail
         assert coverage.grade_floor == "G1"
 
-    def test_the_led_floor_stays_g2(self):
+    def test_the_led_floor_reaches_g1_once_signed(self):
         intent = FORMS.build("led_indicator", {"led_current_ma": 10, "supply_v": 5})
+        assert coverage_of(intent).grade_floor == "G1"
         coverage = coverage_of(intent.sign_off(EMAIL, properties_hash=coverage_of(intent).properties_hash))
         assert coverage.properties_signed
-        # R1's dissipation is proved through a current bound: sound, not
-        # complete. The proof is G2, so the Stage 3 G2 row it re-derives is
-        # superseded by another G2 — and the floor does not move.
-        assert rows(coverage, "proof.")["proof.led.r1_power"].grade == "G2"
-        assert coverage.grade_floor == "G2"
+        # Task 4.5: R1's dissipation is decided exactly — in predict() and
+        # in the proof — so the last G2 row in the library is gone.
+        assert rows(coverage, "proof.")["proof.led.r1_power"].grade == "G1"
+        assert coverage.grade_floor == "G1"
 
     def test_a_signature_on_other_properties_is_no_signature(self):
         intent = divider_intent().sign_off(EMAIL, properties_hash="0" * 64)

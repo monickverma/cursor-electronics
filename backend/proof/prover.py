@@ -22,10 +22,16 @@ lemma makes the result `unknown`, never `proven`.
 in it is a relaxation: a z3 counterexample can sit inside the bracket's slack
 (a π a hair off π), so it carries a *refuter* — the same inequality with every
 bracket collapsed to its adverse end — and only a counterexample to that is
-reported as one. The LED dissipation proof goes through a current bound, so a
-point where the bound fails is not yet a point where the dissipation does; a
-witness check evaluates the dissipation there exactly. What cannot be
-certified either way is `unknown`.
+reported as one. What cannot be certified either way is `unknown`.
+
+**Series dissipation is decided at an end (Task 4.5).** For R in series with
+a diode, I²·R has one peak, where R equals the rest of the loop plus the
+diode's incremental resistance. A lemma proves R's whole range lies on one
+side of it, and the property is then decided exactly at the end of R's range
+the lemma names. Only when R's range straddles the peak does the proof fall
+back to a current bound (`sound_enclosure`, G2); a point where that bound
+fails is not yet a point where the dissipation does, so a witness check
+evaluates the dissipation there exactly.
 
 **The refine loop cannot weaken a frozen property.** Strategies run in order —
 direct decision, then box bisection when z3 says *unknown*. Each returns the
@@ -51,6 +57,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from decimal import Decimal
 from fractions import Fraction
@@ -128,7 +135,7 @@ class Problem(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     obligations: Tuple[Obligation, ...]
-    method: str                    # z3_unsat | sound_enclosure
+    method: str                    # z3_unsat | sound_enclosure (series power straddling its peak)
     witness: Optional[SeriesPowerWitness] = None
 
 
@@ -431,22 +438,60 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
             if spec.hi is not None:
                 obligations.append(current_le(Fraction(spec.hi)))
         else:
-            # P = I²·R ≤ c²·R ≤ P_max with I ≤ c proved: sound, not complete.
-            method = "sound_enclosure"
             resistor = netlist.element(args[0])
             r_var = variables.get(resistor.name)
+            r_lo = Fraction(r_var.lo) if r_var else resistor.value
             r_hi = Fraction(r_var.hi) if r_var else resistor.value
-            p_max = Fraction(spec.hi)
-            c = _floor_sqrt(p_max / r_hi)
-            # I > c is not P > P_max, so this bound is refuted only through
-            # the witness below — never through its own counterexample.
-            obligations.append(current_le(c, certify=False))
             r_sym = symbols.get(resistor.name, _r(resistor.value))
-            obligations.append(Obligation(label=f"({c})^2·R <= P_max", expr=sympy.srepr(_r(c) ** 2 * r_sym),
-                                          op="le", bound=sympy.srepr(_r(p_max))))
-            witness = SeriesPowerWitness(r_th=sympy.srepr(r_th), v_th=sympy.srepr(v_th),
-                                         resistance=sympy.srepr(r_sym), p_max=str(p_max),
-                                         nvt=str(box.n * VT), is_inner=str(box.is_hi_inner))
+            p_max = Fraction(spec.hi)
+            box_now = {symbols[n].name: (Fraction(v.lo), Fraction(v.hi)) for n, v in variables.items()}
+
+            def worst_end(r_end: Fraction) -> Obligation:
+                # P at R = r_end ≤ P_max  ⇔  I there ≤ √(P_max/r_end). Proved at
+                # ⌊√⌋, refuted for certain at ⌈√⌉: I > ⌈√⌉ at a point R does
+                # take is P > P_max there. Exact up to the ln bracket.
+                at_end = {r_sym: _r(r_end)} if r_var else {}
+                rth_e, vth_e = r_th.subs(at_end), v_th.subs(at_end)
+                c_dn, c_up = _floor_sqrt(p_max / r_end), _ceil_sqrt(p_max / r_end)
+
+                def g(c: Fraction, is_value: Fraction, which: int) -> str:
+                    return sympy.srepr(nvt * _r(brackets.ln(1 + c / is_value)[which]) + _r(c) * rth_e - vth_e)
+                return Obligation(label=f"diode current <= {c_dn} with {resistor.name} = {r_end}",
+                                  expr=g(c_dn, box.is_hi_outer, 0), op="ge", bound=zero, exact=False,
+                                  refute=Obligation(label=f"certified: diode current > {c_up} with "
+                                                          f"{resistor.name} = {r_end}",
+                                                    expr=g(c_up, box.is_hi_inner, 1), op="ge", bound=zero))
+
+            reduction = None
+            if not r_var:
+                reduction = (worst_end(r_lo),)
+            elif sympy.simplify(sympy.diff(r_th, r_sym) - 1) == 0 and sympy.diff(v_th, r_sym) == 0:
+                # R is in series with the diode: R_th = R + R_rest. Then
+                # dP/dR = I²·(R_rest + r_d − R)/(R_th + r_d), r_d = n·V_t/(I + I_s),
+                # so P falls with R wherever R ≥ R_rest + n·V_t/I_lo, and rises
+                # wherever R ≤ R_rest + n·V_t/(I_hi + I_s). Each is a lemma
+                # over the whole box; either puts the worst case at one end of
+                # R's range, where it is decided exactly (Task 4.5).
+                rest = r_th - r_sym
+                i_lo, i_hi = _current_hint(v_th, r_th, box_now, nvt, box)
+                falls = (current_ge(i_lo).model_copy(update={"lemma": True, "refute": None}),
+                         Obligation(label=f"{resistor.name}'s dissipation falls as it rises",
+                                    expr=sympy.srepr(r_sym - rest - nvt / _r(i_lo)), op="ge",
+                                    bound=zero, lemma=True))
+                rises = (current_le(i_hi, certify=False).model_copy(update={"lemma": True}),
+                         Obligation(label=f"{resistor.name}'s dissipation rises with it",
+                                    expr=sympy.srepr(rest + nvt / (_r(i_hi) + _r(box.is_hi_outer)) - r_sym),
+                                    op="ge", bound=zero, lemma=True))
+                for lemmas, end in ((falls, r_lo), (rises, r_hi)):
+                    if all(decide(ob, box_now)[0] == "unsat" for ob in lemmas):
+                        reduction = lemmas + (worst_end(end),)
+                        break
+            if reduction is not None:
+                obligations.extend(reduction)
+            else:
+                method = "sound_enclosure"
+                witness = _enclose_series_power(obligations, current_le, r_th, v_th, r_sym, r_hi, p_max,
+                                                nvt=box.n * VT, is_inner=box.is_hi_inner)
     else:  # pragma: no cover - _args already refused it
         raise ValueError(kind)
 
@@ -469,6 +514,52 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
                           uses_pi=uses_pi, bracketed=kind in ("cutoff", "rise_time", "diode_current", "series_power"),
                           datasheet=datasheet or spec.datasheet_bound, mcu_models=models)
     return statement, Problem(obligations=tuple(obligations), method=method, witness=witness)
+
+
+def _current_hint(v_th, r_th, box_now, nvt: Fraction, diode: "DiodeBox") -> Tuple[Fraction, Fraction]:
+    """
+    Candidate bounds on the diode current, for the monotone lemmas to prove.
+    A guess, checked: each lemma carries its bound as an obligation, so floats
+    are fine here — nothing downstream trusts these numbers without z3.
+    """
+    from itertools import product
+
+    names = sorted({s.name for s in (v_th.free_symbols | r_th.free_symbols)})
+    values = []
+    for ends in product((0, 1), repeat=len(names)):
+        subs = {sympy.Symbol(n, positive=True): _r(box_now[n][e]) for n, e in zip(names, ends)}
+        values.append((float(v_th.subs(subs)), float(r_th.subs(subs))))
+    v_lo, v_hi = min(v for v, _ in values), max(v for v, _ in values)
+    r_lo, r_hi = min(r for _, r in values), max(r for _, r in values)
+
+    def solve(v: float, r: float, i_s: float) -> float:
+        lo, hi = 0.0, max(v, 0.0) / r
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if mid * r + float(nvt) * math.log1p(mid / i_s) < v else (lo, mid)
+        return lo
+
+    i_lo = solve(v_lo, r_hi, float(diode.is_lo_outer)) * 0.9
+    i_hi = solve(v_hi, r_lo, float(diode.is_hi_outer)) * 1.1
+    return Fraction(f"{i_lo:.6e}"), Fraction(f"{i_hi:.6e}")
+
+
+def _enclose_series_power(obligations, current_le, r_th, v_th, r_sym, r_hi: Fraction, p_max: Fraction,
+                          nvt: Fraction, is_inner: Fraction) -> "SeriesPowerWitness":
+    """
+    P = I²·R ≤ c²·R ≤ P_max with I ≤ c proved: sound, not complete. The
+    fallback when neither monotone lemma holds — R's range straddles the peak
+    of I²·R. Appends its obligations; returns the witness that certifies a
+    refutation.
+    """
+    c = _floor_sqrt(p_max / r_hi)
+    # I > c is not P > P_max, so this bound is refuted only through the
+    # witness — never through its own counterexample.
+    obligations.append(current_le(c, certify=False))
+    obligations.append(Obligation(label=f"({c})^2·R <= P_max", expr=sympy.srepr(_r(c) ** 2 * r_sym),
+                                  op="le", bound=sympy.srepr(_r(p_max))))
+    return SeriesPowerWitness(r_th=sympy.srepr(r_th), v_th=sympy.srepr(v_th), resistance=sympy.srepr(r_sym),
+                              p_max=str(p_max), nvt=str(nvt), is_inner=str(is_inner))
 
 
 def _denominator_lemmas(obligations: List[Obligation]) -> List[Obligation]:
