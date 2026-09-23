@@ -57,14 +57,17 @@ from core.ir_schema import (
     ValidationRule,
 )
 from data.component_constraints import get_constraints
+from data.mcu_targets import Target
 from generators.arduino_parts import (
+    BOARDS,
     DEFAULT_RAIL_BUDGET_MA,
     MCU_PART,
-    UNO_DIGITAL_PINS,
     decoupling,
+    grid_target,
     mcu,
     mcu_rail_ma,
     power_connections,
+    read_target,
 )
 from generators.common import (
     RESISTOR_POWER_W,
@@ -90,6 +93,7 @@ from generators.netlist.models import (
     solve_series_diode,
 )
 from generators.netlist.spice import _parse_ohms
+from validation.pin_rules import Assignment, check_assignment
 from generators.protocol import (
     ClaimScope,
     EnvelopeDecision,
@@ -101,18 +105,34 @@ from generators.protocol import (
 )
 
 NAME = "led_indicator"
-VERSION = "0.1.2"
+VERSION = "0.2.0"
 FUNCTION = "led_indicator"
 
 LED_PART = "67-21URC/S530-A3/TR8"
 _LED = get_constraints(LED_PART)
 LED_MAX_MA = float(_LED["max_continuous_current_ma"])
+#: The Uno's figure; other boards read their own through `gpio_limit_ma`.
 GPIO_RECOMMENDED_MA = float(get_constraints(MCU_PART)["gpio_recommended_current_ma"])
 
-#: The GPIO model is characterised at 5 V (the datasheet's V_OH figure), so the
-#: envelope stays there rather than extrapolating R_out to another rail.
+#: The GPIO model is characterised at the board's logic rail (the datasheet's
+#: V_OH figure), so the envelope stays within this of it rather than
+#: extrapolating R_out to another rail.
 SUPPLY_V = 5.0
-SUPPLY_WINDOW = 0.25
+#: CI grid per board, up to near each board's envelope edge: the per-pin limit
+#: over part tolerance refuses 15 mA on the 3.3 V boards (14.5 and 13.5 mA are
+#: the last accepted half-milliamps). The Uno's is Phase 1's grid.
+GRID_CURRENTS_MA = {
+    "arduino_uno": (2.0, 5.0, 10.0, 15.0),
+    "esp32_devkitc": (2.0, 5.0, 10.0, 14.0),
+    "blackpill_f411ce": (2.0, 5.0, 10.0, 13.0),
+}
+
+SUPPLY_WINDOW = {"arduino_uno": 0.25, "esp32_devkitc": 0.3, "blackpill_f411ce": 0.3}
+
+
+def gpio_limit_ma(target: Target) -> float:
+    """The board's recommended per-pin current (D7)."""
+    return float(get_constraints(target.mcu_part)["gpio_recommended_current_ma"])
 MIN_CURRENT_MA = 1.0
 DEFAULT_CURRENT_MA = 10.0
 COLOURS = {"red": LED_PART}
@@ -120,28 +140,32 @@ PINNABLE = ("R1",)
 
 
 class _Spec:
-    __slots__ = ("current_ma", "tolerance", "supply", "pin", "colour", "pins", "budget")
+    __slots__ = ("current_ma", "tolerance", "supply", "pin", "colour", "pins", "budget", "target")
 
-    def __init__(self, current_ma, tolerance, supply, pin, colour, pins, budget):
+    def __init__(self, current_ma, tolerance, supply, pin, colour, pins, budget, target):
         self.current_ma, self.tolerance, self.supply = current_ma, tolerance, supply
         self.pin, self.colour, self.pins, self.budget = pin, colour, pins, budget
+        self.target = target
 
 
 def _read(intent: IntentLike) -> _Spec:
+    target = read_target(intent)
     current = read_number(intent, "targets", "led_current_ma", DEFAULT_CURRENT_MA,
                           allow_zero=False, what="an LED current in mA")
     tolerance = read_number(intent, "targets", "tolerance_pct", 10.0, allow_zero=False,
                             what="a tolerance in percent")
-    supply = read_number(intent, "constraints", "supply_v", SUPPLY_V, allow_zero=False,
+    supply = read_number(intent, "constraints", "supply_v", target.logic_v, allow_zero=False,
                          what="a rail voltage in volts")
     budget = read_number(intent, "constraints", "supply_current_ma", DEFAULT_RAIL_BUDGET_MA,
                          allow_zero=False, what="a rail budget in mA")
     prefs = requirements(intent).get("preferences") or {}
-    pin = prefs.get("gpio_pin", "D13") if isinstance(prefs, Mapping) else "D13"
+    default_pin = target.defaults["led"]
+    pin = prefs.get("gpio_pin", default_pin) if isinstance(prefs, Mapping) else default_pin
     colour = prefs.get("colour", prefs.get("color", "red")) if isinstance(prefs, Mapping) else "red"
-    if not isinstance(pin, str) or pin.upper() not in UNO_DIGITAL_PINS:
-        raise Unreadable(f"preferences.gpio_pin={pin!r} is not an Arduino Uno digital pin "
-                         f"this generator drives ({', '.join(UNO_DIGITAL_PINS)})")
+    problems = check_assignment(target, [Assignment(str(pin), "output", "LED_CTRL")])
+    if problems:
+        raise Unreadable(f"preferences.gpio_pin={pin!r} cannot drive the LED on the {target.board}: "
+                         + "; ".join(f.message for f in problems))
     if not isinstance(colour, str) or colour.lower() not in COLOURS:
         raise Unreadable(f"preferences.colour={colour!r} has no tabulated LED; the "
                          f"catalogue offers {sorted(COLOURS)}")
@@ -152,7 +176,7 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '220', '1k')")
         pins[part] = ohms
-    return _Spec(current, tolerance, supply, pin.upper(), colour.lower(), pins, budget)
+    return _Spec(current, tolerance, supply, target.pin(pin).name, colour.lower(), pins, budget, target)
 
 
 def led_current_a(supply: float, r1: float, r_out: float, vf: str = "typ") -> float:
@@ -195,23 +219,26 @@ def select_r1(spec: _Spec) -> Optional[float]:
         return spec.pins["R1"]
     target = spec.current_ma / 1000.0
     i_s, n = led_parameters(LED_PART, "typ")
-    ideal = (spec.supply - diode_voltage(target, i_s, n)) / target - pin_resistance(MCU_PART)
+    part = spec.target.mcu_part
+    ideal = (spec.supply - diode_voltage(target, i_s, n)) / target - pin_resistance(part)
     if ideal <= 0:
         return None
     first = snap_to_e96(ideal)
     candidates = e96_values(first / 1.1, first * 1.1)
     return min(
         candidates,
-        key=lambda r: (abs(led_current_a(spec.supply, r, pin_resistance(MCU_PART)) - target), r),
+        key=lambda r: (abs(led_current_a(spec.supply, r, pin_resistance(part)) - target), r),
     )
 
 
 class LedIndicatorGenerator:
-    """One LED on one Uno GPIO. Implements `generators.protocol.Generator`."""
+    """One LED on one MCU GPIO, on any target board. Implements `generators.protocol.Generator`."""
 
     name = NAME
     version = VERSION
     function = FUNCTION
+    #: Stage 5: the boards it designs for; CI sweeps `grid(board)` on each.
+    boards = BOARDS
 
     not_applicable_rules = {
         "pullup_on_open_drain": "no open-drain line: the GPIO drives the LED push-pull",
@@ -224,21 +251,22 @@ class LedIndicatorGenerator:
         if function != FUNCTION:
             return EnvelopeDecision.refuse(
                 f"function={function!r} is not led_indicator — this generator drives one "
-                f"LED from one Arduino Uno GPIO"
+                f"LED from one MCU GPIO"
             )
         try:
             spec = _read(intent)
         except Unreadable as exc:
             return EnvelopeDecision.refuse(str(exc))
-        if abs(spec.supply - SUPPLY_V) > SUPPLY_WINDOW:
+        target, limit = spec.target, gpio_limit_ma(spec.target)
+        if abs(spec.supply - target.logic_v) > SUPPLY_WINDOW[target.id]:
             return EnvelopeDecision.refuse(
-                f"supply_v={spec.supply:g}: the GPIO drive model is characterised at "
-                f"{SUPPLY_V:g} V (the datasheet's V_OH figure) and is not extrapolated"
+                f"supply_v={spec.supply:g}: the {target.mcu_part} GPIO drive model is characterised at "
+                f"{target.logic_v:g} V (the datasheet's V_OH figure) and is not extrapolated"
             )
-        if not (MIN_CURRENT_MA <= spec.current_ma <= GPIO_RECOMMENDED_MA):
+        if not (MIN_CURRENT_MA <= spec.current_ma <= limit):
             return EnvelopeDecision.refuse(
                 f"led_current_ma={spec.current_ma:g} outside {MIN_CURRENT_MA:g}–"
-                f"{GPIO_RECOMMENDED_MA:g} mA — above that the ATmega328P pin is past its "
+                f"{limit:g} mA — above that the {target.mcu_part} pin is past its "
                 f"recommended per-pin current; use a transistor"
             )
         r1 = select_r1(spec)
@@ -255,10 +283,10 @@ class LedIndicatorGenerator:
                 f"{spec.current_ma:g}, a {nominal_err:.1f}% error beyond tolerance_pct="
                 f"{spec.tolerance:g}"
             )
-        if band.hi > GPIO_RECOMMENDED_MA:
+        if band.hi > limit:
             return EnvelopeDecision.refuse(
                 f"with R1={r1:g}Ω the pin could source up to {band.hi:.2f} mA over part "
-                f"tolerance, above the {GPIO_RECOMMENDED_MA:g} mA recommended per pin"
+                f"tolerance, above the {limit:g} mA recommended per pin"
             )
         if band.hi > LED_MAX_MA:
             return EnvelopeDecision.refuse(
@@ -270,23 +298,25 @@ class LedIndicatorGenerator:
                 f"R1={r1:g}Ω could dissipate up to {r1_power_hi:.1f} mW over part tolerance, above "
                 f"the {RESISTOR_POWER_W * 1000:g} mW rating of an 0402 resistor — ask for less current"
             )
+        rail = mcu_rail_ma(spec.supply, target.mcu_part)
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power",
                          voltage_range_v=Interval.at(spec.supply, "V"),
-                         current_draw_a=Interval(lo=(mcu_rail_ma(spec.supply) + band.lo) / 1000,
-                                                 hi=(mcu_rail_ma(spec.supply) + band.hi) / 1000,
-                                                 nominal=(mcu_rail_ma(spec.supply) + band.nominal) / 1000,
+                         current_draw_a=Interval(lo=(rail + band.lo) / 1000,
+                                                 hi=(rail + band.hi) / 1000,
+                                                 nominal=(rail + band.nominal) / 1000,
                                                  units="A")),
             PortContract(name="GND", direction="ground"),
         ))
 
     # ── predict() ─────────────────────────────────────────────────────────
 
-    def _boxes(self, r1: float, box: Optional[Mapping[str, Interval]] = None):
+    def _boxes(self, spec: _Spec, r1: float, box: Optional[Mapping[str, Interval]] = None):
+        part = spec.target.mcu_part
         r1_band = Interval(lo=r1 * (1 - RESISTOR_TOLERANCE), hi=r1 * (1 + RESISTOR_TOLERANCE),
                            nominal=r1, units="ohm")
-        rout = Interval(lo=pin_resistance(MCU_PART, "min"), hi=pin_resistance(MCU_PART, "max"),
-                        nominal=pin_resistance(MCU_PART, "typ"), units="ohm")
+        rout = Interval(lo=pin_resistance(part, "min"), hi=pin_resistance(part, "max"),
+                        nominal=pin_resistance(part, "typ"), units="ohm")
         if box:
             unknown = set(box) - {"R1", "R_out"}
             if unknown:
@@ -301,7 +331,7 @@ class LedIndicatorGenerator:
         the current band's corners in R_out and V_f; along R1 it is unimodal
         (`r1_power_max_w`), so the top is its peak and the bottom an end.
         """
-        r1_band, rout = self._boxes(r1, box)
+        r1_band, rout = self._boxes(spec, r1, box)
         vf_lo, vf_hi = ("typ", "typ") if box else ("min", "max")
         hi = r1_power_max_w(spec.supply, r1_band.lo, r1_band.hi, rout.lo, vf_lo)
         lo = min(led_current_a(spec.supply, r, rout.hi, vf_hi) ** 2 * r for r in (r1_band.lo, r1_band.hi))
@@ -310,7 +340,7 @@ class LedIndicatorGenerator:
 
     def _current_band(self, spec: _Spec, r1: float, box=None) -> Interval:
         """mA. Monotone: falls with R1 and R_out, rises as V_f falls."""
-        r1_band, rout = self._boxes(r1, box)
+        r1_band, rout = self._boxes(spec, r1, box)
         vf_box = ("typ", "typ") if box else ("max", "min")
         lo = led_current_a(spec.supply, r1_band.hi, rout.hi, vf_box[0]) * 1000
         hi = led_current_a(spec.supply, r1_band.lo, rout.lo, vf_box[1]) * 1000
@@ -324,11 +354,11 @@ class LedIndicatorGenerator:
         spec = _read(intent)
         r1 = select_r1(spec)
         current = self._current_band(spec, r1, box)
-        _, rout = self._boxes(r1, box)
+        _, rout = self._boxes(spec, r1, box)
         i_s, n = led_parameters(LED_PART, "typ")
         i_nom = current.nominal / 1000
         vf = diode_voltage(i_nom, i_s, n)
-        rail = mcu_rail_ma(spec.supply)
+        rail = mcu_rail_ma(spec.supply, spec.target.mcu_part)
         return Prediction(
             quantities={
                 "led_current_ma": current,
@@ -358,6 +388,8 @@ class LedIndicatorGenerator:
         current = q["led_current_ma"]
         err = abs(current.nominal - spec.current_ma) / spec.current_ma * 100.0
         nominal_scope = scope.model_copy(update={"parameters": "nominal"})
+        part, limit = spec.target.mcu_part, gpio_limit_ma(spec.target)
+        rout = self._boxes(spec, select_r1(spec))[1]
         return [
             graded("led.current_nominal",
                    f"LED current at typical parts is within ±{spec.tolerance:g}% of {spec.current_ma:g} mA",
@@ -366,12 +398,12 @@ class LedIndicatorGenerator:
                    defeaters=("D1", "D2", "D7")),
             graded("led.current_band",
                    f"LED current lies in [{current.lo:.3g}, {current.hi:.3g}] mA for every R1 within 1%, "
-                   f"pin resistance 15–40 Ω and forward voltage 1.7–2.4 V",
+                   f"pin resistance {rout.lo:g}–{rout.hi:g} Ω and forward voltage 1.7–2.4 V",
                    True, "monotone_corners", scope, defeaters=("D1", "D2", "D7")),
             graded("led.gpio_current_limit",
-                   f"the pin never sources more than the ATmega328P's {GPIO_RECOMMENDED_MA:g} mA "
+                   f"the pin never sources more than the {part.split('-')[0]}'s {limit:g} mA "
                    f"recommended per-pin current",
-                   current.hi <= GPIO_RECOMMENDED_MA, "monotone_corners", scope,
+                   current.hi <= limit, "monotone_corners", scope,
                    detail=f"worst case {current.hi:.3g} mA", defeaters=("D1", "D2", "D7"),
                    covers=("current_limits_ok",)),
             graded("led.led_current_limit",
@@ -386,7 +418,7 @@ class LedIndicatorGenerator:
                    f"the rail stays within its {spec.budget:g} mA budget",
                    q["supply_current_ma"].hi <= spec.budget, "monotone_corners", scope,
                    detail=f"≤ {q['supply_current_ma'].hi:.4g} mA, of which the MCU model is "
-                          f"{mcu_rail_ma(spec.supply):.0f} mA", defeaters=("D1", "D2"),
+                          f"{mcu_rail_ma(spec.supply, part):.0f} mA", defeaters=("D1", "D2"),
                    covers=("power_supply_adequate",)),
         ]
 
@@ -408,7 +440,7 @@ class LedIndicatorGenerator:
                          relation="within", lo=lo, hi=hi, units="A", re_derives="led.current_band"),
             PropertySpec(id="led.gpio_current", label="the current U1's pin sources",
                          quantity="diode_current(D_LED1)", relation="le",
-                         hi=exact(GPIO_RECOMMENDED_MA, -3), units="A",
+                         hi=exact(gpio_limit_ma(spec.target), -3), units="A",
                          re_derives="led.gpio_current_limit", datasheet_bound=True),
             PropertySpec(id="led.led_current", label="the LED current", quantity="diode_current(D_LED1)",
                          relation="le", hi=exact(LED_MAX_MA, -3), units="A",
@@ -432,14 +464,19 @@ class LedIndicatorGenerator:
             f"{r1:g}Ω, pinned by the requirement (constraints.pinned.R1) — the part in hand"
             if "R1" in spec.pins else f"{r1:g}Ω, the E96 value nearest {spec.current_ma:g} mA"
         )
+        target, limit = spec.target, gpio_limit_ma(spec.target)
+        absolute = get_constraints(target.mcu_part).get("max_gpio_source_current_ma",
+                                                        get_constraints(target.mcu_part).get("max_gpio_current_ma"))
+        where = "" if target.id == "arduino_uno" else f" on the {target.board}"
+        board = "Arduino Uno" if target.id == "arduino_uno" else target.board
         return CircuitIR(
-            intent=f"Indicator LED on {spec.pin} at {spec.current_ma:g} mA",
+            intent=f"Indicator LED on {spec.pin} at {spec.current_ma:g} mA{where}",
             application_class=ApplicationClass.HOBBY_ARDUINO,
-            target_mcu="arduino_uno",
+            target_mcu=target.id,
             components=[
-                mcu(f"Arduino Uno MCU driving the LED from {spec.pin}. Each GPIO is rated "
-                    f"{GPIO_RECOMMENDED_MA:g} mA recommended, 40 mA absolute; this design stays "
-                    f"at or under {band.hi:.3g} mA over every part tolerance."),
+                mcu(f"{board} MCU driving the LED from {spec.pin}. Each GPIO is rated "
+                    f"{limit:g} mA recommended, {absolute:g} mA absolute; this design stays "
+                    f"at or under {band.hi:.3g} mA over every part tolerance.", target),
                 Component(
                     id="LED1", type=ComponentType.LED, part_number=LED_PART,
                     manufacturer="Everlight", package="0805",
@@ -459,14 +496,14 @@ class LedIndicatorGenerator:
                     supply_voltage_max=RESISTOR_VMAX, confidence=0.97,
                     justification=(
                         f"{r_reason}. It sets I = (V_pin − V_f)/R1 ≈ {band.nominal:.3g} mA; halving it "
-                        f"would roughly double the current and, past {GPIO_RECOMMENDED_MA:g} mA, "
+                        f"would roughly double the current and, past {limit:g} mA, "
                         f"overload the pin."
                     ),
                 ),
-                decoupling("U1"),
+                decoupling("U1", target.logic_v),
             ],
             nodes=[
-                Node(id="VCC_5V", voltage_nominal=spec.supply, type=SignalType.POWER),
+                Node(id=target.rail_node, voltage_nominal=spec.supply, type=SignalType.POWER),
                 Node(id="GND", voltage_nominal=0.0, type=SignalType.GROUND),
                 # voltage_nominal on a node the MCU drives is what makes the
                 # netlist model the pin as a Thevenin source (mcu_pin_thevenin).
@@ -474,7 +511,7 @@ class LedIndicatorGenerator:
                 Node(id="LED_ANODE", type=SignalType.DIGITAL),
             ],
             connections=[
-                *power_connections(),
+                *power_connections(target.rail_node),
                 Connection(component_id="U1", pin=spec.pin, node_id="LED_CTRL", direction="output"),
                 Connection(component_id="R1", pin="A", node_id="LED_CTRL"),
                 Connection(component_id="R1", pin="B", node_id="LED_ANODE"),
@@ -492,8 +529,8 @@ class LedIndicatorGenerator:
 
     # ── CI grid and locality ──────────────────────────────────────────────
 
-    def grid(self) -> GridSpec:
-        return GridSpec(axes={"led_current_ma": [2.0, 5.0, 10.0, 15.0]},
+    def grid(self, board: Optional[str] = None) -> GridSpec:
+        return GridSpec(axes={"led_current_ma": list(GRID_CURRENTS_MA[grid_target(board).id])},
                         units={"led_current_ma": "mA"})
 
     def dependency_closure(self, requirement_path: str) -> FrozenSet[str]:

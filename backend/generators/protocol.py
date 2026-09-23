@@ -53,6 +53,7 @@ from typing import (
     Optional,
     Protocol,
     Sequence,
+    Tuple,
     runtime_checkable,
 )
 
@@ -393,7 +394,14 @@ class Generator(Protocol):
         ...
 
     def grid(self) -> GridSpec:
-        """The declared envelope grid for CI. Task 0.4."""
+        """
+        The declared envelope grid for CI. Task 0.4.
+
+        Stage 5: a generator that designs for several boards also declares
+        `boards` and accepts `grid(board)` — each board has its own envelope
+        edge (a 3.3 V board's pin limit is not the Uno's). `grid()` is the
+        default board's. Call through `grid_of`, which works for both kinds.
+        """
         ...
 
     def dependency_closure(self, requirement_path: str) -> FrozenSet[str]:
@@ -418,6 +426,19 @@ def conservative_closure(ir: CircuitIR) -> FrozenSet[str]:
     yet worked out its real dependencies, and the wrong one to leave in place.
     """
     return frozenset(c.id for c in ir.components)
+
+
+def boards_of(generator: Any) -> Tuple[Optional[str], ...]:
+    """
+    The boards a generator's grid is declared for, or `(None,)` for a
+    generator with no microcontroller. Stage 5.
+    """
+    return tuple(getattr(generator, "boards", ())) or (None,)
+
+
+def grid_of(generator: Any, board: Optional[str] = None) -> GridSpec:
+    """The generator's declared grid on `board`; None is its default board."""
+    return generator.grid(board) if board is not None else generator.grid()
 
 
 _REQUIRED_ATTRIBUTES = ("name", "version", "function")

@@ -49,6 +49,13 @@ The MCU draws current, it does not supply voltage. 100Ω gives 50mA at 5V — cl
 > `V_PIN_<node>` behind `R_PIN_<node>` (the datasheet output resistance). Both
 > models live in `generators/netlist/models.py`, which `predict()` reads too.
 
+> **Amended 2026-09-24 (Stage 5).** Still a resistor, never a source — but
+> sized per part from its tabulated supply current (`supply_model_ohm` in
+> `component_constraints.py`): 100 Ω for the ATmega328P (unchanged), 41 Ω for
+> the ESP32-WROOM-32E, 132 Ω for the STM32F411CEU6, on the board's own rail
+> (`VCC_5V` or `VCC_3V3`). The model is named from the netlist as
+> `mcu_as_<R>R`; the Uno's is still `mcu_as_100R`, and D2 covers them all.
+
 ---
 
 ## Rule: ngspice Batch Output Is Columnar, Not `v(x) = y`

@@ -124,6 +124,11 @@ that the request does not state, as `section.field` paths. Leave such a field \
 out of the requirement AND name it here rather than guessing a value — a \
 guessed value becomes a target the user never set. Optional fields the \
 request does not mention are simply left out; they are not questions.
+- A field listed as `one of a|b|c` takes exactly one of those words. \
+`constraints.mcu` is the board: record it only if the user names one — an \
+Arduino Uno is arduino_uno, an ESP32 DevKitC (WROOM-32) is esp32_devkitc, a \
+Black Pill STM32F411 is blackpill_f411ce. A board not on the list is recorded \
+as the user named it, never swapped for a listed one; the system refuses it.
 
 Never convert a value the user gave into a different one. If they said 2 MHz, \
 record 2000000, even if it looks out of range.\
@@ -363,6 +368,7 @@ class IntentProducer:
         for spec in self._forms.catalogue():
             fields = "; ".join(
                 f"{f.section}.{f.name}" + (f" [{f.units}]" if f.units else "")
+                + (f" one of {'|'.join(f.choices)}" if f.choices else "")
                 + (" required" if f.required else " optional")
                 for f in spec.fields
             )

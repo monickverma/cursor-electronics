@@ -1529,6 +1529,119 @@ the proven bands as pass criteria, and a results table. D1 stays open.
 
 ---
 
+## [2026-09-23] Stage 5 — multi-MCU firmware: targets as data, pins as claims, compile before display
+
+**Decision:** Stage 5 of `PHASE_2_PLAN_v2.md` is built as below. Written before
+any Stage 5 code. The user chose, on being asked: install PlatformIO and all
+three toolchains; the STM32 target is the WeAct Black Pill (STM32F411CEU6).
+The ESP32 target is the ESP32-DevKitC (ESP32-WROOM-32E) — the common default.
+
+v2's gates: *100% of emitted firmware compiles under PlatformIO before
+display* (empirical, G1) and *pin-mux, peripheral-conflict and strapping-pin
+checks on a labelled set* (empirical, G1). PRODUCT_MASTER names the targets:
+Arduino, ESP32, STM32.
+
+1. **Three targets, one framework.** `arduino_uno` (ATmega328P, PlatformIO
+   `atmelavr`/`uno`), `esp32_devkitc` (`espressif32`/`esp32dev`),
+   `blackpill_f411ce` (`ststm32`/`blackpill_f411ce`), all on the Arduino
+   framework, so one template family serves all three; what differs is data.
+2. **The board is a constraint.** `constraints.mcu`, default `arduino_uno`:
+   every existing requirement realises byte-identically. The LED, DHT22 and
+   RS-485 generators take all three targets; their versions move.
+3. **Targets are data, in one place.** `data/mcu_targets.py`: per target the
+   PlatformIO environment, logic rail, and a pin table — which pins exist,
+   what each can do (output, input, UART TX/RX by peripheral, PWM, ADC),
+   which are reserved and why (flash, USB, SWD, console UART, crystal,
+   on-board button/LED), which are strapping pins and what they strap.
+   Electrical figures (GPIO output resistance, recommended pin current, the
+   supply-load model) go in `component_constraints.py` beside the Uno's, so
+   the netlist, `predict()` and the prover keep reading one table (D7).
+4. **The electrical model follows the target.** 3.3 V logic on ESP32 and
+   STM32; the MCU supply load is a resistor sized from the part's tabulated
+   run current, named from the netlist (`mcu_as_<R>R`; the Uno stays
+   `mcu_as_100R`); the GPIO Thevenin table is the part's own. RS-485 on a
+   3.3 V target uses the MAX3485 (tabulated). D2 keeps its meaning.
+5. **Pins are claims.** Three rules join the catalogue, each an exact check of
+   the design graph against the target table (G1, D7): `pin_assignment_valid`
+   (exists, not reserved, can do what the connection needs),
+   `peripheral_conflict_free` (one net per pin, one user per hardware
+   peripheral, nothing on the console UART), `strapping_pins_safe`
+   (conservative: no external connection to a strapping pin). Generators pick
+   defaults that pass and refuse a requested pin that fails, by name.
+6. **The labelled set.** Hand-labelled pin assignments per target — valid and
+   invalid, each invalid one naming the rule it breaks — and the gate is zero
+   disagreements. The labels are the agent's, from the datasheets; an
+   independent labeller would strengthen it, and that is recorded, not hidden.
+7. **Compile before display.** Firmware becomes a PlatformIO project
+   (`platformio.ini` + `src/main.ino`) with pinned platform and library
+   versions. Compiling takes seconds to minutes, so it is never inline: a
+   build is keyed by the SHA-256 of the project files, results are stored in
+   a `firmware_builds` table, and a new build is a Celery task like a
+   simulation. The API returns firmware source only when its build has
+   passed; otherwise a status and a job to poll. CI compiles every distinct
+   firmware variant of every generator on every target.
+8. **Not in Stage 5:** WiFi/BLE features, ESP32/STM32-specific peripherals
+   beyond what the three designs use, and new circuit types. Firmware logic
+   stays the Phase 1 templates' logic, retargeted.
+
+**Alternatives rejected:**
+- *Retarget the firmware only, keep the 5 V circuit.* A 5 V pull-up on an
+  ESP32 input is a damaged part; the circuit must follow the chip.
+- *Compile synchronously in the request.* A first ESP32 build takes minutes.
+- *Per-target template files.* Three copies of each program drift; the
+  differences are pins and one serial class, which is data.
+
+**Built, and what building it found** (2026-09-24):
+
+- **Gate 1 met: 21/21 builds pass** under PlatformIO 6.2.0 (atmelavr 5.3.0,
+  espressif32 7.1.3, ststm32 20.0.0): 18 generator variants (3 functions × 2
+  requirement variants × 3 boards) and the 3 Phase 1 examples with an MCU.
+  `tests/test_firmware_gate.py`, marked `slow`, skipped without PlatformIO.
+- **Gate 2 met:** the labelled set, 56 cases over the three boards, zero
+  disagreements (`tests/test_pin_rules.py`).
+- The STM32 core's concrete serial class is `Uart`; `HardwareSerial` is the
+  abstract ArduinoCore-API base. The first matrix run failed there (8/9).
+- **Found: the firmware drove the wrong LED pin.** `_led_context` looked for
+  the MCU on the LED's own net; the MCU drives R1's other end, so it was
+  never found and every LED sketch said pin 13 — right on the Uno's default
+  D13 by coincidence, wrong for any other Uno pin (a Phase 1 bug that a "use
+  D5" patch would have hit) and on both new boards. The compile gate cannot
+  see this: the sketch compiles. Fixed — pins come from the wiring, on the
+  part's net or across one series resistor, never across a rail — and
+  `test_multi_target.py::TestTheFirmwareDrivesTheDesignsPins` checks every
+  pin `#define` against the pin wired to its net, on every board, at the
+  default pin and a non-default one. The Uno grid's firmware is unchanged.
+- **Found: the worker would not have loaded the compile task.** `worker.py`
+  included only the simulation task, so every build would have been
+  rejected as unregistered. Fixed and pinned.
+- **Found: a lost result would read "compiling" forever.** The result backend
+  expires results after an hour, and a row is finished only when polled. A
+  queued row older than twice the build timeout is dispatched again
+  (`api/routes/firmware.py::STALE_AFTER_S`).
+- **The CI grid runs on every board.** Generators declare `boards` and
+  `grid(board)`; `generators.protocol.grid_of` / `boards_of` serve both
+  kinds. The ngspice M1 matrix passes on all three: control error ≤ 5e-6,
+  every seeded fault caught. RS-485's 5% margin is 1.13× the gate on a 3.3 V
+  board (1.16× on the Uno), pinned per board. The adapters read the rail by
+  the Uno's node name, so supply current was NaN on 3.3 V; they now read the
+  design's own rail. LED grids stop near each board's envelope edge (15, 14,
+  13 mA), because the 20 mA pin limit over tolerance refuses 15 mA at 3.3 V.
+- **One proof is G2, by construction.** Black Pill at 13 mA: R1 = 66.5 Ω and
+  the STM32 pin spans 20–65 Ω, so R1's range straddles the dissipation peak
+  (R1 = R_out + r_d) and Task 4.5's monotone lemma cannot pick an end; the
+  prover falls back to the sound enclosure — proven, G2. The generator's own
+  claim evaluates the peak exactly (G1), so the design's floor stays G1.
+  Pinned in `test_proof.py` as `STRADDLES_THE_PEAK`.
+- The form and the LLM catalogue offer `constraints.mcu` from the
+  generators' declared boards, never a list kept beside them; the form range
+  is the union over every board's grid. An unknown board is refused by name.
+- **Not verified here:** a Docker worker build (toolchains download on a
+  board's first build into the `platformio` volume); flashing any board
+  (bench work, like D1); an independent labeller for the pin set (D7 stays
+  open).
+
+---
+
 ## [2026-09-24] Task 4.5 — exact LED dissipation; annotations drawn in the schematic
 
 **Decision 1 — R1's dissipation is decided exactly (led_indicator 0.1.2).**

@@ -86,6 +86,10 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "requires_bias": True,
         "bias_value_ohm": 560,
         "decoupling_cap_nf": 100,
+        # Stage 5: the same TIA-485 bus figures as the MAX485 — the standard
+        # sets them, not the part. Defeater D7.
+        "receiver_threshold_mv": 200.0,
+        "driver_rated_load_ohm": 54.0,
         "notes": [
             "3.3V version of MAX485. Use when MCU logic is 3.3V.",
             "Same wiring as MAX485 but 3.3V supply and logic levels.",
@@ -111,6 +115,8 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         # cannot disagree about the pin. Datasheet-derived: defeater D7.
         "gpio_output_resistance_ohm": {"min": 15.0, "typ": 25.0, "max": 40.0},
         "gpio_recommended_current_ma": 20,
+        # Supply-load model (X6, `mcu_as_100R`, D2): 100 ohm on the 5 V rail.
+        "supply_model_ohm": 100.0,
         "notes": [
             "Max 40mA per GPIO pin — LED without current limiter will damage the MCU",
             "Max 200mA total from all I/O pins combined",
@@ -136,6 +142,47 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
             "GPIO6–11 are connected to internal flash — DO NOT USE",
             "WiFi transmit draws up to 500mA peak — supply must handle this",
             "100nF + 10μF decoupling on 3.3V supply",
+        ],
+    },
+    # Stage 5 targets. The ESP32-DevKitC carries the WROOM-32E; the entry above
+    # is the older 32D and is left as it was.
+    "ESP32-WROOM-32E": {
+        "supply_voltage_min": 3.0,
+        "supply_voltage_max": 3.6,
+        "max_gpio_current_ma": 40,
+        # Datasheet DC characteristics: V_OH >= 0.8 x VDD (2.64 V) at the pin's
+        # rated source current. At the default drive strength (level 2, the
+        # Arduino core's) that is 20 mA -> at most (3.3 - 2.64) / 0.02 = 33 ohm.
+        # Defeater D7.
+        "gpio_output_resistance_ohm": {"min": 10.0, "typ": 20.0, "max": 33.0},
+        "gpio_recommended_current_ma": 20,
+        # Supply-load model (X6, D2): the run current without radio, as a
+        # resistor on the 3.3 V rail: 3.3 V / 80 mA.
+        "current_draw_active_ma": 80,
+        "supply_model_ohm": 41.0,
+        "notes": [
+            "3.3V logic — do NOT connect 5V signals without level shifting",
+            "GPIO34–39 are input-only; GPIO6–11 are the module's flash",
+            "Strapping pins 0, 2, 5, 12, 15 must not be pulled by external circuits",
+        ],
+    },
+    "STM32F411CEU6": {
+        "supply_voltage_min": 1.7,
+        "supply_voltage_max": 3.6,
+        "max_gpio_current_ma": 25,
+        "max_total_io_current_ma": 120,
+        # Datasheet I/O characteristics: V_OH >= VDD - 1.3 V at |I_IO| = 20 mA
+        # -> at most 1.3 / 0.02 = 65 ohm; V_OH >= VDD - 0.4 V at 8 mA (50 ohm).
+        # Defeater D7.
+        "gpio_output_resistance_ohm": {"min": 20.0, "typ": 35.0, "max": 65.0},
+        "gpio_recommended_current_ma": 20,
+        # Supply-load model: ~25 mA at 100 MHz, as 3.3 V / 25 mA.
+        "current_draw_active_ma": 25,
+        "supply_model_ohm": 132.0,
+        "notes": [
+            "3.3V logic; most pins are 5V-tolerant as inputs only",
+            "PC13–PC15 sink at most 3 mA and must not source current",
+            "PA11/PA12 are USB; PA13/PA14 are SWD",
         ],
     },
     "SHT31-D": {

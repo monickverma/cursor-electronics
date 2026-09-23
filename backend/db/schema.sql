@@ -137,6 +137,19 @@ CREATE TABLE request_log (
 );
 
 CREATE INDEX idx_request_log_created_at ON request_log(created_at);
+
+-- Stage 5: the compile gate's cache. Firmware is shown only once its project
+-- has built; a project is keyed by the SHA-256 of its files, so identical
+-- firmware compiles once. Also created by db/migrations.py on old volumes.
+CREATE TABLE firmware_builds (
+    build_hash VARCHAR(64) PRIMARY KEY,   -- SHA-256 of the project files
+    target VARCHAR(50) NOT NULL,          -- data/mcu_targets id
+    status VARCHAR(20) NOT NULL,          -- queued | passed | failed
+    log TEXT,
+    seconds DOUBLE PRECISION,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ
+);
 CREATE INDEX idx_request_log_outcome ON request_log(outcome);
 CREATE INDEX idx_request_log_prompt_hash ON request_log(prompt_hash);
 CREATE INDEX idx_request_log_generator ON request_log(generator);

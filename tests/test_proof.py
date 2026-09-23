@@ -59,6 +59,7 @@ from proof.prover import (
 )
 from validation.claims import METHOD_GRADE, assess
 from validation.defeaters import REGISTER, Status
+from generators.protocol import boards_of, grid_of
 from validation.grid_adapters import intent_at
 
 REGISTRY = default_registry()
@@ -80,13 +81,15 @@ def design(function):
 
 
 def grid_designs():
-    """Every accepted point of every generator's declared CI grid."""
+    """Every accepted point of every generator's declared CI grid, on every board (Stage 5)."""
     for g in REGISTRY.generators:
-        grid = g.grid()
-        for point in grid.points():
-            it = intent_at(g.function, point, grid.sections)
-            if g.envelope(it).accepted:
-                yield g, point, it, g.generate(it)
+        for board in boards_of(g):
+            grid = grid_of(g, board)
+            for point in grid.points():
+                it = intent_at(g.function, point, grid.sections,
+                               {"constraints": {"mcu": board}} if board else None)
+                if g.envelope(it).accepted:
+                    yield g, point, it, g.generate(it)
 
 
 # ── The brackets ─────────────────────────────────────────────────────────────
@@ -266,22 +269,34 @@ class TestGates:
                 seen += 1
         assert seen >= 9 * 3 - 3
 
+    #: Stage 5: the one grid design whose R1 range straddles the dissipation
+    #: peak (R1 = R_out + r_d). The Black Pill's pins span 20–65 Ω, and 13 mA
+    #: needs R1 = 66.5 Ω, so no end of R1's range is the maximum and Task 4.5's
+    #: lemma cannot pick one: the prover falls back to the sound enclosure, G2.
+    #: Pinned, so a prover that closes the gap — or widens it — says so here.
+    STRADDLES_THE_PEAK = {("blackpill_f411ce", 13.0)}
+
     def test_led_claims_proven_over_the_full_tolerance_box(self):
-        seen = 0
+        seen, enclosed = 0, set()
         for g, point, it, circuit in grid_designs():
             if g.name != "led_indicator":
                 continue
+            board = it.requirements["constraints"].get("mcu", "arduino_uno")
             for spec in g.properties(it):
                 statement, _, result = check(circuit, spec)
                 assert result.status == "proven", (point, spec.id, result.detail)
                 # R1's dissipation too, since Task 4.5: decided at the end of
-                # R1's range a proven lemma puts the peak at.
-                assert METHOD_GRADE[result.method] == "G1", spec.id
+                # R1's range a proven lemma puts the peak at — unless the
+                # range straddles the peak.
+                if METHOD_GRADE[result.method] != "G1":
+                    assert (spec.id, result.method) == ("led.r1_power", "sound_enclosure"), spec.id
+                    enclosed.add((board, point["led_current_ma"]))
                 labels = {v.label for v in statement.variables}
                 assert {"R1", "U1 pin resistance"} <= labels
                 assert "forward voltage anywhere in its datasheet range of 1.7–2.4 V" in statement.english
                 seen += 1
-        assert seen == 4 * 4
+        assert seen == 4 * 4 * 3   # four properties, four points, three boards
+        assert enclosed == self.STRADDLES_THE_PEAK
 
     def test_rc_cutoff_proven_with_pi_bracketed(self):
         seen = 0

@@ -36,13 +36,21 @@
    "value": "47nF"
   }
  ],
- "circuit_id": "6f2364d0-d139-5b9b-a144-e7a0605e4c25",
+ "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
  "explanation": "",
  "firmware": null,
+ "firmware_build": {
+  "board": null,
+  "build": null,
+  "log": null,
+  "message": "this design has no microcontroller, so no firmware",
+  "status": "none",
+  "target": null
+ },
  "intent": "RC low-pass filter with 1000 Hz cutoff frequency",
  "ir": {
   "application_class": "hobby_arduino",
-  "circuit_id": "6f2364d0-d139-5b9b-a144-e7a0605e4c25",
+  "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
   "components": [
    {
     "confidence": 0.95,
@@ -320,6 +328,45 @@
      "verdict": "not_applicable"
     },
     {
+     "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no microcontroller on this design",
+     "grade": null,
+     "id": "rule.pin_assignment_valid",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no microcontroller on this design",
+     "grade": null,
+     "id": "rule.peripheral_conflict_free",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "nothing external is wired to a strapping pin",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no microcontroller on this design",
+     "grade": null,
+     "id": "rule.strapping_pins_safe",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
      "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
      "covers": [],
      "critical": false,
@@ -488,7 +535,7 @@
   ],
   "version": 1
  },
- "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"30180490-e067-5602-8749-cce0b2b523f5\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"71f718a5-3251-5dcc-b78a-57a6bf390685\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"5d219337-8e1f-59ae-bea2-e9b6f91bb699\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2f46cdb6-259d-56cf-b6db-be7d9ab9de45\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"f03c10cc-1a66-5959-b7bd-1a1586dce434\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"a9868d50-dbaa-53dd-a2bd-2324da87f32f\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"96f5d799-9a8a-5d8b-a58f-4a1209971c01\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"eae58dd3-a096-59bb-bd0e-ee79827f743c\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"e514d67e-25f1-5786-80d3-73e084d1ba30\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"9833347e-6545-5997-8c68-a908daa908ee\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"55be8e30-9518-5b01-9014-5cf557b7bff8\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"340772ed-c744-5ce5-809e-5e07bfccc2a8\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f76db568-1e94-5d35-91c3-7e3b68899f79\"))\n\n)",
+ "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"2b3180b6-27f9-5f27-9644-29891ba661d8\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"cc492a19-3af5-5d3b-a21f-353c19044acd\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"58777bec-2024-5b02-bc4f-c4431952436d\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ae99d3e9-6307-5770-adc7-0a1612b72302\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"376b0396-3b93-5aa3-a4e7-c39f628e8329\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"13d9966d-1f34-5676-9e44-b7dabd437778\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"5358ca41-f19e-5ffe-a251-062bd5f7179b\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c88fc178-dfcd-566b-9fd0-14eeb1f6c233\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"89dd41e6-3f5a-5bbf-a6aa-e211fc892372\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"bf8a31bc-9930-53ba-a3fd-6109cd86d08d\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"da7d4068-afba-5d41-b6be-21d30a9289a3\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6dc7c248-4b3d-5ec7-966d-ace66867f754\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"d4d4144b-3522-5050-a9ac-e287cfbb7bf1\"))\n\n)",
  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
  "target_mcu": null,
  "validation": {
@@ -660,6 +707,45 @@
     "detail": "no RS-485 lines",
     "grade": null,
     "id": "rule.rs485_bias_resistors",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.pin_assignment_valid",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.peripheral_conflict_free",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "nothing external is wired to a strapping pin",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.strapping_pins_safe",
     "kind": "analytic",
     "method": null,
     "scope": null,

@@ -25,10 +25,11 @@ from __future__ import annotations
 
 import asyncio
 import math
-from typing import Callable, Dict, Mapping, NamedTuple, Optional, Sequence
+from typing import Callable, Dict, List, Mapping, NamedTuple, Optional, Sequence, Tuple
 
 from core.ir_schema import CircuitIR
 from generators.netlist.spice import SpiceNetlistGenerator
+from generators.protocol import boards_of
 from validation.envelope_grid import GridAdapter
 
 
@@ -104,10 +105,20 @@ def measure_divider(ir: CircuitIR) -> Dict[str, float]:
     }
 
 
+def _rail_a(data) -> float:
+    """
+    Current drawn from the design's supply rail, whichever board it is on:
+    `V_VCC_5V` on the Uno, `V_VCC_3V3` on a 3.3 V board (Stage 5). Exactly one
+    rail source or the measurement is NaN — a failure, never a guess.
+    """
+    rails = [k for k in data.branch_currents if k.startswith("v_vcc_")]
+    return -data.branch_currents[rails[0]] if len(rails) == 1 else math.nan
+
+
 def measure_led(ir: CircuitIR) -> Dict[str, float]:
     data = simulate(netlist_of(ir))
     pin = -data.branch_currents.get("v_pin_led_ctrl", math.nan)
-    rail = -data.branch_currents.get("v_vcc_5v", math.nan)
+    rail = _rail_a(data)
     # The pin's Thevenin source stands in for current that physically comes
     # from VCC, so the rail is the two sources together.
     return {"led_current_ma": pin * 1000.0, "supply_current_ma": (rail + pin) * 1000.0}
@@ -117,7 +128,7 @@ def measure_dht22(ir: CircuitIR) -> Dict[str, float]:
     # Hold DATA low, as the MCU's start pulse or the sensor's reply does.
     data = simulate(with_probes(netlist_of(ir), ["V_PROBE dht22_data 0 DC 0"]))
     sink = data.branch_currents.get("v_probe", math.nan)
-    rail = -data.branch_currents.get("v_vcc_5v", math.nan)
+    rail = _rail_a(data)
     return {
         "pullup_sink_current_ma": sink * 1000.0,
         # The idle rail excludes the probe's pull-up current.
@@ -131,27 +142,32 @@ def measure_rs485(ir: CircuitIR) -> Dict[str, float]:
     v = data.dc_voltages
     return {
         "v_ab_idle_mv": (v.get("rs485_a", math.nan) - v.get("rs485_b", math.nan)) * 1000.0,
-        "supply_current_ma": -data.branch_currents.get("v_vcc_5v", math.nan) * 1000.0,
+        "supply_current_ma": _rail_a(data) * 1000.0,
     }
 
 
 # ── The library ──────────────────────────────────────────────────────────────
 
 class AdapterSpec(NamedTuple):
-    build: Callable[[], GridAdapter]
+    #: `build()` is the default board; `build(board)` sweeps that board's grid.
+    build: Callable[..., GridAdapter]
     #: The passive the M1 arms perturb. Chosen as the part the measured
     #: quantity is most sensitive to, so a 5% fault is a 5%-class signal.
     mutate: str
 
 
-def _adapter(generator_cls, function: str, measure, base=None) -> Callable[[], GridAdapter]:
-    def build() -> GridAdapter:
+def _adapter(generator_cls, function: str, measure, base=None) -> Callable[..., GridAdapter]:
+    def build(board: Optional[str] = None) -> GridAdapter:
         generator = generator_cls()
-        sections = generator.grid().sections
+        sections = (generator.grid(board) if board else generator.grid()).sections
+        placed = {section: dict(values) for section, values in (base or {}).items()}
+        if board:
+            placed.setdefault("constraints", {})["mcu"] = board
         return GridAdapter(
             generator=generator,
-            intent_for=lambda point: intent_at(function, point, sections, base),
+            intent_for=lambda point: intent_at(function, point, sections, placed),
             measure=measure,
+            board=board,
         )
     return build
 
@@ -184,3 +200,12 @@ ADAPTERS: Dict[str, AdapterSpec] = _library()
 
 #: Generators under the M1 matrix. Claims from any other generator carry D9.
 M1_COVERED = frozenset(ADAPTERS)
+
+
+def board_cases() -> List[Tuple[str, Optional[str]]]:
+    """
+    Every (adapter, board) pair CI sweeps: each MCU generator on each board it
+    declares (Stage 5), each passive generator once (board None).
+    """
+    return [(name, board) for name, spec in sorted(ADAPTERS.items())
+            for board in boards_of(spec.build().generator)]

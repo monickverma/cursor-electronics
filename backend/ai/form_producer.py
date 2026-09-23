@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.intent_ir import IntentIR, Producer, Provenance
+from generators.protocol import boards_of, grid_of
 from generators.registry import GeneratorRegistry, default_registry
 
 
@@ -59,8 +60,13 @@ class FormField(BaseModel):
     #: Whether the declared range is one CI actually sweeps. False means the
     #: bounds are advisory and the envelope is the authority.
     exercised_in_ci: bool = True
+    #: A categorical field's values (Stage 5: `constraints.mcu`, the board).
+    #: None for a number.
+    choices: Optional[Tuple[str, ...]] = None
 
     def describe(self) -> str:
+        if self.choices:
+            return f"{self.name} (one of {', '.join(self.choices)})"
         span = ""
         if self.minimum is not None and self.maximum is not None:
             unit = f" {self.units}" if self.units else ""
@@ -139,6 +145,13 @@ class FormProducer:
                 minimum=minimum, maximum=maximum, required=True,
             ))
 
+        # Stage 5: the board, when the function's generators design for more
+        # than one. Offered only as far as CI sweeps: each generator's grid runs
+        # on every board it declares. Optional — the default is the Uno.
+        boards = self._boards(generators)
+        if boards:
+            fields.append(FormField(name="mcu", section="constraints", choices=boards, required=False))
+
         # A generator whose grid axis shares a name with a universal field
         # would otherwise produce the field twice, and `build()` keys by name —
         # so the second silently shadowed the first, routing the value into
@@ -152,6 +165,17 @@ class FormProducer:
             fields=tuple(fields),
         )
 
+    def _boards(self, generators: Sequence[Any]) -> Tuple[str, ...]:
+        """Every board any of the function's generators declares, in declaration order."""
+        seen: List[str] = []
+        for generator in generators:
+            seen += [b for b in boards_of(generator) if b is not None and b not in seen]
+        return tuple(seen)
+
+    def _grids(self, generator: Any) -> List[Any]:
+        """A generator's declared grid on each board it declares (one grid without)."""
+        return [grid_of(generator, board) for board in boards_of(generator)]
+
     def _grid_bounds(
         self, generators: Sequence[Any]
     ) -> Dict[str, Tuple[float, float, Optional[str]]]:
@@ -163,8 +187,7 @@ class FormProducer:
         decides which one takes a given request, and a refusal names why.
         """
         bounds: Dict[str, Tuple[float, float, Optional[str]]] = {}
-        for generator in generators:
-            grid = generator.grid()
+        for grid in (g for generator in generators for g in self._grids(generator)):
             for axis, values in grid.axes.items():
                 low, high = min(values), max(values)
                 units = grid.units.get(axis)
@@ -182,8 +205,7 @@ class FormProducer:
         whichever won, one generator would read the value from the wrong place.
         """
         sections: Dict[str, str] = {}
-        for generator in generators:
-            grid = generator.grid()
+        for grid in (g for generator in generators for g in self._grids(generator)):
             for axis in grid.axes:
                 section = grid.section_of(axis)
                 if sections.setdefault(axis, section) != section:
@@ -230,6 +252,8 @@ class FormProducer:
         }
         for name, value in values.items():
             field = known.get(name)
+            if field is not None and field.choices and value is not None and value not in field.choices:
+                raise ValueError(f"{name}={value!r} is not one of {list(field.choices)}")
             if field is None:
                 requirements["preferences"][name] = value
                 continue

@@ -34,13 +34,19 @@ MIGRATIONS: Sequence[str] = (
     # Stage 2 — X2: the IntentIR and annotations live on the design record.
     "ALTER TABLE circuit_designs ADD COLUMN IF NOT EXISTS intent_ir JSONB",
     "ALTER TABLE circuit_designs ADD COLUMN IF NOT EXISTS annotations JSONB",
+    # Stage 5 — the compile gate's cache: one row per firmware project hash.
+    "CREATE TABLE IF NOT EXISTS firmware_builds ("
+    " build_hash VARCHAR(64) PRIMARY KEY, target VARCHAR(50) NOT NULL,"
+    " status VARCHAR(20) NOT NULL, log TEXT, seconds DOUBLE PRECISION,"
+    " created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), finished_at TIMESTAMPTZ)",
 )
 
 
 def is_safe(statement: str) -> bool:
     """Additive and idempotent — the two properties a startup migration needs."""
     s = " ".join(statement.upper().split())
-    additive = (s.startswith("ALTER TABLE") and " ADD COLUMN " in s) or s.startswith("CREATE INDEX")
+    additive = ((s.startswith("ALTER TABLE") and " ADD COLUMN " in s) or s.startswith("CREATE INDEX")
+                or s.startswith("CREATE TABLE IF NOT EXISTS"))
     return additive and "IF NOT EXISTS" in s and " DROP " not in s and " RENAME " not in s
 
 

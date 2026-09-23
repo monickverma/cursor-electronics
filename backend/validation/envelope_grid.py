@@ -55,7 +55,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from core.ir_schema import CircuitIR, ComponentType
 from generators.netlist.spice import _parse_farads, _parse_ohms
-from generators.protocol import Generator, Interval
+from generators.protocol import Generator, Interval, grid_of
 
 # Matches the criterion-11 gate and `tests/test_simulation_accuracy.py`. The
 # 15% grader tolerance exists to absorb physical component spread; there is no
@@ -158,10 +158,14 @@ class GridAdapter:
         generator: Generator,
         intent_for: Callable[[Mapping[str, float]], Any],
         measure: Callable[[CircuitIR], Mapping[str, float]],
+        board: Optional[str] = None,
     ) -> None:
         self.generator = generator
         self.intent_for = intent_for
         self.measure = measure
+        #: Stage 5: the board swept — `grid_of(generator, board)` — and which
+        #: `intent_for` must place in `constraints.mcu`. None: the default.
+        self.board = board
 
 
 def run_grid(
@@ -179,7 +183,7 @@ def run_grid(
     generator = adapter.generator
     results: List[GridPointResult] = []
 
-    for point in generator.grid().points():
+    for point in grid_of(generator, adapter.board).points():
         point = dict(point)
         intent = adapter.intent_for(point)
 
@@ -235,7 +239,7 @@ def run_grid(
             ))
 
     return GridReport(
-        generator=f"{generator.name}@{generator.version}",
+        generator=f"{generator.name}@{generator.version}" + (f" on {adapter.board}" if adapter.board else ""),
         tolerance=tolerance,
         results=tuple(results),
     )
@@ -354,8 +358,12 @@ class MutatedGenerator:
     def predict(self, intent, box=None):
         return self._inner.predict(intent, box=box)
 
-    def grid(self):
-        return self._inner.grid()
+    @property
+    def boards(self):
+        return getattr(self._inner, "boards", ())
+
+    def grid(self, board=None):
+        return grid_of(self._inner, board)
 
     def dependency_closure(self, requirement_path: str):
         return self._inner.dependency_closure(requirement_path)
@@ -426,6 +434,7 @@ def run_matrix(
             generator=MutatedGenerator(adapter.generator, component_id, factor),
             intent_for=adapter.intent_for,
             measure=adapter.measure,
+            board=adapter.board,
         )
         arms[label] = run_grid(mutated, tolerance)
     return MatrixReport(control=control, mutations=arms)

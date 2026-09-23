@@ -49,7 +49,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from core.ir_schema import CircuitIR, SignalType, ValidationRule
 from core.ir_validator import validate_ir
-from generators.netlist.models import MODEL_LED, MODEL_MCU_PIN, MODEL_MCU_SUPPLY
+from generators.netlist.models import MODEL_LED, MODEL_MCU_PIN, mcu_supply_model
 from generators.protocol import ClaimScope
 from validation.defeaters import REGISTER
 
@@ -88,6 +88,10 @@ _IMPLEMENTED: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     ValidationRule.RS485_TERMINATION_PRESENT.value: ("exact_graph_check", ()),
     ValidationRule.RS485_BIAS_RESISTORS.value: ("exact_graph_check", ()),
     ValidationRule.PWM_PIN_VALID.value: ("exact_graph_check", ("D7",)),
+    # Stage 5: against the board's pin table, which is datasheet data.
+    ValidationRule.PIN_ASSIGNMENT_VALID.value: ("exact_graph_check", ("D7",)),
+    ValidationRule.PERIPHERAL_CONFLICT_FREE.value: ("exact_graph_check", ("D7",)),
+    ValidationRule.STRAPPING_PINS_SAFE.value: ("exact_graph_check", ("D7",)),
 }
 
 #: Rules declared out of scope rather than unimplemented.
@@ -272,8 +276,12 @@ def netlist_models(circuit: CircuitIR) -> Tuple[str, ...]:
 
     netlist = SpiceNetlistGenerator().generate(circuit)
     models = []
-    if "\nR_MCU_" in netlist:
-        models.append(MODEL_MCU_SUPPLY)
+    for line in netlist.splitlines():
+        if line.startswith("R_MCU_"):
+            # Named from the value the netlist carries: `mcu_as_100R` on the Uno.
+            model = mcu_supply_model(float(line.split()[3]))
+            if model not in models:
+                models.append(model)
     if "\nR_PIN_" in netlist:
         models.append(MODEL_MCU_PIN)
     return tuple(models)
@@ -308,6 +316,9 @@ _RULE_SENTENCES = {
     "rs485_termination_present": "the RS-485 A/B pair is terminated with 100–150 ohm",
     "rs485_bias_resistors": "RS-485 A is biased to VCC and B to GND",
     "pwm_pin_valid": "every PWM signal uses an Arduino Uno PWM-capable pin",
+    "pin_assignment_valid": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+    "peripheral_conflict_free": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+    "strapping_pins_safe": "nothing external is wired to a strapping pin",
 }
 
 
@@ -364,6 +375,16 @@ def _rule_claims(circuit: CircuitIR, ports: Sequence[str]) -> List[Claim]:
         row(rule, not result.errors, has_rs485,
             "; ".join(e.message for e in result.errors + result.warnings)
             or ("present" if has_rs485 else "no RS-485 lines"))
+
+    from validation.pin_rules import RULES as PIN_RULES, check_design
+
+    pins = check_design(circuit)
+    for rule in PIN_RULES:
+        if pins is None:
+            row(rule, True, False, "no microcontroller on this design")
+        else:
+            holds, detail = pins[rule]
+            row(rule, holds, True, detail)
 
     has_pwm = SignalType.PWM.value in {getattr(t, "value", t) for t in node_types}
     result = type(structural)()

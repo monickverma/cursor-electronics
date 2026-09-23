@@ -8,6 +8,7 @@ app = Celery(
     backend=settings.redis_url,
     include=[
         "tasks.simulation_task",
+        "tasks.firmware_task",   # Stage 5: the compile gate
     ],
 )
 

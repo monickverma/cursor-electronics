@@ -52,11 +52,14 @@ from core.ir_schema import (
 )
 from data.component_constraints import get_constraints
 from generators.arduino_parts import (
+    BOARDS,
     DEFAULT_RAIL_BUDGET_MA,
     decoupling,
+    grid_target,
     mcu,
     mcu_rail_ma,
     power_connections,
+    read_target,
 )
 from generators.common import (
     RESISTOR_TOLERANCE,
@@ -71,7 +74,7 @@ from generators.common import (
     value_string,
     worst_corners,
 )
-from generators.netlist.models import MODEL_MCU_SUPPLY, load_ohms
+from generators.netlist.models import load_ohms, mcu_supply_model, mcu_supply_ohms
 from generators.netlist.spice import _parse_ohms
 from generators.protocol import (
     ClaimScope,
@@ -84,7 +87,7 @@ from generators.protocol import (
 )
 
 NAME = "rs485_node"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 FUNCTION = "modbus_rtu_master"
 
 XCVR_PART = "MAX485ECSA"
@@ -98,8 +101,26 @@ TERMINATOR_PART = "RC1206FR-07120RL"
 TERMINATOR_POWER_W = 0.25
 #: What SoftwareSerial on a 16 MHz Uno receives reliably; 115200 does not.
 BAUD_RATES = (1200, 2400, 4800, 9600, 19200, 38400, 57600)
-#: The pins modbus_master.ino.j2 drives.
+#: A hardware UART (ESP32, STM32) adds 115200.
+HARDWARE_BAUD_RATES = BAUD_RATES + (115200,)
+#: The Uno pins modbus_master.ino.j2 drives; other boards' are in data/mcu_targets.py.
 PIN_TX, PIN_RX, PIN_DE_RE = "D11", "D10", "D2"
+
+#: Stage 5: a 3.3 V board takes the MAX3485. The bus figures are TIA-485's, not
+#: the part's, so the thresholds above hold for both — checked, not assumed.
+TRANSCEIVERS = {"arduino_uno": XCVR_PART, "esp32_devkitc": "MAX3485ECSA", "blackpill_f411ce": "MAX3485ECSA"}
+for _part in set(TRANSCEIVERS.values()):
+    _t = get_constraints(_part)
+    assert (_t["receiver_threshold_mv"], _t["driver_rated_load_ohm"]) == (THRESHOLD_MV, RATED_LOAD_OHM), _part
+
+
+def transceiver(target) -> tuple:
+    part = TRANSCEIVERS[target.id]
+    return part, get_constraints(part)
+
+
+def baud_rates(target) -> tuple:
+    return BAUD_RATES if target.rs485_uart is None else HARDWARE_BAUD_RATES
 PINNABLE = ("R1", "R2", "R3")
 
 DEFAULT_SLAVES = [
@@ -108,7 +129,7 @@ DEFAULT_SLAVES = [
 
 
 class _Spec:
-    __slots__ = ("supply", "far_end", "baud", "budget", "slaves", "poll_ms", "pins")
+    __slots__ = ("supply", "far_end", "baud", "budget", "slaves", "poll_ms", "pins", "target")
 
     def __init__(self, **kw):
         for key, value in kw.items():
@@ -116,7 +137,8 @@ class _Spec:
 
 
 def _read(intent: IntentLike) -> _Spec:
-    supply = read_number(intent, "constraints", "supply_v", 5.0, allow_zero=False,
+    target = read_target(intent)
+    supply = read_number(intent, "constraints", "supply_v", target.logic_v, allow_zero=False,
                          what="a rail voltage in volts")
     budget = read_number(intent, "constraints", "supply_current_ma", DEFAULT_RAIL_BUDGET_MA,
                          allow_zero=False, what="a rail budget in mA")
@@ -145,7 +167,7 @@ def _read(intent: IntentLike) -> _Spec:
                              f"this system can read (e.g. '120', '560')")
         pins[part] = ohms
     return _Spec(supply=supply, far_end=far_end, baud=baud, budget=budget,
-                 slaves=[dict(s) for s in slaves], poll_ms=poll, pins=pins)
+                 slaves=[dict(s) for s in slaves], poll_ms=poll, pins=pins, target=target)
 
 
 def v_ab_mv(supply: float, r_term: float, r_up: float, r_down: float, r_far: Optional[float]) -> float:
@@ -199,6 +221,8 @@ class RS485NodeGenerator:
     name = NAME
     version = VERSION
     function = FUNCTION
+    #: Stage 5: the boards it designs for; CI sweeps `grid(board)` on each.
+    boards = BOARDS
 
     not_applicable_rules = {
         "pullup_on_open_drain": "no open-drain line: RS-485 is driven differentially, "
@@ -211,24 +235,26 @@ class RS485NodeGenerator:
         function = (intent.requirements or {}).get("function")
         if function != FUNCTION:
             return EnvelopeDecision.refuse(
-                f"function={function!r} is not modbus_rtu_master — this generator builds an "
-                f"Arduino Uno Modbus RTU master on one MAX485"
+                f"function={function!r} is not modbus_rtu_master — this generator builds a "
+                f"Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)"
             )
         try:
             spec = _read(intent)
         except Unreadable as exc:
             return EnvelopeDecision.refuse(str(exc))
-        vmin, vmax = _XCVR["supply_voltage_min"], _XCVR["supply_voltage_max"]
+        part, xcvr = transceiver(spec.target)
+        vmin, vmax = xcvr["supply_voltage_min"], xcvr["supply_voltage_max"]
         if not (vmin <= spec.supply <= vmax):
+            hint = ("; a 3.3 V bus needs the MAX3485 on a 3.3 V board (constraints.mcu)"
+                    if spec.target.id == "arduino_uno" else "")
             return EnvelopeDecision.refuse(
-                f"supply_v={spec.supply:g} outside the MAX485's {vmin:g}–{vmax:g} V; a 3.3 V "
-                f"bus needs the MAX3485, which this generator does not place"
+                f"supply_v={spec.supply:g} outside the {part.rstrip('ECSA')}'s {vmin:g}–{vmax:g} V{hint}"
             )
-        if int(spec.baud) not in BAUD_RATES or spec.baud != int(spec.baud):
-            return EnvelopeDecision.refuse(
-                f"baud={spec.baud:g} is not one of {list(BAUD_RATES)} — the firmware uses "
-                f"SoftwareSerial, which a 16 MHz Uno cannot receive reliably above 57600"
-            )
+        rates = baud_rates(spec.target)
+        if int(spec.baud) not in rates or spec.baud != int(spec.baud):
+            why = ("the firmware uses SoftwareSerial, which a 16 MHz Uno cannot receive reliably "
+                   "above 57600" if spec.target.rs485_uart is None else "these are the rates offered")
+            return EnvelopeDecision.refuse(f"baud={spec.baud:g} is not one of {list(rates)} — {why}")
         chosen = select(spec)
         if chosen is None:
             return EnvelopeDecision.refuse(
@@ -255,11 +281,12 @@ class RS485NodeGenerator:
         ))
 
     def _rail_ma(self, spec: _Spec, r1: float, r2: float, r3: float) -> float:
-        xcvr = load_ohms(_XCVR["current_draw_ma"], _XCVR["supply_voltage_max"])
+        _, table = transceiver(spec.target)
+        xcvr = load_ohms(table["current_draw_ma"], table["supply_voltage_max"])
         far = TERMINATION_OHM if spec.far_end else None
         r_eq = r1 if far is None else r1 * far / (r1 + far)
         bias = spec.supply / (r2 + r_eq + r3) * 1000.0
-        return mcu_rail_ma(spec.supply) + spec.supply / xcvr * 1000.0 + bias
+        return mcu_rail_ma(spec.supply, spec.target.mcu_part) + spec.supply / xcvr * 1000.0 + bias
 
     # ── predict() ─────────────────────────────────────────────────────────
 
@@ -282,7 +309,8 @@ class RS485NodeGenerator:
                 "termination_power_mw": Interval(lo=0.0, hi=term_worst, nominal=term_worst, units="mW"),
                 "supply_current_ma": Interval.at(rail, "mA"),
             },
-            scope=ClaimScope(parameters="tolerance_box", model=f"mna_ideal+{MODEL_MCU_SUPPLY}",
+            scope=ClaimScope(parameters="tolerance_box",
+                             model=f"mna_ideal+{mcu_supply_model(mcu_supply_ohms(spec.target.mcu_part))}",
                              horizon="steady_state"),
             method="monotone_corners",
         )
@@ -317,7 +345,8 @@ class RS485NodeGenerator:
             graded("rs485.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
                    rail.hi <= spec.budget, "closed_form", scope.model_copy(update={"parameters": "nominal"}),
-                   detail=f"{rail.nominal:.4g} mA, of which the MCU model is {mcu_rail_ma(spec.supply):.0f} mA",
+                   detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
+                          f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),
         ]
 
@@ -376,26 +405,40 @@ class RS485NodeGenerator:
             )
 
         slaves: List[Dict[str, Any]] = spec.slaves
+        target = spec.target
+        part, xcvr = transceiver(target)
+        tx, rx, de = (target.defaults[k] for k in ("rs485_tx", "rs485_rx", "rs485_de"))
+        rail = target.rail_node
+        if target.rs485_uart is None:
+            mcu_note = (f"Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on {tx}, RX on "
+                        f"{rx}, direction on {de}. Hardware Serial (D0/D1) stays free for "
+                        f"uploads and debugging.")
+        else:
+            mcu_note = (f"{target.board} MCU as Modbus RTU master: {target.rs485_uart} TX on {tx}, RX on "
+                        f"{rx}, direction on {de}. The USB console stays on its own port.")
+        if part == XCVR_PART:
+            xcvr_note = (f"MAX485 half-duplex transceiver, DE and RE tied to {de}: high "
+                         f"transmits, low listens. Its supply window is "
+                         f"{xcvr['supply_voltage_min']:g}–{xcvr['supply_voltage_max']:g} V; a 3.3 V "
+                         f"design needs the MAX3485 instead.")
+        else:
+            xcvr_note = (f"MAX3485 half-duplex transceiver at the board's 3.3 V logic, DE and RE tied to "
+                         f"{de}: high transmits, low listens. The 5 V MAX485 would drive 5 V into the "
+                         f"MCU's RX pin.")
+        where = "" if target.id == "arduino_uno" else f" on the {target.board}"
         return CircuitIR(
-            intent=f"Modbus RTU master on RS-485 at {int(spec.baud)} baud, {len(slaves)} slave(s)",
+            intent=f"Modbus RTU master on RS-485 at {int(spec.baud)} baud, {len(slaves)} slave(s){where}",
             application_class=ApplicationClass.MODBUS_RTU,
-            target_mcu="arduino_uno",
+            target_mcu=target.id,
             components=[
-                mcu(f"Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on {PIN_TX}, RX on "
-                    f"{PIN_RX}, direction on {PIN_DE_RE}. Hardware Serial (D0/D1) stays free for "
-                    f"uploads and debugging."),
+                mcu(mcu_note, target),
                 Component(
-                    id="U2", type=ComponentType.TRANSCEIVER, part_number=XCVR_PART, manufacturer="Maxim",
-                    package="SOIC-8", supply_voltage_min=_XCVR["supply_voltage_min"],
-                    supply_voltage_max=_XCVR["supply_voltage_max"], current_draw_ma=_XCVR["current_draw_ma"],
-                    confidence=0.96, lcsc_pn="C6456",
-                    justification=(
-                        f"MAX485 half-duplex transceiver, DE and RE tied to {PIN_DE_RE}: high "
-                        f"transmits, low listens. Its supply window is "
-                        f"{_XCVR['supply_voltage_min']:g}–{_XCVR['supply_voltage_max']:g} V; a 3.3 V "
-                        f"design needs the MAX3485 instead."
-                    ),
-                    datasheet_notes=list(_XCVR["notes"]),
+                    id="U2", type=ComponentType.TRANSCEIVER, part_number=part, manufacturer="Maxim",
+                    package="SOIC-8", supply_voltage_min=xcvr["supply_voltage_min"],
+                    supply_voltage_max=xcvr["supply_voltage_max"], current_draw_ma=xcvr["current_draw_ma"],
+                    confidence=0.96, lcsc_pn="C6456" if part == XCVR_PART else None,
+                    justification=xcvr_note,
+                    datasheet_notes=list(xcvr["notes"]),
                 ),
                 Component(
                     id="R1", type=ComponentType.RESISTOR, part_number=TERMINATOR_PART, manufacturer="Yageo",
@@ -408,10 +451,10 @@ class RS485NodeGenerator:
                 ),
                 bias("R2", r2, "VCC", "A"),
                 bias("R3", r3, "GND", "B"),
-                decoupling("U2"),
+                decoupling("U2", target.logic_v),
             ],
             nodes=[
-                Node(id="VCC_5V", voltage_nominal=spec.supply, type=SignalType.POWER),
+                Node(id=rail, voltage_nominal=spec.supply, type=SignalType.POWER),
                 Node(id="GND", voltage_nominal=0.0, type=SignalType.GROUND),
                 Node(id="UART_TX", type=SignalType.UART_TX, protocol="UART"),
                 Node(id="UART_RX", type=SignalType.UART_RX, protocol="UART"),
@@ -420,11 +463,11 @@ class RS485NodeGenerator:
                 Node(id="RS485_B", type=SignalType.RS485_B, protocol="RS485"),
             ],
             connections=[
-                *power_connections(),
-                Connection(component_id="U1", pin=PIN_TX, node_id="UART_TX", direction="output"),
-                Connection(component_id="U1", pin=PIN_RX, node_id="UART_RX", direction="input"),
-                Connection(component_id="U1", pin=PIN_DE_RE, node_id="RS485_DE_RE", direction="output"),
-                Connection(component_id="U2", pin="VCC", node_id="VCC_5V", direction="input"),
+                *power_connections(rail),
+                Connection(component_id="U1", pin=tx, node_id="UART_TX", direction="output"),
+                Connection(component_id="U1", pin=rx, node_id="UART_RX", direction="input"),
+                Connection(component_id="U1", pin=de, node_id="RS485_DE_RE", direction="output"),
+                Connection(component_id="U2", pin="VCC", node_id=rail, direction="input"),
                 Connection(component_id="U2", pin="GND", node_id="GND", direction="input"),
                 Connection(component_id="U2", pin="DI", node_id="UART_TX", direction="input"),
                 Connection(component_id="U2", pin="RO", node_id="UART_RX", direction="output"),
@@ -434,7 +477,7 @@ class RS485NodeGenerator:
                 Connection(component_id="U2", pin="B", node_id="RS485_B", direction="bidirectional"),
                 Connection(component_id="R1", pin="A", node_id="RS485_A"),
                 Connection(component_id="R1", pin="B", node_id="RS485_B"),
-                Connection(component_id="R2", pin="A", node_id="VCC_5V"),
+                Connection(component_id="R2", pin="A", node_id=rail),
                 Connection(component_id="R2", pin="B", node_id="RS485_A"),
                 Connection(component_id="R3", pin="A", node_id="RS485_B"),
                 Connection(component_id="R3", pin="B", node_id="GND"),
@@ -449,7 +492,7 @@ class RS485NodeGenerator:
             },
             simulation_spec=SimulationSpec(
                 analyses=[SimulationAnalysis(type="dc_op", description="Idle bus bias and rail current")],
-                expected_outputs={"VCC_5V": spec.supply},
+                expected_outputs={rail: spec.supply},
             ),
             validation_rules=[
                 ValidationRule.NO_FLOATING_NODES,
@@ -461,8 +504,12 @@ class RS485NodeGenerator:
 
     # ── CI grid and locality ──────────────────────────────────────────────
 
-    def grid(self) -> GridSpec:
-        return GridSpec(axes={"supply_v": [4.75, 5.0, 5.25]}, units={"supply_v": "V"},
+    def grid(self, board: Optional[str] = None) -> GridSpec:
+        # ±5 % about the board's logic rail: 4.75/5/5.25 V on the Uno (Phase 1's
+        # grid), 3.135/3.3/3.465 V on a 3.3 V board with its MAX3485.
+        rail = grid_target(board).logic_v
+        return GridSpec(axes={"supply_v": [round(rail * k, 3) for k in (0.95, 1.0, 1.05)]},
+                        units={"supply_v": "V"},
                         sections={"supply_v": "constraints"})
 
     def dependency_closure(self, requirement_path: str) -> FrozenSet[str]:

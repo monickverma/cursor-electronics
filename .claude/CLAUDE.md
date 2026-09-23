@@ -28,6 +28,7 @@ cursor-electronics/
 │   │   └── config.py               # pydantic-settings, fails fast on missing env vars
 │   ├── data/
 │   │   ├── component_constraints.py  # Python dict — zero LLM tokens
+│   │   ├── mcu_targets.py            # Stage 5 — boards as data: Uno, ESP32-DevKitC, Black Pill
 │   │   └── component_db.json         # 100-entry component database
 │   ├── ai/
 │   │   ├── intent_parser.py        # Prompt → DesignSpec (tool_use)
@@ -45,9 +46,11 @@ cursor-electronics/
 │   │   ├── dht22_node.py           # TPL_001 — pull-up vs cable rise time
 │   │   ├── rs485_node.py           # TPL_002 — fail-safe bias; wired as its firmware drives
 │   │   ├── common.py               # E96, strict requirement reader, pins — one owner
-│   │   ├── arduino_parts.py        # Shared ATmega328P + bypass cap + rail model
+│   │   ├── arduino_parts.py        # Shared MCU (per board) + bypass cap + rail model
 │   │   ├── netlist/models.py       # Device models read by BOTH spice.py and predict()
-│   │   ├── firmware/arduino.py     # IR → .ino (Jinja2)
+│   │   ├── firmware/arduino.py     # IR → .ino (Jinja2), pins from the wiring, per board
+│   │   ├── firmware/project.py     # Stage 5 — PlatformIO project, pinned, keyed by SHA-256
+│   │   ├── firmware/compile_gate.py # Stage 5 — build it; firmware shown only once it compiles
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
 │   │   ├── schematic/kicad.py      # IR → .kicad_sch (net labels only)
 │   │   └── bom/compiler.py         # IR → BOM (static pricing)
@@ -61,6 +64,7 @@ cursor-electronics/
 │   │   ├── rule_engine.py          # HardwareRuleEngine (RS-485, PWM, etc.)
 │   │   ├── claims.py               # Claim objects + validation_coverage (X6, X8, Stage 4 proofs)
 │   │   ├── defeaters.py            # The defeater register, D1–D9
+│   │   ├── pin_rules.py            # Stage 5 — pin-mux, peripheral conflict, strapping pins
 │   │   ├── envelope_grid.py        # CI grid harness + M1 fault injection
 │   │   └── grid_adapters.py        # Per-generator ngspice adapters and probes
 │   ├── proof/                      # Stage 4 — properties proved from the design's netlist
@@ -71,9 +75,9 @@ cursor-electronics/
 │   │   └── prover.py               # z3 over tolerance boxes; frozen refine loop; mutation gate
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
-│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), auth.py
+│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
-│   ├── tasks/simulation_task.py    # Celery task
+│   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate)
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/
 │   ├── app/page.tsx                # Two-panel layout
@@ -93,7 +97,7 @@ cursor-electronics/
 | Backend | FastAPI + Python 3.11+ | `async def` for all routes |
 | AI | Model from `AI_MODEL` in `.env` — do not hardcode | `tool_use` mode only — never raw text |
 | Simulation | ngspice subprocess | BSD licensed — LTspice is NOT allowed (EULA) |
-| Firmware | Jinja2 templates | Never LLM-generated .ino directly |
+| Firmware | Jinja2 templates, compiled with PlatformIO in Celery | Never LLM-generated .ino directly; never shown before it compiles |
 | Schematic | KiCad net labels | No wire routing in Phase 1 |
 | Validation | Pydantic v2 strict | Fails at import if env vars missing |
 | Queue | Celery + Redis | All ngspice runs — never inline HTTP. `predict()` is synchronous; see `rules/simulation.md` |
@@ -126,7 +130,9 @@ Do not add these — they are Phase 2+ scope:
   Phase 3 begins, integrate freerouting instead. See `PHASE1_COMPLETE.md` §4.
 - Live Digikey/LCSC pricing API
 - Qdrant vector DB / RAG (use `component_constraints.py`)
-- ESP32 or STM32 firmware (Arduino Uno only)
+- ~~ESP32 or STM32 firmware~~ — **exists since Phase 2 Stage 5**: `constraints.mcu`
+  picks the Uno (default), ESP32-DevKitC or WeAct Black Pill (STM32F411CEU6);
+  firmware is shown only once it compiles under PlatformIO. No WiFi/BLE.
 - ~~Simulation waveform graphs~~ — **exist since Phase 2 Stage 3** (AC, transient,
   DC; inline SVG, no chart dependency). `PHASE_2_PLAN_v2.md` takes precedence here.
 - Analog power electronics

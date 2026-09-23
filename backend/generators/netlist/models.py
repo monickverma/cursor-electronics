@@ -27,8 +27,10 @@ Q_ELECTRON = 1.602176634e-19
 SPICE_TEMP_K = 300.15
 VT = K_BOLTZMANN * SPICE_TEMP_K / Q_ELECTRON
 
-#: The MCU supply model (CLAUDE.md Rule 3, amendment X6): a 100 ohm resistor
-#: between VCC and GND. Never a voltage source — that makes a singular matrix.
+#: The MCU supply model (CLAUDE.md Rule 3, amendment X6): a resistor between
+#: VCC and GND. Never a voltage source — that makes a singular matrix. 100 ohm
+#: for the Uno; since Stage 5 each part's own `supply_model_ohm` (its run
+#: current as a load on its rail), with this as the fallback.
 MCU_SUPPLY_OHMS = 100.0
 
 #: Fallback when an MCU is not in the component table.
@@ -85,6 +87,19 @@ def solve_series_diode(v_source: float, r_series: float, i_s: float, n: float) -
         else:
             hi = mid
     return (lo + hi) / 2.0
+
+
+# ── The MCU as a load ────────────────────────────────────────────────────────
+
+def mcu_supply_ohms(mcu_part: Optional[str]) -> float:
+    """The part's supply-load model in ohms; 100 when it is not tabulated."""
+    entry = get_constraints(mcu_part or "") or {}
+    return float(entry.get("supply_model_ohm", MCU_SUPPLY_OHMS))
+
+
+def mcu_supply_model(ohms: float) -> str:
+    """The model's name, as a claim's scope records it: `mcu_as_100R` on the Uno."""
+    return f"mcu_as_{ohms:g}R"
 
 
 # ── ATmega328P ───────────────────────────────────────────────────────────────

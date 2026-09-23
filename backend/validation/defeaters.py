@@ -57,8 +57,9 @@ REGISTER: Dict[str, Defeater] = {d.id: d for d in (
     ),
     Defeater(
         id="D2",
-        doubt=("the ATmega328P is represented by simplified electrical models — a "
-               "100 ohm supply load (mcu_as_100R) and a Thevenin GPIO pin "
+        doubt=("the MCU is represented by simplified electrical models — a "
+               "resistive supply load sized from its run current (mcu_as_100R on "
+               "the Uno, mcu_as_<R>R on other boards) and a Thevenin GPIO pin "
                "(mcu_pin_thevenin) — not the device"),
         applies_to="claims whose scope.model names an MCU model",
         status=Status.OPEN,

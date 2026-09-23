@@ -28,6 +28,7 @@ from middleware.rate_limit import limiter
 from ai.client import timeout_detail
 from ai.intent_patcher import IntentPatcher, IntentPatchError
 from api.routes.auth import get_current_user
+from api.routes.firmware import firmware_view
 from core.annotations import Annotation, attach, validate_annotations
 from core.intent_ir import IntentIR
 from core.intent_patch import PatchError, PatchOp, apply_patch
@@ -42,7 +43,6 @@ from db.crud import (
     update_design_revision,
 )
 from db.models import get_db
-from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.pcb import PcbNetlistGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.realize import check_locality, generator_tag, predict_delta, realize, same_design
@@ -83,7 +83,10 @@ class PatchResponse(BaseModel):
     note_to_user: str
     validation: dict
     simulation_job_id: Optional[str]
+    #: The firmware source — present only once it has compiled (Stage 5).
     firmware: Optional[str]
+    #: Its build: status, board, hash, message; the log if it failed.
+    firmware_build: Optional[dict] = None
     schematic: str
     pcb_netlist: Optional[dict] = None
     ir: dict
@@ -133,15 +136,14 @@ def _validation_summary(ir: CircuitIR) -> dict:
     }
 
 
-def _outputs(ir: CircuitIR, annotations: Sequence[Annotation] = ()) -> Dict[str, Any]:
-    firmware: Optional[str] = None
-    try:
-        firmware = ArduinoFirmwareGenerator().generate(ir)
-    except Exception:
-        pass
+async def _outputs(db: AsyncSession, ir: CircuitIR, annotations: Sequence[Annotation] = ()) -> Dict[str, Any]:
+    # Firmware goes through the compile gate: source only once it has built
+    # for the design's board (Stage 5 gate 1).
+    fw = await firmware_view(db, ir)
     return {
         "netlist": SpiceNetlistGenerator().generate(ir),
-        "firmware": firmware,
+        "firmware": fw.firmware,
+        "firmware_build": fw.model_dump(exclude={"firmware", "platformio_ini"}),
         # Annotations are merged into the drawing only — never into the design.
         "schematic": KiCadSchematicGenerator().generate(ir, annotations),
         "pcb_netlist": PcbNetlistGenerator().generate(ir),
@@ -228,7 +230,7 @@ async def patch_design(
 
     # 4. A patch that changes nothing is not a version (idempotence).
     if not outcome.changed:
-        outputs = _outputs(current, annotations)
+        outputs = await _outputs(db, current, annotations)
         ctx.complete()
         return PatchResponse(
             circuit_id=circuit_id,
@@ -238,6 +240,7 @@ async def patch_design(
             validation=_validation_summary(current),
             simulation_job_id=None,
             firmware=outputs["firmware"],
+            firmware_build=outputs["firmware_build"],
             schematic=outputs["schematic"],
             pcb_netlist=outputs["pcb_netlist"],
             ir=current.model_dump(mode="json"),
@@ -276,7 +279,7 @@ async def patch_design(
         {"from": current.generator, "to": tag} if current.generator and current.generator != tag else None
     )
     validation = _validation_summary(new_ir)
-    outputs = _outputs(new_ir, annotations)
+    outputs = await _outputs(db, new_ir, annotations)
 
     job_id: Optional[str] = None
     if new_ir.simulation_spec:
@@ -349,6 +352,7 @@ async def patch_design(
         validation=validation,
         simulation_job_id=job_id,
         firmware=outputs["firmware"],
+        firmware_build=outputs["firmware_build"],
         schematic=outputs["schematic"],
         pcb_netlist=outputs["pcb_netlist"],
         ir=new_ir.model_dump(mode="json"),

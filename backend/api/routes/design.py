@@ -15,12 +15,12 @@ from ai.client import timeout_detail
 from ai.explainer import ExplanationEngine
 from ai.intent_producer import IntentProducer, IntentProductionError
 from api.routes.auth import get_current_user
+from api.routes.firmware import firmware_view
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
 from db.crud import list_user_designs, save_design, save_output
 from db.models import get_db
 from generators.bom.compiler import BOMCompiler
-from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.realize import realize
 from generators.registry import default_registry
@@ -47,7 +47,10 @@ class GenerateResponse(BaseModel):
     version: int
     simulation_job_id: Optional[str]
     validation: dict
+    #: The firmware source — present only once it has compiled (Stage 5).
     firmware: Optional[str]
+    #: Its build: status, board, hash, message; the log if it failed.
+    firmware_build: Optional[dict] = None
     schematic: str
     bom: list
     explanation: str
@@ -145,12 +148,6 @@ async def generate_design(
     spice_gen = SpiceNetlistGenerator()
     netlist = spice_gen.generate(ir)
 
-    firmware: Optional[str] = None
-    try:
-        firmware = ArduinoFirmwareGenerator().generate(ir)
-    except Exception:
-        pass
-
     schematic = KiCadSchematicGenerator().generate(ir)
     bom = BOMCompiler().compile(ir)
     pcb_netlist = PcbNetlistGenerator().generate(ir)
@@ -162,6 +159,12 @@ async def generate_design(
         explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
     except Exception:
         pass
+
+    # 7b. Firmware — shown only once it has compiled for the design's board
+    #     (Stage 5 gate 1). A new build is queued; the client polls
+    #     GET /design/{id}/firmware.
+    fw = await firmware_view(db, ir)
+    firmware = fw.firmware
 
     # 8. Persist — the requirement with the design, so it can be patched (X2).
     await save_design(db, ir, str(user.id), intent_ir=intent.model_dump(mode="json"))
@@ -199,6 +202,7 @@ async def generate_design(
         simulation_job_id=job_id,
         validation=validation_summary,
         firmware=firmware,
+        firmware_build=fw.model_dump(exclude={"firmware", "platformio_ini"}),
         schematic=schematic,
         bom=bom,
         explanation=explanation,

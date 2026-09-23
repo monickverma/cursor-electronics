@@ -129,6 +129,13 @@ MODULES = {
     "proof/mna":                  {"file": "backend/proof/mna.py",                  "test": "tests/test_proof.py",                "phase": 2},
     "proof/properties":           {"file": "backend/proof/properties.py",           "test": ["tests/test_proof.py", "tests/test_sign_off.py"], "phase": 2},
     "proof/prover":               {"file": "backend/proof/prover.py",               "test": ["tests/test_proof.py", "tests/test_sign_off.py", "tests/test_proof_oracle.py"], "phase": 2},
+    # Stage 5 — multi-MCU firmware. decisions.md [2026-09-23] Stage 5.
+    "data/mcu_targets":           {"file": "backend/data/mcu_targets.py",           "test": ["tests/test_pin_rules.py", "tests/test_multi_target.py"], "phase": 2},
+    "validation/pin_rules":       {"file": "backend/validation/pin_rules.py",       "test": ["tests/test_pin_rules.py", "tests/test_multi_target.py"], "phase": 2},
+    "generators/firmware/project": {"file": "backend/generators/firmware/project.py", "test": "tests/test_firmware_gate.py",     "phase": 2},
+    "generators/firmware/compile_gate": {"file": "backend/generators/firmware/compile_gate.py", "test": "tests/test_firmware_gate.py", "phase": 2},
+    "tasks/firmware_task":        {"file": "backend/tasks/firmware_task.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
+    "api/routes/firmware":        {"file": "backend/api/routes/firmware.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
 }
 
 PHASE1_CRITERIA = [

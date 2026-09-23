@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -93,6 +93,20 @@ class SimulationRun(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     design = relationship("CircuitDesign", back_populates="simulation_runs")
+
+
+class FirmwareBuild(Base):
+    """Stage 5: one PlatformIO build of one firmware project, by content hash."""
+
+    __tablename__ = "firmware_builds"
+
+    build_hash = Column(String(64), primary_key=True)
+    target = Column(String(50), nullable=False)
+    status = Column(String(20), nullable=False, default="queued")   # queued | passed | failed
+    log = Column(Text)
+    seconds = Column(Float)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    finished_at = Column(DateTime(timezone=True))
 
 
 class PatchHistory(Base):

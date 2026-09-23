@@ -45,13 +45,15 @@ from core.ir_schema import (
 )
 from data.component_constraints import get_constraints
 from generators.arduino_parts import (
+    BOARDS,
     DEFAULT_RAIL_BUDGET_MA,
     MCU_PART,
-    UNO_DIGITAL_PINS,
     decoupling,
+    grid_target,
     mcu,
     mcu_rail_ma,
     power_connections,
+    read_target,
 )
 from generators.common import (
     RESISTOR_TOLERANCE,
@@ -65,8 +67,9 @@ from generators.common import (
     resistor_part,
     value_string,
 )
-from generators.netlist.models import MODEL_MCU_SUPPLY, load_ohms
+from generators.netlist.models import load_ohms, mcu_supply_model, mcu_supply_ohms
 from generators.netlist.spice import _parse_ohms
+from validation.pin_rules import Assignment, check_assignment
 from generators.protocol import (
     ClaimScope,
     EnvelopeDecision,
@@ -78,7 +81,7 @@ from generators.protocol import (
 )
 
 NAME = "dht22_node"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 FUNCTION = "temperature_humidity_sensor"
 
 SENSOR_PART = "DHT22"
@@ -93,31 +96,49 @@ LN9 = math.log(9.0)
 
 SUPPLY_MIN_V = 4.5   # an ATmega328P at 16 MHz, and inside the DHT22's 3.3-5.5 V
 SUPPLY_MAX_V = min(5.5, float(_DHT["supply_voltage_max"]))
+
+#: Per board: (lowest, highest) supply, and why. A 3.3 V board runs the sensor
+#: from its own rail: the DHT22's 3.3 V minimum up to the MCU's 3.6 V maximum.
+SUPPLY_WINDOWS = {
+    "arduino_uno": (SUPPLY_MIN_V, SUPPLY_MAX_V, "the ATmega328P at 16 MHz needs 4.5 V and the DHT22 is rated to 5.5 V"),
+    "esp32_devkitc": (float(_DHT["supply_voltage_min"]), 3.6,
+                      "the DHT22 needs 3.3 V and the ESP32 is rated to 3.6 V"),
+    "blackpill_f411ce": (float(_DHT["supply_voltage_min"]), 3.6,
+                         "the DHT22 needs 3.3 V and the STM32F411 is rated to 3.6 V"),
+}
+
+
+def mcu_sink_limit_ma(target) -> float:
+    """The board's recommended per-pin current (D7)."""
+    return float(get_constraints(target.mcu_part)["gpio_recommended_current_ma"])
 DEFAULT_CABLE_M = 0.3
 MAX_CABLE_M = 20.0   # Aosong's own figure for the longest recommended run
 PINNABLE = ("R1",)
 
 
 class _Spec:
-    __slots__ = ("supply", "cable", "budget", "pin", "threshold", "pins")
+    __slots__ = ("supply", "cable", "budget", "pin", "threshold", "pins", "target")
 
-    def __init__(self, supply, cable, budget, pin, threshold, pins):
+    def __init__(self, supply, cable, budget, pin, threshold, pins, target):
         self.supply, self.cable, self.budget = supply, cable, budget
-        self.pin, self.threshold, self.pins = pin, threshold, pins
+        self.pin, self.threshold, self.pins, self.target = pin, threshold, pins, target
 
 
 def _read(intent: IntentLike) -> _Spec:
-    supply = read_number(intent, "constraints", "supply_v", 5.0, allow_zero=False,
+    target = read_target(intent)
+    supply = read_number(intent, "constraints", "supply_v", target.logic_v, allow_zero=False,
                          what="a rail voltage in volts")
     cable = read_number(intent, "constraints", "cable_length_m", DEFAULT_CABLE_M,
                         allow_zero=True, what="a cable length in metres")
     budget = read_number(intent, "constraints", "supply_current_ma", DEFAULT_RAIL_BUDGET_MA,
                          allow_zero=False, what="a rail budget in mA")
     prefs = requirements(intent).get("preferences") or {}
-    pin = prefs.get("data_pin", "D2") if isinstance(prefs, Mapping) else "D2"
-    if not isinstance(pin, str) or pin.upper() not in UNO_DIGITAL_PINS:
-        raise Unreadable(f"preferences.data_pin={pin!r} is not an Arduino Uno digital pin "
-                         f"({', '.join(UNO_DIGITAL_PINS)})")
+    default_pin = target.defaults["dht_data"]
+    pin = prefs.get("data_pin", default_pin) if isinstance(prefs, Mapping) else default_pin
+    problems = check_assignment(target, [Assignment(str(pin), "bidirectional", "DHT22_DATA")])
+    if problems:
+        raise Unreadable(f"preferences.data_pin={pin!r} cannot carry the DHT22's DATA line on the "
+                         f"{target.board}: " + "; ".join(f.message for f in problems))
     threshold = prefs.get("alert_threshold_c") if isinstance(prefs, Mapping) else None
     if threshold is not None and (isinstance(threshold, bool) or not isinstance(threshold, (int, float))
                                   or not math.isfinite(threshold)):
@@ -129,7 +150,7 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '10k', '4k7')")
         pins[part] = ohms
-    return _Spec(supply, cable, budget, pin.upper(), threshold, pins)
+    return _Spec(supply, cable, budget, target.pin(pin).name, threshold, pins, target)
 
 
 def bus_capacitance_pf(cable_m: float, which: str) -> float:
@@ -170,6 +191,8 @@ class DHT22NodeGenerator:
     name = NAME
     version = VERSION
     function = FUNCTION
+    #: Stage 5: the boards it designs for; CI sweeps `grid(board)` on each.
+    boards = BOARDS
 
     not_applicable_rules: Dict[str, str] = {}
 
@@ -180,16 +203,16 @@ class DHT22NodeGenerator:
         if function != FUNCTION:
             return EnvelopeDecision.refuse(
                 f"function={function!r} is not temperature_humidity_sensor — this generator "
-                f"builds an Arduino Uno with one DHT22"
+                f"builds one MCU board with one DHT22"
             )
         try:
             spec = _read(intent)
         except Unreadable as exc:
             return EnvelopeDecision.refuse(str(exc))
-        if not (SUPPLY_MIN_V <= spec.supply <= SUPPLY_MAX_V):
+        low, high, why = SUPPLY_WINDOWS[spec.target.id]
+        if not (low <= spec.supply <= high):
             return EnvelopeDecision.refuse(
-                f"supply_v={spec.supply:g} outside {SUPPLY_MIN_V:g}–{SUPPLY_MAX_V:g} V — the "
-                f"ATmega328P at 16 MHz needs 4.5 V and the DHT22 is rated to 5.5 V"
+                f"supply_v={spec.supply:g} outside {low:g}–{high:g} V — {why}"
             )
         if spec.cable > MAX_CABLE_M:
             return EnvelopeDecision.refuse(
@@ -222,9 +245,9 @@ class DHT22NodeGenerator:
         ))
 
     def _rail_ma(self, spec: _Spec) -> float:
-        """Idle rail current: MCU (`mcu_as_100R`) plus the sensor's tabulated load."""
+        """Idle rail current: the MCU's supply model plus the sensor's tabulated load."""
         sensor = load_ohms(_DHT["current_draw_ma"], _DHT["supply_voltage_max"])
-        return mcu_rail_ma(spec.supply) + spec.supply / sensor * 1000.0
+        return mcu_rail_ma(spec.supply, spec.target.mcu_part) + spec.supply / sensor * 1000.0
 
     # ── predict() ─────────────────────────────────────────────────────────
 
@@ -259,7 +282,8 @@ class DHT22NodeGenerator:
                 "pullup_ohm": r_band,
             },
             scope=ClaimScope(parameters="nominal" if box else "tolerance_box",
-                             model=f"mna_ideal+{MODEL_MCU_SUPPLY}", horizon="steady_state"),
+                             model=f"mna_ideal+{mcu_supply_model(mcu_supply_ohms(spec.target.mcu_part))}",
+                             horizon="steady_state"),
             method="monotone_corners",
         )
 
@@ -273,7 +297,7 @@ class DHT22NodeGenerator:
         q, scope = pred.quantities, pred.scope
         design = self.generate(intent)
         pulled_up = any(
-            {c.node_id for c in design.connections if c.component_id == comp.id} == {"VCC_5V", "DHT22_DATA"}
+            {c.node_id for c in design.connections if c.component_id == comp.id} == {spec.target.rail_node, "DHT22_DATA"}
             for comp in design.components if comp.type == ComponentType.RESISTOR
         )
         graph = ClaimScope(parameters="nominal", model="design_graph")
@@ -290,14 +314,15 @@ class DHT22NodeGenerator:
                    defeaters=("D1", "D7")),
             graded("dht.sink_current",
                    f"holding DATA low sinks at most {SINK_LIMIT_MA:g} mA through the sensor and "
-                   f"{MCU_SINK_LIMIT_MA:g} mA through the MCU pin",
-                   sink.hi <= min(SINK_LIMIT_MA, MCU_SINK_LIMIT_MA), "monotone_corners", scope,
+                   f"{mcu_sink_limit_ma(spec.target):g} mA through the MCU pin",
+                   sink.hi <= min(SINK_LIMIT_MA, mcu_sink_limit_ma(spec.target)), "monotone_corners", scope,
                    detail=f"≤ {sink.hi:.3g} mA", defeaters=("D1", "D7"),
                    covers=("current_limits_ok",)),
             graded("dht.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
                    rail.hi <= spec.budget, "closed_form", scope.model_copy(update={"parameters": "nominal"}),
-                   detail=f"{rail.nominal:.4g} mA, of which the MCU model is {mcu_rail_ma(spec.supply):.0f} mA",
+                   detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
+                          f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),
         ]
 
@@ -329,7 +354,7 @@ class DHT22NodeGenerator:
                          re_derives="dht.rise_time", datasheet_bound=True),
             PropertySpec(id="dht.sink_current", label="the current into whatever holds DATA low",
                          quantity="i(V_PROBE)", relation="le",
-                         hi=exact(min(SINK_LIMIT_MA, MCU_SINK_LIMIT_MA), -3), units="A",
+                         hi=exact(min(SINK_LIMIT_MA, mcu_sink_limit_ma(spec.target)), -3), units="A",
                          bench=(probe,), re_derives="dht.sink_current", datasheet_bound=True),
         ]
 
@@ -354,13 +379,17 @@ class DHT22NodeGenerator:
                                           "cable_length_m": spec.cable}
         if spec.threshold is not None:
             constraints["threshold_temp_celsius"] = spec.threshold
+        target = spec.target
+        where = "" if target.id == "arduino_uno" else f" on the {target.board}"
+        board = "Arduino Uno" if target.id == "arduino_uno" else target.board
+        rail = target.rail_node
         return CircuitIR(
-            intent=f"DHT22 temperature/humidity node on {spec.pin}, {spec.cable:g} m sensor cable",
+            intent=f"DHT22 temperature/humidity node on {spec.pin}, {spec.cable:g} m sensor cable{where}",
             application_class=ApplicationClass.HOBBY_ARDUINO,
-            target_mcu="arduino_uno",
+            target_mcu=target.id,
             components=[
-                mcu(f"Arduino Uno MCU reading the DHT22 on {spec.pin}. The pin is bidirectional: "
-                    f"it pulls DATA low for the start pulse, then listens."),
+                mcu(f"{board} MCU reading the DHT22 on {spec.pin}. The pin is bidirectional: "
+                    f"it pulls DATA low for the start pulse, then listens.", target),
                 Component(
                     id="U2", type=ComponentType.SENSOR, sensor_type="dht22", part_number=SENSOR_PART,
                     manufacturer="Aosong", package="4-pin SIP",
@@ -383,20 +412,20 @@ class DHT22NodeGenerator:
                         f"doubles the {sink_ma(spec.supply, r1):.2g} mA sunk while DATA is held low."
                     ),
                 ),
-                decoupling("U2"),
+                decoupling("U2", target.logic_v),
             ],
             nodes=[
-                Node(id="VCC_5V", voltage_nominal=spec.supply, type=SignalType.POWER),
+                Node(id=rail, voltage_nominal=spec.supply, type=SignalType.POWER),
                 Node(id="GND", voltage_nominal=0.0, type=SignalType.GROUND),
                 Node(id="DHT22_DATA", type=SignalType.ONE_WIRE, protocol="dht_single_wire"),
             ],
             connections=[
-                *power_connections(),
+                *power_connections(rail),
                 Connection(component_id="U1", pin=spec.pin, node_id="DHT22_DATA", direction="bidirectional"),
-                Connection(component_id="U2", pin="VCC", node_id="VCC_5V", direction="input"),
+                Connection(component_id="U2", pin="VCC", node_id=rail, direction="input"),
                 Connection(component_id="U2", pin="GND", node_id="GND", direction="input"),
                 Connection(component_id="U2", pin="DATA", node_id="DHT22_DATA", direction="output"),
-                Connection(component_id="R1", pin="A", node_id="VCC_5V"),
+                Connection(component_id="R1", pin="A", node_id=rail),
                 Connection(component_id="R1", pin="B", node_id="DHT22_DATA"),
             ],
             constraints=constraints,
@@ -409,7 +438,8 @@ class DHT22NodeGenerator:
 
     # ── CI grid and locality ──────────────────────────────────────────────
 
-    def grid(self) -> GridSpec:
+    def grid(self, board: Optional[str] = None) -> GridSpec:
+        grid_target(board)   # the same cable lengths on every board
         return GridSpec(axes={"cable_length_m": [0.3, 5.0, 10.0, 15.0]},
                         units={"cable_length_m": "m"},
                         sections={"cable_length_m": "constraints"})

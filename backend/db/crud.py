@@ -241,3 +241,39 @@ async def save_output(
     db.add(out)
     await db.flush()
     return out
+
+
+# ── Stage 5: the compile gate's cache ────────────────────────────────────────
+
+async def get_firmware_build(db: AsyncSession, build_hash: str):
+    from db.models import FirmwareBuild
+
+    return (await db.execute(select(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash))).scalar_one_or_none()
+
+
+async def queue_firmware_build(db: AsyncSession, build_hash: str, target: str) -> None:
+    """Record a build as queued. Idempotent: a second request for one hash is a no-op."""
+    from sqlalchemy.dialects.postgresql import insert
+
+    from db.models import FirmwareBuild
+
+    await db.execute(insert(FirmwareBuild).values(build_hash=build_hash, target=target, status="queued",
+                                                  created_at=datetime.utcnow())
+                     .on_conflict_do_nothing(index_elements=["build_hash"]))
+
+
+async def requeue_firmware_build(db: AsyncSession, build_hash: str) -> None:
+    """Restart a queued build's clock: it has just been dispatched again."""
+    from db.models import FirmwareBuild
+
+    await db.execute(update(FirmwareBuild)
+                     .where(FirmwareBuild.build_hash == build_hash, FirmwareBuild.status == "queued")
+                     .values(created_at=datetime.utcnow()))
+
+
+async def finish_firmware_build(db: AsyncSession, build_hash: str, status: str, log: str, seconds: float) -> None:
+    from db.models import FirmwareBuild
+
+    await db.execute(update(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash)
+                     .values(status=status, log=log, seconds=seconds, finished_at=datetime.utcnow()))
+

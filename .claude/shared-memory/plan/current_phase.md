@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-23 (Stage 4 done; Stage 5 next, unplanned)
+> Last updated: 2026-09-24 (Stage 5 done; Stage 6 next, unplanned)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -671,9 +671,91 @@ unchanged. 16.3–16.5 mA at 5.25 V accepted (true worst 62.0 mW); LED
 dissipation G1; the library's signed floor G1. `test_proof.py`,
 `test_sign_off.py`. Why the lemma: `brain/decisions.md` [2026-09-24].
 
-## Next — Stage 5, multi-MCU firmware
+---
 
-Not yet planned at function level.
+# Phase 2 — Stage 5: Multi-MCU firmware ✅ DONE 2026-09-24
+
+v2 §5 Stage 5. Decisions and findings: `brain/decisions.md` [2026-09-23]
+Stage 5. User choices: PlatformIO with all three toolchains; the WeAct Black
+Pill (STM32F411CEU6); the ESP32-DevKitC (WROOM-32E) as the ESP32 default.
+
+## Task 5.1 — Record Stage 5 before code ✅
+
+Targets as data, pins as claims, compile before display; the board a
+constraint defaulting to the Uno, so every existing design is unchanged.
+
+## Task 5.2 — Targets as data ✅
+
+`data/mcu_targets.py`: `arduino_uno`, `esp32_devkitc`, `blackpill_f411ce` —
+PlatformIO environment, logic rail, and a pin table (capabilities, reserved
+pins and why, strapping pins and what they strap, UART routing, defaults).
+Electrical figures (pin output resistance, recommended current, supply
+model) in `component_constraints.py`; MAX3485 for 3.3 V buses.
+
+## Task 5.3 — Pins are claims ✅
+
+`validation/pin_rules.py`: `pin_assignment_valid`, `peripheral_conflict_free`,
+`strapping_pins_safe` — exact checks of the design graph against the table
+(G1, D7), run on every design by `claims.assess`. Generators refuse a bad
+pin by name with the reason. Labelled set: `tests/fixtures/pin_assignments.json`.
+
+## Task 5.4 — Generators on three boards ✅
+
+led_indicator 0.2.0, dht22_node 0.2.0, rs485_node 0.2.0 read
+`constraints.mcu`: rail, MCU supply model (`mcu_as_<R>R`, the Uno still
+`mcu_as_100R`), pin Thevenin table, current limits, transceiver. Each
+declares `boards` and `grid(board)`; the ngspice grid gate, the M1 matrix and
+the Stage 4 proofs run on every board. The form and the LLM catalogue offer
+the board, derived from the generators.
+
+## Task 5.5 — Compile before display ✅
+
+`generators/firmware/project.py` (PlatformIO project, pinned platforms and
+libraries, SHA-256), `compile_gate.py`, `tasks/firmware_task.py` (Celery),
+`firmware_builds` table (migration + schema.sql + model), and
+`api/routes/firmware.py::firmware_view` — the one gate the generate, patch
+and `GET /design/{id}/firmware` routes go through: source only once built;
+otherwise compiling / failed (with the log) / unavailable. Stale builds are
+dispatched again. `FirmwareViewer` polls while it compiles.
+`platformio==6.2.0` in requirements; toolchain volumes in docker-compose.
+
+## Stage 5 gates
+
+| Gate | Result |
+|---|---|
+| 100% of emitted firmware compiles under PlatformIO before display (G1) | ✅ 21/21 — every generator variant on every board, and the Phase 1 examples; nothing is displayed unbuilt |
+| Pin-mux, peripheral-conflict, strapping-pin checks on a labelled set (G1) | ✅ 56 labelled cases, zero disagreements |
+
+## Stage 5 — found while building it
+
+- **The LED sketch drove pin 13 whatever the design wired** — a Phase 1 bug,
+  right on the Uno's default by coincidence. Fixed; every pin `#define` is
+  now checked against the wiring on every board.
+- **The worker did not load the compile task**, and **a lost result would
+  have read "compiling" forever**. Both fixed and tested.
+- **Black Pill at 13 mA: the R1 dissipation proof is G2** (the range
+  straddles the power peak); the generator's own exact claim keeps the
+  floor G1. Pinned.
+
+## Stage 5 — not done, and why
+
+- **No board has been flashed.** Compiling proves the sketch is well-formed
+  for the board, not that it runs; that is bench work, like D1.
+- **The pin labels are the agent's own**, from the datasheets. An independent
+  labeller would strengthen gate 2; D7 stays open on every MCU design.
+- **The Docker worker is not exercised here.** Toolchains download on a
+  board's first build into the `platformio` volume.
+- **Strapping-pin checks are conservative**: any external connection to a
+  strapping pin is refused, even where a careful design could use one.
+
+## Next — Stage 6, BOM and substitution
+
+Not yet planned at function level. Gates (v2 §5): no substitution surfaces
+that fails the original's checks (G1); every price carries `price_asof`, and
+pricing never gates validation (G1). Amendment X7 (live pricing supersedes
+the static-BOM rule) says "Stage 5 only", but its content is Stage 6's
+second gate; it is treated as Stage 6's. Live pricing is an authenticated,
+rate-limited external dependency — ask the user before adding it.
 
 ---
 

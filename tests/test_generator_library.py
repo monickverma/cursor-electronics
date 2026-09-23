@@ -27,12 +27,12 @@ from core.ir_validator import validate_ir
 from generators.bom.compiler import BOMCompiler
 from generators.firmware.arduino import ArduinoFirmwareGenerator
 from generators.netlist.spice import SpiceNetlistGenerator
-from generators.protocol import Generator, conformance_gaps
+from generators.protocol import Generator, boards_of, conformance_gaps, grid_of
 from generators.realize import canonical_json, check_locality, realize
 from generators.registry import default_registry
 from test_simulation_accuracy import _skip_no_ngspice
 from validation.envelope_grid import DEFAULT_TOLERANCE, run_matrix
-from validation.grid_adapters import ADAPTERS, M1_COVERED, intent_at
+from validation.grid_adapters import ADAPTERS, M1_COVERED, board_cases, intent_at
 
 REGISTRY = default_registry()
 GENERATORS = {g.name: g for g in REGISTRY.generators}
@@ -40,12 +40,13 @@ NEW = ("voltage_divider", "led_indicator", "dht22_node", "rs485_node")
 MCU_DESIGNS = ("led_indicator", "dht22_node", "rs485_node")
 
 
-def form_intent(name, point=None, **sections):
-    """An IntentIR at a grid point (default: the first), sections as declared."""
+def form_intent(name, point=None, board=None, **sections):
+    """An IntentIR at a grid point (default: the first) on `board`, sections as declared."""
     generator = GENERATORS[name]
-    grid = generator.grid()
+    grid = grid_of(generator, board)
     point = point if point is not None else next(iter(grid.points()))
-    req = intent_at(generator.function, point, grid.sections).requirements
+    req = intent_at(generator.function, point, grid.sections,
+                    {"constraints": {"mcu": board}} if board else None).requirements
     if name in ("voltage_divider", "rc_lowpass"):
         req["constraints"].setdefault("supply_v", 5.0)
     # Overrides last: a test that sets a bad value must not have it silently
@@ -56,13 +57,16 @@ def form_intent(name, point=None, **sections):
 
 
 def every_grid_intent():
+    """Every point of every generator's grid — on every board it declares (Stage 5)."""
     for name, generator in GENERATORS.items():
-        for point in generator.grid().points():
-            yield name, point, form_intent(name, point)
+        for board in boards_of(generator):
+            for point in grid_of(generator, board).points():
+                yield name, board, point, form_intent(name, point, board)
 
 
-GRID_CASES = list(every_grid_intent())
-GRID_IDS = [f"{name}-{'-'.join(f'{v:g}' for v in point.values())}" for name, point, _ in GRID_CASES]
+GRID_CASES = [(name, point, intent) for name, _, point, intent in every_grid_intent()]
+GRID_IDS = [f"{name}-{board + '-' if board else ''}{'-'.join(f'{v:g}' for v in point.values())}"
+            for name, board, point, _ in every_grid_intent()]
 
 
 # ── The library itself ───────────────────────────────────────────────────────
@@ -212,7 +216,9 @@ BAD_INPUTS = {
                       # Stage 3 + 4 verification: 64.7 mW in a 62.5 mW part, accepted by 0.1.0.
                       ({"targets": {"led_current_ma": 17.0}, "constraints": {"supply_v": 5.25}}, "mW rating"),
                       ({"constraints": {"supply_v": 3.3}}, "characterised at 5 V"),
-                      ({"preferences": {"gpio_pin": "D0"}}, "not an Arduino Uno digital pin"),
+                      # Stage 5: refused by the pin rules, which name the reason.
+                      ({"preferences": {"gpio_pin": "D0"}}, "D0 is reserved"),
+                      ({"preferences": {"gpio_pin": "D20"}}, "has no pin"),
                       ({"preferences": {"colour": "blue"}}, "no tabulated LED")],
     "dht22_node": [({"constraints": {"cable_length_m": "5"}}, "not a number"),
                    ({"constraints": {"cable_length_m": 25.0}}, "specified for"),
@@ -377,18 +383,21 @@ class TestGridGate:
     breaks under a perturbation would prove nothing.
     """
 
-    @pytest.mark.parametrize("name", sorted(ADAPTERS))
-    def test_matrix_is_sound(self, name):
+    @pytest.mark.parametrize("name, board", board_cases(),
+                             ids=[f"{n}-{b}" if b else n for n, b in board_cases()])
+    def test_matrix_is_sound(self, name, board):
         spec = ADAPTERS[name]
-        report = run_matrix(spec.build(), spec.mutate)
+        report = run_matrix(spec.build(board), spec.mutate)
         assert report.control.passed, report.summary()
         assert report.control.worst_error < 1e-3, report.summary()
         assert report.passed, report.summary()
 
-    def test_rs485_five_percent_margin_is_recorded_not_assumed(self):
-        # A 5% terminator fault moves idle V_AB by ~2.3% — just over the 2%
-        # gate. Pinned so that if a model change shrinks it below the gate,
-        # this fails loudly instead of the matrix silently going blind.
+    @pytest.mark.parametrize("board", GENERATORS["rs485_node"].boards)
+    def test_rs485_five_percent_margin_is_recorded_not_assumed(self, board):
+        # A 5% terminator fault moves idle V_AB by ~2.3% on the Uno, ~2.25% on
+        # a 3.3 V board — just over the 2% gate. Pinned so that if a model
+        # change shrinks it below the gate, this fails loudly instead of the
+        # matrix silently going blind.
         spec = ADAPTERS["rs485_node"]
-        report = run_matrix(spec.build(), spec.mutate, mutations={"P5": 1.05})
+        report = run_matrix(spec.build(board), spec.mutate, mutations={"P5": 1.05})
         assert report.mutations["P5"].worst_error > DEFAULT_TOLERANCE * 1.1

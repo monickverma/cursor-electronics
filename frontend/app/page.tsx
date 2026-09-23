@@ -185,7 +185,14 @@ export default function Home() {
             <>
               {activeTab === 'schematic'  && <SchematicViewer schematic={result.schematic} />}
               {activeTab === 'pcb'        && <PCBViewer netlist={result.pcb_netlist} token={token} />}
-              {activeTab === 'firmware'   && <FirmwareViewer firmware={result.firmware} />}
+              {activeTab === 'firmware'   && (
+                <FirmwareViewer
+                  circuitId={result.circuit_id}
+                  token={token}
+                  firmware={result.firmware}
+                  build={result.firmware_build}
+                />
+              )}
               {activeTab === 'simulation' && (
                 <SimulationResults
                   circuitId={(result as GenerateResponse).circuit_id}

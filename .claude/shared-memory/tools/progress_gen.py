@@ -563,6 +563,63 @@ PLANNED = {
             ("check",                   "function", "One property of one design, cached on what the proof reads"),
         ],
     },
+    # Stage 5 — multi-MCU firmware. decisions.md [2026-09-23] Stage 5.
+    "data/mcu_targets": {
+        "file": "backend/data/mcu_targets.py",
+        "test_file": ["tests/test_pin_rules.py", "tests/test_multi_target.py"],
+        "entries": [
+            ("Pin",             "class",    "One pin: what it can do, reserved or strapping and why"),
+            ("Target",          "class",    "A board: PlatformIO env, logic rail, pin table, defaults"),
+            ("get_target",      "function", "A board by id; None for one this system does not target"),
+            ("target_for_part", "function", "The board whose MCU is this part"),
+            ("normalise",       "function", "A pin as the board's table spells it (D13, GPIO4, PB0)"),
+        ],
+    },
+    "validation/pin_rules": {
+        "file": "backend/validation/pin_rules.py",
+        "test_file": ["tests/test_pin_rules.py", "tests/test_multi_target.py"],
+        "entries": [
+            ("Assignment",       "class",    "What one MCU pin is asked to do"),
+            ("Finding",          "class",    "A rule a pin breaks, and why"),
+            ("check_assignment", "function", "The three pin rules against a board's table"),
+            ("assignments_of",   "function", "A design's MCU pins, their roles and nets"),
+            ("check_design",     "function", "Per rule (holds, detail) — the three Stage 5 claims"),
+        ],
+    },
+    "generators/firmware/project": {
+        "file": "backend/generators/firmware/project.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("FirmwareProject", "class",    "platformio.ini + src/main.ino, keyed by SHA-256"),
+            ("platformio_ini",  "function", "Pinned platform and libraries for a board"),
+            ("project_for",     "function", "A design's project; None without an MCU"),
+        ],
+    },
+    "generators/firmware/compile_gate": {
+        "file": "backend/generators/firmware/compile_gate.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("BuildResult",          "class",    "passed | failed, the log's tail, seconds"),
+            ("compile_project",      "function", "Build with PlatformIO; passed only on exit 0 and [SUCCESS]"),
+            ("platformio_available", "function", "Whether the compile matrix can run here"),
+        ],
+    },
+    "tasks/firmware_task": {
+        "file": "backend/tasks/firmware_task.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("compile_firmware", "function", "Celery: build a project whose files match their hash"),
+        ],
+    },
+    "api/routes/firmware": {
+        "file": "backend/api/routes/firmware.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("FirmwareView",  "class",    "Build status; source only when compiled"),
+            ("firmware_view", "function", "The one gate every route's firmware goes through"),
+            ("get_firmware",  "function", "GET /design/{id}/firmware — poll a build"),
+        ],
+    },
 }
 
 STATUS_ICON = {

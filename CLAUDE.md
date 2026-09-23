@@ -28,7 +28,7 @@ Full instructions are in `.claude/CLAUDE.md`. Rule files are in `.claude/rules/`
 
 1. **LLM output → JSON → IR schema → compilers.** Never LLM → ngspice/KiCad/.ino directly.
 2. **ngspice always via Celery.** Never inline in HTTP handler. Narrowed 2026-09-20 to ngspice specifically — `predict()` (closed-form, microseconds) is synchronous by design. See `.claude/rules/simulation.md`.
-3. **MCU SPICE model = 100Ω resistor.** Never voltage source — causes ngspice singular matrix.
+3. **MCU SPICE model = a resistor** (100Ω on the Uno; per part since Stage 5). Never voltage source — causes ngspice singular matrix.
 4. **ngspice batch output is columnar.** Regex `v(x) = y` does not match it.
 5. **kicanvas = `dynamic import` with `ssr: false`.** Never SSR this component.
 6. **All designs persist to PostgreSQL.** No `design_store = {}`.

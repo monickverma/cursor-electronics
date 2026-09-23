@@ -70,7 +70,7 @@ from pydantic import BaseModel, ConfigDict
 
 from core.ir_schema import CircuitIR, ComponentType
 from data.component_constraints import get_constraints
-from generators.netlist.models import MODEL_MCU_PIN, MODEL_MCU_SUPPLY
+from generators.netlist.models import MODEL_MCU_PIN, mcu_supply_model
 from proof import brackets, mna
 from proof.netlist import Netlist, parse
 from proof.properties import PropertySpec, Statement, Variable, back_translate, si
@@ -203,7 +203,7 @@ def part_variables(circuit: CircuitIR, netlist: Netlist, bench) -> Tuple[Dict[st
     for e in netlist.elements:
         name = e.name
         if e.kind == "R" and name.upper().startswith("R_MCU_"):
-            models.append(MODEL_MCU_SUPPLY)
+            models.append(mcu_supply_model(float(e.value)))
             continue
         if e.kind == "R" and name.upper().startswith("R_PIN_"):
             node = name[len("R_PIN_"):].lower()

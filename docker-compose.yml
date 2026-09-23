@@ -22,6 +22,10 @@ services:
     env_file: .env
     volumes:
       - ./backend:/app
+      # Stage 5: PlatformIO toolchains (hundreds of MB, fetched on a board's
+      # first build) and the shared firmware build cache survive restarts.
+      - platformio:/root/.platformio
+      - firmware:/root/.circuitos
     depends_on:
       db:
         condition: service_healthy
@@ -70,3 +74,5 @@ services:
 volumes:
   pgdata:
   redisdata:
+  platformio:
+  firmware:

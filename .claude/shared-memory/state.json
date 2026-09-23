@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-23T17:19:47.401557Z",
-  "generated_from_commit": "1dee36a",
+  "generated_at": "2026-09-23T21:15:54.491714Z",
+  "generated_from_commit": "1ff0e2a",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -376,13 +376,49 @@
       "file": "backend/proof/prover.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "data/mcu_targets": {
+      "status": "verified_done",
+      "file": "backend/data/mcu_targets.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/pin_rules": {
+      "status": "verified_done",
+      "file": "backend/validation/pin_rules.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/firmware/project": {
+      "status": "verified_done",
+      "file": "backend/generators/firmware/project.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/firmware/compile_gate": {
+      "status": "verified_done",
+      "file": "backend/generators/firmware/compile_gate.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "tasks/firmware_task": {
+      "status": "verified_done",
+      "file": "backend/tasks/firmware_task.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "api/routes/firmware": {
+      "status": "verified_done",
+      "file": "backend/api/routes/firmware.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 1612,
+    "passed": 2000,
     "failed": 0,
     "skipped": 30,
-    "total": 1612
+    "total": 2000
   },
   "phase1_criteria": [
     {
@@ -512,7 +548,7 @@
         }
       },
       "led_indicator": {
-        "grade_floor": "G2",
+        "grade_floor": "G1",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
           "D1",
@@ -521,12 +557,22 @@
         ],
         "not_assessed": [],
         "floor_claims": [
-          "led.resistor_dissipation"
+          "led.current_nominal",
+          "led.current_band",
+          "led.gpio_current_limit",
+          "led.led_current_limit",
+          "led.resistor_dissipation",
+          "led.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
         ],
         "proofs": {
           "declared": 4,
           "proven": 4,
-          "floor_if_signed": "G2"
+          "floor_if_signed": "G1"
         }
       },
       "dht22_node": {
@@ -544,7 +590,10 @@
           "dht.sink_current",
           "dht.rail_current",
           "rule.no_floating_nodes",
-          "rule.voltage_ratings_ok"
+          "rule.voltage_ratings_ok",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
         ],
         "proofs": {
           "declared": 2,
@@ -569,7 +618,10 @@
           "rule.no_floating_nodes",
           "rule.voltage_ratings_ok",
           "rule.rs485_termination_present",
-          "rule.rs485_bias_resistors"
+          "rule.rs485_bias_resistors",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
         ],
         "proofs": {
           "declared": 2,
@@ -585,13 +637,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "1ff0e2a test(frontend): Playwright tests for the claims table, sign-off and waveform viewer",
+    "69f2d66 feat: Task 4.5 exact LED dissipation (0.1.2, G1); annotations drawn in the schematic",
+    "dfba3ed test+fix: verify sign-off on PostgreSQL and the live LLM paths; fix producer and explainer",
     "1dee36a feat(rc_lowpass): swamp a large source with a larger R1 (0.2.3); LED bound kept, exact method scheduled",
-    "0afa72c fix(stage3+4): close five defects found by the Stage 3 + 4 verification",
-    "60e68f7 feat(phase2): Stage 4 — proof compiler, sign-off and freeze",
-    "9dbdc1e feat(phase2): Stage 3 — claims table, waveform viewer, and a tracker that cannot go blind",
-    "9a4ecc6 feat(phase2): Stage 3 — four generators, claim objects, grade floor (X6 + X8)"
+    "0afa72c fix(stage3+4): close five defects found by the Stage 3 + 4 verification"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 46 +++++++++++++++++++++\n .claude/shared-memory/plan/current_phase.md | 22 +++++++++-\n .claude/shared-memory/progress.yaml         | 21 +++++-----\n .claud",
+  "last_diff_stat": ".claude/shared-memory/plan/current_phase.md |  10 +-\n .gitignore                                  |   4 +\n frontend/e2e/fixtures/generate.json         | 831 ++++++++++++++++++++++++++++\n frontend/e2e/",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

@@ -75,7 +75,9 @@ export interface GenerateResponse {
   version: number
   simulation_job_id: string | null
   validation: { passed: boolean; errors: Array<{ field: string; message: string }>; warnings: Array<{ field: string; message: string }> }
+  // Stage 5: present only once it has compiled for the design's board.
   firmware: string | null
+  firmware_build?: FirmwareBuild | null
   schematic: string
   bom: BOMRow[]
   explanation: string
@@ -205,6 +207,7 @@ export interface PatchResponse {
   validation: { passed: boolean; errors: Array<{ field: string; message: string }>; warnings: Array<{ field: string; message: string }> }
   simulation_job_id: string | null
   firmware: string | null
+  firmware_build?: FirmwareBuild | null
   schematic: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
@@ -215,6 +218,25 @@ export interface PatchResponse {
   generator_changed?: { from: string; to: string } | null
   annotations?: { attached: unknown[]; orphaned: unknown[] }
   validation_coverage?: ValidationCoverage | null
+}
+
+// ── Stage 5: firmware is shown only once it compiles ────────────────────────
+
+export type FirmwareStatus = 'none' | 'compiling' | 'compiled' | 'failed' | 'unavailable'
+
+export interface FirmwareBuild {
+  status: FirmwareStatus
+  message: string
+  target?: string | null   // data/mcu_targets id, e.g. esp32_devkitc
+  board?: string | null    // e.g. "ESP32-DevKitC (ESP32-WROOM-32E)"
+  build?: string | null    // SHA-256 of the PlatformIO project
+  firmware?: string | null
+  platformio_ini?: string | null
+  log?: string | null      // the build log's tail, when it failed
+}
+
+export async function getFirmware(circuitId: string, token: string): Promise<FirmwareBuild> {
+  return apiGet(`/design/${circuitId}/firmware`, token)
 }
 
 export async function generateDesign(prompt: string, token: string): Promise<GenerateResponse> {

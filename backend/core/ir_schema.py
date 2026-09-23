@@ -70,6 +70,10 @@ class ValidationRule(str, Enum):
     OPERATING_TEMP_RANGE = "operating_temp_range"
     POWER_SUPPLY_ADEQUATE = "power_supply_adequate"
     PULLUP_ON_OPEN_DRAIN = "pullup_on_open_drain"
+    # Stage 5 — checked against the board's pin table (validation/pin_rules.py).
+    PIN_ASSIGNMENT_VALID = "pin_assignment_valid"
+    PERIPHERAL_CONFLICT_FREE = "peripheral_conflict_free"
+    STRAPPING_PINS_SAFE = "strapping_pins_safe"
 
 
 class Component(BaseModel):

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 
 from core.ir_schema import CircuitIR, ComponentType, SignalType
 from generators.netlist.models import (
-    MCU_SUPPLY_OHMS,
+    mcu_supply_ohms,
     led_model_name,
     led_parameters,
     load_ohms,
@@ -223,8 +223,9 @@ class SpiceNetlistGenerator:
             return None
 
         if ctype == "microcontroller":
-            # MCU modeled as 100Ω resistive load (5V / 100Ω = 50mA, per CLAUDE.md Rule 3)
-            return f"R_MCU_{comp.id} {vcc_node} {gnd_node} {MCU_SUPPLY_OHMS:g}"
+            # MCU modelled as a resistive load (CLAUDE.md Rule 3): 100 Ω on the
+            # Uno (5 V / 100 Ω = 50 mA); each part's own run-current model since Stage 5.
+            return f"R_MCU_{comp.id} {vcc_node} {gnd_node} {mcu_supply_ohms(comp.part_number):g}"
 
         # Sensor, transceiver, relay, etc.: derive load from current_draw_ma if
         # available. The rule lives in models.load_ohms so predict() reads it too.
