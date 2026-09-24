@@ -12,8 +12,6 @@ firmware compiles once. A new build is a Celery task
 Stage 5, item 7.
 """
 
-from __future__ import annotations
-
 from datetime import datetime, timezone
 from typing import Annotated, Any, Optional
 

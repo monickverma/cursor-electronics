@@ -268,3 +268,35 @@ class TestEveryVariantCompiles:
     def test_phase_1_examples(self, ir):
         result = compile_project(project_for(ir))
         assert result.status == "passed", result.log[-2000:]
+
+
+# ── Every route's annotations resolve where the pinned FastAPI looks ─────────
+
+def test_every_route_annotation_resolves_in_its_endpoints_globals():
+    """
+    FastAPI 0.115 (the pinned version) reads a string annotation against the
+    *endpoint's* ``__globals__``. A route module with ``from __future__ import
+    annotations`` whose endpoint is wrapped by ``@limiter.limit`` hands it
+    slowapi's globals instead, where ``AsyncSession`` does not exist — CI
+    failed at collection that way while a newer local FastAPI, which unwraps,
+    passed. This checks every route the way the pinned version does.
+    """
+    import inspect
+
+    from fastapi.routing import APIRoute
+
+    from main import app
+
+    unresolved = []
+    for route in app.routes:
+        if not isinstance(route, APIRoute):
+            continue
+        call = route.endpoint
+        namespace = getattr(call, "__globals__", {})
+        for name, param in inspect.signature(call).parameters.items():
+            if isinstance(param.annotation, str):
+                try:
+                    eval(param.annotation, namespace)  # noqa: S307 — annotations from our own modules
+                except NameError as exc:
+                    unresolved.append(f"{route.path} {name}: {exc}")
+    assert unresolved == []
