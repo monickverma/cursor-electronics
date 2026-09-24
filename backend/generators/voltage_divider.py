@@ -384,7 +384,8 @@ class VoltageDividerGenerator:
             graded(
                 "divider.vout_nominal",
                 f"V_out at nominal parts is within ±{spec.tolerance:g}% of {spec.vout:g} V ({load})",
-                sel.error_pct <= spec.tolerance, "closed_form", nominal,
+                sel.error_pct <= spec.tolerance, "closed_form",
+                nominal.model_copy(update={"measures": ("v(vout)",)}),
                 detail=f"{vout.nominal:.4g} V, {sel.error_pct:.2f}% from target",
             ),
             graded(
@@ -396,7 +397,7 @@ class VoltageDividerGenerator:
             graded(
                 "divider.supply_current",
                 f"the divider draws {cur.lo:.4g}–{cur.hi:.4g} mA from the {spec.supply:g} V rail",
-                True, "monotone_corners", box,
+                True, "monotone_corners", box.model_copy(update={"measures": ("i(V_VIN)",)}),
             ),
             graded(
                 "divider.resistor_dissipation",

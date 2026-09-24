@@ -170,6 +170,15 @@ class ClaimScope(BaseModel):
     horizon: str = "steady_state"       # steady_state | bounded:T | unbounded
     model: str                          # mna_ideal, mcu_as_100R, shockley_diode, …
     inputs: str = "single_stimulus"     # single_stimulus | input_set
+    #: What the claim is computed from, in the prover's netlist grammar —
+    #: `v(vout)`, `i(V_VCC_5V)`, `diode_current(D_LED1)`. D2 is derived from it
+    #: per claim (`brain/decisions.md` [2026-09-24] D1, D2, D7). Empty means
+    #: undeclared, and an undeclared claim keeps X6's netlist-wide rule; a
+    #: claim a proof re-derives takes the proof's quantity.
+    measures: Tuple[str, ...] = ()
+    #: Nodes whose state the claim takes as given — the RS-485 fail-safe claim
+    #: is evaluated with DE/RE low. An MCU pin driving one of them cites D2.
+    assumes: Tuple[str, ...] = ()
 
 
 class PortContract(BaseModel):

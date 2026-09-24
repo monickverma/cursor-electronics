@@ -320,7 +320,9 @@ class DHT22NodeGenerator:
                    covers=("current_limits_ok",)),
             graded("dht.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
-                   rail.hi <= spec.budget, "closed_form", scope.model_copy(update={"parameters": "nominal"}),
+                   rail.hi <= spec.budget, "closed_form",
+                   scope.model_copy(update={"parameters": "nominal",
+                                            "measures": (f"i(V_{spec.target.rail_node})",)}),
                    detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),

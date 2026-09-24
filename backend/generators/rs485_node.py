@@ -329,7 +329,9 @@ class RS485NodeGenerator:
         return [
             graded("rs485.failsafe_bias",
                    f"the idle bus holds V_AB above the receivers' {THRESHOLD_MV:g} mV threshold {bus}",
-                   vab.lo >= THRESHOLD_MV, "monotone_corners", scope,
+                   # Idle means the driver is off: DE/RE low, which an MCU pin sets.
+                   vab.lo >= THRESHOLD_MV, "monotone_corners",
+                   scope.model_copy(update={"assumes": ("RS485_DE_RE",)}),
                    detail=f"V_AB ∈ [{vab.lo:.0f}, {vab.hi:.0f}] mV over every resistor within 1%",
                    defeaters=("D1", "D7")),
             graded("rs485.driver_load",
@@ -340,11 +342,14 @@ class RS485NodeGenerator:
             graded("rs485.termination_dissipation",
                    f"R1 stays within its {TERMINATOR_POWER_W * 1000:g} mW rating with the pair "
                    f"driven to the full {spec.supply:g} V",
-                   term.hi <= TERMINATOR_POWER_W * 1000, "monotone_corners", scope,
+                   term.hi <= TERMINATOR_POWER_W * 1000, "monotone_corners",
+                   scope.model_copy(update={"measures": ("power(R_R1)",)}),
                    detail=f"≤ {term.hi:.0f} mW (an 0402 is rated 62.5 mW)", defeaters=("D1", "D7")),
             graded("rs485.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
-                   rail.hi <= spec.budget, "closed_form", scope.model_copy(update={"parameters": "nominal"}),
+                   rail.hi <= spec.budget, "closed_form",
+                   scope.model_copy(update={"parameters": "nominal",
+                                            "measures": (f"i(V_{spec.target.rail_node})",)}),
                    detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),

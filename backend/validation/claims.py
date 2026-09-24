@@ -25,9 +25,16 @@ out of scope; or **not assessed**, as a visible, critical row graded G7. The
 set is the catalogue minus what was actually checked — never the rules that
 happened to run — so a design that checks less cannot look better verified.
 
-**X6 is derived, never remembered.** If the design's own netlist contains an
-`R_MCU_` element, every behavioural claim's model gains `mcu_as_100R` and
-cites D2; `R_PIN_` adds `mcu_pin_thevenin`. A generator cannot forget to say so.
+**X6 is derived, never remembered — and since [2026-09-24], per claim.** A
+claim cites D2 only where the real MCU can reach it: its quantity depends on
+an MCU model element (`mcu_as_<R>R`, `mcu_pin_thevenin`; decided by symbolic
+nodal analysis, `proof/dependence.py`), it measures a node an unmodelled MCU
+pin sits on (`mcu_pin_load`), or it takes as given a node state an MCU pin sets
+(`mcu_pin_state`). What a claim measures comes from its declaration
+(`ClaimScope.measures`) or from the proof that re-derives it. A claim that
+declares nothing keeps the netlist-wide rule — every MCU model in the netlist,
+and D2 — so a generator can narrow D2 only by saying what it measures, never
+by forgetting to.
 
 **Stage 4: proofs count once a person has signed them.** A generator's
 `properties(intent)` are proved from the design's own netlist
@@ -47,9 +54,15 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, NamedTuple, Opt
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from core.ir_schema import CircuitIR, SignalType, ValidationRule
+from core.ir_schema import CircuitIR, ComponentType, SignalType, ValidationRule
 from core.ir_validator import validate_ir
-from generators.netlist.models import MODEL_LED, MODEL_MCU_PIN, mcu_supply_model
+from generators.netlist.models import (
+    MODEL_LED,
+    MODEL_MCU_PIN,
+    MODEL_MCU_PIN_LOAD,
+    MODEL_MCU_PIN_STATE,
+    mcu_supply_model,
+)
 from generators.protocol import ClaimScope
 from validation.defeaters import REGISTER
 
@@ -270,11 +283,18 @@ class ValidationCoverage(BaseModel):
 
 # ── X6: models derived from the netlist ──────────────────────────────────────
 
-def netlist_models(circuit: CircuitIR) -> Tuple[str, ...]:
-    """MCU models the design's own netlist uses. Read from the netlist text."""
+def _netlist_text(circuit: CircuitIR) -> str:
     from generators.netlist.spice import SpiceNetlistGenerator
 
-    netlist = SpiceNetlistGenerator().generate(circuit)
+    return SpiceNetlistGenerator().generate(circuit)
+
+
+def netlist_models(circuit: CircuitIR, netlist: Optional[str] = None) -> Tuple[str, ...]:
+    """
+    Every MCU model the design's own netlist uses, read from the netlist text.
+    The X6 rule, and the fallback for a claim that does not say what it measures.
+    """
+    netlist = _netlist_text(circuit) if netlist is None else netlist
     models = []
     for line in netlist.splitlines():
         if line.startswith("R_MCU_"):
@@ -287,23 +307,109 @@ def netlist_models(circuit: CircuitIR) -> Tuple[str, ...]:
     return tuple(models)
 
 
-def _with_models(claim: Claim, models: Sequence[str], extra_defeaters: Sequence[str]) -> Claim:
-    """Add derived model names and defeaters to a behavioural claim."""
+def mcu_signal_nodes(circuit: CircuitIR) -> frozenset:
+    """Nodes (lower case) an MCU signal pin is wired to — not its supply or ground pins."""
+    mcus = {c.id for c in circuit.components if c.type == ComponentType.MICROCONTROLLER}
+    kinds = {n.id: getattr(n.type, "value", n.type) for n in circuit.nodes}
+    return frozenset(
+        conn.node_id.lower() for conn in circuit.connections
+        if conn.component_id in mcus and kinds.get(conn.node_id) not in (
+            SignalType.POWER.value, SignalType.GROUND.value)
+    )
+
+
+def _pin_modelled(netlist: str) -> frozenset:
+    """Nodes whose MCU pin the netlist models as a Thevenin source (`R_PIN_<node>`)."""
+    return frozenset(line.split()[0][len("R_PIN_"):].lower()
+                     for line in netlist.splitlines() if line.startswith("R_PIN_"))
+
+
+Measure = Tuple[str, Tuple[str, ...]]      # (quantity, test-bench lines)
+
+
+def derive_mcu_models(
+    circuit: CircuitIR, netlist: str, measures: Sequence[Measure], assumes: Sequence[str] = ()
+) -> Tuple[str, ...]:
+    """
+    The MCU models a claim rests on — empty if the real MCU cannot reach it.
+    `brain/decisions.md` [2026-09-24] D1, D2, D7, D2's three routes:
+
+    1. the quantity depends on an MCU model element (exact, symbolic);
+    2. a measured node carries an MCU signal pin the netlist does not model;
+    3. an assumed node is one an MCU pin is wired to.
+
+    Raises `KeyError` / `ValueError` when a measure names something the
+    netlist does not have; `assess` then falls back to the netlist-wide rule.
+    """
+    from proof.dependence import mcu_elements_reached, measured_nodes
+    from proof.netlist import parse
+
+    parsed = parse(netlist)
+    models: List[str] = []
+
+    def add(model: str) -> None:
+        if model not in models:
+            models.append(model)
+
+    measured: set = set()
+    for quantity, bench in measures:
+        for name in mcu_elements_reached(netlist, quantity, bench):
+            if name.upper().startswith("R_MCU_"):
+                add(mcu_supply_model(float(parsed.element(name).value)))
+            else:
+                add(MODEL_MCU_PIN)
+        measured |= measured_nodes(netlist, quantity, bench)
+    signal = mcu_signal_nodes(circuit)
+    if measured & (signal - _pin_modelled(netlist)):
+        add(MODEL_MCU_PIN_LOAD)
+    if {a.lower() for a in assumes} & signal:
+        add(MODEL_MCU_PIN_STATE)
+    return tuple(models)
+
+
+def _is_mcu_model(name: str) -> bool:
+    return name.startswith("mcu_")
+
+
+def _with_models(
+    claim: Claim, models: Sequence[str], extra_defeaters: Sequence[str], derived: bool = False,
+    measures: Sequence[str] = (),
+) -> Claim:
+    """
+    Set a behavioural claim's MCU models and D2, and add the extra defeaters.
+
+    `derived`: `models` were derived for this claim from `measures`, so they
+    replace whatever MCU models and D2 the generator wrote by hand, and the
+    measures are recorded on the scope — a claim a proof re-derives says so.
+    Otherwise they are the netlist-wide fallback, added to what is there — X6
+    as it always was. A structural claim (`design_graph`) reads no electrical
+    model at all.
+    """
     if claim.scope is None:
         return claim
     parts = claim.scope.model.split("+")
+    defeaters = list(claim.defeaters)
+    scope_update: Dict[str, Any] = {}
+    if claim.scope.model == "design_graph":
+        models, derived = (), True
+    elif derived and measures:
+        scope_update["measures"] = tuple(measures)
+    if derived:
+        parts = [p for p in parts if not _is_mcu_model(p)]
+        if not models:
+            defeaters = [d for d in defeaters if d != "D2"]
     for model in models:
         if model not in parts:
             parts.append(model)
-    defeaters = list(claim.defeaters)
     for d in list(extra_defeaters) + (["D2"] if models else []):
         if d not in defeaters:
             defeaters.append(d)
     data = claim.model_dump()
-    data["scope"] = claim.scope.model_copy(update={"model": "+".join(parts)})
+    data["scope"] = claim.scope.model_copy(update={"model": "+".join(parts), **scope_update})
     data["defeaters"] = tuple(defeaters)
-    if data["verdict"] == Verdict.HOLDS.value and any(REGISTER[d].is_open for d in defeaters):
-        data["verdict"] = Verdict.HOLDS_DEFEASIBLE.value
+    if data["verdict"] in (Verdict.HOLDS.value, Verdict.HOLDS_DEFEASIBLE.value):
+        open_now = any(REGISTER[d].is_open for d in defeaters)
+        data["verdict"] = (Verdict.HOLDS_DEFEASIBLE if open_now else Verdict.HOLDS).value
     return Claim.model_validate(data)
 
 
@@ -440,7 +546,8 @@ class _Proved(NamedTuple):
     error: Optional[str] = None
 
 
-def prove_properties(generator: Any, intent: Any, circuit: CircuitIR) -> List[_Proved]:
+def prove_properties(generator: Any, intent: Any, circuit: CircuitIR,
+                     netlist: Optional[str] = None) -> List[_Proved]:
     """
     Every property the generator declares, proved from this design's netlist.
     A property the prover cannot compile — a netlist line it cannot read, a
@@ -450,10 +557,9 @@ def prove_properties(generator: Any, intent: Any, circuit: CircuitIR) -> List[_P
     produce = getattr(generator, "properties", None)
     if not callable(produce):
         return []
-    from generators.netlist.spice import SpiceNetlistGenerator
     from proof.prover import check
 
-    netlist = SpiceNetlistGenerator().generate(circuit)
+    netlist = _netlist_text(circuit) if netlist is None else netlist
     out: List[_Proved] = []
     for spec in produce(intent):
         try:
@@ -474,7 +580,13 @@ def properties_hash(proved: Sequence[_Proved]) -> Optional[str]:
     return set_hash([p.statement for p in proved])
 
 
-def _proof_claim(p: _Proved, signed: bool, extra: Sequence[str]) -> Claim:
+def _proof_claim(p: _Proved, signed: bool, extra: Sequence[str], mcu_models: Sequence[str] = (),
+                 assumes: Sequence[str] = ()) -> Claim:
+    """
+    One proof as a claim row. `mcu_models` are derived for this property
+    (`derive_mcu_models`), not read off the netlist as a whole: the statement's
+    own `mcu_models` lists every MCU element present, reachable or not.
+    """
     if p.statement is None:
         return Claim(id=f"proof.{p.spec.id}", claim=_uncompiled_sentence(p.spec), kind=Kind.ANALYTIC,
                      verdict=Verdict.NOT_ASSESSED, grade="G7", critical=False,
@@ -483,10 +595,11 @@ def _proof_claim(p: _Proved, signed: bool, extra: Sequence[str]) -> Claim:
     statement, result = p.statement, p.result
     quantity = statement.spec.quantity
     diode = quantity.startswith(("diode_current", "series_power"))
-    model = "+".join(["netlist_mna"] + list(statement.mcu_models) + ([MODEL_LED] if diode else []))
-    scope = ClaimScope(parameters="tolerance_box", horizon="steady_state", model=model)
+    model = "+".join(["netlist_mna"] + list(mcu_models) + ([MODEL_LED] if diode else []))
+    scope = ClaimScope(parameters="tolerance_box", horizon="steady_state", model=model,
+                       measures=(quantity,), assumes=tuple(assumes))
     defeaters = ["D1"]
-    if statement.mcu_models:
+    if mcu_models:
         defeaters.append("D2")
     if statement.datasheet:
         defeaters.append("D7")
@@ -554,7 +667,8 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
     produce: Optional[Callable] = getattr(generator, "claims", None)
     physics: List[Claim] = list(produce(intent)) if callable(produce) else []
 
-    proved = prove_properties(generator, intent, circuit)
+    netlist = _netlist_text(circuit)
+    proved = prove_properties(generator, intent, circuit, netlist)
     set_hash = properties_hash(proved)
     signature = getattr(intent, "signed_off", None)
     intact = getattr(intent, "is_intact", lambda: True)()
@@ -565,14 +679,44 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
     producer = getattr(getattr(intent, "provenance", None), "producer", None)
     if getattr(producer, "value", producer) == "llm" and not signed:
         extra.append("D5")
-    models = netlist_models(circuit)
-    # D9 is a doubt about predict(); a proof is checked against the netlist
-    # generate() emitted, so it does not inherit D9.
-    proofs = [_proof_claim(p, signed, extra) for p in proved]
+
+    # D2 per claim. What a claim measures is its own declaration, else the
+    # quantities of the proofs that re-derive it; what it assumes is its own,
+    # and a proof inherits the assumptions of the claim it re-derives.
+    fallback = netlist_models(circuit, netlist)
+    assumed = {c.id: c.scope.assumes for c in physics if c.scope is not None}
+    via_proofs: Dict[str, List[Measure]] = {}
+    for p in proved:
+        if p.spec.re_derives:
+            via_proofs.setdefault(p.spec.re_derives, []).append(
+                (p.spec.quantity, tuple(b.line for b in p.spec.bench)))
+
+    def mcu_models_for(measures: Sequence[Measure], assumes: Sequence[str]) -> Tuple[Tuple[str, ...], bool]:
+        """(models, derived). Undeclared, or unreadable, falls back to the netlist-wide rule."""
+        if not measures:
+            return fallback, False
+        try:
+            return derive_mcu_models(circuit, netlist, measures, assumes), True
+        except (KeyError, ValueError):
+            return fallback, False
+
+    proofs = []
+    for p in proved:
+        assumes = assumed.get(p.spec.re_derives or "", ())
+        models, _ = mcu_models_for([(p.spec.quantity, tuple(b.line for b in p.spec.bench))], assumes)
+        # D9 is a doubt about predict(); a proof is checked against the netlist
+        # generate() emitted, so it does not inherit D9.
+        proofs.append(_proof_claim(p, signed, extra, models, assumes))
     if generator.name not in M1_COVERED:
         extra.append("D9")
-    physics = [_with_models(c, models, extra) for c in physics]
-    physics = _supersede(physics, proved, proofs)
+    scoped = []
+    for c in physics:
+        declared = c.scope.measures if c.scope is not None else ()
+        measures = [(q, ()) for q in declared] or via_proofs.get(c.id, [])
+        models, derived = mcu_models_for(measures, c.scope.assumes if c.scope is not None else ())
+        scoped.append(_with_models(c, models, extra, derived=derived,
+                                   measures=tuple(dict.fromkeys(q for q, _ in measures))))
+    physics = _supersede(scoped, proved, proofs)
 
     decision = generator.envelope(intent)
     ports = tuple(p.name for p in decision.ports) if decision.accepted else ()

@@ -229,8 +229,9 @@ class TestDefeaterRegister:
         assert "generator bug" in REGISTER["D9"].doubt
         assert "coverage growth" in REGISTER["D4"].doubt
 
-    def test_d2_names_both_mcu_models(self):
-        assert "mcu_as_100R" in REGISTER["D2"].doubt and "mcu_pin_thevenin" in REGISTER["D2"].doubt
+    def test_d2_names_every_mcu_representation(self):
+        for name in ("mcu_as_100R", "mcu_pin_thevenin", "mcu_pin_load", "mcu_pin_state"):
+            assert name in REGISTER["D2"].doubt
 
     def test_deferred_counts_as_open(self):
         assert REGISTER["D3"].status == Status.DEFERRED.value and REGISTER["D3"].is_open

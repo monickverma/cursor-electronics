@@ -598,10 +598,11 @@ class RCLowPassGenerator:
         # The source adds in series with R1: f_c' = 1/(2π(R1+R_s)C).
         shift = source / (r1 + source) * 100.0
         nominal = scope.model_copy(update={"parameters": "nominal"})
+        measured = nominal.model_copy(update={"measures": ("cutoff(out)",)})
         return [
             graded("rc.cutoff_nominal",
                    f"f_c at nominal parts is within ±{tolerance:g}% of {target:g} Hz",
-                   error <= tolerance, "closed_form", nominal,
+                   error <= tolerance, "closed_form", measured,
                    detail=f"{band.nominal:.1f} Hz ({error:.2f}% from target)"),
             graded("rc.cutoff_band",
                    f"f_c lies in [{band.lo:.1f}, {band.hi:.1f}] Hz for every R within 1% and C within 10%",
@@ -609,7 +610,7 @@ class RCLowPassGenerator:
                    detail="the 10% capacitor dominates; a 2% C0G part would narrow it fivefold"),
             graded("rc.source_loading",
                    f"a {source:g} Ω source lowers f_c by no more than ±{tolerance:g}%",
-                   shift <= tolerance, "closed_form", nominal,
+                   shift <= tolerance, "closed_form", measured,
                    detail=f"R_s/(R1+R_s) = {shift:.2f}%"),
         ]
 

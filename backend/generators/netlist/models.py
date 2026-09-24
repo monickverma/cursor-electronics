@@ -39,6 +39,12 @@ DEFAULT_PIN_OHMS = 25.0
 MODEL_MCU_SUPPLY = "mcu_as_100R"
 MODEL_MCU_PIN = "mcu_pin_thevenin"
 MODEL_LED = "shockley_diode"
+#: D2's other two routes (`brain/decisions.md` [2026-09-24] D1, D2, D7). No
+#: netlist element carries them: an MCU pin on a node the netlist does not
+#: model — its capacitance, leakage and clamps act there — and a node state a
+#: claim takes as given where an MCU pin sets it.
+MODEL_MCU_PIN_LOAD = "mcu_pin_load"
+MODEL_MCU_PIN_STATE = "mcu_pin_state"
 
 
 # ── LEDs ─────────────────────────────────────────────────────────────────────

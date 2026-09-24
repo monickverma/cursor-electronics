@@ -1726,3 +1726,148 @@ exactly that region. Now G1 at every grid point on every board.
 **What still falls back.** A range that straddles the peak where the
 current is large — R1 ≈ R_out,min + r_d. `test_proof.py` pins one (R1 =
 15.6 Ω on the Uno) and pins that the grid has none.
+
+---
+
+## [2026-09-24] D1, D2, D7 — decided with TypeSafe
+
+**Decision:** On the instruction to "use TypeSafe to determine D1, D2, D7,
+giving it the whole picture", the three open defeaters were put to Jev
+(`jev-1.13.0`) in two requests, and the agent decided by TypeSafe's own
+confidence guidance: above 0.9 act, 0.5–0.9 act with care, below 0.5 a person
+decides — or the agent takes the most reversible option and says so, as in
+[2026-09-23] RC source swamping.
+
+**What was sent.** Request 1, 17.6k characters of state (6.5k tokens): how a
+design is made and graded, what a defeater is and the rules around it (never
+folded into the grade; an open one makes a claim defeasible; eliminated only
+by its named evidence), the project's principles, the team and equipment (one
+engineer; no oscilloscope or signal generator; whether a multimeter or an Uno
+is at hand unrecorded), the fan-out **measured in code** over the 11 CI design
+cases with properties signed — 105 critical claims, D1 cited by 47, D2 by 42,
+D7 by 76 — each defeater's doubt, evidence so far and three or four options
+with benefits and costs side by side, and Stage 6's gates. Four Choices, five
+Nouls. Request 2 (8k characters) added the facts behind three weak or
+contradictory answers: the RS-485 driver-enable wiring and reset behaviour,
+the D7 tie, and how far one bench record should reach. Scripts:
+`typesafe_defeaters.py`, `typesafe_defeaters_2.py` (session scratchpad).
+
+| Question | Answer |
+|---|---|
+| `d1_option` | **evidence_records_plus_low_cost_sheet 0.83**, sheet only 0.07, keep 0.05, defer 0.05 — confidence 0.78 |
+| `d2_option` | **narrow_by_dependence 0.96**, plus pin measurement 0.04, IBIS 0.00 — confidence 0.95 |
+| `d7_option` | human verification 0.48, agent records 0.37, prescreen 0.15 — confidence **0.35** |
+| `d7_sequence` | before Stage 6 0.60, as its first task 0.40, after 0.00 — confidence 0.46 |
+| `d1_cheap_bench_counts` | 0.83 |
+| `d2_release_is_safe` (all 12 at once) | **0.16** |
+| `d7_records_worth_it_unverified` | 0.75 |
+| `stage6_gate1_needs_part_provenance` | 0.91 |
+| `d1_d2_share_one_bench_session` | 0.90 |
+| *request 2* | |
+| MCU can break RS-485 fail-safe bias | **0.78** |
+| … driver load / terminator dissipation / DHT22 pull-up check | 0.13 / 0.12 / 0.14 |
+| a DE/RE pull-down would make fail-safe independent of the MCU | 0.31 (i.e. 0.69 that it would) |
+| `rs485_d2_choice` | **keep D2 on fail-safe, release the rest 0.72**, add pull-down 0.26 — confidence 0.64 |
+| `d7_choice` (records only vs records + tool, identical output until verified) | **records + verification tool 0.78** — confidence 0.68 |
+| `d1_reach_rule` | that design only 0.44, bracketed span 0.38, none 0.18 — confidence **0.24** |
+| `d1_agreement_rule` | **intervals overlap 0.74**, none 0.25 — confidence 0.66 |
+| one disagreement reopens the whole family | 0.49 |
+
+**Found while preparing the state, before any answer:** the RS-485 design has
+no pull-down on DE/RE. While the MCU is in reset — and on an Uno for the
+bootloader's second or two after it — that pin is high-impedance, the MAX485
+specifies no internal pull on DE or RE, and a floating DE can enable the
+driver onto the bus. Request 1's contradiction (narrowing 0.96, releasing all
+twelve 0.16) was exactly this: the fail-safe claim assumes the driver is off.
+
+### D2 — narrow by dependence (act: 0.95)
+
+D2 is cited on a claim only where the real MCU can reach it, derived per claim:
+
+1. **Model dependence** — the claim's quantity changes with an MCU model
+   element (`R_MCU_`, `R_PIN_`, `V_PIN_`). Decided exactly: symbolic nodal
+   analysis of the design's own netlist with those elements' values as free
+   symbols (diodes stand in as symbolic resistors — dependence is structural).
+   Names `mcu_as_<R>R` and/or `mcu_pin_thevenin` as today.
+2. **An unmodelled pin on a measured node** — a node the claim measures
+   carries an MCU signal connection the netlist does not model (no `R_PIN_`
+   there): its input capacitance, leakage and clamps act there. Names
+   `mcu_pin_load`.
+3. **An assumed pin state** — the claim is evaluated with a node an MCU pin
+   drives taken as given (RS-485: DE/RE low). Names `mcu_pin_state`.
+
+Structural claims (`design_graph`) never cite D2. A behavioural claim that
+does not declare what it measures keeps the X6 rule unchanged — every model in
+the netlist, and D2 — so narrowing can only follow a declaration, never an
+omission. To make that possible `ClaimScope` gains two optional fields,
+`quantity` (in the prover's netlist grammar) and `assumes` (node ids); proofs
+take the quantity from their spec and inherit `assumes` from the claim they
+re-derive, so no statement hash moves and no signature is voided.
+
+Result on the CI cases: 9 of 42 citations released — RS-485 driver load and
+terminator dissipation, and the DHT22 pull-up presence check, on each board.
+The fail-safe bias keeps D2 through rule 3. The design is left as it is
+(0.72, confidence 0.64); the D2 register entry names all four representations.
+
+### D7 — provenance records and a verification tool, before substitution (act with care: 0.68)
+
+Request 1 split (0.35). Request 2 supplied the fact that separates the two top
+options — until the engineer verifies a record they produce identical claims —
+and the answer moved to 0.78 for building the tool. Both sequencing answers
+put the work before Stage 6's substitution (0.60 before, 0.40 as its first
+task), and gate 1 depends on it (0.91); substitution is built on these records.
+
+- Every part figure a claim reads gets a record: kind (guaranteed limit,
+  typical, derived, standard, stated assumption), source (maker, document,
+  location), what the source says, and for a derived figure its formula and
+  inputs. **Values stay in their owning tables**; the record points at them,
+  and its hash covers the record *and* the current value, so editing either
+  voids a verification.
+- **The agent writes the records and cannot verify them.** It has not opened
+  the datasheets in this session; each record says so, and states the
+  agent's reading, never an invented verbatim quote.
+- `scripts/verify_figures.py` records the engineer's check against the
+  document, bound to the record hash. A figure is **trusted** only when
+  verified and a guaranteed limit or a standard's figure, or derived from
+  trusted inputs. Typicals and assumptions are never trusted: verification
+  confirms what they are, not that they are guarantees.
+- Claims declare the figures they read; rule claims derive theirs from the
+  design. A claim cites D7 while any declared figure is untrusted — today,
+  all of them, so output is unchanged until the engineer verifies something.
+  A test checks declarations are complete by perturbing each figure and
+  failing on any claim that changes without declaring it.
+
+### D1 — evidence records and a low-cost bench sheet (act with care: 0.78)
+
+- Bench records are data in the repository: the design (generator, board,
+  requirements), the SPICE netlist's hash, each measured part and quantity
+  with the instrument and its stated accuracy, date, who measured.
+- A record **agrees** when the measured interval (value ± accuracy) overlaps
+  the model's interval for the measured parts (0.74): the design's own
+  property quantity, every measured part pinned to its measured interval,
+  everything unmeasured over its declared box.
+- **Reach: that design only** — same generator, board and netlist. Chosen at
+  confidence 0.24 as the conservative option; with one build per family it
+  cannot be told apart from the span rule, and widening it later invalidates
+  no record. A record whose design's netlist has changed is stale: reported,
+  never applied.
+- **A disagreement reopens D1 for the whole family** (0.49, the conservative
+  side) and fails CI until explained.
+- `docs/BENCH_D1.md` is rewritten for a multimeter and an Arduino Uno used as
+  the timer, covering all five families; the oscilloscope procedure stays as
+  the stronger alternative for the RC filter.
+
+**Rejected:** vendor IBIS models for D2 (0.00 — weeks of work, and IBIS data
+would itself sit under D7); a model pre-screen of datasheets for D7 (0.15 —
+downloads, and an LLM's pass cannot close D7 anyway); deferring or keeping D1
+as it was (0.05 each).
+
+**For the user, not decided here:**
+- **The RS-485 DE/RE pull-down.** A 10 kΩ pull-down holds the transceiver in
+  receive mode while the MCU is in reset, so a rebooting node no longer drives
+  the bus. It is common practice, costs one resistor per design and a
+  generator version, and would let the fail-safe claim drop D2 (0.69). Jev
+  preferred not to change the design *for D2's sake*; whether to change it as
+  a product fix is the user's call.
+- **The bench session and the verification pass** happen when the engineer
+  chooses; everything built here makes them count once done.

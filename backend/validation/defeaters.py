@@ -57,10 +57,14 @@ REGISTER: Dict[str, Defeater] = {d.id: d for d in (
     ),
     Defeater(
         id="D2",
-        doubt=("the MCU is represented by simplified electrical models — a "
-               "resistive supply load sized from its run current (mcu_as_100R on "
-               "the Uno, mcu_as_<R>R on other boards) and a Thevenin GPIO pin "
-               "(mcu_pin_thevenin) — not the device"),
+        doubt=("the MCU is represented by simplified electrical models, not the "
+               "device — a resistive supply load sized from its run current "
+               "(mcu_as_100R on the Uno, mcu_as_<R>R on other boards), a Thevenin "
+               "GPIO pin (mcu_pin_thevenin), a pin on a node the netlist does not "
+               "model at all (mcu_pin_load), and a pin state taken as given "
+               "(mcu_pin_state)"),
+        # Derived per claim since [2026-09-24] D1, D2, D7: only claims the real
+        # MCU can reach cite it (`validation/claims.py::derive_mcu_models`).
         applies_to="claims whose scope.model names an MCU model",
         status=Status.OPEN,
         eliminated_by="reachset conformance against the real device",

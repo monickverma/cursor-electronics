@@ -169,15 +169,20 @@ class TestClaimsAtEveryGridPoint:
 
 class TestX6DerivedFromTheNetlist:
     @pytest.mark.parametrize("name", MCU_DESIGNS)
-    def test_every_behavioural_claim_on_an_mcu_design_names_the_model(self, name):
+    def test_a_claim_cites_d2_exactly_when_it_names_an_mcu_model(self, name):
+        # Since [2026-09-24] D1, D2, D7 the models are derived per claim — only
+        # those the real MCU can reach name one (tests/test_d2_dependence.py).
+        # What must hold everywhere: a named MCU model and D2 come together,
+        # and every MCU design still carries D2 somewhere.
         design = realize(GENERATORS[name], form_intent(name))
         assert "\nR_MCU_" in SpiceNetlistGenerator().generate(design)
         behavioural = [c for c in design.validation_coverage["claims"]
                        if c["scope"] and c["scope"]["model"] != "design_graph"]
         assert behavioural
         for claim in behavioural:
-            assert "mcu_as_100R" in claim["scope"]["model"], claim["id"]
-            assert "D2" in claim["defeaters"], claim["id"]
+            named = any(p.startswith("mcu_") for p in claim["scope"]["model"].split("+"))
+            assert named == ("D2" in claim["defeaters"]), claim["id"]
+        assert "mcu_as_100R" in next(c for c in behavioural if c["id"].endswith("rail_current"))["scope"]["model"]
         assert "D2" in design.validation_coverage["open_defeaters"]
 
     def test_the_led_design_also_names_the_pin_model(self):

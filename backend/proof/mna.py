@@ -33,8 +33,24 @@ def _rational(value: Fraction) -> sympy.Rational:
     return sympy.Rational(value.numerator, value.denominator)
 
 
+def _domain_solve(G: sympy.Matrix, rhs: sympy.Matrix) -> sympy.Matrix:
+    """
+    The same exact solution as `LUsolve`, computed over the field of rational
+    functions in the system's symbols — two orders of magnitude faster when
+    the entries carry symbols. Used by `proof/dependence.py`; the prover keeps
+    `LUsolve`, so no obligation's expression, and no certificate, moves.
+    """
+    from sympy.polys.matrices import DomainMatrix
+
+    dG, drhs = DomainMatrix.from_Matrix(G).unify(DomainMatrix.from_Matrix(rhs))
+    return dG.to_field().lu_solve(drhs.to_field()).to_Matrix()
+
+
 class System:
-    """One stamped MNA system. `values` maps element name → sympy value."""
+    """
+    One stamped MNA system. `values` maps element name → sympy value.
+    `solver` is `lu` (sympy's LUsolve, what every proof uses) or `domain`.
+    """
 
     def __init__(
         self,
@@ -44,6 +60,7 @@ class System:
         exclude: Iterable[str] = (),
         zero_sources: bool = False,
         test_current: Optional[Tuple[str, str]] = None,
+        solver: str = "lu",
     ) -> None:
         excluded = {n.lower() for n in exclude}
         elements = [e for e in netlist.elements if e.name.lower() not in excluded]
@@ -104,6 +121,10 @@ class System:
                 rhs[row] = 0
             elif mode == "ac":
                 rhs[row] = _rational(e.ac or Fraction(0))
+            elif e.name in values:
+                # A source's DC value as a symbol: how `proof/dependence.py`
+                # asks whether a quantity depends on the MCU pin's source.
+                rhs[row] = values[e.name]
             else:
                 rhs[row] = _rational(e.value or Fraction(0))
         if test_current:
@@ -113,7 +134,7 @@ class System:
             if b != "0":
                 rhs[idx[b]] -= 1
 
-        solution = G.LUsolve(rhs)
+        solution = _domain_solve(G, rhs) if solver == "domain" else G.LUsolve(rhs)
         self._v = {n: solution[i] for i, n in enumerate(nodes)}
         self._i = {e.name.lower(): solution[len(nodes) + k] for k, e in enumerate(sources)}
 
@@ -128,13 +149,14 @@ class System:
         return sympy.cancel(self._i[source.lower()])
 
 
-def dc(netlist: Netlist, values: Mapping[str, sympy.Expr], exclude: Iterable[str] = ()) -> System:
-    return System(netlist, values, mode="dc", exclude=exclude)
+def dc(netlist: Netlist, values: Mapping[str, sympy.Expr], exclude: Iterable[str] = (),
+       solver: str = "lu") -> System:
+    return System(netlist, values, mode="dc", exclude=exclude, solver=solver)
 
 
-def transfer(netlist: Netlist, values: Mapping[str, sympy.Expr], node: str) -> sympy.Expr:
+def transfer(netlist: Netlist, values: Mapping[str, sympy.Expr], node: str, solver: str = "lu") -> sympy.Expr:
     """V(node) per unit of the AC source, in s. The netlist's AC source drives it."""
-    system = System(netlist, values, mode="ac")
+    system = System(netlist, values, mode="ac", solver=solver)
     ac_sources = [e for e in netlist.elements if e.kind == "V" and e.ac]
     if len(ac_sources) != 1:
         raise ValueError("a transfer function needs exactly one AC source")
@@ -142,11 +164,13 @@ def transfer(netlist: Netlist, values: Mapping[str, sympy.Expr], node: str) -> s
 
 
 def thevenin(
-    netlist: Netlist, values: Mapping[str, sympy.Expr], a: str, b: str, remove: Iterable[str] = ()
+    netlist: Netlist, values: Mapping[str, sympy.Expr], a: str, b: str, remove: Iterable[str] = (),
+    solver: str = "lu",
 ) -> Tuple[sympy.Expr, sympy.Expr]:
     """(V_th, R_th) between nodes a and b, with `remove` taken out of the network."""
-    open_circuit = System(netlist, values, mode="dc", exclude=remove)
+    open_circuit = System(netlist, values, mode="dc", exclude=remove, solver=solver)
     v_th = sympy.cancel(open_circuit.v(a) - open_circuit.v(b))
-    test = System(netlist, values, mode="dc", exclude=remove, zero_sources=True, test_current=(a, b))
+    test = System(netlist, values, mode="dc", exclude=remove, zero_sources=True, test_current=(a, b),
+                  solver=solver)
     r_th = sympy.cancel(test.v(a) - test.v(b))
     return v_th, r_th

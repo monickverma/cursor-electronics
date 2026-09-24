@@ -393,7 +393,8 @@ class LedIndicatorGenerator:
         return [
             graded("led.current_nominal",
                    f"LED current at typical parts is within ±{spec.tolerance:g}% of {spec.current_ma:g} mA",
-                   err <= spec.tolerance, "closed_form", nominal_scope,
+                   err <= spec.tolerance, "closed_form",
+                   nominal_scope.model_copy(update={"measures": ("diode_current(D_LED1)",)}),
                    detail=f"{current.nominal:.3g} mA ({err:.1f}% from target)",
                    defeaters=("D1", "D2", "D7")),
             graded("led.current_band",
@@ -416,7 +417,9 @@ class LedIndicatorGenerator:
                    detail=f"worst case {q['r1_power_mw'].hi:.3g} mW", defeaters=("D1", "D7")),
             graded("led.rail_current",
                    f"the rail stays within its {spec.budget:g} mA budget",
-                   q["supply_current_ma"].hi <= spec.budget, "monotone_corners", scope,
+                   q["supply_current_ma"].hi <= spec.budget, "monotone_corners",
+                   scope.model_copy(update={"measures": (f"i(V_{spec.target.rail_node})",
+                                                          "i(V_PIN_LED_CTRL)")}),
                    detail=f"≤ {q['supply_current_ma'].hi:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, part):.0f} mA", defeaters=("D1", "D2"),
                    covers=("power_supply_adequate",)),
