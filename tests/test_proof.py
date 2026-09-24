@@ -269,12 +269,13 @@ class TestGates:
                 seen += 1
         assert seen >= 9 * 3 - 3
 
-    #: Stage 5: the one grid design whose R1 range straddles the dissipation
-    #: peak (R1 = R_out + r_d). The Black Pill's pins span 20–65 Ω, and 13 mA
-    #: needs R1 = 66.5 Ω, so no end of R1's range is the maximum and Task 4.5's
-    #: lemma cannot pick one: the prover falls back to the sound enclosure, G2.
-    #: Pinned, so a prover that closes the gap — or widens it — says so here.
-    STRADDLES_THE_PEAK = {("blackpill_f411ce", 13.0)}
+    #: Grid designs whose R1 dissipation proof falls back to the sound
+    #: enclosure (G2). Stage 5 found one — the Black Pill at 13 mA, R1 = 66.5 Ω
+    #: against pins of 20–65 Ω, so R1's range straddles the peak at the weak-pin
+    #: corner. The guarded "falls" lemma closes it: at that corner the current
+    #: is far too small to reach the rating, so only the strong-pin corner has
+    #: to be monotone, and it is. Pinned empty, so a regression says so here.
+    STRADDLES_THE_PEAK: set = set()
 
     def test_led_claims_proven_over_the_full_tolerance_box(self):
         seen, enclosed = 0, set()
@@ -357,13 +358,12 @@ class TestRefutationIsCertified:
             assert problem.method == "z3_unsat" and problem.witness is None
         assert "certified" in result.detail
 
-    def test_an_enclosure_that_is_too_loose_is_undecided_not_refuted(self):
+    def test_a_straddle_where_the_current_is_small_is_still_exact(self):
         """
-        With R1 close to the rest of the loop's resistance, R1's range straddles
-        the peak of I²·R1: neither monotone lemma holds, and the proof falls back
-        to a current bound (G2). Choose P_max above the true worst case but
-        below what that bound reaches: no point exceeds P_max, and the answer
-        must be `unknown`.
+        R1 = 30 Ω against pins of 15–40 Ω: at the weak-pin corner R1's range
+        sits below the peak, at the strong-pin corner above it. Only the strong
+        corner carries enough current to matter, so the guarded lemma holds and
+        a bound 0.3% above the true worst case is proven exactly.
         """
         from generators.led_indicator import r1_power_max_w
         from proof.prover import mutate
@@ -371,7 +371,32 @@ class TestRefutationIsCertified:
         _, _, circuit = design("led_indicator")
         text = SpiceNetlistGenerator().generate(circuit)
         r1 = float(parse(text).element("R_R1").value)
-        factor = Fraction(30) / Fraction(str(r1))
+        text = mutate(text, "R_R1", Fraction(30) / Fraction(str(r1)))
+        r1 = float(parse(text).element("R_R1").value)
+        worst = r1_power_max_w(5.0, r1 * 0.99, r1 * 1.01, 15.0, "min")
+        for factor, status in ((1.003, "proven"), (0.997, "refuted")):
+            spec = PropertySpec(id="led.tight_power", label="R1's dissipation",
+                                quantity="series_power(R_R1,D_LED1)", relation="le",
+                                hi=exact(round(worst * factor, 9)), units="W")
+            _, problem, result = check(circuit, spec, text)
+            assert problem.method == "z3_unsat", factor
+            assert result.status == status, (factor, result.detail)
+
+    def test_an_enclosure_that_is_too_loose_is_undecided_not_refuted(self):
+        """
+        R1 at the peak for the strong-pin corner itself (R1 ≈ 15 Ω + r_d):
+        where the current is largest, R1's range straddles the peak, so
+        neither lemma holds and the proof falls back to a current bound (G2).
+        Choose P_max above the true worst case but below what that bound
+        reaches: no point exceeds P_max, and the answer must be `unknown`.
+        """
+        from generators.led_indicator import r1_power_max_w
+        from proof.prover import mutate
+
+        _, _, circuit = design("led_indicator")
+        text = SpiceNetlistGenerator().generate(circuit)
+        r1 = float(parse(text).element("R_R1").value)
+        factor = Fraction("15.6") / Fraction(str(r1))
         text = mutate(text, "R_R1", factor)
         r1 = float(parse(text).element("R_R1").value)
         worst = r1_power_max_w(5.0, r1 * 0.99, r1 * 1.01, 15.0, "min")

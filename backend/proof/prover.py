@@ -28,8 +28,10 @@ reported as one. What cannot be certified either way is `unknown`.
 a diode, I²·R has one peak, where R equals the rest of the loop plus the
 diode's incremental resistance. A lemma proves R's whole range lies on one
 side of it, and the property is then decided exactly at the end of R's range
-the lemma names. Only when R's range straddles the peak does the proof fall
-back to a current bound (`sound_enclosure`, G2); a point where that bound
+the lemma names — "falls" need only hold where the current could break the
+bound at all, so a range that straddles the peak at small currents is still
+decided exactly. Only when neither lemma holds does the proof fall back to
+a current bound (`sound_enclosure`, G2); a point where that bound
 fails is not yet a point where the dissipation does, so a witness check
 evaluates the dissipation there exactly.
 
@@ -105,10 +107,20 @@ class Obligation(BaseModel):
     #: For an inexact obligation: an inequality whose counterexample *does*
     #: certify the property false — brackets collapsed to their adverse ends.
     refute: Optional["Obligation"] = None
+    #: A guard: the obligation must hold at every point where `unless` does
+    #: not. A counterexample has to break both.
+    unless: Optional["Obligation"] = None
 
     @property
     def hash(self) -> str:
-        return hashlib.sha256(json.dumps(self.model_dump(), sort_keys=True).encode()).hexdigest()
+        return hashlib.sha256(json.dumps(_hashable(self.model_dump()), sort_keys=True).encode()).hexdigest()
+
+
+def _hashable(dump):
+    """`unless` is newer than the hashes already stored; an absent guard hashes as it always did."""
+    if isinstance(dump, dict):
+        return {k: _hashable(v) for k, v in dump.items() if not (k == "unless" and v is None)}
+    return dump
 
 
 Obligation.model_rebuild()
@@ -467,17 +479,28 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
                 reduction = (worst_end(r_lo),)
             elif sympy.simplify(sympy.diff(r_th, r_sym) - 1) == 0 and sympy.diff(v_th, r_sym) == 0:
                 # R is in series with the diode: R_th = R + R_rest. Then
-                # dP/dR = I²·(R_rest + r_d − R)/(R_th + r_d), r_d = n·V_t/(I + I_s),
-                # so P falls with R wherever R ≥ R_rest + n·V_t/I_lo, and rises
-                # wherever R ≤ R_rest + n·V_t/(I_hi + I_s). Each is a lemma
-                # over the whole box; either puts the worst case at one end of
-                # R's range, where it is decided exactly (Task 4.5).
+                # dP/dR = I²·(R_rest + r_d − R)/(R_th + r_d), r_d = n·V_t/(I + I_s).
+                #
+                # Falls: below c* = ⌊√(P_max/R_hi)⌋ the current cannot break
+                # P_max at all (I²·R ≤ c*²·R_hi). Above it, r_d < n·V_t/c*. So
+                # the lemma is "R ≥ R_rest + n·V_t/c*, unless I ≤ c* is proved
+                # here". A point with I > c* has I > c* all the way down to
+                # R_lo (I rises as R falls), so P falls along that whole
+                # segment and P ≤ P(R_lo): decided exactly at R_lo. Guarding
+                # the lemma is what lets a range that straddles the peak where
+                # the current is small still be decided exactly (Stage 5's
+                # Black Pill at 13 mA).
+                #
+                # Rises: R ≤ R_rest + n·V_t/(I_hi + I_s) with I ≤ I_hi proved,
+                # over the whole box; the worst case is then at R_hi.
                 rest = r_th - r_sym
-                i_lo, i_hi = _current_hint(v_th, r_th, box_now, nvt, box)
-                falls = (current_ge(i_lo).model_copy(update={"lemma": True, "refute": None}),
-                         Obligation(label=f"{resistor.name}'s dissipation falls as it rises",
-                                    expr=sympy.srepr(r_sym - rest - nvt / _r(i_lo)), op="ge",
-                                    bound=zero, lemma=True))
+                i_hi = _current_hint(v_th, r_th, box_now, nvt, box)
+                c_star = _floor_sqrt(p_max / r_hi)
+                falls = (Obligation(label=f"{resistor.name}'s dissipation falls as it rises, wherever "
+                                          f"the current exceeds {c_star}",
+                                    expr=sympy.srepr(r_sym - rest - nvt / _r(c_star)), op="ge",
+                                    bound=zero, lemma=True,
+                                    unless=current_le(c_star, certify=False)),)
                 rises = (current_le(i_hi, certify=False).model_copy(update={"lemma": True}),
                          Obligation(label=f"{resistor.name}'s dissipation rises with it",
                                     expr=sympy.srepr(rest + nvt / (_r(i_hi) + _r(box.is_hi_outer)) - r_sym),
@@ -499,6 +522,8 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
     used = set()
     for ob in obligations:
         used |= {s.name for s in _expr(ob.expr).free_symbols}
+        if ob.unless is not None:
+            used |= {s.name for s in _expr(ob.unless.expr).free_symbols}
     relevant = [variables[name] for name in variables if symbols[name].name in used]
     conditions = _conditions(netlist)
     if kind in ("diode_current", "series_power"):
@@ -516,11 +541,11 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
     return statement, Problem(obligations=tuple(obligations), method=method, witness=witness)
 
 
-def _current_hint(v_th, r_th, box_now, nvt: Fraction, diode: "DiodeBox") -> Tuple[Fraction, Fraction]:
+def _current_hint(v_th, r_th, box_now, nvt: Fraction, diode: "DiodeBox") -> Fraction:
     """
-    Candidate bounds on the diode current, for the monotone lemmas to prove.
-    A guess, checked: each lemma carries its bound as an obligation, so floats
-    are fine here — nothing downstream trusts these numbers without z3.
+    A candidate upper bound on the diode current, for the "rises" lemma to
+    prove. A guess, checked: the lemma carries it as an obligation, so floats
+    are fine here — nothing downstream trusts this number without z3.
     """
     from itertools import product
 
@@ -529,8 +554,8 @@ def _current_hint(v_th, r_th, box_now, nvt: Fraction, diode: "DiodeBox") -> Tupl
     for ends in product((0, 1), repeat=len(names)):
         subs = {sympy.Symbol(n, positive=True): _r(box_now[n][e]) for n, e in zip(names, ends)}
         values.append((float(v_th.subs(subs)), float(r_th.subs(subs))))
-    v_lo, v_hi = min(v for v, _ in values), max(v for v, _ in values)
-    r_lo, r_hi = min(r for _, r in values), max(r for _, r in values)
+    v_hi = max(v for v, _ in values)
+    r_lo = min(r for _, r in values)
 
     def solve(v: float, r: float, i_s: float) -> float:
         lo, hi = 0.0, max(v, 0.0) / r
@@ -539,9 +564,7 @@ def _current_hint(v_th, r_th, box_now, nvt: Fraction, diode: "DiodeBox") -> Tupl
             lo, hi = (mid, hi) if mid * r + float(nvt) * math.log1p(mid / i_s) < v else (lo, mid)
         return lo
 
-    i_lo = solve(v_lo, r_hi, float(diode.is_lo_outer)) * 0.9
-    i_hi = solve(v_hi, r_lo, float(diode.is_hi_outer)) * 1.1
-    return Fraction(f"{i_lo:.6e}"), Fraction(f"{i_hi:.6e}")
+    return Fraction(f"{solve(v_hi, r_lo, float(diode.is_hi_outer)) * 1.1:.6e}")
 
 
 def _enclose_series_power(obligations, current_le, r_th, v_th, r_sym, r_hi: Fraction, p_max: Fraction,
@@ -565,7 +588,8 @@ def _enclose_series_power(obligations, current_le, r_th, v_th, r_sym, r_hi: Frac
 def _denominator_lemmas(obligations: List[Obligation]) -> List[Obligation]:
     """One lemma per distinct symbolic denominator, in obligations and their refuters: it is never zero."""
     seen, out = set(), []
-    for ob in obligations + [o.refute for o in obligations if o.refute is not None]:
+    for ob in (obligations + [o.refute for o in obligations if o.refute is not None]
+               + [o.unless for o in obligations if o.unless is not None]):
         _, den = sympy.fraction(sympy.together(_expr(ob.expr)))
         if not den.free_symbols:
             continue
@@ -637,14 +661,20 @@ def decide(ob: Obligation, box: Dict[str, Tuple[Fraction, Fraction]]):
     solver = z3.Solver()
     solver.set("timeout", Z3_TIMEOUT_MS)
     env: Dict[str, z3.ArithRef] = {}
-    for name in sorted(s.name for s in expr.free_symbols):
+    guard = ob.unless
+    symbols = expr.free_symbols | (_expr(guard.expr).free_symbols if guard else set())
+    brackets_ = ob.brackets + (guard.brackets if guard else ())
+    for name in sorted(s.name for s in symbols):
         var = z3.Real(name)
         env[name] = var
-        bracket = next(((Fraction(lo), Fraction(hi)) for n, lo, hi in ob.brackets if n == name), None)
+        bracket = next(((Fraction(lo), Fraction(hi)) for n, lo, hi in brackets_ if n == name), None)
         lo, hi = bracket if bracket else box[name]
         solver.add(var >= z3.Q(lo.numerator, lo.denominator), var <= z3.Q(hi.numerator, hi.denominator))
-    e, b = _to_z3(expr, env), _to_z3(bound, env)
-    solver.add({"ge": e < b, "le": e > b, "gt": e <= b, "ne": e == b}[ob.op])
+    violated = {"ge": lambda e, b: e < b, "le": lambda e, b: e > b,
+                "gt": lambda e, b: e <= b, "ne": lambda e, b: e == b}
+    solver.add(violated[ob.op](_to_z3(expr, env), _to_z3(bound, env)))
+    if guard:
+        solver.add(violated[guard.op](_to_z3(_expr(guard.expr), env), _to_z3(_expr(guard.bound), env)))
     verdict = solver.check()
     if verdict == z3.unsat:
         return "unsat", None, None

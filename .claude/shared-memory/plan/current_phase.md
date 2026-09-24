@@ -733,9 +733,9 @@ dispatched again. `FirmwareViewer` polls while it compiles.
   now checked against the wiring on every board.
 - **The worker did not load the compile task**, and **a lost result would
   have read "compiling" forever**. Both fixed and tested.
-- **Black Pill at 13 mA: the R1 dissipation proof is G2** (the range
-  straddles the power peak); the generator's own exact claim keeps the
-  floor G1. Pinned.
+- ~~**Black Pill at 13 mA: the R1 dissipation proof is G2**~~ — G1 since the
+  "falls" lemma was guarded (`brain/decisions.md` [2026-09-24] Task 4.5,
+  amended). Pinned: no grid design falls back.
 
 ## Stage 5 — not done, and why
 

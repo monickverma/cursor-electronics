@@ -1626,12 +1626,12 @@ Arduino, ESP32, STM32.
   the Uno's node name, so supply current was NaN on 3.3 V; they now read the
   design's own rail. LED grids stop near each board's envelope edge (15, 14,
   13 mA), because the 20 mA pin limit over tolerance refuses 15 mA at 3.3 V.
-- **One proof is G2, by construction.** Black Pill at 13 mA: R1 = 66.5 Ω and
-  the STM32 pin spans 20–65 Ω, so R1's range straddles the dissipation peak
-  (R1 = R_out + r_d) and Task 4.5's monotone lemma cannot pick an end; the
-  prover falls back to the sound enclosure — proven, G2. The generator's own
-  claim evaluates the peak exactly (G1), so the design's floor stays G1.
-  Pinned in `test_proof.py` as `STRADDLES_THE_PEAK`.
+- **One proof was G2, by construction** — closed the same day. Black Pill at
+  13 mA: R1 = 66.5 Ω and the STM32 pin spans 20–65 Ω, so R1's range
+  straddles the dissipation peak (R1 = R_out + r_d) at the weak-pin corner,
+  and Task 4.5's monotone lemma could not pick an end; the prover fell back
+  to the sound enclosure. See [2026-09-24] Task 4.5 — the guarded lemma.
+  `STRADDLES_THE_PEAK` in `test_proof.py` is now pinned empty.
 - The form and the LLM catalogue offer `constraints.mcu` from the
   generators' declared boards, never a list kept beside them; the form range
   is the union over every board's grid. An unknown board is refused by name.
@@ -1699,3 +1699,30 @@ Stage 2 left them "stored and returned but not drawn".
   obligations would need a domain field on `Obligation` and a tiling rule per
   field. The lemma reaches the same exactness with the checker unchanged.
 - *Render a net name as the KiCad label.* Collides on connectivity (above).
+
+---
+
+## [2026-09-24] Task 4.5, amended — the "falls" lemma is guarded
+
+**Decision:** the "falls" lemma of `series_power` no longer has to hold over
+the whole box. It reads "R ≥ R_rest + n·V_t/c*, **unless** I ≤ c* is proved at
+that point", with c* = ⌊√(P_max/R_hi)⌋. `Obligation` gains an `unless` guard
+(a counterexample must break both); an obligation without one hashes exactly
+as before, so no stored certificate or signature moves.
+
+**Why it is sound.** Below c* the current cannot break the bound at all:
+I²·R ≤ c*²·R_hi ≤ P_max. A point with I > c* keeps I > c* all the way down to
+R_lo (in a series loop I rises as R falls), and there the guard cannot hold,
+so the lemma does: r_d = n·V_t/(I + I_s) < n·V_t/c* ≤ R − R_rest, and P falls
+along the whole segment. Hence P(p) ≤ P(R_lo, rest of p), which `worst_end`
+decides exactly. The old whole-box lemma needed "I ≥ I_lo" proved beside it;
+the guard replaces that.
+
+**Why it was needed.** Stage 5 found the Black Pill at 13 mA falling back to
+G2: R1's range straddles the peak at the weak-pin corner (R_out = 65 Ω), where
+the current is a third of what could reach the rating. The guard ignores
+exactly that region. Now G1 at every grid point on every board.
+
+**What still falls back.** A range that straddles the peak where the
+current is large — R1 ≈ R_out,min + r_d. `test_proof.py` pins one (R1 =
+15.6 Ω on the Uno) and pins that the grid has none.
