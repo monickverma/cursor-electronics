@@ -8,8 +8,8 @@
     "stage6_finish_before_phase3"
   ],
   "agent_prior_agrees_with": {
-    "kpi_5pct_disposition": null,
-    "stage6_finish_before_phase3": null
+    "kpi_5pct_disposition": "defer_with_named_trigger",
+    "stage6_finish_before_phase3": "finish_now"
   },
   "polarity_pairs": [],
   "state": {

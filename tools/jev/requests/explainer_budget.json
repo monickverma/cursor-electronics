@@ -5,7 +5,7 @@
   "door": "two_way",
   "governing": "first_step",
   "agent_prior_agrees_with": {
-    "first_step": null
+    "first_step": "move_explanation_off_request_path"
   },
   "polarity_pairs": [],
   "state": {
@@ -45,8 +45,8 @@
           "source": "validation/defeaters.py; CRITERION_12_REVIEW.md"
         },
         {
-          "fact": "<PASTE: owner's per-generation cost ceiling in USD>",
-          "source": "owner"
+          "fact": "The owner has not stated a per-generation cost ceiling.",
+          "source": "owner (not provided)"
         }
       ],
       "options": [

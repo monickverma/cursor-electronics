@@ -5,7 +5,7 @@
   "door": "two_way",
   "governing": "kind_option",
   "agent_prior_agrees_with": {
-    "kind_option": null
+    "kind_option": "keep_analytic_and_amend_v2_wording"
   },
   "polarity_pairs": [],
   "state": {
@@ -25,16 +25,16 @@
       "history": "The code labels exact proofs `analytic`; PHASE_2_PLAN_v2 labels them `empirical`. Flagged, not settled. Precedence: PHASE_2_PLAN_v2 > PRODUCT_MASTER > assurance docs (EVIDENCE_CLASSES).",
       "facts": [
         {
-          "fact": "<PASTE: brain/decisions.md:1208-1212 and 1266-1269 verbatim>",
-          "source": "brain/decisions.md"
+          "fact": "Decision log, Stage 3 and Stage 4 (verbatim): 'kind for exact closed-form claims is analytic. v2's Stage 4 table tags z3-proved claims empirical; by EVIDENCE_CLASSES §3.1's own test (could a measurement falsify it? no) they are analytic, and the model-versus-reality gap is carried by D1 instead ... If the user prefers v2's wording, it is one field per generator.' and 'kind is analytic ... (can a measurement falsify a z3 UNSAT over a box? no) ... model-versus-hardware stays with D1. Same reading Stage 3 used and flagged; one field if the user wants v2's word.'",
+          "source": ".claude/shared-memory/brain/decisions.md:1206-1214,1266-1269"
         },
         {
-          "fact": "<PASTE: PHASE_2_PLAN_v2 Stage 4 table row that says empirical>",
-          "source": "PHASE_2_PLAN_v2.md"
+          "fact": "PHASE_2_PLAN_v2's Stage 4 table tags z3-proved claims 'empirical' (the document itself is not available to quote; this is how the decision log reports it).",
+          "source": "brain/decisions.md:1208-1209"
         },
         {
-          "fact": "<PASTE: EVIDENCE_CLASSES §3.1 falsification test>",
-          "source": "EVIDENCE_CLASSES.md"
+          "fact": "EVIDENCE_CLASSES §3.1 classifies a claim as empirical if a measurement could falsify it, analytic otherwise (as paraphrased in the decision log; the document is not available to quote).",
+          "source": "brain/decisions.md:1209-1210"
         },
         {
           "fact": "No code reads Claim.kind; Kind.EMPIRICAL is never used; the UI does not render kind.",
@@ -53,8 +53,8 @@
           "source": "PHASE_2_PLAN_v2.md"
         },
         {
-          "fact": "<VERIFY by test: whether kind appears in CircuitIR bytes (if yes, changing it forces a version bump)>",
-          "source": "tests"
+          "fact": "kind lives inside CircuitIR.validation_coverage. same_design() drops validation_coverage before comparing, so changing kind does not change the circuit identity check, but it does change the full serialized CircuitIR.",
+          "source": "backend/generators/realize.py:93,101-112"
         }
       ],
       "options": [

@@ -5,7 +5,7 @@
   "door": "two_way",
   "governing": "d1_when",
   "agent_prior_agrees_with": {
-    "d1_when": null
+    "d1_when": "build_evidence_records_then_bench_when_scope_available"
   },
   "polarity_pairs": [],
   "state": {
@@ -45,8 +45,8 @@
           "source": "PHASE1_COMPLETE.md"
         },
         {
-          "fact": "<CONFIRM: whether BENCH_D1 allows a no-scope DC-only partial session (divider, LED) — else remove that option>",
-          "source": "owner"
+          "fact": "BENCH_D1 lists a multimeter, bench supply, signal generator and oscilloscope. Only the RC low-pass check needs the generator and scope; the divider check needs only a supply and meter, and the LED check a meter and an Uno pin driven high.",
+          "source": "docs/BENCH_D1.md:1-40"
         }
       ],
       "options": [
@@ -94,7 +94,7 @@
       "excluded_by_rule": []
     },
     "unknowns": [
-      "<PASTE: PHASE_2_PLAN_v2 exit text — until pasted, ignore d1_blocks_phase2_exit>"
+      "The PHASE_2_PLAN_v2 exit criteria are not available, so whether Phase 2 exit requires D1 closed is unknown."
     ]
   },
   "questions": {
@@ -108,10 +108,6 @@
         "defer_with_trigger_lab_access": "Choose when nothing scheduled depends on it before lab access.",
         "need_more_information": "Choose when exit criteria or equipment availability are unknown."
       }
-    },
-    "d1_blocks_phase2_exit": {
-      "type": "noul",
-      "instructions": "Given the pasted exit text, does Phase 2 exit require D1 closed?"
     }
   }
 }

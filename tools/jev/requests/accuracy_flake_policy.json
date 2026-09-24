@@ -5,7 +5,7 @@
   "door": "two_way",
   "governing": "flake_policy",
   "agent_prior_agrees_with": {
-    "flake_policy": null
+    "flake_policy": "diagnose_now_with_N_repeat_runs_seed_logged"
   },
   "polarity_pairs": [],
   "state": {

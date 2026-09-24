@@ -5,7 +5,7 @@
   "door": "one_way",
   "governing": "x7_option",
   "agent_prior_agrees_with": {
-    "x7_option": null
+    "x7_option": "defer_to_phase3"
   },
   "polarity_pairs": [],
   "state": {
@@ -41,8 +41,8 @@
           "source": ".claude/rules/security.md"
         },
         {
-          "fact": "<PASTE or 'unknown': vendor candidate, its terms on caching/display, key handling, rate limit, cost>",
-          "source": "owner"
+          "fact": "No live-pricing vendor has been chosen; vendor caching/display terms, key handling, rate limits and cost are unknown.",
+          "source": "owner (not provided)"
         }
       ],
       "options": [

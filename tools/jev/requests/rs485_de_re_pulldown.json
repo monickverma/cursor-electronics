@@ -5,7 +5,7 @@
   "door": "one_way",
   "governing": "pulldown_option",
   "agent_prior_agrees_with": {
-    "pulldown_option": null
+    "pulldown_option": "add_as_opt_in_constraint"
   },
   "polarity_pairs": [
     [
@@ -54,12 +54,12 @@
           "source": "backend/validation/grid_adapters.py:187-196"
         },
         {
-          "fact": "<PASTE: DE/RE pin (D2 / its ESP32 and STM32 equivalents) strapping or reserved status from data/mcu_targets.py and pin_rules on all 3 boards>",
-          "source": "data/mcu_targets.py"
+          "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+          "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
         },
         {
-          "fact": "<PASTE: D7 figure record, or 'stated assumption', for MAX485/MAX3485 driver state while DE/RE floats during MCU reset>",
-          "source": "backend/data/figures.py"
+          "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+          "source": "backend/data/component_constraints.py:50-79; agent reading"
         }
       ],
       "options": [
