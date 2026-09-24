@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-08-24T20:22:09.073311Z",
-  "generated_from_commit": "cec1a25",
+  "generated_at": "2026-09-24T01:10:40.756327Z",
+  "generated_from_commit": "1126d15",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -44,18 +44,6 @@
     "ai/intent_parser": {
       "status": "verified_done",
       "file": "backend/ai/intent_parser.py",
-      "exists": true,
-      "test_status": "passing"
-    },
-    "ai/circuit_reasoner": {
-      "status": "verified_done",
-      "file": "backend/ai/circuit_reasoner.py",
-      "exists": true,
-      "test_status": "passing"
-    },
-    "ai/patcher": {
-      "status": "verified_done",
-      "file": "backend/ai/patcher.py",
       "exists": true,
       "test_status": "passing"
     },
@@ -132,10 +120,10 @@
       "test_status": "no_test"
     },
     "api/routes/patch": {
-      "status": "untested",
+      "status": "verified_done",
       "file": "backend/api/routes/patch.py",
       "exists": true,
-      "test_status": "no_test"
+      "test_status": "passing"
     },
     "api/routes/simulate": {
       "status": "untested",
@@ -202,13 +190,235 @@
       "file": "backend/api/routes/pcb.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "observability/request_log": {
+      "status": "verified_done",
+      "file": "backend/observability/request_log.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "middleware/instrumentation": {
+      "status": "verified_done",
+      "file": "backend/middleware/instrumentation.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/protocol": {
+      "status": "verified_done",
+      "file": "backend/generators/protocol.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/rc_lowpass": {
+      "status": "verified_done",
+      "file": "backend/generators/rc_lowpass.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/envelope_grid": {
+      "status": "verified_done",
+      "file": "backend/validation/envelope_grid.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/derived_explainer": {
+      "status": "verified_done",
+      "file": "backend/ai/derived_explainer.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "core/intent_ir": {
+      "status": "verified_done",
+      "file": "backend/core/intent_ir.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/registry": {
+      "status": "verified_done",
+      "file": "backend/generators/registry.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/form_producer": {
+      "status": "verified_done",
+      "file": "backend/ai/form_producer.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/intent_producer": {
+      "status": "verified_done",
+      "file": "backend/ai/intent_producer.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "core/intent_patch": {
+      "status": "verified_done",
+      "file": "backend/core/intent_patch.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "core/annotations": {
+      "status": "verified_done",
+      "file": "backend/core/annotations.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/realize": {
+      "status": "verified_done",
+      "file": "backend/generators/realize.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "ai/intent_patcher": {
+      "status": "verified_done",
+      "file": "backend/ai/intent_patcher.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "db/migrations": {
+      "status": "verified_done",
+      "file": "backend/db/migrations.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/common": {
+      "status": "verified_done",
+      "file": "backend/generators/common.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/arduino_parts": {
+      "status": "verified_done",
+      "file": "backend/generators/arduino_parts.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/netlist_models": {
+      "status": "verified_done",
+      "file": "backend/generators/netlist/models.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/voltage_divider": {
+      "status": "verified_done",
+      "file": "backend/generators/voltage_divider.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/led_indicator": {
+      "status": "verified_done",
+      "file": "backend/generators/led_indicator.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/dht22_node": {
+      "status": "verified_done",
+      "file": "backend/generators/dht22_node.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/rs485_node": {
+      "status": "verified_done",
+      "file": "backend/generators/rs485_node.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/claims": {
+      "status": "verified_done",
+      "file": "backend/validation/claims.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/defeaters": {
+      "status": "verified_done",
+      "file": "backend/validation/defeaters.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "simulation/waveforms": {
+      "status": "verified_done",
+      "file": "backend/simulation/waveforms.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/grid_adapters": {
+      "status": "verified_done",
+      "file": "backend/validation/grid_adapters.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/brackets": {
+      "status": "verified_done",
+      "file": "backend/proof/brackets.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/netlist": {
+      "status": "verified_done",
+      "file": "backend/proof/netlist.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/mna": {
+      "status": "verified_done",
+      "file": "backend/proof/mna.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/properties": {
+      "status": "verified_done",
+      "file": "backend/proof/properties.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "proof/prover": {
+      "status": "verified_done",
+      "file": "backend/proof/prover.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "data/mcu_targets": {
+      "status": "verified_done",
+      "file": "backend/data/mcu_targets.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/pin_rules": {
+      "status": "verified_done",
+      "file": "backend/validation/pin_rules.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/firmware/project": {
+      "status": "verified_done",
+      "file": "backend/generators/firmware/project.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/firmware/compile_gate": {
+      "status": "verified_done",
+      "file": "backend/generators/firmware/compile_gate.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "tasks/firmware_task": {
+      "status": "verified_done",
+      "file": "backend/tasks/firmware_task.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "api/routes/firmware": {
+      "status": "verified_done",
+      "file": "backend/api/routes/firmware.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 425,
+    "passed": 2001,
     "failed": 0,
-    "skipped": 22,
-    "total": 425
+    "skipped": 30,
+    "total": 2001
   },
   "phase1_criteria": [
     {
@@ -273,19 +483,167 @@
     }
   ],
   "phase1_criteria_legend": "✅ met · ✅* met_by_substitute (a replacement gate, not the original) · ❌ failing · ⏳ needs a human or physical hardware",
+  "validation": {
+    "grade_floor": "G2",
+    "coverage_le_g2_min": 1.0,
+    "open_defeaters": {
+      "D1": [
+        "dht22_node",
+        "led_indicator",
+        "rc_lowpass",
+        "rs485_node",
+        "voltage_divider"
+      ],
+      "D2": [
+        "dht22_node",
+        "led_indicator",
+        "rs485_node"
+      ],
+      "D7": [
+        "dht22_node",
+        "led_indicator",
+        "rc_lowpass",
+        "rs485_node",
+        "voltage_divider"
+      ]
+    },
+    "not_assessed": {},
+    "generators": {
+      "rc_lowpass": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "rc.cutoff_nominal",
+          "rc.cutoff_band",
+          "rc.source_loading",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok"
+        ],
+        "proofs": {
+          "declared": 1,
+          "proven": 1,
+          "floor_if_signed": "G1"
+        }
+      },
+      "voltage_divider": {
+        "grade_floor": "G2",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "divider.resistor_dissipation"
+        ],
+        "proofs": {
+          "declared": 3,
+          "proven": 3,
+          "floor_if_signed": "G1"
+        }
+      },
+      "led_indicator": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "led.current_nominal",
+          "led.current_band",
+          "led.gpio_current_limit",
+          "led.led_current_limit",
+          "led.resistor_dissipation",
+          "led.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
+        ],
+        "proofs": {
+          "declared": 4,
+          "proven": 4,
+          "floor_if_signed": "G1"
+        }
+      },
+      "dht22_node": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "dht.pullup_present",
+          "dht.rise_time",
+          "dht.sink_current",
+          "dht.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
+        ],
+        "proofs": {
+          "declared": 2,
+          "proven": 2,
+          "floor_if_signed": "G1"
+        }
+      },
+      "rs485_node": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "rs485.failsafe_bias",
+          "rs485.driver_load",
+          "rs485.termination_dissipation",
+          "rs485.rail_current",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.rs485_termination_present",
+          "rule.rs485_bias_resistors",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
+        ],
+        "proofs": {
+          "declared": 2,
+          "proven": 2,
+          "floor_if_signed": "G1"
+        }
+      }
+    }
+  },
   "blockers": [
     "PCB routing untested (`board_ir`, `kernel`, `router`, `render_pretty`)",
     "OpenRouter rate limit (10/hr IP)",
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "cec1a25 brain: record the PCB decision in the file that owns it",
-    "9ef38fb brain: close Task 4, and register the test that was earning nothing",
-    "2bd73c8 Merge PR #1: gate the experimental PCB engine; fix regen_state.py on Windows",
-    "2384666 refactor(pcb): derive the flag from environment, and hide the tab when off",
-    "5831c98 test(pcb): cover the /pcb/compile experimental gate"
+    "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1",
+    "bb3eb21 feat(phase2): Stage 5 — multi-MCU firmware: boards as data, pins as claims, compile before display",
+    "1ff0e2a test(frontend): Playwright tests for the claims table, sign-off and waveform viewer",
+    "69f2d66 feat: Task 4.5 exact LED dissipation (0.1.2, G1); annotations drawn in the schematic",
+    "dfba3ed test+fix: verify sign-off on PostgreSQL and the live LLM paths; fix producer and explainer"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/architecture.md |  8 ++++--\n .claude/shared-memory/brain/decisions.md    | 43 +++++++++++++++++++++++++++++\n MENTAL_MODEL.md                             | 20 ++++++++------",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 39 +++++++++++---\n .claude/shared-memory/plan/current_phase.md |  6 +--\n backend/proof/prover.py                     | 84 +++++++++++++++++++----------\n t",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

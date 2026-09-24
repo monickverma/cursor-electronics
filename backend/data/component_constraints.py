@@ -13,6 +13,19 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "pullup_to": "VCC",
         "protocol": "single_wire_dht",
         "min_sample_interval_ms": 2000,
+        # Bus-timing inputs for the DHT22 generator's rise-time and sink-current
+        # claims (Stage 3). Aosong's datasheet gives the protocol timing (a "0"
+        # bit is 26-28 us high) but not these; they are stated assumptions,
+        # recorded here once and cited through defeater D7.
+        #  - cable capacitance: 50-100 pF/m covers ribbon to twisted pair
+        #  - input capacitance: ~10 pF each for the MCU pin and the sensor
+        #  - rise time: <= 5 us, a 5x margin inside the 26 us short-bit window
+        #  - sink current: <= 4 mA through the sensor's open-drain output, the
+        #    conservative figure open-drain buses (I2C: 3 mA) are designed to
+        "bus_capacitance_pf_per_m": {"min": 50.0, "max": 100.0},
+        "input_capacitance_pf": 10.0,
+        "rise_time_limit_us": 5.0,
+        "open_drain_sink_limit_ma": 4.0,
         "notes": [
             "DATA pin requires 10kΩ pull-up to VCC (3.3V or 5V)",
             "Cannot be read faster than once every 2 seconds",
@@ -47,6 +60,14 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "bias_a_to": "VCC",
         "bias_b_to": "GND",
         "decoupling_cap_nf": 100,
+        # Bus figures for the RS-485 generator's fail-safe and load claims
+        # (Stage 3). TIA-485-A: a receiver must resolve |V_AB| >= 200 mV, and a
+        # driver is specified into a 54 ohm differential load (two 120 ohm
+        # terminators and 32 unit loads). The driver cannot swing more than
+        # its supply, so V_CC bounds the terminator's worst-case dissipation.
+        # Datasheet/standard-derived: defeater D7.
+        "receiver_threshold_mv": 200.0,
+        "driver_rated_load_ohm": 54.0,
         "notes": [
             "DE and RE pins must be tied together and driven by one MCU GPIO",
             "HIGH = transmit mode, LOW = receive mode",
@@ -65,6 +86,10 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "requires_bias": True,
         "bias_value_ohm": 560,
         "decoupling_cap_nf": 100,
+        # Stage 5: the same TIA-485 bus figures as the MAX485 — the standard
+        # sets them, not the part. Defeater D7.
+        "receiver_threshold_mv": 200.0,
+        "driver_rated_load_ohm": 54.0,
         "notes": [
             "3.3V version of MAX485. Use when MCU logic is 3.3V.",
             "Same wiring as MAX485 but 3.3V supply and logic levels.",
@@ -83,6 +108,15 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "adc_pins": ["A0", "A1", "A2", "A3", "A4", "A5"],
         "flash_kb": 32,
         "ram_bytes": 2048,
+        # Output drive, for the Thevenin pin model (Stage 3, `mcu_pin_thevenin`).
+        # Datasheet §28.2: V_OH >= 4.2 V at I_OH = 20 mA, VCC = 5 V -> at most
+        # (5 - 4.2) / 0.02 = 40 ohm. Typical curves sit near 25 ohm. Read by
+        # both spice.py and the LED generator, so the netlist and predict()
+        # cannot disagree about the pin. Datasheet-derived: defeater D7.
+        "gpio_output_resistance_ohm": {"min": 15.0, "typ": 25.0, "max": 40.0},
+        "gpio_recommended_current_ma": 20,
+        # Supply-load model (X6, `mcu_as_100R`, D2): 100 ohm on the 5 V rail.
+        "supply_model_ohm": 100.0,
         "notes": [
             "Max 40mA per GPIO pin — LED without current limiter will damage the MCU",
             "Max 200mA total from all I/O pins combined",
@@ -108,6 +142,47 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
             "GPIO6–11 are connected to internal flash — DO NOT USE",
             "WiFi transmit draws up to 500mA peak — supply must handle this",
             "100nF + 10μF decoupling on 3.3V supply",
+        ],
+    },
+    # Stage 5 targets. The ESP32-DevKitC carries the WROOM-32E; the entry above
+    # is the older 32D and is left as it was.
+    "ESP32-WROOM-32E": {
+        "supply_voltage_min": 3.0,
+        "supply_voltage_max": 3.6,
+        "max_gpio_current_ma": 40,
+        # Datasheet DC characteristics: V_OH >= 0.8 x VDD (2.64 V) at the pin's
+        # rated source current. At the default drive strength (level 2, the
+        # Arduino core's) that is 20 mA -> at most (3.3 - 2.64) / 0.02 = 33 ohm.
+        # Defeater D7.
+        "gpio_output_resistance_ohm": {"min": 10.0, "typ": 20.0, "max": 33.0},
+        "gpio_recommended_current_ma": 20,
+        # Supply-load model (X6, D2): the run current without radio, as a
+        # resistor on the 3.3 V rail: 3.3 V / 80 mA.
+        "current_draw_active_ma": 80,
+        "supply_model_ohm": 41.0,
+        "notes": [
+            "3.3V logic — do NOT connect 5V signals without level shifting",
+            "GPIO34–39 are input-only; GPIO6–11 are the module's flash",
+            "Strapping pins 0, 2, 5, 12, 15 must not be pulled by external circuits",
+        ],
+    },
+    "STM32F411CEU6": {
+        "supply_voltage_min": 1.7,
+        "supply_voltage_max": 3.6,
+        "max_gpio_current_ma": 25,
+        "max_total_io_current_ma": 120,
+        # Datasheet I/O characteristics: V_OH >= VDD - 1.3 V at |I_IO| = 20 mA
+        # -> at most 1.3 / 0.02 = 65 ohm; V_OH >= VDD - 0.4 V at 8 mA (50 ohm).
+        # Defeater D7.
+        "gpio_output_resistance_ohm": {"min": 20.0, "typ": 35.0, "max": 65.0},
+        "gpio_recommended_current_ma": 20,
+        # Supply-load model: ~25 mA at 100 MHz, as 3.3 V / 25 mA.
+        "current_draw_active_ma": 25,
+        "supply_model_ohm": 132.0,
+        "notes": [
+            "3.3V logic; most pins are 5V-tolerant as inputs only",
+            "PC13–PC15 sink at most 3 mA and must not source current",
+            "PA11/PA12 are USB; PA13/PA14 are SWD",
         ],
     },
     "SHT31-D": {
@@ -240,6 +315,22 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
             "General purpose rectifier diode",
             "Use as flyback diode across relay coils and inductive loads",
             "Cathode band toward positive supply (for flyback: cathode to VCC, anode to coil terminal)",
+        ],
+    },
+    # Everlight red LED used by the LED generator (Stage 3). The diode model in
+    # spice.py and predict() are both fitted from these figures: Shockley with
+    # ideality `ideality`, saturation current chosen so V_f(test_current) is the
+    # typical forward voltage. The min/max bound the tolerance box. Datasheet-
+    # derived: defeater D7.
+    "67-21URC/S530-A3/TR8": {
+        "forward_voltage_v": {"min": 1.7, "typ": 2.0, "max": 2.4},
+        "test_current_ma": 20,
+        "ideality": 2.0,
+        "max_continuous_current_ma": 25,
+        "reverse_voltage_max": 5.0,
+        "notes": [
+            "Red LED, V_f 2.0 V typical (1.7-2.4 V) at 20 mA",
+            "25 mA continuous maximum; 5 V reverse maximum",
         ],
     },
     "SMBJ5.0A": {

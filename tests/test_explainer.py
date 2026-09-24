@@ -31,7 +31,13 @@ import os
 
 import pytest
 
-from ai.explainer import SYSTEM_PROMPT, ExplanationEngine
+from ai.explainer import (
+    CONSEQUENTIAL_MARKER_BAR,
+    CONSEQUENTIAL_MARKERS,
+    SYSTEM_PROMPT,
+    ExplanationEngine,
+    _first_text,
+)
 from core.ir_validator import IRValidationResult, validate_ir
 
 API_KEY_PRESENT = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
@@ -239,19 +245,68 @@ class TestExplainWiring:
         assert len(recorder["messages"][0]["content"]) > 100
 
 
+class TestReasoningModelResponses:
+    """
+    Regression for a live crash found on 2026-09-20 while running the Task 0.5
+    derivability experiment: the configured `AI_MODEL` reasons before it
+    writes, so `response.content[0]` is a thinking block and the old
+    `content[0].text` raised `AttributeError: 'ThinkingBlock' object has no
+    attribute 'text'`. Every explanation call was failing.
+
+    The tool_use modules are deliberately not changed — forced `tool_choice`
+    suppresses thinking blocks, and `content[0].input` was verified correct
+    against the live API before this fix was narrowed to the explainer.
+    """
+
+    class _Thinking:
+        type = "thinking"
+        thinking = "let me work through the divider ratio…"
+
+    class _Text:
+        type = "text"
+
+        def __init__(self, text):
+            self.text = text
+
+    class _Response:
+        def __init__(self, content):
+            self.content = content
+
+    def test_text_after_a_thinking_block_is_found(self):
+        response = self._Response([self._Thinking(), self._Text("the explanation")])
+        assert _first_text(response) == "the explanation"
+
+    def test_plain_text_response_still_works(self):
+        assert _first_text(self._Response([self._Text("plain")])) == "plain"
+
+    def test_first_of_several_text_blocks_wins(self):
+        response = self._Response([self._Text("first"), self._Text("second")])
+        assert _first_text(response) == "first"
+
+    def test_thinking_only_response_raises_a_legible_error(self):
+        # Seen for real: the model spent the whole max_tokens budget thinking
+        # and emitted no prose. An AttributeError here would send the reader
+        # hunting in the wrong place.
+        with pytest.raises(ValueError, match="no text block"):
+            _first_text(self._Response([self._Thinking()]))
+
+    def test_error_names_the_block_types_it_did_get(self):
+        with pytest.raises(ValueError, match="thinking"):
+            _first_text(self._Response([self._Thinking()]))
+
+
 # ── Live tests — the property criterion 12 actually measures ──────────────────
 
 @requires_api
 class TestExplanationIsConsequentialLive:
-    CONSEQUENTIAL_MARKERS = [
-        "if ", "would ", "without", "exceed", "fail", "instead of",
-        "otherwise", "breaks", "risk",
-    ]
+    # The list lives in ai/explainer.py. It used to be duplicated here and in
+    # ai/derived_explainer.py — identical on the day it was written, and one
+    # edit away from holding two explainers to different standards.
 
     def test_output_uses_consequential_language(self, ir_dht22):
         text = ExplanationEngine().explain(ir_dht22).lower()
-        hits = [m for m in self.CONSEQUENTIAL_MARKERS if m in text]
-        assert len(hits) >= 3, (
+        hits = [m for m in CONSEQUENTIAL_MARKERS if m in text]
+        assert len(hits) >= CONSEQUENTIAL_MARKER_BAR, (
             f"Explanation reads as descriptive, not consequential. "
             f"Only matched {hits}. See PRODUCT_MASTER.md Part 12."
         )

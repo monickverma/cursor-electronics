@@ -30,6 +30,14 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
           ? `Circuit generation failed after ${attempts.length} attempt(s):\n` +
             attempts.map((a, i) => `  ${i + 1}. ${a}`).join('\n')
           : 'Circuit generation failed with no recorded attempts.'
+      } else if (detail.error === 'out_of_envelope' && Array.isArray(detail.refusals)) {
+        // A refusal is a product outcome with reasons, not a crash.
+        const kept = detail.kept_version ? ` The design is unchanged (still v${detail.kept_version}).` : ''
+        const reasons = (detail.refusals as Array<{ generator: string; reason: string }>)
+          .map(r => `  - ${r.generator}: ${r.reason}`)
+        message = ['No generator accepts that requirement:', ...reasons].join('\n') + kept
+      } else if (typeof detail.message === 'string') {
+        message = detail.message
       } else {
         message = JSON.stringify(detail)
       }
@@ -67,12 +75,92 @@ export interface GenerateResponse {
   version: number
   simulation_job_id: string | null
   validation: { passed: boolean; errors: Array<{ field: string; message: string }>; warnings: Array<{ field: string; message: string }> }
+  // Stage 5: present only once it has compiled for the design's board.
   firmware: string | null
+  firmware_build?: FirmwareBuild | null
   schematic: string
   bom: BOMRow[]
   explanation: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
+  validation_coverage?: ValidationCoverage | null
+}
+
+// ── Stage 3: claim objects (EVIDENCE_CLASSES.md §3) ─────────────────────────
+
+export type Verdict =
+  | 'holds' | 'holds_defeasible' | 'fails'
+  | 'not_applicable' | 'not_assessed' | 'out_of_scope'
+
+export interface Claim {
+  id: string
+  claim: string
+  kind: 'analytic' | 'empirical' | 'projected'
+  verdict: Verdict
+  method: string | null
+  grade: string | null
+  scope: { parameters: string; horizon: string; model: string; inputs: string } | null
+  defeaters: string[]
+  critical: boolean
+  detail: string | null
+  covers: string[]
+}
+
+// ── Stage 4: proved properties (backend/proof, validation/claims.py) ────────
+
+export interface PropertyView {
+  id: string
+  /** The sentence proved, generated from the formula by template — what is signed. */
+  english: string
+  hash: string
+  status: 'proven' | 'refuted' | 'unknown'
+  method: string
+  grade: string | null
+  re_derives: string | null
+  counterexample: Record<string, string> | null
+}
+
+export interface ValidationCoverage {
+  claims: Claim[]
+  coverage_le_g2: number
+  grade_floor: string | null
+  open_defeaters: string[]
+  not_assessed: string[]
+  out_of_scope: string[]
+  // Stage 4. Absent on designs built before it.
+  properties?: PropertyView[]
+  properties_hash?: string | null
+  properties_signed?: boolean
+  signed_by?: string | null
+}
+
+export interface SignOffResponse {
+  circuit_id: string
+  version: number
+  signed_by: string
+  properties_hash: string
+  validation_coverage: ValidationCoverage
+  intent_ir: Record<string, unknown>
+}
+
+/** Sign the properties the user was shown. The hash is the one displayed, never recomputed. */
+export async function signOffDesign(
+  circuitId: string, propertiesHash: string, token: string,
+): Promise<SignOffResponse> {
+  return apiPost(`/design/${circuitId}/sign-off`, { properties_hash: propertiesHash }, token)
+}
+
+// ── Stage 3: waveform data (backend/simulation/waveforms.py) ────────────────
+
+export interface Sweep {
+  x: number[]
+  series: Record<string, Array<number | null>>
+}
+
+export interface Waveforms {
+  dc: { voltages: Record<string, number>; currents: Record<string, number> }
+  ac: Sweep
+  tran: Sweep
 }
 
 export interface BOMRow {
@@ -99,7 +187,12 @@ export interface SimulationStatus {
   circuit_id: string
   status: string
   duration_ms?: number
-  results?: Record<string, unknown>
+  results?: {
+    dc_voltages?: Record<string, number>
+    ac_points_count?: number
+    // Absent on results stored before Stage 3.
+    waveforms?: Waveforms | null
+  }
   grade?: { passed: boolean; failures: string[]; notes: string[] }
   error?: string
 }
@@ -107,14 +200,43 @@ export interface SimulationStatus {
 export interface PatchResponse {
   circuit_id: string
   version: number
-  changes: Array<{ component_id: string; field: string; new_value: unknown }>
+  // Stage 2: the requirement diff, one line per changed path —
+  // "targets.cutoff_hz: 1000 → 2000". Patches edit the requirement, not parts.
+  changes: string[]
   note_to_user: string
   validation: { passed: boolean; errors: Array<{ field: string; message: string }>; warnings: Array<{ field: string; message: string }> }
   simulation_job_id: string | null
   firmware: string | null
+  firmware_build?: FirmwareBuild | null
   schematic: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
+  intent_ir?: Record<string, unknown>
+  predict_delta?: string[]
+  citations?: string[]
+  generator?: string | null
+  generator_changed?: { from: string; to: string } | null
+  annotations?: { attached: unknown[]; orphaned: unknown[] }
+  validation_coverage?: ValidationCoverage | null
+}
+
+// ── Stage 5: firmware is shown only once it compiles ────────────────────────
+
+export type FirmwareStatus = 'none' | 'compiling' | 'compiled' | 'failed' | 'unavailable'
+
+export interface FirmwareBuild {
+  status: FirmwareStatus
+  message: string
+  target?: string | null   // data/mcu_targets id, e.g. esp32_devkitc
+  board?: string | null    // e.g. "ESP32-DevKitC (ESP32-WROOM-32E)"
+  build?: string | null    // SHA-256 of the PlatformIO project
+  firmware?: string | null
+  platformio_ini?: string | null
+  log?: string | null      // the build log's tail, when it failed
+}
+
+export async function getFirmware(circuitId: string, token: string): Promise<FirmwareBuild> {
+  return apiGet(`/design/${circuitId}/firmware`, token)
 }
 
 export async function generateDesign(prompt: string, token: string): Promise<GenerateResponse> {

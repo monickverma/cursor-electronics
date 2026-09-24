@@ -18,7 +18,7 @@ Do not rename fields. Do not add fields without updating every downstream genera
 
 ## AI Layer Pattern: tool_use Only
 
-All three AI modules (intent_parser, circuit_reasoner, patcher) use the same pattern. Never deviate from it.
+Every AI module (intent_parser, intent_producer, patcher) uses the same pattern. Never deviate from it.
 
 ```python
 # CORRECT — tool_use forces structured output, response is already a parsed dict
@@ -41,24 +41,44 @@ spice_netlist = response.content[0].text  # NO. This is not how Circuit OS works
 
 ---
 
-## Circuit Reasoner: Retry Loop (3 Distinct Failure Types)
+## Retry: Schema Never, Semantics Once — and a Retry May Not Rewrite the Request
 
-The retry loop in `circuit_reasoner.py` handles exactly three failure modes. Each requires a different response:
+> **Amended 2026-09-21.** `circuit_reasoner.py` and its 3-attempt loop are
+> **deleted** — it was the path by which the LLM wrote `CircuitIR`, which Stage 1
+> Task 1.5 removes. The rules below govern `ai/intent_producer.py`, which writes
+> `IntentIR` instead. Amendment X5 of `PHASE_2_PLAN_v2.md`; rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-21].
 
-| Failure type | Cause | Response |
-|---|---|---|
-| `anthropic.APIError` | Claude API down or rate limited | Do NOT retry. Raise immediately → 503 |
-| `json.JSONDecodeError` | Malformed JSON from API | Re-prompt with exact error position |
-| `pydantic.ValidationError` | Valid JSON but fails schema | Re-prompt with specific field paths |
+| Failure type | Response |
+|---|---|
+| `anthropic.APIError` | Do NOT retry. Raise immediately → 503 |
+| **Schema failure** (tool input does not fit the schema) | Do NOT retry. Raise `IntentProductionError` **carrying the raw tool input** → 422 |
+| **Semantic rejection** (`envelope()` refused, with a reason) | Retry **once**, subject to the guard below |
 
-Maximum 3 attempts total. On all-fail: raise `CircuitGenerationError` → HTTP 422 with structured body. Never HTTP 500 — that means a server bug, not a generation failure.
+**Why schema failures no longer retry.** Forced `tool_choice` returns a parsed
+dict conforming to the tool schema, so re-prompting for a schema failure
+re-prompts for something that should not happen — and hides how often it does.
+That "should not happen" is an empirical claim about frontier models, not a
+structural one, so the error carries the raw input: if the assumption breaks it
+must announce itself.
 
-For `pydantic.ValidationError` corrections, include the specific field paths:
+**The guard: a retry may add, never rewrite.**
+
+```python
+# CORRECT — the retry supplies a value it failed to record the first time
+before = {"targets.cutoff_hz": 2_000_000}
+after  = {"targets.cutoff_hz": 2_000_000, "targets.tolerance_pct": 5}
+
+# WRONG — the retry altered what the user asked for so it would fit
+before = {"targets.cutoff_hz": 2_000_000}
+after  = {"targets.cutoff_hz": 1_000}      # refused: IntentProductionError
 ```
-"Field components[2].justification is too short (4 chars, minimum 20).
- Field connections[0].component_id references 'U99' which does not exist."
-```
-Generic "validation failed" is not enough. Claude needs to know which field to fix.
+
+Told "no generator accepted this", the fix most available to a model is to
+**change the requirement until it fits**, handing back a design the user never
+asked for. That defeats the one analytic claim the architecture rests on — that
+the requirement is materialized before the design. A request genuinely outside
+the catalogue is **refused, not negotiated**.
 
 ---
 
@@ -98,19 +118,44 @@ Phase 2: Qdrant RAG with full datasheet excerpts. Phase 1: static dict only.
 
 ---
 
-## Patcher Invariant
+## Patcher Invariant — Patches Edit the Requirement, Never the Circuit
 
-`CircuitPatcher.patch()` **never** returns a full IR. It returns only changed fields.
+> **Amended 2026-09-21 (Stage 2, X2 + X4).** `ai/patcher.py` is **deleted**.
+> It let a model write CircuitIR component fields through `model_copy(update=...)`
+> — an LLM → CircuitIR path the Task 1.5 scanner missed. Rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-21] X2 + X4.
+
+A patch is an RFC 6902 operation list over `IntentIR.requirements`. The design is
+**re-derived** through the same gate as a fresh request.
 
 ```python
-# CORRECT — patch returns only what changed
-{"changes": [{"component_id": "R1", "field": "value", "new_value": "4.7k"}]}
+# CORRECT — edit what was asked for; regenerate through the gate
+ops = [PatchOp(op="replace", path="/targets/cutoff_hz", value=2000)]
+outcome = apply_patch(intent, ops)             # core/intent_patch.py
+dispatch = registry.dispatch(outcome.intent)   # refused → v(n) kept, nothing written
+new_ir = realize(dispatch.generator, outcome.intent)
 
-# WRONG — patcher re-generating the entire design
-{"circuit_id": "...", "components": [...all components...], "nodes": [...]}
+# WRONG — edit what was built
+ir.model_copy(update={"components": [...]})    # a design no generator produced
 ```
 
-Returning a full IR from the patcher overwrites user customizations and makes `patch_history` meaningless. The patcher's job is surgical: change exactly what was requested, preserve everything else.
+Rules that follow from it:
+
+- **The LLM patcher (`ai/intent_patcher.py`) returns operations, never a design,**
+  and never imports `CircuitIR`. Every operation cites the verbatim words of the
+  command that asked for it — whole words, no two operations sharing words, and
+  containing the value it writes ("2 kHz" grounds 2000, not 20000). An
+  operation that fails any of the three refuses the whole patch. A relative
+  request ("double the cutoff") is refused until the user states the value.
+- **A revision is written only over the version it was computed from.** A
+  patch that lost a race answers 409 `version_conflict` and writes nothing.
+- **No retries on patches.** A refused patch is reported; the user rephrases.
+- **Patching is LLM-optional:** the route takes `ops` directly with zero model calls.
+- **A patch that changes nothing is not a version.**
+- **"Use the part I have" is `constraints.pinned`, not an annotation.** Annotations
+  (`core/annotations.py`) are a closed list, merged after generation, never an input.
+- **Only `generators/realize.py` stamps `circuit_id`, `version` and `generator`.**
+  Generators never work around determinism locally.
 
 ---
 

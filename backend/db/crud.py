@@ -34,7 +34,13 @@ async def create_user(db: AsyncSession, email: str, hashed_password: str) -> Use
 
 # ── Circuit designs ───────────────────────────────────────────────────────────
 
-async def save_design(db: AsyncSession, ir: CircuitIR, user_id: str) -> CircuitDesign:
+async def save_design(
+    db: AsyncSession,
+    ir: CircuitIR,
+    user_id: str,
+    intent_ir: Optional[dict] = None,
+    annotations: Optional[list] = None,
+) -> CircuitDesign:
     design = CircuitDesign(
         circuit_id=ir.circuit_id,
         user_id=uuid.UUID(user_id),
@@ -44,6 +50,8 @@ async def save_design(db: AsyncSession, ir: CircuitIR, user_id: str) -> CircuitD
         safety_class=ir.safety_class,
         target_mcu=ir.target_mcu,
         ir_json=ir.model_dump(mode="json"),
+        intent_ir=intent_ir,
+        annotations=annotations if annotations is not None else [],
         simulation_passed=ir.simulation_passed,
     )
     db.add(design)
@@ -68,6 +76,53 @@ async def update_design_ir(db: AsyncSession, circuit_id: str, ir: CircuitIR) -> 
             simulation_passed=ir.simulation_passed,
             updated_at=datetime.utcnow(),
         )
+    )
+
+
+async def update_design_revision(
+    db: AsyncSession,
+    circuit_id: str,
+    ir: CircuitIR,
+    intent_ir: dict,
+    expected_version: int,
+) -> bool:
+    """
+    A new revision: circuit and requirement move together — but only if the
+    stored design is still at `expected_version`, the one the patch was
+    computed from. Returns False, having written nothing, when it is not.
+
+    Without the version predicate two patches in flight both read v(n), both
+    write "v(n+1)", and the second silently discards the first while its user
+    is told it landed. Under READ COMMITTED the second UPDATE waits on the
+    first's row lock and then re-checks the predicate against the committed
+    row, so exactly one of them matches.
+
+    Annotations are not written here. A patch never changes the annotation
+    set — orphans are kept, not dropped — so rewriting it could only clobber
+    a concurrent `PUT …/annotations`.
+    """
+    result = await db.execute(
+        update(CircuitDesign)
+        .where(
+            CircuitDesign.circuit_id == circuit_id,
+            CircuitDesign.version == expected_version,
+        )
+        .values(
+            ir_json=ir.model_dump(mode="json"),
+            intent_ir=intent_ir,
+            version=ir.version,
+            simulation_passed=ir.simulation_passed,
+            updated_at=datetime.utcnow(),
+        )
+    )
+    return result.rowcount == 1
+
+
+async def update_design_annotations(db: AsyncSession, circuit_id: str, annotations: list) -> None:
+    await db.execute(
+        update(CircuitDesign)
+        .where(CircuitDesign.circuit_id == circuit_id)
+        .values(annotations=annotations, updated_at=datetime.utcnow())
     )
 
 
@@ -144,18 +199,28 @@ async def record_patch(
     to_version: int,
     patch_json: dict,
     prompted_by: str,
+    change_summary: Optional[str] = None,
 ) -> PatchHistory:
     patch = PatchHistory(
         circuit_id=circuit_id,
         from_version=from_version,
         to_version=to_version,
         patch_json=patch_json,
-        change_summary=f"v{from_version} → v{to_version}",
+        change_summary=change_summary or f"v{from_version} → v{to_version}",
         prompted_by=prompted_by,
     )
     db.add(patch)
     await db.flush()
     return patch
+
+
+async def list_patches(db: AsyncSession, circuit_id: str) -> list[PatchHistory]:
+    result = await db.execute(
+        select(PatchHistory)
+        .where(PatchHistory.circuit_id == circuit_id)
+        .order_by(PatchHistory.to_version.asc(), PatchHistory.created_at.asc())
+    )
+    return list(result.scalars().all())
 
 
 # ── Generated outputs ─────────────────────────────────────────────────────────
@@ -176,3 +241,39 @@ async def save_output(
     db.add(out)
     await db.flush()
     return out
+
+
+# ── Stage 5: the compile gate's cache ────────────────────────────────────────
+
+async def get_firmware_build(db: AsyncSession, build_hash: str):
+    from db.models import FirmwareBuild
+
+    return (await db.execute(select(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash))).scalar_one_or_none()
+
+
+async def queue_firmware_build(db: AsyncSession, build_hash: str, target: str) -> None:
+    """Record a build as queued. Idempotent: a second request for one hash is a no-op."""
+    from sqlalchemy.dialects.postgresql import insert
+
+    from db.models import FirmwareBuild
+
+    await db.execute(insert(FirmwareBuild).values(build_hash=build_hash, target=target, status="queued",
+                                                  created_at=datetime.utcnow())
+                     .on_conflict_do_nothing(index_elements=["build_hash"]))
+
+
+async def requeue_firmware_build(db: AsyncSession, build_hash: str) -> None:
+    """Restart a queued build's clock: it has just been dispatched again."""
+    from db.models import FirmwareBuild
+
+    await db.execute(update(FirmwareBuild)
+                     .where(FirmwareBuild.build_hash == build_hash, FirmwareBuild.status == "queued")
+                     .values(created_at=datetime.utcnow()))
+
+
+async def finish_firmware_build(db: AsyncSession, build_hash: str, status: str, log: str, seconds: float) -> None:
+    from db.models import FirmwareBuild
+
+    await db.execute(update(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash)
+                     .values(status=status, log=log, seconds=seconds, finished_at=datetime.utcnow()))
+

@@ -1,5 +1,15 @@
 -- Circuit OS — PostgreSQL Schema
 -- Run this once: psql -d circuitos -f schema.sql
+--
+-- NOTE — there is no migration tool in this repo. docker-compose mounts this
+-- file into /docker-entrypoint-initdb.d, which Postgres runs ONLY on an empty
+-- data directory. Any database whose `pgdata` volume already exists will not
+-- pick up a table added here; it has to be applied by hand:
+--
+--   docker compose exec -T db psql -U circuitos_user -d circuitos < backend/db/schema.sql
+--
+-- (or just the new CREATE TABLE). Confirmed 2026-09-20 when `request_log` was
+-- added and did not appear on an existing volume.
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- for gen_random_uuid()
 
@@ -37,10 +47,14 @@ CREATE TABLE circuit_designs (
     safety_class VARCHAR(20) DEFAULT 'general',
     target_mcu VARCHAR(50),
     ir_json JSONB NOT NULL,
+    intent_ir JSONB,     -- Stage 2: the IntentIR the design was realised from; NULL = pre-Stage-2
+    annotations JSONB,   -- Stage 2: annotation layer, merged after generation
     simulation_passed BOOLEAN,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Existing volumes get the two Stage 2 columns from backend/db/migrations.py
+-- at startup; this file only runs on an empty data directory.
 
 CREATE INDEX idx_designs_circuit_id ON circuit_designs(circuit_id);
 CREATE INDEX idx_designs_user_id ON circuit_designs(user_id);
@@ -98,6 +112,49 @@ CREATE TABLE generated_outputs (
 );
 
 CREATE INDEX idx_generated_outputs_circuit_id ON generated_outputs(circuit_id);
+
+-- One row per request. PHASE_2_PLAN_v2.md §4.5.
+-- No foreign keys on purpose: an analytics log that participates in
+-- referential integrity can be rejected or cascade-deleted, and the rows worth
+-- keeping are the ones where the design was never persisted.
+CREATE TABLE request_log (
+    request_id VARCHAR(36) PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL,
+    route VARCHAR(200) NOT NULL,
+    outcome VARCHAR(20) NOT NULL,     -- completed | refused | failed | abandoned | patched
+    latency_ms INTEGER NOT NULL,
+    api_calls INTEGER NOT NULL DEFAULT 0,
+    schema_version VARCHAR(20) NOT NULL,
+    prompt_hash VARCHAR(64),
+    intent_ir JSONB,
+    underdetermined JSONB,
+    generator VARCHAR(100),           -- name@version
+    refusal_reason TEXT,
+    user_id VARCHAR(36),
+    circuit_id VARCHAR(36),
+    status_code INTEGER,
+    error TEXT
+);
+
+CREATE INDEX idx_request_log_created_at ON request_log(created_at);
+
+-- Stage 5: the compile gate's cache. Firmware is shown only once its project
+-- has built; a project is keyed by the SHA-256 of its files, so identical
+-- firmware compiles once. Also created by db/migrations.py on old volumes.
+CREATE TABLE firmware_builds (
+    build_hash VARCHAR(64) PRIMARY KEY,   -- SHA-256 of the project files
+    target VARCHAR(50) NOT NULL,          -- data/mcu_targets id
+    status VARCHAR(20) NOT NULL,          -- queued | passed | failed
+    log TEXT,
+    seconds DOUBLE PRECISION,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ
+);
+CREATE INDEX idx_request_log_outcome ON request_log(outcome);
+CREATE INDEX idx_request_log_prompt_hash ON request_log(prompt_hash);
+CREATE INDEX idx_request_log_generator ON request_log(generator);
+CREATE INDEX idx_request_log_user_id ON request_log(user_id);
+CREATE INDEX idx_request_log_circuit_id ON request_log(circuit_id);
 
 -- Trigger: update updated_at on row change
 CREATE OR REPLACE FUNCTION update_updated_at()

@@ -1,5 +1,9 @@
 'use client'
 
+import ClaimsTable from '@/components/ClaimsTable'
+import PropertiesPanel from '@/components/PropertiesPanel'
+import type { ValidationCoverage } from '@/lib/api'
+
 interface ValidationData {
   passed: boolean
   errors: Array<{ field: string; message: string }>
@@ -9,18 +13,41 @@ interface ValidationData {
 interface Props {
   validation: ValidationData
   explanation?: string
+  // Stage 3 claim objects. Absent on designs built before Stage 3.
+  coverage?: ValidationCoverage | null
+  // Stage 4 sign-off needs the design and the session.
+  circuitId?: string
+  token?: string
+  onCoverage?: (coverage: ValidationCoverage) => void
 }
 
-export default function ValidationReport({ validation, explanation }: Props) {
+export default function ValidationReport({ validation, explanation, coverage, circuitId, token, onCoverage }: Props) {
   return (
     <div className="h-full overflow-y-auto p-5 space-y-5">
-      {/* Overall badge */}
+      {coverage && (
+        // Keyed on the set and its standing, so a message about one property
+        // set never lingers over another.
+        <PropertiesPanel key={`${coverage.properties_hash ?? ''}:${!!coverage.properties_signed}`}
+                         coverage={coverage} circuitId={circuitId} token={token} onSigned={onCoverage} />
+      )}
+      {coverage && <ClaimsTable coverage={coverage} />}
+
+      {/* Overall badge. With claim objects present it must not say "all rules
+          passed" while rules sit unassessed — that is the silent pass X8 ends. */}
       <div className={`inline-flex items-center gap-2 rounded px-3 py-1.5 text-sm border ${
-        validation.passed
-          ? 'bg-green-900/20 border-green-700 text-green-400'
-          : 'bg-red-900/20 border-red-700 text-red-400'
+        !validation.passed
+          ? 'bg-red-900/20 border-red-700 text-red-400'
+          : coverage && coverage.not_assessed.length > 0
+            ? 'bg-glow/10 border-glow/60 text-glow'
+            : 'bg-green-900/20 border-green-700 text-green-400'
       }`}>
-        {validation.passed ? '✓ All rules passed' : `✗ ${validation.errors.length} error(s)`}
+        {!validation.passed
+          ? `✗ ${validation.errors.length} error(s)`
+          : coverage
+            ? coverage.not_assessed.length > 0
+              ? `No rule errors — ${coverage.not_assessed.length} check(s) not assessed`
+              : '✓ No rule errors; every check assessed or accounted for'
+            : '✓ All rules passed'}
       </div>
 
       {/* Errors */}
@@ -53,7 +80,7 @@ export default function ValidationReport({ validation, explanation }: Props) {
         </section>
       )}
 
-      {validation.errors.length === 0 && validation.warnings.length === 0 && !explanation && (
+      {validation.errors.length === 0 && validation.warnings.length === 0 && !explanation && !coverage && (
         <p className="text-sm text-muted">No issues found.</p>
       )}
     </div>

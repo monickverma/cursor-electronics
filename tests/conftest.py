@@ -4,6 +4,7 @@ Pytest fixtures. All 5 example IRs available in every test module.
 
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 # Set dummy env vars BEFORE any backend imports so pydantic-settings doesn't
@@ -13,6 +14,14 @@ os.environ.setdefault("ANTHROPIC_API_KEY", "")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test_db")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-minimum-32-characters-long")
+
+# Keep the request-log sidecar out of the source tree. No test has a database,
+# so every request any test makes through the app falls back to this file —
+# which otherwise accumulates inside backend/observability/ run after run.
+os.environ.setdefault(
+    "REQUEST_LOG_FALLBACK_PATH",
+    str(Path(tempfile.gettempdir()) / "circuitos_test_request_log.jsonl"),
+)
 
 # Ensure backend is importable when running tests from repo root
 sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))

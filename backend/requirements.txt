@@ -19,6 +19,11 @@ redis==5.0.8
 # Code generation
 jinja2==3.1.4
 
+# Firmware compile gate (Stage 5): firmware is shown only once it builds. Each
+# board's toolchain is fetched on its first build and cached in ~/.platformio
+# (a volume in docker-compose.yml). Platform versions are pinned per project.
+platformio==6.2.0
+
 # PCB layout engine (pcb_engine/router.py) — without this the API fails at import
 numpy==1.26.4
 
@@ -32,6 +37,13 @@ sentry-sdk[fastapi]==2.13.0
 python-jose[cryptography]==3.3.0
 bcrypt==4.0.1
 python-multipart==0.0.9
+
+# Proof compiler (Phase 2 Stage 4): exact decision over tolerance boxes,
+# symbolic nodal analysis from the netlist, and rigorous rational brackets for
+# pi and logarithms. sympy 1.14 requires mpmath < 1.4.
+z3-solver==5.1.0.0
+sympy==1.14.0
+mpmath==1.3.0
 
 # JSON patch (for diff-and-patch editing)
 jsonpatch==1.33

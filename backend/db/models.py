@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -59,6 +59,12 @@ class CircuitDesign(Base):
     safety_class = Column(String(20), default="general")
     target_mcu = Column(String(50))
     ir_json = Column(JSONB, nullable=False)
+    # Stage 2 (X2): the requirement the design was realised from, and the
+    # annotations merged onto it. NULL intent_ir = a design built before
+    # Stage 2, which has no requirement to patch. Added to existing volumes by
+    # db/migrations.py.
+    intent_ir = Column(JSONB)
+    annotations = Column(JSONB)
     simulation_passed = Column(Boolean)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -89,6 +95,20 @@ class SimulationRun(Base):
     design = relationship("CircuitDesign", back_populates="simulation_runs")
 
 
+class FirmwareBuild(Base):
+    """Stage 5: one PlatformIO build of one firmware project, by content hash."""
+
+    __tablename__ = "firmware_builds"
+
+    build_hash = Column(String(64), primary_key=True)
+    target = Column(String(50), nullable=False)
+    status = Column(String(20), nullable=False, default="queued")   # queued | passed | failed
+    log = Column(Text)
+    seconds = Column(Float)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    finished_at = Column(DateTime(timezone=True))
+
+
 class PatchHistory(Base):
     __tablename__ = "patch_history"
 
@@ -115,6 +135,40 @@ class GeneratedOutput(Base):
     generated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     design = relationship("CircuitDesign", back_populates="generated_outputs")
+
+
+class RequestLog(Base):
+    """
+    One row per request. PHASE_2_PLAN_v2.md §4.5.
+
+    Deliberately carries no foreign keys. An analytics log that participates in
+    referential integrity is an analytics log that can be rejected, or deleted
+    by someone else's cascade — and the rows worth keeping are precisely the
+    ones from requests where the design was never persisted. `user_id` and
+    `circuit_id` are recorded as plain identifiers for joining after the fact.
+    """
+
+    __tablename__ = "request_log"
+
+    request_id = Column(String(36), primary_key=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    route = Column(String(200), nullable=False)
+    outcome = Column(String(20), nullable=False, index=True)
+    latency_ms = Column(Integer, nullable=False)
+    api_calls = Column(Integer, nullable=False, default=0)
+    schema_version = Column(String(20), nullable=False)
+
+    prompt_hash = Column(String(64), index=True)
+
+    intent_ir = Column(JSONB)
+    underdetermined = Column(JSONB)
+    generator = Column(String(100), index=True)
+    refusal_reason = Column(Text)
+
+    user_id = Column(String(36), index=True)
+    circuit_id = Column(String(36), index=True)
+    status_code = Column(Integer)
+    error = Column(Text)
 
 
 # ── Async engine + session factory ───────────────────────────────────────────

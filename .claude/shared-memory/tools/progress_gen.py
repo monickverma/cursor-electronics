@@ -25,8 +25,19 @@ import ast
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# This script prints emoji. On Windows the console encoding is cp1252, which
+# cannot encode them, so an unguarded run dies with UnicodeEncodeError before
+# writing anything. Commit 0a85755 fixed this in regen_state.py and not here,
+# and because regen_state.py ignored this script's exit code the breakage was
+# silent: progress.yaml stopped regenerating on 2026-08-23 and kept reporting
+# the state of that day for four weeks. Same guard, applied 2026-09-20.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 TOOLS_DIR    = Path(__file__).parent
 MEMORY_ROOT  = TOOLS_DIR.parent
@@ -60,23 +71,6 @@ PLANNED = {
         "entries": [
             ("IntentParser",       "class",  "Converts prompt → DesignSpec via tool_use"),
             ("IntentParser.parse", "method", "Main entry: prompt str → DesignSpec"),
-        ],
-    },
-    "ai/circuit_reasoner": {
-        "file": "backend/ai/circuit_reasoner.py",
-        "test_file": "tests/test_ai_layer.py",
-        "entries": [
-            ("CircuitReasoner",          "class",  "Converts DesignSpec → CircuitIR with 3-attempt retry"),
-            ("CircuitReasoner.generate", "method", "Main entry: DesignSpec → CircuitIR"),
-        ],
-    },
-    "ai/patcher": {
-        "file": "backend/ai/patcher.py",
-        "test_file": "tests/test_patcher.py",
-        "entries": [
-            ("CircuitPatcher",         "class",  "Returns only changed fields — never full IR"),
-            ("CircuitPatcher.patch",   "method", "Main entry: IR + command → PatchResult"),
-            ("PatchResult.apply_to",   "method", "Applies changes to IR, increments version"),
         ],
     },
     "ai/explainer": {
@@ -240,6 +234,392 @@ PLANNED = {
             ("compile_pcb", "function", "POST /pcb/compile → runs layout engine in-process"),
         ],
     },
+
+    # ── Phase 2 — Validation Engine ──────────────────────────────────────────
+    # Stage 0 instrumentation. PHASE_2_PLAN_v2.md §4.5.
+    "observability/request_log": {
+        "file": "backend/observability/request_log.py",
+        "test_file": "tests/test_request_log.py",
+        "entries": [
+            ("Outcome",           "class",    "completed | refused | failed | abandoned | patched"),
+            ("RequestLogRow",     "class",    "One request, one row — completeness enforced at construction"),
+            ("RequestLogContext", "class",    "Per-request scratch space; middleware creates, handler enriches"),
+            ("RequestLogger",     "class",    "Writes rows; own transaction, JSONL fallback, never raises"),
+            ("RequestLogger.record",        "method",   "Persist one row; True if it reached Postgres"),
+            ("RequestLogger.write_fallback","method",   "Sidecar write when Postgres is unreachable"),
+            ("RequestLogger.read_fallback", "method",   "Replay source for rows that never reached Postgres"),
+            ("prompt_hash",       "function", "Stable sha256 of a prompt — half the §4.4 cache key"),
+            ("log_ctx",           "function", "Request's log context, or a throwaway if uninstrumented"),
+        ],
+    },
+    "middleware/instrumentation": {
+        "file": "backend/middleware/instrumentation.py",
+        "test_file": "tests/test_request_log.py",
+        "entries": [
+            ("RequestLogMiddleware",          "class",  "Outermost middleware — a row on every exit path"),
+            ("RequestLogMiddleware.dispatch", "method", "Times the request, flushes the row in a finally"),
+        ],
+    },
+    "generators/protocol": {
+        "file": "backend/generators/protocol.py",
+        "test_file": "tests/test_generator_protocol.py",
+        "entries": [
+            ("IntentLike",        "class",    "The slice of IntentIR a generator reads — Stage 1 model satisfies it structurally"),
+            ("Interval",          "class",    "A quantity over a range, not a point — amendment X1 in one type"),
+            ("Interval.at",               "method", "Degenerate interval — one CI grid point"),
+            ("Interval.contains",         "method", "Is this measurement inside the band"),
+            ("Interval.relative_error",   "method", "Fractional distance to the band; 0.0 inside"),
+            ("ClaimScope",        "class",    "parameters/horizon/model/inputs — EVIDENCE_CLASSES §3.3; model is required"),
+            ("PortContract",      "class",    "Port impedance, current draw, voltage range — composition contract"),
+            ("EnvelopeDecision",  "class",    "Accept with ports, or refuse with a named reason; both enforced"),
+            ("EnvelopeDecision.accept",   "method", "Acceptance carrying its interface contract"),
+            ("EnvelopeDecision.refuse",   "method", "Refusal carrying a backlog-grade reason"),
+            ("Prediction",        "class",    "Closed-form behaviour over a parameter box; scope required"),
+            ("GridSpec",          "class",    "The envelope grid a generator declares for CI — Task 0.4"),
+            ("GridSpec.points",           "method", "Cartesian product of the declared axes"),
+            ("Generator",         "class",    "The contract: name, version, envelope, generate, predict, grid, dependency_closure"),
+            ("conservative_closure", "function", "Every component — sound, vacuous, the honest default"),
+            ("conformance_gaps",     "function", "Which parts of the contract are missing, by name"),
+        ],
+    },
+    "generators/rc_lowpass": {
+        "file": "backend/generators/rc_lowpass.py",
+        "test_file": "tests/test_rc_lowpass_generator.py",
+        "entries": [
+            ("cutoff_hz",          "function", "f_c = 1/(2·pi·R·C) — the closed form X1 makes the truth"),
+            # snap_to_e96 moved to generators/common.py in Stage 3; tracked there.
+            ("select_components",  "function", "Deterministic R/C choice; catalogue order breaks ties"),
+            ("RCLowPassGenerator", "class",    "First generator on the Task 0.2 contract"),
+            ("RCLowPassGenerator.envelope",           "method", "Accept with ports, or refuse naming the offending value"),
+            ("RCLowPassGenerator.predict",            "method", "Closed-form band over the tolerance box; monotone corners"),
+            ("RCLowPassGenerator.generate",           "method", "Deterministic CircuitIR (byte-identity blocked on Task 2.3)"),
+            ("RCLowPassGenerator.grid",               "method", "Seven points, 100 Hz – 100 kHz, for the CI gate"),
+            ("RCLowPassGenerator.dependency_closure", "method", "Narrow closure — supply_v cannot touch R1"),
+        ],
+    },
+    "validation/envelope_grid": {
+        "file": "backend/validation/envelope_grid.py",
+        "test_file": "tests/test_envelope_grid.py",
+        "entries": [
+            ("GridPointResult",  "class",    "One grid point, one quantity, one verdict"),
+            ("GridReport",       "class",    "One generator's sweep; gate is deviation from nominal"),
+            ("GridReport.summary",        "method", "Human-readable failures, named by point"),
+            ("GridAdapter",      "class",    "Circuit-class glue: grid point → intent, design → measurement"),
+            ("run_grid",         "function", "Sweep the declared envelope; unevaluable points fail, never skip"),
+            ("scale_component_value", "function", "Seed a fault by scaling one passive; deep-copies"),
+            ("MutatedGenerator", "class",    "generate() wrong by a known factor, predict() untouched — D-G's shape"),
+            ("MatrixReport",     "class",    "Control arm plus mutation arms; sound only if both hold"),
+            ("run_matrix",       "function", "M1 fault-injection matrix — ARCHITECTURE_ASSURANCE_CASE §7"),
+        ],
+    },
+    "ai/derived_explainer": {
+        "file": "backend/ai/derived_explainer.py",
+        "test_file": "tests/test_derived_explainer.py",
+        "entries": [
+            ("DerivedExplainer", "class",    "Explanation with zero API calls — Task 0.5, §4.4"),
+            ("DerivedExplainer.explain", "method", "Requirements + predict() + generator justifications → prose"),
+            ("explanation_markers", "function", "The consequential markers test_explainer.py enforces, reused verbatim"),
+        ],
+    },
+    "generators/registry": {
+        "file": "backend/generators/registry.py",
+        "test_file": "tests/test_registry.py",
+        "entries": [
+            ("Refusal",           "class",  "One generator's reason for declining, kept with its author"),
+            ("DispatchResult",    "class",  "What was decided, and every refusal learned deciding it"),
+            ("GeneratorRegistry", "class",  "The catalogue; registration order is dispatch order"),
+            ("GeneratorRegistry.register", "method", "Refuses non-conforming generators, naming the gaps"),
+            ("GeneratorRegistry.dispatch", "method", "First accepting envelope wins; all refusals collected"),
+            ("GeneratorRegistry.functions","method", "The catalogue, derived from what is installed"),
+            ("default_registry",  "function", "The installed catalogue"),
+        ],
+    },
+    "ai/form_producer": {
+        "file": "backend/ai/form_producer.py",
+        "test_file": "tests/test_form_producer.py",
+        "entries": [
+            ("FormField",    "class", "One field, with the range CI actually sweeps"),
+            ("FormSpec",     "class", "What the form offers for one requirements.function"),
+            ("FormProducer", "class", "The reference producer — zero API calls, works offline"),
+            ("FormProducer.catalogue", "method", "Every function the installed generators cover"),
+            ("FormProducer.build",     "method", "Form input → IntentIR; missing fields become questions"),
+        ],
+    },
+    "ai/intent_producer": {
+        "file": "backend/ai/intent_producer.py",
+        "test_file": "tests/test_intent_producer.py",
+        "entries": [
+            ("IntentProductionError", "class", "Carries the raw tool input — X5 makes the failure visible"),
+            ("IntentProducer",        "class", "Prompt → IntentIR; the convenience layer over the form"),
+            ("IntentProducer.produce","method", "One call; a retry may add but never rewrite the request"),
+        ],
+    },
+    "core/intent_ir": {
+        "file": "backend/core/intent_ir.py",
+        "test_file": "tests/test_intent_ir.py",
+        "entries": [
+            ("Producer",     "class", "form | llm — §4.2 makes the form the reference producer"),
+            ("Requirements", "class", "function / targets / constraints / preferences"),
+            ("SignOff",      "class", "Who agreed, when, and to which property_hash"),
+            ("Provenance",   "class", "Which producer wrote it; an LLM must name its model"),
+            ("IntentIR",     "class", "The requirement as an artifact — A1, the architecture's one analytic claim"),
+            ("IntentIR.is_answerable",      "method", "Stage 1 gate: underdetermined non-empty → ask, never generate"),
+            ("IntentIR.open_questions",     "method", "The fields the user still has to supply"),
+            ("IntentIR.requirements_hash",  "method", "Key-order-stable hash; the §4.4 cache key and the sign-off pin"),
+            ("IntentIR.sign_off",           "method", "Signed copy, refused while anything is underdetermined"),
+            ("IntentIR.is_intact",          "method", "Whether the requirements still match what was signed"),
+            ("IntentIR.with_requirements",  "method", "New version; the signature does not travel with an edit"),
+        ],
+    },
+    # ── Stage 2 — patch model v2 (X2 + X4) ───────────────────────────────────
+    "core/intent_patch": {
+        "file": "backend/core/intent_patch.py",
+        "test_file": "tests/test_intent_patch.py",
+        "entries": [
+            ("PatchOp",          "class",    "One RFC 6902 operation over requirements"),
+            ("PatchOutcome",     "class",    "The patched intent, whether it changed, and the readable diff"),
+            ("apply_patch",      "function", "Atomic; a no-op is not a version; revalidated as IntentIR"),
+            ("parse_pointer",    "function", "RFC 6901 pointer, restricted to requirements"),
+            ("readable_changes", "function", "History that reads as requirements, not parts"),
+        ],
+    },
+    "core/annotations": {
+        "file": "backend/core/annotations.py",
+        "test_file": "tests/test_annotations.py",
+        "entries": [
+            ("Annotation",           "class",    "One of four kinds, anchored where it means something"),
+            ("attach",               "function", "Attached or orphaned — never dropped"),
+            ("validate_annotations", "function", "Parse and refuse duplicate ids"),
+        ],
+    },
+    "generators/realize": {
+        "file": "backend/generators/realize.py",
+        "test_file": "tests/test_realize.py",
+        "entries": [
+            ("realize",           "function", "The only route from IntentIR to a stored CircuitIR; byte-identical"),
+            ("design_circuit_id", "function", "uuid5 of the intent lineage — survives patches and upgrades"),
+            ("check_locality",    "function", "CircuitIR diff ⊆ declared dependency closure"),
+            ("predict_delta",     "function", "The comparative justification for a patch"),
+        ],
+    },
+    "ai/intent_patcher": {
+        "file": "backend/ai/intent_patcher.py",
+        "test_file": "tests/test_intent_patcher.py",
+        "entries": [
+            ("IntentPatcher",         "class",  "Command → operations; every operation cites the command"),
+            ("IntentPatcher.propose", "method", "One call, no retries; uncited operations refuse the patch"),
+            ("IntentPatchError",      "class",  "Carries the raw tool input and the failure kind"),
+        ],
+    },
+    "db/migrations": {
+        "file": "backend/db/migrations.py",
+        "test_file": "tests/test_migrations.py",
+        "entries": [
+            ("apply_migrations", "function", "Idempotent additive DDL at startup; never raises"),
+            ("is_safe",          "function", "Additive and idempotent, or refused"),
+        ],
+    },
+    "api/routes/patch": {
+        "file": "backend/api/routes/patch.py",
+        "test_file": "tests/test_patch_route.py",
+        "entries": [
+            ("patch_design",    "function", "Requirement patch → same gate as a fresh request; refusal keeps v(n)"),
+            ("put_annotations", "function", "Replace the annotation layer; never regenerates"),
+            ("get_history",     "function", "The patch chain, as requirements"),
+        ],
+    },
+    # ── Stage 3 — the generator library and claims ───────────────────────────
+    "generators/common": {
+        "file": "backend/generators/common.py",
+        "test_file": ["tests/test_rc_lowpass_generator.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("snap_to_e96",   "function", "Nearest E96 in log space — one owner for the series"),
+            ("read_number",   "function", "A written requirement is honoured or refused, never defaulted"),
+            ("read_pins",     "function", "constraints.pinned, shape-checked and limited to real parts"),
+            ("worst_corners", "function", "Exact band over a box when monotone in every argument"),
+        ],
+    },
+    "generators/netlist_models": {
+        "file": "backend/generators/netlist/models.py",
+        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("led_parameters",     "function", "Shockley fit to the datasheet V_f — read by netlist and predict()"),
+            ("solve_series_diode", "function", "Exact LED current by bisection on a monotone equation"),
+            ("pin_resistance",     "function", "mcu_pin_thevenin output resistance (D2, D7)"),
+            ("load_ohms",          "function", "Sensor/transceiver load model, shared with predict()"),
+        ],
+    },
+    "generators/voltage_divider": {
+        "file": "backend/generators/voltage_divider.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("VoltageDividerGenerator", "class", "TPL_005 on the contract; dissipation bound is G2"),
+            ("select", "function", "E96 pair: within 0.5% the requested bleed current decides"),
+        ],
+    },
+    "generators/led_indicator": {
+        "file": "backend/generators/led_indicator.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("LedIndicatorGenerator", "class", "TPL_003 on the contract; the Phase 1 LED was never lit"),
+            ("select_r1", "function", "E96 R1 for the target current at typical parts"),
+        ],
+    },
+    "generators/dht22_node": {
+        "file": "backend/generators/dht22_node.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("DHT22NodeGenerator", "class", "TPL_001 on the contract; rise time vs sink current"),
+            ("select_pullup", "function", "10 kΩ unless the cable forces stronger; else refused"),
+        ],
+    },
+    "generators/rs485_node": {
+        "file": "backend/generators/rs485_node.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("RS485NodeGenerator", "class", "TPL_002 on the contract; fail-safe bias is the claim"),
+            ("select", "function", "Largest bias pair keeping idle V_AB 25% over threshold"),
+        ],
+    },
+    "validation/claims": {
+        "file": "backend/validation/claims.py",
+        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py"],
+        "entries": [
+            ("Claim",              "class",    "kind / grade / scope / defeaters + an honest verdict"),
+            ("ValidationCoverage", "class",    "coverage_le_g2, grade_floor, open_defeaters — never fused"),
+            ("graded",             "function", "A claim whose grade is derived from its method"),
+            ("assess",             "function", "Every claim for a design: physics, X6 models, X8 catalogue"),
+            ("netlist_models",     "function", "X6 — MCU models read from the netlist, never remembered"),
+        ],
+    },
+    "validation/defeaters": {
+        "file": "backend/validation/defeaters.py",
+        "test_file": "tests/test_claims.py",
+        "entries": [
+            ("Defeater", "class", "A recorded doubt with a status and what eliminates it"),
+        ],
+    },
+    "simulation/waveforms": {
+        "file": "backend/simulation/waveforms.py",
+        "test_file": "tests/test_waveforms.py",
+        "entries": [
+            ("waveforms_from", "function", "AC / transient / DC shaped for the viewer; strided, never interpolated"),
+        ],
+    },
+    "validation/grid_adapters": {
+        "file": "backend/validation/grid_adapters.py",
+        "test_file": "tests/test_generator_library.py",
+        "entries": [
+            ("with_probes", "function", "CI test benches appended to a design's netlist, never the product"),
+            ("intent_at",   "function", "A grid point placed in the sections its generator declares"),
+        ],
+    },
+    # Stage 4 — the proof compiler. decisions.md [2026-09-23].
+    "proof/brackets": {
+        "file": "backend/proof/brackets.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("pi",          "function", "π as an exact rational bracket (mpmath.iv, outward) — eliminates D8"),
+            ("ln",          "function", "ln of a rational, enclosed"),
+            ("expm1_ratio", "function", "exp(a/b) − 1, enclosed; the LED's saturation-current box"),
+        ],
+    },
+    "proof/netlist": {
+        "file": "backend/proof/netlist.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("spice_value", "function", "A SPICE number read exactly, digit for digit"),
+            ("parse",       "function", "The netlist ngspice is given, back into elements; unknown lines refused"),
+        ],
+    },
+    "proof/mna": {
+        "file": "backend/proof/mna.py",
+        "test_file": "tests/test_proof.py",
+        "entries": [
+            ("System",   "class",    "Symbolic modified nodal analysis of a parsed netlist"),
+            ("transfer", "function", "V(node)/V_ac in s — the RC cutoff's source"),
+            ("thevenin", "function", "(V_th, R_th) with an element removed — how the LED is reduced"),
+        ],
+    },
+    "proof/properties": {
+        "file": "backend/proof/properties.py",
+        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py"],
+        "entries": [
+            ("PropertySpec",   "class",    "A generator's property: quantity, relation, bounds, bench"),
+            ("Statement",      "class",    "A property resolved against one design; its hash is what is signed"),
+            ("back_translate", "function", "The English a person signs, by template — never by a model"),
+            ("outward",        "function", "Bounds rounded away from the band, to the figures shown"),
+            ("set_hash",       "function", "The hash one sign-off covers"),
+        ],
+    },
+    "proof/prover": {
+        "file": "backend/proof/prover.py",
+        "test_file": ["tests/test_proof.py", "tests/test_sign_off.py", "tests/test_proof_oracle.py"],
+        "entries": [
+            ("compile_statement",       "function", "Netlist + property → Statement and z3 obligations"),
+            ("prove",                   "function", "The refine loop; refuses any result for another property"),
+            ("FrozenPropertyViolation", "class",    "Stage 4's adversarial weakening gate"),
+            ("falsify",                 "function", "The mutation gate: a wrong part must refute the property"),
+            ("check",                   "function", "One property of one design, cached on what the proof reads"),
+        ],
+    },
+    # Stage 5 — multi-MCU firmware. decisions.md [2026-09-23] Stage 5.
+    "data/mcu_targets": {
+        "file": "backend/data/mcu_targets.py",
+        "test_file": ["tests/test_pin_rules.py", "tests/test_multi_target.py"],
+        "entries": [
+            ("Pin",             "class",    "One pin: what it can do, reserved or strapping and why"),
+            ("Target",          "class",    "A board: PlatformIO env, logic rail, pin table, defaults"),
+            ("get_target",      "function", "A board by id; None for one this system does not target"),
+            ("target_for_part", "function", "The board whose MCU is this part"),
+            ("normalise",       "function", "A pin as the board's table spells it (D13, GPIO4, PB0)"),
+        ],
+    },
+    "validation/pin_rules": {
+        "file": "backend/validation/pin_rules.py",
+        "test_file": ["tests/test_pin_rules.py", "tests/test_multi_target.py"],
+        "entries": [
+            ("Assignment",       "class",    "What one MCU pin is asked to do"),
+            ("Finding",          "class",    "A rule a pin breaks, and why"),
+            ("check_assignment", "function", "The three pin rules against a board's table"),
+            ("assignments_of",   "function", "A design's MCU pins, their roles and nets"),
+            ("check_design",     "function", "Per rule (holds, detail) — the three Stage 5 claims"),
+        ],
+    },
+    "generators/firmware/project": {
+        "file": "backend/generators/firmware/project.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("FirmwareProject", "class",    "platformio.ini + src/main.ino, keyed by SHA-256"),
+            ("platformio_ini",  "function", "Pinned platform and libraries for a board"),
+            ("project_for",     "function", "A design's project; None without an MCU"),
+        ],
+    },
+    "generators/firmware/compile_gate": {
+        "file": "backend/generators/firmware/compile_gate.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("BuildResult",          "class",    "passed | failed, the log's tail, seconds"),
+            ("compile_project",      "function", "Build with PlatformIO; passed only on exit 0 and [SUCCESS]"),
+            ("platformio_available", "function", "Whether the compile matrix can run here"),
+        ],
+    },
+    "tasks/firmware_task": {
+        "file": "backend/tasks/firmware_task.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("compile_firmware", "function", "Celery: build a project whose files match their hash"),
+        ],
+    },
+    "api/routes/firmware": {
+        "file": "backend/api/routes/firmware.py",
+        "test_file": "tests/test_firmware_gate.py",
+        "entries": [
+            ("FirmwareView",  "class",    "Build status; source only when compiled"),
+            ("firmware_view", "function", "The one gate every route's firmware goes through"),
+            ("get_firmware",  "function", "GET /design/{id}/firmware — poll a build"),
+        ],
+    },
 }
 
 STATUS_ICON = {
@@ -329,17 +709,26 @@ def extract_symbols(filepath: Path) -> dict:
 
 
 # ── Test runner ───────────────────────────────────────────────────────────────
+#: Headroom for the whole suite. Stage 3 took it past the old 180 s, and the
+#: timeout used to return {} silently — every module then read "untested", the
+#: script exited 0, and progress.yaml reported 0/174 verified with nothing to
+#: say why. Fourth instance of this root cause (see regen_state.py).
+TEST_TIMEOUT_S = 1200
+
+
 def run_tests_by_file() -> dict:
-    """Returns {test_filename: 'passing'|'failing'|'empty'}."""
+    """Returns {test_filename: 'passing'|'failing'|'empty'}. Exits non-zero if it cannot run."""
     env = {**os.environ, "PYTHONPATH": str(BACKEND)}
     try:
         r = subprocess.run(
             ["python", "-m", "pytest", "tests/", "--tb=no", "-v", "--no-header"],
             capture_output=True, text=True, cwd=PROJECT_ROOT,
-            env=env, timeout=180,
+            env=env, timeout=TEST_TIMEOUT_S,
         )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return {}
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        # Loud, and a non-zero exit so regen_state.py reports progress.yaml as
+        # STALE instead of writing a file where nothing is verified.
+        raise SystemExit(f"progress_gen.py: could not run the test suite — {type(exc).__name__}: {exc}")
 
     raw = r.stdout + r.stderr
     file_status = {}
@@ -354,6 +743,13 @@ def run_tests_by_file() -> dict:
         has_failures = any("FAILED" in line and name in line for line in lines)
         file_status[name] = "failing" if has_failures else "passing"
 
+    # The other silent path: pytest ran but named no test file (a collection
+    # crash, an import error at conftest). Every module would read "untested".
+    if file_status and all(st == "empty" for st in file_status.values()):
+        tail = "\n".join(raw.splitlines()[-8:])
+        raise SystemExit(
+            f"progress_gen.py: pytest output named no test files — collection failed?\n{tail}"
+        )
     return file_status
 
 

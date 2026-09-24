@@ -1,0 +1,368 @@
+{
+ "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
+ "intent_ir": {},
+ "properties_hash": "979c063b769a05afa44bad81a61d63e490c6fe30ab12f8279659a445c2bff566",
+ "signed_by": "engineer@example.com",
+ "validation_coverage": {
+  "claims": [
+   {
+    "claim": "f_c at nominal parts is within ±5% of 1000 Hz",
+    "covers": [],
+    "critical": true,
+    "defeaters": [
+     "D1"
+    ],
+    "detail": "996.0 Hz (0.40% from target)",
+    "grade": "G1",
+    "id": "rc.cutoff_nominal",
+    "kind": "analytic",
+    "method": "closed_form",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "mna_ideal",
+     "parameters": "nominal"
+    },
+    "verdict": "holds_defeasible"
+   },
+   {
+    "claim": "f_c lies in [896.5, 1117.8] Hz for every R within 1% and C within 10%",
+    "covers": [],
+    "critical": false,
+    "defeaters": [
+     "D1"
+    ],
+    "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold; superseded by proof.rc.cutoff (signed proofs)",
+    "grade": "G1",
+    "id": "rc.cutoff_band",
+    "kind": "analytic",
+    "method": "monotone_corners",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "mna_ideal",
+     "parameters": "tolerance_box"
+    },
+    "verdict": "holds_defeasible"
+   },
+   {
+    "claim": "a 0 Ω source lowers f_c by no more than ±5%",
+    "covers": [],
+    "critical": true,
+    "defeaters": [
+     "D1"
+    ],
+    "detail": "R_s/(R1+R_s) = 0.00%",
+    "grade": "G1",
+    "id": "rc.source_loading",
+    "kind": "analytic",
+    "method": "closed_form",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "mna_ideal",
+     "parameters": "nominal"
+    },
+    "verdict": "holds_defeasible"
+   },
+   {
+    "claim": "For every R1 from 3.366 kΩ to 3.434 kΩ (1% resistor); every C1 from 42.3 nF to 51.7 nF (10% capacitor), with IN driven by the AC source, the −3 dB cutoff frequency at OUT stays between 896 Hz and 1.12 kHz.",
+    "covers": [],
+    "critical": true,
+    "defeaters": [
+     "D1",
+     "D8"
+    ],
+    "detail": "7 obligation(s) UNSAT over the box (signed off)",
+    "grade": "G1",
+    "id": "proof.rc.cutoff",
+    "kind": "analytic",
+    "method": "z3_unsat",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "netlist_mna",
+     "parameters": "tolerance_box"
+    },
+    "verdict": "holds_defeasible"
+   },
+   {
+    "claim": "every node has at least two connections, counting declared ports",
+    "covers": [],
+    "critical": true,
+    "defeaters": [],
+    "detail": "no node below two connections",
+    "grade": "G1",
+    "id": "rule.no_floating_nodes",
+    "kind": "analytic",
+    "method": "exact_graph_check",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "design_graph",
+     "parameters": "nominal"
+    },
+    "verdict": "holds"
+   },
+   {
+    "claim": "every part's rated supply voltage covers the circuit's supply",
+    "covers": [],
+    "critical": true,
+    "defeaters": [
+     "D7"
+    ],
+    "detail": "all ratings at or above the supply",
+    "grade": "G1",
+    "id": "rule.voltage_ratings_ok",
+    "kind": "analytic",
+    "method": "exact_graph_check",
+    "scope": {
+     "horizon": "steady_state",
+     "inputs": "single_stimulus",
+     "model": "design_graph",
+     "parameters": "nominal"
+    },
+    "verdict": "holds_defeasible"
+   },
+   {
+    "claim": "every I2C line has a pull-up to a supply rail",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no I2C lines",
+    "grade": null,
+    "id": "rule.i2c_pullups_present",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "the RS-485 A/B pair is terminated with 100–150 ohm",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no RS-485 lines",
+    "grade": null,
+    "id": "rule.rs485_termination_present",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "RS-485 A is biased to VCC and B to GND",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no RS-485 lines",
+    "grade": null,
+    "id": "rule.rs485_bias_resistors",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.pin_assignment_valid",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.peripheral_conflict_free",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "nothing external is wired to a strapping pin",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no microcontroller on this design",
+    "grade": null,
+    "id": "rule.strapping_pins_safe",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no PWM signals",
+    "grade": null,
+    "id": "rule.pwm_pin_valid",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "rule current_limits_ok (no rule-engine implementation)",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "a passive filter driven by its source; no GPIO or current-rated part",
+    "grade": null,
+    "id": "rule.current_limits_ok",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "rule power_supply_adequate (no rule-engine implementation)",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no supply rail: IN is a signal port, not a rail",
+    "grade": null,
+    "id": "rule.power_supply_adequate",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "rule pullup_on_open_drain (no rule-engine implementation)",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "no open-drain line",
+    "grade": null,
+    "id": "rule.pullup_on_open_drain",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "not_applicable"
+   },
+   {
+    "claim": "rule operating_temp_range",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope: thermal",
+    "grade": null,
+    "id": "rule.operating_temp_range",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   },
+   {
+    "claim": "RF above 100 MHz",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope (v2 §3)",
+    "grade": null,
+    "id": "scope.rf_gt_100mhz",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   },
+   {
+    "claim": "EMI / EMC",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope (v2 §3)",
+    "grade": null,
+    "id": "scope.emi_emc",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   },
+   {
+    "claim": "thermal behaviour, including operating temperature range",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope (v2 §3)",
+    "grade": null,
+    "id": "scope.thermal",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   },
+   {
+    "claim": "manufacturing yield",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope (v2 §3)",
+    "grade": null,
+    "id": "scope.manufacturing_yield",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   },
+   {
+    "claim": "switching converters",
+    "covers": [],
+    "critical": false,
+    "defeaters": [],
+    "detail": "declared out of scope (v2 §3)",
+    "grade": null,
+    "id": "scope.switching_converters",
+    "kind": "analytic",
+    "method": null,
+    "scope": null,
+    "verdict": "out_of_scope"
+   }
+  ],
+  "coverage_le_g2": 1.0,
+  "grade_floor": "G1",
+  "not_assessed": [],
+  "open_defeaters": [
+   "D1",
+   "D7"
+  ],
+  "out_of_scope": [
+   "rule.operating_temp_range",
+   "scope.rf_gt_100mhz",
+   "scope.emi_emc",
+   "scope.thermal",
+   "scope.manufacturing_yield",
+   "scope.switching_converters"
+  ],
+  "properties": [
+   {
+    "counterexample": null,
+    "english": "For every R1 from 3.366 kΩ to 3.434 kΩ (1% resistor); every C1 from 42.3 nF to 51.7 nF (10% capacitor), with IN driven by the AC source, the −3 dB cutoff frequency at OUT stays between 896 Hz and 1.12 kHz.",
+    "grade": "G1",
+    "hash": "a9e76034624d8f377acaf9ca8e2b7186a88d96624799ca3f452c3a93f15aaeca",
+    "id": "rc.cutoff",
+    "method": "z3_unsat",
+    "re_derives": "rc.cutoff_band",
+    "status": "proven"
+   }
+  ],
+  "properties_hash": "979c063b769a05afa44bad81a61d63e490c6fe30ab12f8279659a445c2bff566",
+  "properties_signed": true,
+  "signed_by": "engineer@example.com"
+ },
+ "version": 1
+}

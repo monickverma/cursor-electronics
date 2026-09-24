@@ -8,23 +8,38 @@
 ## The Central Invariant
 
 ```
-User Prompt
-    │
-    ▼  (IntentParser — tool_use)
-DesignSpec (structured intent)
-    │
-    ▼  (CircuitReasoner — tool_use, 3-attempt retry)
+User prompt ──▶ IntentProducer (tool_use, 1 call) ──┐
+Form ─────────▶ FormProducer   (0 calls) ───────────┴──▶ IntentIR  ←── the requirement
+                                                           │
+                                   registry.dispatch → envelope() accepts, or refuses by name
+                                                           │
+                                   realize(): generate() + stamp circuit_id / version / generator
+                                              + validation_coverage: claims (Stage 3) and
+                                                properties proved from the netlist (Stage 4)
+                                                           ▼
 CircuitIR  ←── THE LOCKED CONTRACT — all modules read from here
     │
     ├──▶ SpiceNetlistGenerator  →  .cir netlist
-    ├──▶ ArduinoFirmwareGenerator  →  .ino (Jinja2)
-    ├──▶ KiCadSchematicGenerator  →  .kicad_sch
+    ├──▶ ArduinoFirmwareGenerator  →  PlatformIO project ──Celery──▶ compile gate
+    │                                   (source shown only once it has built — Stage 5)
+    ├──▶ KiCadSchematicGenerator  →  .kicad_sch (+ annotations drawn beside their anchor)
     ├──▶ BOMCompiler  →  BOM rows
     ├──▶ ExplanationEngine  →  plain English report
-    └──▶ Celery task → NgspiceRunner → SpiceResultParser → SimulationGrader
+    └──▶ Celery task → NgspiceRunner → SpiceResultParser → SimulationGrader → waveforms
+
+Patch (Stage 2):  IntentIR v(n) ──RFC 6902 ops──▶ IntentIR v(n+1) ──same gate──▶ CircuitIR v(n+1)
+                  ops come from the client (0 calls) or IntentPatcher (1 call, every op cited)
+Sign-off (Stage 4): the user signs the hash of the property sentences shown; signed
+                  proofs become critical claims; any edit to the requirement drops it
+Board (Stage 5):  constraints.mcu = arduino_uno (default) | esp32_devkitc | blackpill_f411ce
 ```
 
-**The LLM only ever writes CircuitIR JSON. It never writes SPICE, KiCad, or .ino.**
+**The LLM only ever writes IntentIR — a requirement. A deterministic generator
+writes the CircuitIR.** No model writes CircuitIR, SPICE, KiCad or `.ino`;
+`tests/test_llm_cannot_write_circuit_ir.py` asserts it across the repository.
+(Until Stage 1 the LLM wrote CircuitIR through `ai/circuit_reasoner.py`; until
+Stage 2 it could edit one through `ai/patcher.py`. Both are deleted —
+`brain/decisions.md` [2026-09-21].)
 
 ---
 
@@ -38,34 +53,62 @@ backend/
 ├── core/
 │   ├── ir_schema.py           CircuitIR Pydantic model — THE LOCKED SCHEMA
 │   │                          Fields: circuit_id, components, nodes, connections,
-│   │                          simulation_spec, validation_rules, patch_history
+│   │                          simulation_spec, validation_rules, patch_history,
+│   │                          validation_coverage (Stage 3–4, attached by realize())
 │   ├── ir_validator.py        Structural validation before any compiler runs
 │   │                          Rules: no_floating_nodes, voltage_ratings_ok,
 │   │                          i2c_pullups_present (if I2C nodes exist)
 │   ├── ir_examples.py         5 hardcoded reference IRs (for tests)
+│   ├── intent_ir.py           IntentIR — the requirement, frozen; revision = patch position
+│   ├── intent_patch.py        RFC 6902 over IntentIR.requirements; atomic; no-op ≠ version
+│   ├── annotations.py         Closed-list annotations; merged after generation, never an input
 │   └── config.py              pydantic-settings — fails at import if env vars missing
 │                              .env resolved from project root via Path(__file__)
 │
 ├── data/
-│   ├── component_constraints.py   Python dict — zero LLM tokens
-│   │                              DHT22, MAX485ECSA constraints injected into prompts
+│   ├── component_constraints.py   Python dict — zero LLM tokens. Part figures read by
+│   │                              netlist, predict() and prover alike (D7): pin output
+│   │                              resistance, supply_model_ohm per MCU, MAX485/MAX3485
+│   ├── mcu_targets.py             Stage 5 — boards as data: PlatformIO env, rail, pin table
+│   │                              (capabilities, reserved + why, strapping pins, UARTs)
 │   └── component_db.json          100-entry component database
 │
 ├── ai/
 │   ├── client.py              make_client() — supports Anthropic direct + OpenRouter
 │   │                          ai_model() — reads AI_MODEL env var
 │   ├── intent_parser.py       Prompt → DesignSpec via tool_use (forced, no raw text)
-│   ├── circuit_reasoner.py    DesignSpec → CircuitIR (3-attempt retry loop)
-│   │                          Handles: APIError (no retry), JSONDecodeError, ValidationError
-│   ├── patcher.py             IR + command → changes list ONLY (never full IR)
+│   ├── intent_producer.py     Prompt → IntentIR (X5 retry rules; removed the
+│   │                          LLM → CircuitIR path entirely, 2026-09-21)
+│   ├── form_producer.py       Form → IntentIR — reference producer, 0 API calls
+│   ├── intent_patcher.py      IntentIR + command → RFC 6902 ops. Each op cites whole words
+│   │                          of the command containing its value; never imports CircuitIR
+│   ├── derived_explainer.py   Structural explanation derived from the design, 0 API calls
 │   └── explainer.py           IR → consequential plain English report
 │
 ├── generators/
+│   ├── protocol.py            THE Generator contract: envelope / generate / predict /
+│   │                          grid / dependency_closure; Interval bands, PortContract
+│   ├── registry.py            Deterministic dispatch; collects every refusal
+│   ├── realize.py             The only IntentIR → stored CircuitIR path: stamps
+│   │                          circuit_id = uuid5(intent_id), version, generator;
+│   │                          locality check; predict() delta between revisions
+│   ├── rc_lowpass.py          TPL_004 — source swamping (0.2.3)
+│   ├── voltage_divider.py     TPL_005
+│   ├── led_indicator.py       TPL_003 — Thevenin GPIO + fitted diode; exact R1 power (Task 4.5)
+│   ├── dht22_node.py          TPL_001 — pull-up vs cable rise time
+│   ├── rs485_node.py          TPL_002 — fail-safe bias; MAX3485 on a 3.3 V board
+│   │                          The three MCU generators declare `boards` and grid(board)
+│   ├── arduino_parts.py       The MCU per board, bypass cap, rail model, read_target()
+│   ├── common.py              E96, strict requirement reader, pins — one owner
+│   ├── netlist/models.py      Device models read by BOTH spice.py and predict()
 │   ├── netlist/spice.py       CircuitIR → SPICE netlist
-│   │                          MCU → 100Ω load, floating nodes → 1GΩ tie-down
-│   ├── firmware/arduino.py    CircuitIR → .ino via Jinja2 templates
+│   │                          MCU → a resistor per part (mcu_as_<R>R; 100Ω on the Uno),
+│   │                          floating nodes → 1GΩ tie-down
+│   ├── firmware/arduino.py    CircuitIR → .ino via Jinja2; pins read from the wiring
 │   │   └── templates/         sensor_read.ino.j2, modbus_master.ino.j2,
-│   │                          base.ino.j2, led_blink.ino.j2
+│   │                          base.ino.j2, led_blink.ino.j2 — one family, three boards
+│   ├── firmware/project.py    Stage 5 — PlatformIO project, pinned, keyed by SHA-256
+│   ├── firmware/compile_gate.py  Stage 5 — `pio run`; passed only on exit 0 + [SUCCESS]
 │   ├── schematic/kicad.py     CircuitIR → .kicad_sch (net labels, no wire routing)
 │   └── bom/compiler.py        CircuitIR → BOM rows (static pricing from constraints)
 │
@@ -76,29 +119,56 @@ backend/
 │   ├── parser.py              SpiceResultParser — columnar DC + multi-table AC
 │   │                          AC: parses complex format (real, imag), computes |Z|
 │   ├── grader.py              SimulationGrader — 15% tolerance pass/fail
+│   ├── waveforms.py           AC / transient / DC shaped for the viewer (Stage 3)
 │   └── monitor.py             Per-circuit-type success rate logger → sim_monitor.jsonl
 │
 ├── validation/
-│   └── rule_engine.py         HardwareRuleEngine — RS-485 termination, PWM pins
+│   ├── rule_engine.py         HardwareRuleEngine — RS-485 termination, PWM pins
+│   ├── claims.py              Claim objects + validation_coverage; every rule on every
+│   │                          design, graded G0–G7; grade_floor = worst critical claim
+│   ├── defeaters.py           The defeater register, D1–D9 (D8 eliminated by Stage 4)
+│   ├── pin_rules.py           Stage 5 — pin-mux, peripheral conflict, strapping pins (G1, D7)
+│   ├── envelope_grid.py       CI sweep: predict() vs ngspice over grid(board), seeded-fault arms
+│   └── grid_adapters.py       Per-generator ngspice adapters; board_cases() for CI
+│
+├── proof/                     Stage 4 — properties proved from the design's own netlist
+│   ├── brackets.py            π, ln, expm1 as exact rational enclosures
+│   ├── netlist.py             SPICE text back into exact elements
+│   ├── mna.py                 sympy nodal analysis: DC, transfer, Thevenin
+│   ├── properties.py          PropertySpec → Statement; English by template; hashes
+│   └── prover.py              z3 over tolerance boxes; frozen refine loop; mutation gate
+│
+├── observability/
+│   └── request_log.py         One schema-enforced row per request (§4.5); JSONL sidecar
+│                              fallback. Written by middleware/instrumentation.py
 │
 ├── tasks/
-│   └── simulation_task.py     Celery task run_simulation — never inline in HTTP handler
+│   ├── simulation_task.py     Celery task run_simulation — never inline in HTTP handler
+│   └── firmware_task.py       Celery task compile_firmware (Stage 5); worker.py includes both
 │
 ├── api/routes/
 │   ├── design.py              POST /design/generate (10/hour rate limit)
 │   │                          POST /design/list
-│   ├── patch.py               POST /design/{id}/patch (20/hour)
+│   ├── patch.py               POST /design/{id}/patch (20/hour) — `command` or `ops`;
+│   │                          409 on a version conflict; PUT …/annotations; GET …/history
+│   │                          POST …/sign-off (Stage 4): sign the shown properties_hash
+│   ├── firmware.py            GET /design/{id}/firmware (100/hour); firmware_view is the
+│   │                          one gate generate and patch use too — source only once built
 │   ├── simulate.py            GET /design/{id}/simulation/{job_id} (100/hour)
 │   │                          POST /design/{id}/simulation/start
 │   └── auth.py                POST /auth/register, /auth/login (OAuth2 form), /auth/me
 │
 ├── db/
-│   ├── schema.sql             6 tables: users, projects, circuit_designs,
+│   ├── schema.sql             Tables: users, projects, circuit_designs,
 │   │                          simulation_runs, validation_results, patch_history,
-│   │                          generated_outputs
+│   │                          generated_outputs, request_log, firmware_builds (Stage 5)
 │   ├── models.py              SQLAlchemy async ORM models
-│   └── crud.py                Async CRUD: save_design, get_design, update_design_ir,
-│                              list_user_designs, record_patch, save_output
+│   ├── migrations.py          Idempotent ADD COLUMN IF NOT EXISTS, run at startup —
+│   │                          schema.sql only runs on an empty volume
+│   └── crud.py                Async CRUD: save_design, get_design, update_design_revision
+│                              (conditional on version), list_user_designs, record_patch,
+│                              list_patches, save_output
+│                              circuit_designs carries intent_ir + annotations (Stage 2)
 │
 └── middleware/
     └── rate_limit.py          slowapi limiter — keyed by IP address
@@ -109,10 +179,17 @@ frontend/
 │   ├── ChatPanel.tsx          Auth form + chat. First message → generate, follow-up → patch
 │   ├── SchematicViewer.tsx    kicanvas — dynamic import ssr:false (REQUIRED)
 │   ├── SimulationResults.tsx  Polls every 3s, clears interval on unmount
-│   ├── FirmwareViewer.tsx     Code display + .ino download
+│   ├── FirmwareViewer.tsx     Build status; polls while compiling; source + .ino / ini
+│   │                          download only once compiled (Stage 5)
 │   ├── BOMTable.tsx           Component list, CSV export
-│   └── ValidationReport.tsx  Error/warning list
-└── lib/api.ts                 Typed API client (login, register, generateDesign, patchDesign)
+│   ├── ValidationReport.tsx   Error/warning list
+│   ├── ClaimsTable.tsx        Every claim a row, most urgent first (Stage 3)
+│   ├── PropertiesPanel.tsx    The proved sentences and sign-off by hash (Stage 4)
+│   ├── WaveformChart.tsx      AC / transient / DC, inline SVG (Stage 3)
+│   └── PCBViewer.tsx          Experimental PCB tab
+├── lib/api.ts                 Typed API client (auth, generate, patch, sign-off, firmware)
+└── e2e/                       Playwright; fixtures exported from the real pipeline by
+                               scripts/export_ui_fixtures.py
 ```
 
 ---
@@ -171,8 +248,9 @@ work goes through Celery — if layout times grow, that decision needs revisitin
 ### CircuitIR (ir_schema.py) — the locked contract
 ```python
 class CircuitIR(BaseModel):
-    circuit_id: str          # UUID
-    version: int             # increments on each patch
+    circuit_id: str          # uuid5(intent_id), stamped by realize() — stable across patches
+    version: int             # == IntentIR.revision
+    generator: Optional[str] # "name@version" that realised it (Stage 2); None = pre-Stage-2
     intent: str              # human-readable design intent
     application_class: str   # hobby_arduino | iot_node | industrial_io | modbus_rtu
     target_mcu: Optional[str]
@@ -182,6 +260,7 @@ class CircuitIR(BaseModel):
     simulation_spec: Optional[SimulationSpec]
     validation_rules: List[str]
     patch_history: List[dict]
+    validation_coverage: Optional[dict]  # claims + proofs; stamped by realize() (Stage 3–4)
 
 class Connection(BaseModel):
     component_id: str   # ← CORRECT — never 'component'
@@ -214,9 +293,10 @@ class DesignSpec:
 | Next.js | Frontend | 3000 |
 | PostgreSQL | Design persistence | 5432 |
 | Redis | Celery broker + result backend | 6379 |
-| Celery worker | Simulation jobs | — |
+| Celery worker | Simulation jobs + firmware builds | — |
 | ngspice | SPICE simulation | — (subprocess) |
-| arduino-cli | Firmware compilation test | — (subprocess) |
+| PlatformIO | Firmware compile gate, all three boards (Stage 5) | — (subprocess, in the worker) |
+| arduino-cli | Phase 1 firmware compilation test | — (subprocess) |
 
 ### Running locally
 ```bash

@@ -20,6 +20,10 @@ connection.node          ← WRONG
 R_MCU_U1 VCC_5V GND 100   ← correct (50mA load at 5V)
 VMCU_U1 VCC_5V GND DC 5   ← wrong (two voltage sources = singular matrix = crash)
 ```
+Since Stage 5 the resistor is per part, from `supply_model_ohm` in
+`component_constraints.py`, on the board's own rail: 100 Ω ATmega328P
+(`VCC_5V`), 41 Ω ESP32-WROOM-32E and 132 Ω STM32F411CEU6 (`VCC_3V3`). Claims
+name it `mcu_as_<R>R`. Still never a voltage source.
 
 ### Floating nodes = singular matrix
 Any node with fewer than 2 connections causes ngspice to fail with singular matrix.
@@ -122,6 +126,36 @@ enforces this. Any other pin → validation error.
 
 ---
 
+## ESP32-DevKitC and Black Pill (Stage 5)
+
+The pin tables are in `data/mcu_targets.py`, and `validation/pin_rules.py`
+checks them. Gotchas that cost a build or a board:
+
+- **ESP32:**
+  - GPIO6–11 are wired to the module's SPI flash; never use them.
+  - GPIO34–39 are input-only, with no internal pull.
+  - GPIO0, 2, 5, 12 and 15 are strapping pins: GPIO12 sets the flash voltage
+    at reset, and GPIO0 low enters the bootloader.
+  - UART0 (GPIO1/3) is the USB console, so RS-485 goes on UART2
+    (`HardwareSerial rs485Serial(2)`, then `begin(baud, SERIAL_8N1, RX, TX)`).
+  - There is no `LED_BUILTIN` on the DevKitC.
+- **Black Pill STM32F411CEU6:**
+  - PA11/PA12 are USB, and PA13/PA14 are SWD (the programming port).
+  - PC13 is the on-board LED; PC14/PC15 are the 32 kHz crystal; PA0 is the
+    KEY button. PB2 is BOOT1.
+  - STM32duino's serial class is `Uart` (`Uart s(RX, TX)`); `HardwareSerial`
+    is the abstract ArduinoCore-API base and does not compile.
+  - The USB console needs
+    `-D PIO_FRAMEWORK_ARDUINO_ENABLE_CDC -D USBCON` in platformio.ini.
+- **3.3 V logic on both:** a 5 V pull-up on an ESP32 input damages the part.
+  RS-485 uses the MAX3485, since the MAX485 needs 4.75–5.25 V.
+- **PlatformIO** (6.2.0): platforms are pinned per project (atmelavr 5.3.0,
+  espressif32 7.1.3, ststm32 20.0.0). A board's first build downloads its
+  toolchain (hundreds of MB) into `~/.platformio`; after that, a build with a
+  warm cache takes seconds.
+
+---
+
 ## Celery on Windows
 
 ### Python 3.13 prefork failure
@@ -190,6 +224,8 @@ Affected files: `api/routes/design.py`, `patch.py`, `simulate.py`.
 ```
 257 passed, 24 skipped, 0 failing    (as of 2026-08-07, commit 1ae8f34)
 ```
+
+That figure is a 2026-08-07 snapshot. **Current counts live in `state.json` (derived) — do not restate them here.**
 
 - 18 skipped = live API tests (need real ANTHROPIC_API_KEY set) + were ngspice/arduino-cli
 - ngspice tests now run (ngspice installed)

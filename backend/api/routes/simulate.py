@@ -109,6 +109,9 @@ async def get_simulation_status(
         results={
             "dc_voltages": result_data.get("dc_voltages", {}),
             "ac_points_count": result_data.get("ac_points_count", 0),
+            # Stage 3 waveform viewer. Results stored before Stage 3 have none;
+            # the viewer says so rather than drawing an empty chart.
+            "waveforms": result_data.get("waveforms"),
         },
         grade=grade_summary,
     )

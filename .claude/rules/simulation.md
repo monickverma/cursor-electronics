@@ -4,6 +4,15 @@
 
 Never run ngspice inline in an HTTP handler. Simulation takes 2–30 seconds.
 
+> **Scope, narrowed 2026-09-20.** This rule governs **ngspice runs**, which still
+> go through Celery without exception. It does not govern `predict()` — a
+> generator's closed-form evaluation, which is microseconds, synchronous by
+> design, and must stay inside the rule-engine budget. `predict()` is not
+> simulation and does not spawn a subprocess.
+>
+> Amendment X1/X3 of `PHASE_2_PLAN_v2.md` §2. Rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-20].
+
 ```python
 # CORRECT — submit job, return immediately, client polls
 task = run_simulation.apply_async(args=[circuit_id, netlist, job_id], task_id=job_id)
@@ -31,6 +40,21 @@ VMCU_U1 VCC_5V GND DC 5
 Two voltage sources on the same node = singular matrix = ngspice error. If the power supply is `V1 VCC_5V 0 DC 5` and the MCU is also `VMCU VCC_5V GND DC 5`, ngspice will fail with "voltage source loop" and produce no output.
 
 The MCU draws current, it does not supply voltage. 100Ω gives 50mA at 5V — close to ATmega328P typical quiescent draw.
+
+> **Amended 2026-09-21 (Stage 3, X6).** This model is now a *declared scope*:
+> any claim on a design whose netlist contains `R_MCU_` names `mcu_as_100R`
+> and cites defeater D2, derived from the netlist text. A second MCU model,
+> `mcu_pin_thevenin`, is opt-in: a node an MCU drives through an `output`
+> connection **and** that declares `voltage_nominal` is emitted as
+> `V_PIN_<node>` behind `R_PIN_<node>` (the datasheet output resistance). Both
+> models live in `generators/netlist/models.py`, which `predict()` reads too.
+
+> **Amended 2026-09-24 (Stage 5).** Still a resistor, never a source — but
+> sized per part from its tabulated supply current (`supply_model_ohm` in
+> `component_constraints.py`): 100 Ω for the ATmega328P (unchanged), 41 Ω for
+> the ESP32-WROOM-32E, 132 Ω for the STM32F411CEU6, on the board's own rail
+> (`VCC_5V` or `VCC_3V3`). The model is named from the netlist as
+> `mcu_as_<R>R`; the Uno's is still `mcu_as_100R`, and D2 covers them all.
 
 ---
 
@@ -111,6 +135,15 @@ This is added during `SpiceNetlistGenerator.generate()` by counting element appe
 | `pwm_pin_valid` | PWM signals on Arduino Uno PWM-capable pins only (3,5,6,9,10,11) | rule_engine.py |
 
 `HardwareRuleEngine.run(ir)` only checks rules listed in `ir.validation_rules`. A circuit without RS-485 nodes does not run the RS-485 rule.
+
+> **Amended 2026-09-21 (Stage 3, X8).** Listing no longer decides what is
+> checked. `validation/claims.py::assess` runs **every implemented rule on
+> every design** and turns each into a graded claim; four `ValidationRule`
+> values have no implementation (`current_limits_ok`, `pullup_on_open_drain`,
+> `power_supply_adequate`, `operating_temp_range`) and are either covered by a
+> generator's physics claim, declared not applicable or out of scope, or
+> printed as **not assessed (G7)**. An unchecked rule is never a passed one.
+> `HardwareRuleEngine.run` keeps its old semantics for the tests that pin them.
 
 ---
 
