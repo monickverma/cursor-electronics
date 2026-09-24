@@ -1,0 +1,106 @@
+{
+  "decision_id": "stage6_finish",
+  "attempt_n": 1,
+  "owner_owned": false,
+  "door": "two_way",
+  "governing": [
+    "kpi_5pct_disposition",
+    "stage6_finish_before_phase3"
+  ],
+  "agent_prior_agrees_with": {
+    "kpi_5pct_disposition": null,
+    "stage6_finish_before_phase3": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "How should the remaining Stage 6 work and the deferred 5%-of-engineer KPI be handled relative to starting Phase 3?",
+      "history": "Stage 6 = BOM + substitution. Whether Stage 6 is 'done' is decided by progress.yaml and the gate tests, not by Jev.",
+      "facts": [
+        {
+          "fact": "Not done: GET /design/{id}/bom with dated rows and checked substitutes; BOMTable.tsx; lib/api.ts BOMRow shape; Playwright fixture re-export; registering data/parts, data/figures, validation/figure_audit, generators/bom/substitution in regen_state.py and progress_gen.py; version-bump decision; regen_state run; current_phase Stage 6 tasks; commit.",
+          "source": "handoff §8"
+        },
+        {
+          "fact": "The 5%-of-engineer KPI is deferred with trigger: an engineer available.",
+          "source": "handoff §8"
+        },
+        {
+          "fact": "Suite on the working tree: 2123 passed, 30 skipped, 0 failed; the uncommitted work is green but unregistered.",
+          "source": "handoff §8"
+        },
+        {
+          "fact": "Phase 3's first programme (constraint layer + freerouting) does not read the BOM route.",
+          "source": "PCB_STRATEGY.md; PRODUCT_MASTER.md Phase 3"
+        }
+      ],
+      "options": [
+        {
+          "id": "finish_now",
+          "what_changes": "Complete all Stage 6 items before Phase 3.",
+          "benefits": "Clean exit.",
+          "costs": "Delays Phase 3.",
+          "reversibility": {
+            "how_to_undo": "n/a",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "finish_in_parallel",
+          "what_changes": "Phase 3 constraint work alongside Stage 6 UI.",
+          "benefits": "No idle time.",
+          "costs": "Two streams for one engineer.",
+          "reversibility": {
+            "how_to_undo": "Pause one.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "defer_to_phase3",
+          "what_changes": "Leave UI items for Phase 3.",
+          "benefits": "Faster start.",
+          "costs": "Unregistered modules linger.",
+          "reversibility": {
+            "how_to_undo": "Pick up later.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "kpi_5pct_disposition": {
+      "type": "choice",
+      "instructions": "What should happen to the deferred 5%-of-engineer KPI?",
+      "criteria": {
+        "must_meet_before_stage6_done": "Choose when Stage 6's value claim depends on it.",
+        "defer_with_named_trigger": "Choose when it can be measured later with a named trigger.",
+        "amend_plan_to_drop": "Choose when it no longer measures anything the product needs.",
+        "need_more_information": "Choose when the KPI's definition is unclear."
+      }
+    },
+    "stage6_finish_before_phase3": {
+      "type": "choice",
+      "instructions": "How should unfinished Stage 6 work relate to Phase 3 start?",
+      "criteria": {
+        "finish_now": "Choose when Phase 3 depends on the BOM route or substitution.",
+        "finish_in_parallel": "Choose when Phase 3 constraint-layer work is independent of Stage 6.",
+        "defer_to_phase3": "Choose when remaining items are UI-only and Phase 3 will revisit them.",
+        "need_more_information": "Choose when the dependency is unclear."
+      }
+    }
+  }
+}

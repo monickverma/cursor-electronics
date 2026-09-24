@@ -1,0 +1,10 @@
+{
+  "op_<k>": {
+    "type": "noul",
+    "instructions": "In the command '<C>', do the cited words '<W_k>' ask to <set <path> to <value> | remove <path>>?"
+  },
+  "command_fully_covered": {
+    "type": "noul",
+    "instructions": "Do these operations together make every change the command asks for, and nothing else?"
+  }
+}

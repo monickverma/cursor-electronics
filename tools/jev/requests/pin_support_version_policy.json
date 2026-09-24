@@ -1,0 +1,92 @@
+{
+  "decision_id": "pin_support_version_policy",
+  "attempt_n": 1,
+  "owner_owned": false,
+  "door": "one_way",
+  "governing": "bump_policy",
+  "agent_prior_agrees_with": {
+    "bump_policy": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "Residual case only: after the Stage 6 part-pin change, generator outputs are byte-identical but some generators now accept pinned-part inputs they used to refuse. Which version policy applies?",
+      "history": "Stage 6 changed all five generators to honour constraints.pinned.<id>; VERSION strings were left unchanged. RUN THIS ONLY AFTER the deterministic byte-compare: any generator whose CircuitIR bytes changed must be bumped without asking.",
+      "facts": [
+        {
+          "fact": "A VERSION bump makes signed designs of that generator return 409 generator_changed; un-bumping after signatures is not possible.",
+          "source": "generators/realize.py; api/routes/patch.py"
+        },
+        {
+          "fact": "All 49 CI grid designs are byte-identical before and after the parts refactor.",
+          "source": "handoff §8"
+        },
+        {
+          "fact": "<PASTE: byte-compare result per generator over grid + Phase 1 examples + accepted corpus>",
+          "source": "tools output"
+        },
+        {
+          "fact": "<PASTE: envelope() accept/refuse diff on the refusal corpus, per generator>",
+          "source": "tools output"
+        }
+      ],
+      "options": [
+        {
+          "id": "minor_bump_generators_whose_envelope_widened",
+          "what_changes": "Bump only generators whose accepted set grew.",
+          "benefits": "name@version signals the new behaviour.",
+          "costs": "Signed designs of those generators 409.",
+          "reversibility": {
+            "how_to_undo": "Cannot un-bump after signatures.",
+            "signatures_invalidated": true
+          }
+        },
+        {
+          "id": "patch_bump_all_touched",
+          "what_changes": "Bump all five.",
+          "benefits": "Conservative signal.",
+          "costs": "All signed designs 409.",
+          "reversibility": {
+            "how_to_undo": "Cannot un-bump.",
+            "signatures_invalidated": true
+          }
+        },
+        {
+          "id": "no_bump_outputs_identical",
+          "what_changes": "Leave versions.",
+          "benefits": "No signature churn.",
+          "costs": "Widened acceptance not visible in version.",
+          "reversibility": {
+            "how_to_undo": "Bump later is still possible.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "bump_policy": {
+      "type": "choice",
+      "instructions": "Outputs are byte-identical but some generators now accept pinned-part inputs they used to refuse. What versioning policy applies?",
+      "criteria": {
+        "minor_bump_generators_whose_envelope_widened": "Choose when a widened accepted set is a behaviour change users should see in name@version.",
+        "patch_bump_all_touched": "Choose when any touched generator should signal a change even if behaviour is identical.",
+        "no_bump_outputs_identical": "Choose when identical outputs mean no version meaning changed; a later bump stays possible.",
+        "need_more_information": "Choose when the envelope diff is incomplete."
+      }
+    }
+  }
+}

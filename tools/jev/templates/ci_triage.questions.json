@@ -1,0 +1,22 @@
+{
+  "entry_covers_diff": {
+    "type": "choice",
+    "instructions": "Does the new decisions.md entry cover this diff?",
+    "criteria": {
+      "covers": "Every changed behaviour is named with its reason.",
+      "partially_covers_missing_named_item": "Some change is not mentioned.",
+      "unrelated": "The entry is about something else.",
+      "need_more_information": "The diffstat is insufficient to judge."
+    }
+  },
+  "failure_class": {
+    "type": "choice",
+    "instructions": "What kind of failure is this traceback?",
+    "criteria": {
+      "infra_hiccup": "Environment: timeout, missing binary, refused connection, tempfile/permission.",
+      "accuracy_disagreement": "A numeric result outside its tolerance.",
+      "test_nondeterminism_bug": "Order, seed or shared-state dependence in the test.",
+      "unknown": "Cannot tell from the traceback."
+    }
+  }
+}

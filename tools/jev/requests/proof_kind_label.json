@@ -1,0 +1,120 @@
+{
+  "decision_id": "proof_kind_label",
+  "attempt_n": 1,
+  "owner_owned": true,
+  "door": "two_way",
+  "governing": "kind_option",
+  "agent_prior_agrees_with": {
+    "kind_option": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "Which `kind` label should claims proven exactly (z3 / closed form over the tolerance box) carry: analytic or empirical?",
+      "history": "The code labels exact proofs `analytic`; PHASE_2_PLAN_v2 labels them `empirical`. Flagged, not settled. Precedence: PHASE_2_PLAN_v2 > PRODUCT_MASTER > assurance docs (EVIDENCE_CLASSES).",
+      "facts": [
+        {
+          "fact": "<PASTE: brain/decisions.md:1208-1212 and 1266-1269 verbatim>",
+          "source": "brain/decisions.md"
+        },
+        {
+          "fact": "<PASTE: PHASE_2_PLAN_v2 Stage 4 table row that says empirical>",
+          "source": "PHASE_2_PLAN_v2.md"
+        },
+        {
+          "fact": "<PASTE: EVIDENCE_CLASSES §3.1 falsification test>",
+          "source": "EVIDENCE_CLASSES.md"
+        },
+        {
+          "fact": "No code reads Claim.kind; Kind.EMPIRICAL is never used; the UI does not render kind.",
+          "source": "backend/validation/claims.py:109-112,237-265; frontend/lib/api.ts:98"
+        },
+        {
+          "fact": "kind is not part of the sign-off hash.",
+          "source": "backend/proof/properties.py:113-126"
+        },
+        {
+          "fact": "D1 (not validated on hardware) is cited on every proof row.",
+          "source": "backend/validation/claims.py"
+        },
+        {
+          "fact": "v2 labels the grid gate (predict vs ngspice within 2%) 'empirical, G5'.",
+          "source": "PHASE_2_PLAN_v2.md"
+        },
+        {
+          "fact": "<VERIFY by test: whether kind appears in CircuitIR bytes (if yes, changing it forces a version bump)>",
+          "source": "tests"
+        }
+      ],
+      "options": [
+        {
+          "id": "keep_analytic_and_amend_v2_wording",
+          "what_changes": "Keep code; write a v2 amendment.",
+          "benefits": "Label matches the method.",
+          "costs": "Needs an amendment to respect precedence.",
+          "reversibility": {
+            "how_to_undo": "Flip the enum value.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "switch_to_v2_empirical",
+          "what_changes": "Change enum value on proof rows.",
+          "benefits": "Obeys v2 as written.",
+          "costs": "Label may mislead (no data was sampled).",
+          "reversibility": {
+            "how_to_undo": "Flip back.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "split_by_object",
+          "what_changes": "Proof statements analytic; tool-run observations (grid gate, compile gate) empirical.",
+          "benefits": "Precise.",
+          "costs": "Two labels to maintain.",
+          "reversibility": {
+            "how_to_undo": "Merge back.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "kind_option": {
+      "type": "choice",
+      "instructions": "Which kind label should exact proofs carry?",
+      "criteria": {
+        "keep_analytic_and_amend_v2_wording": "Choose when analytic is right and precedence must be respected by amending v2.",
+        "switch_to_v2_empirical": "Choose when v2's label is deliberate and governs.",
+        "split_by_object": "Choose when z3/closed-form statements over the model are analytic but tool-run observations (grid gate, compile gate) are empirical.",
+        "need_more_information": "Choose when v2's intent cannot be read from the pasted text."
+      }
+    },
+    "v2_label_is_deliberate": {
+      "type": "noul",
+      "instructions": "Is v2's empirical tag for z3-proved claims a considered classification rather than a drafting slip?"
+    },
+    "precedence_forces_v2": {
+      "type": "noul",
+      "instructions": "May a lower-precedence document's definition override v2's field value without amending v2?"
+    },
+    "external_reader_misreads_analytic": {
+      "type": "noul",
+      "instructions": "Would an external engineer read 'analytic' as 'validated on hardware'?"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "vv_<figure_id>": {
+    "type": "score",
+    "instructions": "Value of verifying this figure against the manufacturer datasheet now",
+    "criteria": [
+      "No claim reads it",
+      "Only non-critical claims read it",
+      "A critical claim reads it with wide margin",
+      "A critical signed claim's verdict could flip within plausible datasheet variance"
+    ]
+  },
+  "d7_when": {
+    "type": "choice",
+    "instructions": "When should the verification pass happen?",
+    "criteria": {
+      "before_stage6_commit": "Choose when Stage 6 substitution relies on unverified figures.",
+      "interleave_one_family_per_session": "Choose when the work is best spread across sessions by part family.",
+      "after_stage6": "Choose when Stage 6 does not depend on verification.",
+      "need_more_information": "Choose when dependency of Stage 6 on figures is unclear."
+    }
+  }
+}

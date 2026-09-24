@@ -1,0 +1,130 @@
+{
+  "decision_id": "x7_live_pricing",
+  "attempt_n": 1,
+  "owner_owned": true,
+  "door": "one_way",
+  "governing": "x7_option",
+  "agent_prior_agrees_with": {
+    "x7_option": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "Should Circuit OS add live component pricing (amendment X7)?",
+      "history": "X7 permits live pricing but the plan says ask the owner. Stage 6 closes on static, dated, exact-match pricing.",
+      "facts": [
+        {
+          "fact": "Stage 6 gates: no substitution surfaces that fails the original's checks (G1); every price carries price_asof; pricing never gates validation (G1).",
+          "source": "handoff §8; plan/current_phase.md:751-758"
+        },
+        {
+          "fact": "Static exact-match pricing with price_asof 2026-07-25 already meets the Stage 6 price gates.",
+          "source": "handoff §8 (bom/compiler.py, uncommitted)"
+        },
+        {
+          "fact": "The worst pricing bug found (RS-485 1206 250 mW terminator ordered as a 62.5 mW 0402) was a static matching bug, fixed without live data.",
+          "source": "handoff §8"
+        },
+        {
+          "fact": "Project rule: Phase 1 static pricing only; live Digikey/LCSC calls create an authenticated, rate-limited dependency.",
+          "source": ".claude/rules/security.md"
+        },
+        {
+          "fact": "<PASTE or 'unknown': vendor candidate, its terms on caching/display, key handling, rate limit, cost>",
+          "source": "owner"
+        }
+      ],
+      "options": [
+        {
+          "id": "approve_now_behind_flag",
+          "what_changes": "Live fetch writes a price_asof cache row; never read by validation.",
+          "benefits": "Current prices.",
+          "costs": "New secret, rate limit, ToS review, cache invalidation.",
+          "reversibility": {
+            "how_to_undo": "Turn the flag off; delete the cache.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "approve_after_static_stage6_exit",
+          "what_changes": "Close Stage 6 static, then add live pricing.",
+          "benefits": "Keeps Stage 6 small.",
+          "costs": "Same ops cost later.",
+          "reversibility": {
+            "how_to_undo": "Not started until then.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "defer_to_phase3",
+          "what_changes": "Revisit when customers exist.",
+          "benefits": "No ops burden in Phase 2.",
+          "costs": "Prices age.",
+          "reversibility": {
+            "how_to_undo": "Nothing to undo.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "reject_keep_static",
+          "what_changes": "Static dated pricing only.",
+          "benefits": "Zero dependency.",
+          "costs": "Prices age; manual refresh.",
+          "reversibility": {
+            "how_to_undo": "Reopen later.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": [
+        {
+          "option": "Enable live pricing without the owner's explicit approval",
+          "rule": "X7 / plan: ask the owner"
+        }
+      ]
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "x7_option": {
+      "type": "choice",
+      "instructions": "What should happen with live component pricing (X7)?",
+      "criteria": {
+        "approve_now_behind_flag": "Choose when vendor terms are known and a live fetch writing a price_asof cache row, never read by validation, is worth its ops cost now.",
+        "approve_after_static_stage6_exit": "Choose when live pricing has value but Stage 6 should first close on static pricing.",
+        "defer_to_phase3": "Choose when no Phase 2 gate needs it and the ops burden outweighs the value until customers exist.",
+        "reject_keep_static": "Choose when static dated pricing meets every foreseeable need.",
+        "need_more_information": "Choose when vendor terms, costs or rate limits are unknown."
+      }
+    },
+    "stage6_gate_needs_live": {
+      "type": "noul",
+      "instructions": "Does any stated Stage 6 gate require a live price rather than a dated static one?"
+    },
+    "vendor_terms_known": {
+      "type": "noul",
+      "instructions": "Does the state contain the vendor's caching/display terms and rate limit?"
+    },
+    "ops_burden": {
+      "type": "score",
+      "instructions": "Operational burden of the live option",
+      "criteria": [
+        "No new secret or dependency",
+        "New secret only",
+        "New secret and rate limit",
+        "Secret, rate limit, cache invalidation and ToS review"
+      ]
+    }
+  }
+}

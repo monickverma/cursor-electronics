@@ -1,0 +1,117 @@
+{
+  "decision_id": "d1_bench_timing",
+  "attempt_n": 1,
+  "owner_owned": true,
+  "door": "two_way",
+  "governing": "d1_when",
+  "agent_prior_agrees_with": {
+    "d1_when": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "When should the D1 bench session (hardware validation) happen?",
+      "history": "D1 = designs are validated against maths and ngspice, not hardware. Evidence-record code (bench records as data, overlap-agreement rule) was decided 2026-09-24 but not built.",
+      "facts": [
+        {
+          "fact": "BENCH_D1 equipment list includes an oscilloscope and signal generator; the owner has neither (multimeter + Uno available).",
+          "source": "docs/BENCH_D1.md"
+        },
+        {
+          "fact": "BENCH_D1 names led_indicator 0.1.1; the code is 0.2.0, so the sheet is stale.",
+          "source": "docs/BENCH_D1.md:13-15; generators/led_indicator.py:108"
+        },
+        {
+          "fact": "Every behavioural claim cites D1; D1's trigger is lab access.",
+          "source": "backend/validation/defeaters.py"
+        },
+        {
+          "fact": "No board has been flashed yet; compile != runs.",
+          "source": "handoff §9"
+        },
+        {
+          "fact": "Criterion 11 was met by an analytic substitute (2%), never by bench measurement.",
+          "source": "PHASE1_COMPLETE.md"
+        },
+        {
+          "fact": "<CONFIRM: whether BENCH_D1 allows a no-scope DC-only partial session (divider, LED) — else remove that option>",
+          "source": "owner"
+        }
+      ],
+      "options": [
+        {
+          "id": "build_evidence_records_then_bench_when_scope_available",
+          "what_changes": "Build D1 evidence-record code now; bench when a scope is available.",
+          "benefits": "Results count the moment they are recorded.",
+          "costs": "Code before evidence.",
+          "reversibility": {
+            "how_to_undo": "Records unused until then.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "partial_session_now_without_scope",
+          "what_changes": "Multimeter DC checks on divider and LED now; RC cutoff later.",
+          "benefits": "First hardware evidence soon.",
+          "costs": "Partial; needs the record code.",
+          "reversibility": {
+            "how_to_undo": "Records are per design; nothing to undo.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "bench_before_phase2_exit",
+          "what_changes": "Make D1 a Phase 2 exit condition.",
+          "benefits": "Hardware evidence before Phase 3.",
+          "costs": "Blocks exit on equipment.",
+          "reversibility": {
+            "how_to_undo": "Amend exit criteria.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "defer_with_trigger_lab_access",
+          "what_changes": "Keep the lab-access trigger.",
+          "benefits": "No cost.",
+          "costs": "D1 stays open on every claim.",
+          "reversibility": {
+            "how_to_undo": "Nothing.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": [
+      "<PASTE: PHASE_2_PLAN_v2 exit text — until pasted, ignore d1_blocks_phase2_exit>"
+    ]
+  },
+  "questions": {
+    "d1_when": {
+      "type": "choice",
+      "instructions": "When should the D1 bench session happen?",
+      "criteria": {
+        "build_evidence_records_then_bench_when_scope_available": "Choose when records are needed first and the RC cutoff needs a scope.",
+        "partial_session_now_without_scope": "Choose when meter+supply DC checks on divider/LED are worth doing now and the RC cutoff can wait.",
+        "bench_before_phase2_exit": "Choose when the exit criteria require hardware evidence.",
+        "defer_with_trigger_lab_access": "Choose when nothing scheduled depends on it before lab access.",
+        "need_more_information": "Choose when exit criteria or equipment availability are unknown."
+      }
+    },
+    "d1_blocks_phase2_exit": {
+      "type": "noul",
+      "instructions": "Given the pasted exit text, does Phase 2 exit require D1 closed?"
+    }
+  }
+}

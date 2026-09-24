@@ -1,0 +1,26 @@
+{
+  "stated_<field_path>": {
+    "type": "noul",
+    "instructions": "Does the prompt state or directly imply <field_path> = <value> <unit>?",
+    "criteria": {
+      "true": "The words say it or leave no other reading.",
+      "false": "The value is absent, different in scale/unit, or belongs to another field."
+    }
+  },
+  "function_asked": {
+    "type": "choice",
+    "instructions": "Which catalogue function does the prompt ask for?",
+    "criteria": {
+      "rc_lowpass": "An RC low-pass filter.",
+      "voltage_divider": "A resistive divider.",
+      "led_indicator": "An LED with a current-limiting resistor.",
+      "dht22_node": "A DHT22 temperature/humidity node.",
+      "rs485_node": "An RS-485 Modbus node.",
+      "none_of_these": "Anything else, including band-pass or high-pass."
+    }
+  },
+  "unrepresented_request": {
+    "type": "noul",
+    "instructions": "Does the prompt ask for anything these requirements do not represent?"
+  }
+}

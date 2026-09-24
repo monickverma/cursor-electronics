@@ -1,0 +1,16 @@
+{
+  "refusal_label": {
+    "type": "choice",
+    "instructions": "What does this refused request most need from Circuit OS?",
+    "criteria": {
+      "range_widen_existing": "An existing function refused on range; widen an envelope.",
+      "high_pass_filter": "A new high-pass filter generator.",
+      "band_pass_filter": "A new band-pass generator.",
+      "op_amp_stage": "An op-amp stage.",
+      "industrial_io": "24 V inputs, 4-20 mA, 0-10 V or relay I/O.",
+      "out_of_scope": "Switching converters, PCB-only or free-form requests.",
+      "ambiguous_request": "The request is unclear.",
+      "none_of_these": "None of the above; a human should extend the label set."
+    }
+  }
+}

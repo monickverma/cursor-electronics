@@ -1,0 +1,126 @@
+{
+  "decision_id": "explainer_budget",
+  "attempt_n": 1,
+  "owner_owned": true,
+  "door": "two_way",
+  "governing": "first_step",
+  "agent_prior_agrees_with": {
+    "first_step": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "What is the next step on the LLM explainer's cost and latency?",
+      "history": "The explainer is the one free-text LLM call. The generation target is under 15 s; the explainer alone is far over it.",
+      "facts": [
+        {
+          "fact": "EXPLANATION_MAX_TOKENS = 8192; a stop at the ceiling raises.",
+          "source": "backend/ai/explainer.py:62,111-119"
+        },
+        {
+          "fact": "Measured 110-130 s and about $0.20 per explanation; the RS-485 explanation exceeds 8192 tokens.",
+          "source": "brain/decisions.md; timeline"
+        },
+        {
+          "fact": "The fix of disabling thinking is untried (credits exhausted, HTTP 402).",
+          "source": "handoff §4"
+        },
+        {
+          "fact": "ai/derived_explainer.py makes 0 calls; the structural layer is derivable 6/6, the domain layer is not.",
+          "source": "Stage 0 explanation-derivability experiment"
+        },
+        {
+          "fact": "D3 (no external engineer has read an explanation) is deferred until before the first external user.",
+          "source": "validation/defeaters.py; CRITERION_12_REVIEW.md"
+        },
+        {
+          "fact": "<PASTE: owner's per-generation cost ceiling in USD>",
+          "source": "owner"
+        }
+      ],
+      "options": [
+        {
+          "id": "experiment_thinking_disabled_when_credits",
+          "what_changes": "Measure thinking-disabled first.",
+          "benefits": "Cheapest test.",
+          "costs": "Needs credits.",
+          "reversibility": {
+            "how_to_undo": "Revert setting.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "move_explanation_off_request_path",
+          "what_changes": "Run explanation async like simulation.",
+          "benefits": "Generation meets 15 s.",
+          "costs": "UI polls.",
+          "reversibility": {
+            "how_to_undo": "Move back.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "derived_default_llm_opt_in",
+          "what_changes": "Zero-call explanation by default; LLM on request.",
+          "benefits": "Cost ~0.",
+          "costs": "Domain layer missing by default.",
+          "reversibility": {
+            "how_to_undo": "Swap default.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "raise_ceiling_to_16384",
+          "what_changes": "Double max_tokens.",
+          "benefits": "No truncation.",
+          "costs": "Slower, costlier.",
+          "reversibility": {
+            "how_to_undo": "Lower it.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "cheaper_faster_model_for_explainer",
+          "what_changes": "Different model for explainer only.",
+          "benefits": "Faster/cheaper.",
+          "costs": "Quality unknown; D3 unaffected.",
+          "reversibility": {
+            "how_to_undo": "Switch back.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "first_step": {
+      "type": "choice",
+      "instructions": "What is the next step for the explainer's cost and latency?",
+      "criteria": {
+        "experiment_thinking_disabled_when_credits": "Choose when the cheapest untried fix should be measured first.",
+        "move_explanation_off_request_path": "Choose when latency, not cost, is the binding problem; run it async like simulation.",
+        "derived_default_llm_opt_in": "Choose when the zero-call explanation is good enough as default.",
+        "raise_ceiling_to_16384": "Choose when truncation, not latency, is the binding problem and cost is within ceiling.",
+        "cheaper_faster_model_for_explainer": "Choose when a different model is likely to meet both targets.",
+        "need_more_information": "Choose when the owner's cost ceiling is missing."
+      }
+    },
+    "raising_ceiling_alone_meets_target": {
+      "type": "noul",
+      "instructions": "Would raising max_tokens alone bring generation under 15 s?"
+    }
+  }
+}

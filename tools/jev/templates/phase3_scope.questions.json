@@ -1,0 +1,30 @@
+{
+  "phase3_order": {
+    "type": "choice",
+    "instructions": "Which Phase 3 programme should start first?",
+    "criteria": {
+      "constraints_first": "Choose when the constraint layer needs no customers and is the stated moat.",
+      "industrial_first": "Choose when customer evidence makes a specific industrial class urgent.",
+      "parallel": "Choose when one engineer can sustain both without either stalling.",
+      "need_more_information": "Choose when customer evidence (PCB_STRATEGY §9.3) is missing."
+    }
+  },
+  "fit_<class_id>": {
+    "type": "score",
+    "instructions": "Fit of this industrial class as the first Phase 3 generator",
+    "criteria": [
+      "Needs machinery Circuit OS lacks (transients, switching)",
+      "Mostly new proofs and rules",
+      "Reuses some proofs and rules",
+      "Reuses most proofs, rules and the RS-485 library"
+    ]
+  },
+  "gerber_kpi_reachable": {
+    "type": "noul",
+    "instructions": "As the KPI is now worded, is it reachable in Phase 3 without Gerber export?"
+  },
+  "prospect_sees_explanation_early": {
+    "type": "noul",
+    "instructions": "Will a prospect see a generated explanation within the first Phase 3 milestone?"
+  }
+}

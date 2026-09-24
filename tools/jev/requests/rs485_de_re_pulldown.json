@@ -1,0 +1,152 @@
+{
+  "decision_id": "rs485_de_re_pulldown",
+  "attempt_n": 1,
+  "owner_owned": true,
+  "door": "one_way",
+  "governing": "pulldown_option",
+  "agent_prior_agrees_with": {
+    "pulldown_option": null
+  },
+  "polarity_pairs": [
+    [
+      "reboot_contention_material",
+      "reboot_contention_material__not"
+    ]
+  ],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+      "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+      "facts": [
+        {
+          "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+          "source": "backend/generators/rs485_node.py:1-35,107"
+        },
+        {
+          "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+          "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+        },
+        {
+          "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+          "source": "backend/validation/defeaters.py:58-67"
+        },
+        {
+          "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+          "source": "arithmetic"
+        },
+        {
+          "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+          "source": "generators/realize.py stamping rule; handoff §2"
+        },
+        {
+          "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+          "source": "backend/validation/grid_adapters.py:187-196"
+        },
+        {
+          "fact": "<PASTE: DE/RE pin (D2 / its ESP32 and STM32 equivalents) strapping or reserved status from data/mcu_targets.py and pin_rules on all 3 boards>",
+          "source": "data/mcu_targets.py"
+        },
+        {
+          "fact": "<PASTE: D7 figure record, or 'stated assumption', for MAX485/MAX3485 driver state while DE/RE floats during MCU reset>",
+          "source": "backend/data/figures.py"
+        }
+      ],
+      "options": [
+        {
+          "id": "add_as_default_now",
+          "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+          "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+          "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+          "reversibility": {
+            "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+            "signatures_invalidated": true
+          }
+        },
+        {
+          "id": "add_as_opt_in_constraint",
+          "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+          "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+          "costs": "Another constraint to test and document.",
+          "reversibility": {
+            "how_to_undo": "Remove the constraint; no signed design changed.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "defer_with_trigger",
+          "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+          "benefits": "Zero cost now.",
+          "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+          "reversibility": {
+            "how_to_undo": "Nothing to undo.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "do_not_add",
+          "what_changes": "Close the question.",
+          "benefits": "No change.",
+          "costs": "Loses the option if the risk is real.",
+          "reversibility": {
+            "how_to_undo": "Reopen later.",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": []
+    },
+    "unknowns": [
+      "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+  },
+  "questions": {
+    "pulldown_option": {
+      "type": "choice",
+      "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+      "criteria": {
+        "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+        "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+        "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+        "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+        "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer."
+      }
+    },
+    "reboot_contention_material": {
+      "type": "noul",
+      "instructions": "For a single-master Modbus RTU node on a bench or small bus, is a driver briefly enabled during MCU reset a material risk to other nodes' communication?",
+      "criteria": {
+        "true": "Material: plausible corrupted frames or bus lock on reboot.",
+        "false": "Negligible for this use."
+      }
+    },
+    "reboot_contention_material__not": {
+      "type": "noul",
+      "instructions": "For a single-master Modbus RTU node on a bench or small bus, is a driver briefly enabled during MCU reset negligible for other nodes' communication?"
+    },
+    "d2_drop_is_sound": {
+      "type": "noul",
+      "instructions": "Given the state, would adding the pull-down remove the reason D2 (simplified MCU model) is cited on the fail-safe claim, rather than just moving it to another claim?"
+    },
+    "blast_radius": {
+      "type": "score",
+      "instructions": "How far does the recommended change reach?",
+      "criteria": [
+        "No existing design changes",
+        "Only new designs change",
+        "Existing unsigned designs re-realise differently",
+        "Signed designs are invalidated (409)"
+      ]
+    }
+  }
+}

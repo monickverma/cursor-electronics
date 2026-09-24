@@ -1,0 +1,93 @@
+{
+  "decision_id": "accuracy_flake_policy",
+  "attempt_n": 1,
+  "owner_owned": false,
+  "door": "two_way",
+  "governing": "flake_policy",
+  "agent_prior_agrees_with": {
+    "flake_policy": null
+  },
+  "polarity_pairs": [],
+  "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+      "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+      "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+      "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+      "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+      "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+      "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+      "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+      "question": "How should the intermittent failure in tests/test_simulation_accuracy.py be handled?",
+      "history": "Observed 2026-08-23: 410 passed/0 failed then 409/1 with no code change; never diagnosed.",
+      "facts": [
+        {
+          "fact": "The flake record: 410/0 vs 409/1 with no code change.",
+          "source": ".claude/shared-memory/brain/timeline.md:90"
+        },
+        {
+          "fact": "Rule: infra hiccups may be retried; accuracy disagreements never.",
+          "source": "plan/current_phase.md:463"
+        },
+        {
+          "fact": "One failure marks generators/spice broken in the derived tracker.",
+          "source": "tools/regen_state.py:56-57"
+        }
+      ],
+      "options": [
+        {
+          "id": "diagnose_now_with_N_repeat_runs_seed_logged",
+          "what_changes": "Run N times with seeds logged to find nondeterminism.",
+          "benefits": "Finds the cause.",
+          "costs": "Hours of runs.",
+          "reversibility": {
+            "how_to_undo": "n/a",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "mark_xfail_strict_with_issue",
+          "what_changes": "xfail(strict) with a tracked issue.",
+          "benefits": "Tracked without masking.",
+          "costs": "Needs a known cause.",
+          "reversibility": {
+            "how_to_undo": "Remove marker.",
+            "signatures_invalidated": false
+          }
+        },
+        {
+          "id": "leave_carried",
+          "what_changes": "Leave as is.",
+          "benefits": "No cost.",
+          "costs": "Tracker may show broken.",
+          "reversibility": {
+            "how_to_undo": "n/a",
+            "signatures_invalidated": false
+          }
+        }
+      ],
+      "excluded_by_rule": [
+        {
+          "option": "Retry until green",
+          "rule": "accuracy disagreements are never retried (current_phase.md:463)"
+        }
+      ]
+    },
+    "unknowns": []
+  },
+  "questions": {
+    "flake_policy": {
+      "type": "choice",
+      "instructions": "How should the intermittent accuracy test failure be handled?",
+      "criteria": {
+        "diagnose_now_with_N_repeat_runs_seed_logged": "Choose when repeat runs to measure (not to turn green) can locate nondeterminism.",
+        "mark_xfail_strict_with_issue": "Choose when a known cause exists and must be tracked without masking.",
+        "leave_carried": "Choose when the failure is rare and diagnosis costs more than it reveals now.",
+        "need_more_information": "Choose when the failing assertion and seed are unknown."
+      }
+    }
+  }
+}

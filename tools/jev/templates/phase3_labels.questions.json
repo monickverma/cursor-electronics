@@ -1,0 +1,43 @@
+{
+  "net_role": {
+    "type": "choice",
+    "instructions": "What role does net <name> play, given its connections?",
+    "criteria": {
+      "analog_0_10v_out": "Drives a 0-10 V control input.",
+      "loop_4_20ma": "Part of a 4-20 mA current loop.",
+      "relay_coil_drive": "Switches a relay coil.",
+      "field_input_24v": "Receives a 24 V field signal.",
+      "logic_local": "Board-local logic only.",
+      "undeclared": "The connections do not determine the role."
+    }
+  },
+  "env_label": {
+    "type": "choice",
+    "instructions": "Which install environment does the user's description indicate?",
+    "criteria": {
+      "pd2_ovc2_indoor_controlled": "Indoor, controlled, occasional condensation.",
+      "pd3_ovc3_field_wired": "Field-wired, conductive pollution possible.",
+      "pd1_sealed": "Sealed enclosure, no conductive pollution.",
+      "need_more_information": "The description does not determine it."
+    }
+  },
+  "isolation_needed": {
+    "type": "noul",
+    "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+  },
+  "standard_family_flag": {
+    "type": "choice",
+    "instructions": "Which standard family should a person review for this board?",
+    "criteria": {
+      "ul_60730": "Automatic electrical control for household or similar use.",
+      "ul_61010_2_201": "Programmable controller.",
+      "ul_508a_panel_only": "The board is a component of an industrial control panel.",
+      "none_apparent": "No listed family apparent.",
+      "need_more_information": "Product use is unclear."
+    }
+  },
+  "possibly_life_safety": {
+    "type": "noul",
+    "instructions": "Could this board's failure plausibly affect life safety (gas valves, fire suppression, hood exhaust)?"
+  }
+}
