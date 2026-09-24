@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-09-23T21:24:18.877136Z'
+generated_at: '2026-09-24T01:17:55.278869Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -1801,7 +1801,7 @@ files:
         description: Netlist + property → Statement and z3 obligations
         signature: 'compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text:
           str) -> Tuple[Statement, Problem]'
-        line: 321
+        line: 333
         test_file: *id008
       prove:
         status: verified_done
@@ -1810,7 +1810,7 @@ files:
           statement.
         signature: 'prove(statement: Statement, problem: Problem, strategies: Sequence[Strategy])
           -> ProofResult'
-        line: 790
+        line: 820
         test_file: *id008
       FrozenPropertyViolation:
         status: verified_done
@@ -1818,7 +1818,7 @@ files:
         description: A refine strategy returned a result for something other than
           the frozen property.
         signature: null
-        line: 87
+        line: 89
         test_file: *id008
       falsify:
         status: verified_done
@@ -1827,14 +1827,14 @@ files:
           does.
         signature: 'falsify(circuit: CircuitIR, spec: PropertySpec, netlist_text:
           Optional[str]) -> Optional[Mutation]'
-        line: 960
+        line: 990
         test_file: *id008
       check:
         status: verified_done
         type: function
         description: (Statement, Problem, ProofResult) for one property of one design.
         signature: 'check(circuit: CircuitIR, spec: PropertySpec, netlist_text: Optional[str])'
-        line: 897
+        line: 927
         test_file: *id008
     module_status: done
   data/mcu_targets:

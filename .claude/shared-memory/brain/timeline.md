@@ -125,6 +125,20 @@
 
 **2026-09-21** — /update-memory re-sync: `brain/architecture.md` (bootstrap layer 2) still said the LLM writes CircuitIR and listed the deleted `ai/patcher.py`, and `MENTAL_MODEL.md` listed both deleted LLM → CircuitIR modules as trusted — both rewritten to the IntentIR → registry → `realize()` flow, with the Stage 1–2 modules added. Also retired the stale `## Upcoming` list here and pointed `knowledge.md`, `vision.md` and `current_phase.md` at `state.json` instead of restating numbers.
 
+**2026-09-23** — **Stage 3 complete** (`9a4ecc6`, `9dbdc1e`): voltage_divider, led_indicator, dht22_node and rs485_node join rc_lowpass on the generator contract; every design carries `validation_coverage` claim objects with a `grade_floor`, every implemented rule runs on every design (X8), and all five pass the ngspice grid gate with M1 fault injection. The claims table and waveform viewer ship in the frontend.
+
+**2026-09-23** — **Stage 4 complete** (`60e68f7`): `backend/proof/` proves each generator's properties from the design's own netlist with z3 over the full tolerance box (π bracketed exactly, D8 eliminated), and the user signs off on the hash of the English shown. The frozen refine loop and a mutation gate are enforced: 64/64 properties refuted under an injected wrong part.
+
+**2026-09-23** — Stage 3 + 4 verified against independent ngspice oracles (`0afa72c`): 624 evaluations inside the proven bounds, 64/64 counterexamples real. Five defects fixed, the worst being that the refine loop accepted a proof over a smaller box; certificates are now tiled and re-decided. Then rc_lowpass 0.2.3 swamps a large source instead of refusing (`1dee36a`), and sign-off was verified on real PostgreSQL along with the live LLM paths, after fixing two producer defects and the explainer's truncation (`dfba3ed`).
+
+**2026-09-24** — Task 4.5 (`69f2d66`, the other session): LED R1 dissipation decided exactly by a proven monotone lemma (led_indicator 0.1.2, G1), and schematic annotations drawn beside their anchors. Playwright UI tests for the claims table, sign-off and waveform viewer follow (`1ff0e2a`), fed by fixtures exported from the real pipeline.
+
+**2026-09-24** — **Stage 5 complete** (`bb3eb21`): `constraints.mcu` targets the Uno (default, byte-identical), ESP32-DevKitC or Black Pill STM32F411; pins are G1 claims checked against `data/mcu_targets.py`, and firmware is shown only once a PlatformIO build passes, run in Celery and cached by hash. Both v2 gates met: 21/21 builds and 56/56 labelled pin cases. Building it found that the LED sketch drove pin 13 whatever the design wired (a Phase 1 bug), that the worker never loaded the compile task, and that a lost result would read "compiling" forever; all three are fixed and pinned.
+
+**2026-09-24** — The branch was pushed to origin at the user's request (`0c0ce3b..bb3eb21`). The last Stage 5 G2 case, Black Pill at 13 mA, closed in `1126d15` (the other session): the series-power "falls" lemma gained an `unless` guard, so every LED grid design on every board is G1, proven at +0.01% and refuted at −0.01% of the exact worst case.
+
+**2026-09-24** — /update-memory re-sync: `brain/architecture.md` still named rc_lowpass "the one generator on the contract" and a flat 100 Ω MCU, and had nothing from Stages 3–5. It now covers the five generators, claims, defeaters and pin rules, `proof/`, the firmware compile gate, sign-off and the new frontend panels. `brain/knowledge.md` gains the per-part MCU resistor and the ESP32/Black Pill gotchas that cost a build.
+
 ---
 
 ## Upcoming

@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-23T21:15:54.491714Z",
-  "generated_from_commit": "1ff0e2a",
+  "generated_at": "2026-09-24T01:10:40.756327Z",
+  "generated_from_commit": "1126d15",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -415,10 +415,10 @@
     }
   },
   "test_summary": {
-    "passed": 2000,
+    "passed": 2001,
     "failed": 0,
     "skipped": 30,
-    "total": 2000
+    "total": 2001
   },
   "phase1_criteria": [
     {
@@ -637,13 +637,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1",
+    "bb3eb21 feat(phase2): Stage 5 — multi-MCU firmware: boards as data, pins as claims, compile before display",
     "1ff0e2a test(frontend): Playwright tests for the claims table, sign-off and waveform viewer",
     "69f2d66 feat: Task 4.5 exact LED dissipation (0.1.2, G1); annotations drawn in the schematic",
-    "dfba3ed test+fix: verify sign-off on PostgreSQL and the live LLM paths; fix producer and explainer",
-    "1dee36a feat(rc_lowpass): swamp a large source with a larger R1 (0.2.3); LED bound kept, exact method scheduled",
-    "0afa72c fix(stage3+4): close five defects found by the Stage 3 + 4 verification"
+    "dfba3ed test+fix: verify sign-off on PostgreSQL and the live LLM paths; fix producer and explainer"
   ],
-  "last_diff_stat": ".claude/shared-memory/plan/current_phase.md |  10 +-\n .gitignore                                  |   4 +\n frontend/e2e/fixtures/generate.json         | 831 ++++++++++++++++++++++++++++\n frontend/e2e/",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 39 +++++++++++---\n .claude/shared-memory/plan/current_phase.md |  6 +--\n backend/proof/prover.py                     | 84 +++++++++++++++++++----------\n t",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
