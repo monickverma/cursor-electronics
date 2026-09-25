@@ -17,4 +17,10 @@ Corpora, labels, question wording, flag rules and go/no-go criteria were frozen 
 - None yet.
 
 ### Gaps
-- Results pending.
+- Injection robustness was tested on 12 items only; a larger injection set would tighten the provocation estimate.
+
+## Results (filled 2026-09-25)
+
+- 958 requests. R1 fields @0.9: recall 22/27, 0/40 false flags (advisory). R2 patch op @0.9: 16/20, 0/22 (advisory). Coverage 4/4 (advisory).
+- Blind to wrong-function and out-of-catalogue requests (1/12); the registry already covers these. No check qualifies for blocking: injected text provoked false flags on 3/4 faithful patches.
+- Full tables: [RESULTS.md](../../tools/jev/interrogation/runtime/RESULTS.md).

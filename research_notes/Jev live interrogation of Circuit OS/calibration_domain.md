@@ -3,7 +3,7 @@
 ## How accurate and calibrated is Jev on Circuit OS questions, overall and by question type and category?
 
 ### Takeaway
-Pending. The live run has not started. This file currently holds only the pre-registration record, which was written before any Jev call.
+Complete. See Results below.
 
 ### Cited Findings
 - **Pre-registration record (written 2026-09-24T22:56:00Z, before any Jev call in this study).** Labelled set `items.jsonl` (361 items, 739 planned requests). sha256 `69a52ee5c689d37eb65cf6f59f6063937379eb446d5c862d2efc9b7cb67a86c9`. Generator `make_items.py` sha256 `057151356f483634abd6e60a4fb3165801d6fbb7cfe9aab52b9a221d590ecad5`. `manifest.json` sha256 `f4f9989c61dd20e2b992801f610d9f4dbeb91144b126f01bd39b69fdb4e79a55`. The manifest was created at 2026-09-24T22:55:47+00:00 and holds the analysis plan and hypotheses H1–H6. Files: [items.jsonl](../../tools/jev/interrogation/calibration/items.jsonl), [make_items.py](../../tools/jev/interrogation/calibration/make_items.py), [manifest.json](../../tools/jev/interrogation/calibration/manifest.json)
@@ -19,7 +19,14 @@ Pending. The live run has not started. This file currently holds only the pre-re
   Source: [manifest.json](../../tools/jev/interrogation/calibration/manifest.json)
 
 ### Inferences
-- Pending.
+- Jev can weigh a value against a limit but not derive it; Circuit OS should compute every number and ask Jev only to compare or classify.
 
 ### Gaps
-- Pending.
+- Paraphrases were written by the same agent that wrote the items; no second-author check.
+
+## Results (filled 2026-09-25)
+
+- 739 requests, 0 errors. Accuracy 73.8 % [68.9, 78.8] on 325 answerable q1 items; project rules 97.6 %, qualitative 84.9 %, closed-form 69.2 %, multi-step 52.6 %.
+- Same item with the value computed by code and put in the state: 100 % (229 pairs; 76 wrong→right, 0 right→wrong). Near a threshold, Jev computing alone: 52.8 %.
+- Hypotheses: H1, H2, H4, H5, H6 held; H3 did not (numeric compute at conf ≥ 0.9 was 92.9 % accurate).
+- Full tables: [results_tables.md](../../tools/jev/interrogation/calibration/results_tables.md). Synthesis: [INTERROGATION_REPORT.md](../../tools/jev/interrogation/INTERROGATION_REPORT.md).

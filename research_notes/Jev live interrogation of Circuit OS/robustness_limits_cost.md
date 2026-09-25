@@ -1,6 +1,6 @@
 # Jev robustness, determinism, limits, latency and cost, measured live, for Circuit OS's stability-gated decision protocol
 
-(Working draft. The pre-registration record below was written at 2026-09-24T22:57Z, before any Jev call on these item sets. Results sections are filled in after the runs.)
+(The pre-registration record below was written at 2026-09-24T22:57Z, before any Jev call on these item sets. Results were filled in on 2026-09-25.)
 
 ## Method and pre-registration
 
@@ -28,3 +28,11 @@ E7 was rebuilt at 22:57:15Z, before any call, only to correct its description st
 Source hashes at registration: `items_spec.py` 54d7b1e4…ebfc8, `items_known.py` ebfcf31f…ca27f, `items_judgment.py` f515a968…b5c1b, `build_items.py` e0256ede…3f6b.
 
 Calls made before registration touched no labelled item set. They were: `GET /v1/models` (1), one smoke-test Noul on "The sky is blue." (1), and two calibration calls that measured characters per token on the E10 filler texts (40,000 characters of text A = 11,010 input tokens; 40,000 characters of text B = 9,794 input tokens).
+
+## Results (filled 2026-09-25)
+
+- 1,254 requests (E0–E10 plus the six late-registered sets). Option order, batching, and irrelevant text up to 2× had no effect. Paraphrase changed 1/29 known items.
+- Not bit-deterministic: choice argmax never flipped over 36 repeats (including 1 h later), 1 yes/no flipped once, probabilities drift by up to 0.11. `jev-latest` and `jev-preview` resolve to `jev-1.13.0`.
+- Authority cues: owner/council/experts preference moved judgment answers to the cued option 26/28. On lure items 'owner says wrong' cut accuracy to 35 %.
+- `confidence` rises 0.69→0.74 with dead options while p_top stays flat; never threshold it. Hard limit about 32.9k input tokens per request. Median latency 157 ms.
+- Full tables: [RESULTS.md](../../tools/jev/interrogation/robustness/RESULTS.md).
