@@ -1,7 +1,7 @@
 # Jev interrogation of Circuit OS: what it can and cannot be trusted with
 
 **Dates:** 2026-09-24 → 2026-09-25 · **Model:** `jev-1.13.0` (pinned; every call resolved to it)
-**Volume:** 4,223 Jev requests across six tracks, 0 unexpected errors, ≈ 5.7 M input tokens.
+**Volume:** 4,749 Jev requests across six tracks, 0 unexpected errors, ≈ 6.1 M input tokens.
 
 > **Correction.** An earlier version of this file (commit `3e946ae`) was written before most of the tracks
 > had been run or scored, and it contained numbers that were never measured: the dossier "96 % on 78
@@ -17,10 +17,10 @@ code, circuit construction, standard text, or computation. None of it comes from
 |---|---|---|---|
 | Calibration: electronics domain (361 items, 7 categories) | 739 | `calibration/analyze.py` | `calibration/results_tables.md` |
 | Runtime shadow checks: IntentIR transcription, patches, prompt injection | 958 | `runtime/analyze.py` | `runtime/RESULTS.md` |
-| Robustness: confidence, determinism, order, paraphrase, polarity, authority, distractors, batching, abstention, size | 948 | `robustness/analyze.py` | `robustness/RESULTS.md` |
+| Robustness: confidence, determinism, order, paraphrase, polarity, authority, distractors, batching, abstention, size, lure items | 1,254 | `robustness/analyze.py` | `robustness/RESULTS.md` |
 | **Big file:** the whole 94.6 KB Circuit OS dossier + 257-question battery (plus 18 size-limit probes) | 48 | `dossier/analyze_battery.py` | `dossier/BATTERY_RESULTS.md` |
 | Dev workflow: decision↔commit, CI failure class, doc drift, entry quality, owner attention, commit convention | 1,128 | `devflow/analyze.py` | `devflow/RESULTS.md` |
-| Phase 3 assurance labels: P1 net role, P2 environment, P3 isolation, P4 standard family | 402 | `labels/run_and_analyze.py` | `labels/RESULTS.md` |
+| Phase 3 assurance labels: P1 net role, P2 environment, P3 isolation, P4 standard family, R7 refusal backlog | 622 | `labels/run_and_analyze.py` | `labels/RESULTS.md` |
 
 ---
 
@@ -38,9 +38,11 @@ code, circuit construction, standard text, or computation. None of it comes from
 4. **Its confidence is honest in one direction only.** On known-answer items, p_top ≥ 0.9 was right 95–100 % of the time
    in every track. Four confidently wrong answers exist in the calibration set, and all four are computed values within 5 % of a
    limit.
-5. **It can be pushed.** A note saying "the owner/experts say X" moved 13–15 % of answers to the cued wrong
-   option (0 % for "URGENT" or "council"). Text injected into a user command provoked false flags in 3/4 faithful patches.
-   Jev must never read state an attacker controls if its answer gates anything.
+5. **It defers to authority, strongly.** On judgment questions, a line saying "the owner / council / experts prefer X"
+   moved the answer to X in **26/28** cases. On hard known-answer items with a tempting wrong option, "the owner says
+   <wrong>" dropped accuracy from 96 % to **35 %**. On ordinary items the same cue moved 13–15 %. Text injected into a
+   user command provoked false flags in 3/4 faithful patches. **Never put anyone's preferred answer in the state**, and
+   never let Jev read attacker-controlled text when its answer gates anything.
 6. **On judgment questions it has no ground truth, so it only gives stable opinions.** Reversing option order changed 7 of 168
    judgment answers, and swapping the full dossier for the core one changed about half, which shows the answers depend on context.
 
@@ -98,12 +100,15 @@ RFC 6902 patches (26 seeded, 26 faithful) and prompt injections, using real Circ
 
 | Experiment | Result |
 |---|---|
-| E1 `confidence` vs dead options (k = 2…8) | Accuracy 12/12 at every k. Mean confidence moved only 0.985 → 0.995 on these easy items. The formula still means confidence is never thresholded |
-| E2 determinism (20-question request × 20) | Choice argmax never flipped. One yes/no flipped once (19 True / 1 False). Probabilities vary by up to 0.11, score expected values by ±0.07. 1/20 answers byte-identical across repeats. Three duplicate questions in one request gave the same argmax, probabilities within 0.04 |
+| E1 `confidence` vs dead options (k = 2…8) | Easy items: 12/12 at every k, confidence 0.985 → 0.995. **Judgment items (E1c): p_top flat (0.76 → 0.77) while confidence rises 0.69 → 0.74** as irrelevant options are added, with argmax unchanged 14/14. So `confidence` is never thresholded |
+| E2 determinism (20-question request × 36: 10 sequential, 10 at concurrency 8, 10 more than an hour later, 3 each via `jev-latest` / `jev-preview`) | Choice argmax never flipped. One yes/no flipped once (35 True / 1 False). Hour-later runs were indistinguishable (P 0.78–0.81 vs 0.77–0.83). **`jev-latest` and `jev-preview` both resolve to `jev-1.13.0` today.** Probabilities vary by up to 0.11, score expected values by ±0.07. 1/20 answers byte-identical across repeats. Three duplicate questions in one request gave the same argmax, probabilities within 0.04 |
 | E3 option order (6 orders in one request) | 74/74 known and 14/14 judgment items same argmax in all orders. P(truth) spread median 0.00, max 0.06 |
 | E4 paraphrase (4 states × 4 wordings) | Known: 462/464 correct, 28/29 identical across all 16. Judgment: 3/6 identical |
 | E5 polarity (x vs not-x) | 48 pairs, sum median 1.00, 2 off by > 0.15, 1 incoherent |
 | E6 authority cue in state | none/neutral/owner-right/URGENT: 100 %. council-wrong 97.7 %. **experts-wrong 86.4 %, owner-wrong 85.2 %** |
+| E6h cues on 24 lure items | none 95.8 %, owner-right 97.9 %, council-wrong 70.8 %, **owner-wrong 35.4 % (64.6 % chose the lure)** |
+| E6j cues on 14 judgment items | owner / council / experts pointing at the runner-up: answer switched to it in **26/28** each. URGENT 14/28. Neutral note 0/28 |
+| E3h / E7h / E9h lure items | 6 orders 95.1 % (22/24 same argmax in all). 200 % irrelevant text 94–96 %. No false abstention (0/96) |
 | E7 irrelevant project text (10 %–200 %, before/after) | 100 % in every variant |
 | E8 batching (alone, in 10, in 50) | Identical answers and probabilities for all 10 targets |
 | E9 decisive fact removed | Abstains 24/36 (67 %) when `need_more_information` is offered. Guesses the other 12. With no NMI option it always guesses |
@@ -111,8 +116,9 @@ RFC 6902 patches (26 seeded, 26 faithful) and prompt injections, using real Circ
 | Hard limit | ≈ 32.9k **input tokens per request** (state + questions), `400 max_tokens_exceeded` above it. 3,000 questions in one request worked (50k tokens was rejected only by size) |
 | Latency | Median 157 ms, p90 396 ms, max 913 ms for small requests. 1.3–1.9 s for a full 29–31k-token dossier request |
 
-The six "lure" sets (`E1c`, `E3h`, `E6h`, `E6j`, `E7h`, `E9h`) were built after registration and were **not** run.
-The runner refuses unregistered files, and the protocol stays intact.
+The six "lure" sets (`E1c`, `E3h`, `E6h`, `E6j`, `E7h`, `E9h`) were built after the main registration. They were
+registered on 2026-09-25, marked LATE REGISTRATION in `items/PREREGISTRATION.tsv`, after checking that none had ever been
+sent. Only then were they run.
 
 ## 4. The big file: whole Circuit OS dossier + 257 questions (48 requests)
 
@@ -169,11 +175,14 @@ T1 fails in a consistent way: it marks unrelated entries as "partially covers" (
 | P2 install environment | 32 | 84 % | 31/32 | 12/12 |
 | P1 net role (0–10 V, 4–20 mA, relay, 24 V in, logic) | 48 | 83 % | 47/48 | 34/35 |
 | P2 overvoltage category | 36 | **50 %** | 32/36 | 8/8 |
+| R7 refusal backlog label (what a refused request needs) | 64 | 80 % (intent only), **88 % with the raw prompt** | 62/64 | 24/24 |
 
 Error patterns: overvoltage category collapses toward OVC II (11 of 18 errors). P1 labels `undeclared` nets with a
 guessed role (6/8 errors), and 1 of 4 out-of-enum nets got a wrong role. P4 misses 5 "no life-safety effect" cases in
-the unsafe direction for a *negative* claim. R7 (refusal) was not run: its generator fails its own self-check, since item
-W02 is accepted by the real registry. That set needs fixing before anyone trusts it.
+the unsafe direction for a *negative* claim. **R7 update:** four items (W02, W03, W04, W10) were accepted by the real registry, so they were not refusals. They
+were rewritten to requests the registry refuses (0.01 Hz low-pass; 400 V→3 V, 23.9 V from 24 V, and 10 mV from 5 V dividers),
+before any R7 call. The generator now verifies every item is refused. Result: 80 % from what `request_log` stores today,
+and 88 % when the raw prompt is added. The errors mostly fall back to `none_of_these` (9/13), the safe direction.
 
 ---
 
@@ -194,6 +203,7 @@ or approves anything.
 | Phase 3 labels P3, P4 family, P1, P2 pollution | 83–100 %; confident answers 100 % | Pre-fill a label the **user confirms**. Treat `undeclared` as the default when p_top < 0.9 |
 | One-way/two-way door and "which rule governs this?" questions over the dossier | 16/16 stable, reference 13/14 | Use in the decision protocol |
 | Owner decisions (RS-485 pull-down, X7, D1 timing, …) | stable, but p_top ≈ 0.59 | Owner decides. Jev only frames the options |
+| Sorting the refusal backlog (R7) into "widen envelope / new generator / out of scope" | 80–88 %, confident answers 24/24 | Weekly backlog triage. Storing prompts would add 8 points but is an owner decision |
 
 **Keep deterministic (Jev measured unfit):** any threshold or numeric derivation (Ohm's law, dissipation, rise time,
 divider, units). Overvoltage category (50 %). Function/catalogue membership (8 %; the registry already does it).
@@ -205,13 +215,13 @@ on injectable text.
    an argmax, but probabilities drift ±0.1, so a single 0.91 can be 0.84 the next time.
 2. Always include `need_more_information`: without it Jev guesses 100 % of the time on missing facts, and with it 67 %
    of those become abstentions.
-3. Strip "owner/experts say" framing from states: it moved 13–15 % of answers to the cued option.
+3. Strip every "owner/council/experts prefer X" line from states. On judgment questions it decided the answer 26/28 times, and on hard
+   items it made the owner's wrong answer win 65 % of the time. When you ask Jev about your own decision, **do not tell it
+   what you lean towards.** Write the prior down before the call, as `tools/jev/run.py` already does.
 4. Keep requests under ~31k input tokens. The whole dossier fits with room for ~10–40 questions.
 
 ## What was not done
 
-- The six lure sets (unregistered) and R7 refusal (broken generator).
-- E2 delayed (≥ 1 h) repeats and `jev-latest`/`jev-preview` comparisons.
 - A second human author for paraphrases. The paraphrases were written by the same agent that wrote the items.
 - Accuracy on judgment questions is unknowable here. The report shows only stability and agreement with priors.
 
@@ -224,5 +234,5 @@ python tools/jev/interrogation/runtime/analyze.py
 python tools/jev/interrogation/robustness/analyze.py
 python tools/jev/interrogation/dossier/build_battery.py && python tools/jev/interrogation/dossier/run_battery.py && python tools/jev/interrogation/dossier/analyze_battery.py
 python tools/jev/interrogation/devflow/analyze.py
-python tools/jev/interrogation/labels/run_and_analyze.py --analyze-only
+python tools/jev/interrogation/labels/run_and_analyze.py --analyze-only   # P1-P4 + R7
 ```

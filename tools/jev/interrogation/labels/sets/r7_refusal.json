@@ -1,0 +1,2409 @@
+{
+ "task": "R7/B13 refusal-backlog labelling (Choice over owner-defined Phase 3 labels + none_of_these)",
+ "questions": {
+  "refusal_label": {
+   "type": "choice",
+   "instructions": "What does this refused request most need from Circuit OS?",
+   "criteria": {
+    "range_widen_existing": "An existing function refused on range; widen an envelope.",
+    "high_pass_filter": "A new high-pass filter generator.",
+    "band_pass_filter": "A new band-pass generator.",
+    "op_amp_stage": "An op-amp stage.",
+    "industrial_io": "24 V inputs, 4-20 mA, 0-10 V or relay I/O.",
+    "out_of_scope": "Switching converters, PCB-only or free-form requests.",
+    "ambiguous_request": "The request is unclear.",
+    "none_of_these": "None of the above; a human should extend the label set."
+   }
+  }
+ },
+ "truth_rule": "Each synthetic request is written to need exactly one B13 label; Z04 (TP4056 linear charger) is marked contestable (could be read as power electronics).",
+ "arms": {
+  "intent_only": "state = refusal_reason + intent_ir_requirements + group count (what request_log stores today)",
+  "with_prompt": "the same plus the raw prompt text (would need an owner decision to store prompts)"
+ },
+ "snapshot": "origin/phase2-stage0 at e803a99 (scratchpad copy); refusal_reason = GeneratorRegistry.dispatch(...).refusal_summary()",
+ "citations": [
+  {
+   "id": "TEMPLATE_B13",
+   "title": "tools/jev/templates/refusal_backlog.questions.json (B13 draft question)",
+   "url": "file:tools/jev/templates/refusal_backlog.questions.json",
+   "quote": "refusal_label criteria"
+  }
+ ],
+ "variants": {
+  "repeat_subset": [
+   "R7-B04",
+   "R7-H04",
+   "R7-H06",
+   "R7-O01",
+   "R7-O04",
+   "R7-O05",
+   "R7-Q03",
+   "R7-Q04",
+   "R7-Q06",
+   "R7-W01",
+   "R7-W03",
+   "R7-X06",
+   "R7-X07",
+   "R7-X08",
+   "R7-X09",
+   "R7-Z02"
+  ],
+  "paraphrase_subset": [
+   "R7-B01",
+   "R7-H01",
+   "R7-H05",
+   "R7-I01",
+   "R7-I04",
+   "R7-O04",
+   "R7-Q05",
+   "R7-W01",
+   "R7-W05",
+   "R7-X01",
+   "R7-Z02",
+   "R7-Z08"
+  ],
+  "blind_subset": [
+   "R7-Q03",
+   "R7-W01",
+   "R7-W07"
+  ]
+ },
+ "items": [
+  {
+   "id": "R7-W01",
+   "state": {
+    "refusal_reason": "rc_lowpass: cutoff_hz=2e+06 outside declared envelope 10 Hz – 100000 Hz; voltage_divider: function='low_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='low_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='low_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='low_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "low_pass_filter",
+     "targets": {
+      "cutoff_hz": 2000000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: cutoff_hz=2e+06 outside declared envelope 10 Hz – 100000 Hz; voltage_divider: function='low_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='low_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='low_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='low_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "low_pass_filter",
+     "targets": {
+      "cutoff_hz": 2000000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "RC low-pass filter with a 2 MHz cutoff on a 5 V signal."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: cutoff_hz=2e+06 outside declared envelope 10 Hz – 100000 Hz; voltage_divider: function='low_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='low_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='low_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='low_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "low_pass_filter",
+     "targets": {
+      "cutoff_hz": 2000000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Need a low-pass RC for a 5 V signal with the corner at 2 MHz."
+   }
+  },
+  {
+   "id": "R7-W02",
+   "state": {
+    "refusal_reason": "rc_lowpass: cutoff_hz=0.01 outside declared envelope 10 Hz – 100000 Hz; voltage_divider: function='low_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='low_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='low_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='low_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "low_pass_filter",
+     "targets": {
+      "cutoff_hz": 0.01
+     },
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: cutoff_hz=0.01 outside declared envelope 10 Hz – 100000 Hz; voltage_divider: function='low_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='low_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='low_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='low_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "low_pass_filter",
+     "targets": {
+      "cutoff_hz": 0.01
+     },
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Low-pass filter at 0.01 Hz to smooth a very slow 3.3 V sensor signal."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: supply_v=400 exceeds the 50 V rating of the 0402 resistors this generator places; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 3.0
+     },
+     "constraints": {
+      "supply_v": 400.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: supply_v=400 exceeds the 50 V rating of the 0402 resistors this generator places; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 3.0
+     },
+     "constraints": {
+      "supply_v": 400.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "Divide 400 V down to 3 V for my ADC."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: vout_v=23.9 from supply_v=24 is a ratio of 0.996, outside 0.01–0.99 — a divider cannot step up, and near 0 or 1 one resistor does all the work; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 23.9
+     },
+     "constraints": {
+      "supply_v": 24.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: vout_v=23.9 from supply_v=24 is a ratio of 0.996, outside 0.01–0.99 — a divider cannot step up, and near 0 or 1 one resistor does all the work; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 23.9
+     },
+     "constraints": {
+      "supply_v": 24.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "Voltage divider giving 23.9 V from a 24 V rail."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='led_indicator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='led_indicator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: led_current_ma=30 outside 1–20 mA — above that the ATmega328P-PU pin is past its recommended per-pin current; use a transistor; dht22_node: function='led_indicator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='led_indicator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "led_indicator",
+     "targets": {
+      "led_current_ma": 30.0
+     },
+     "constraints": {
+      "supply_v": 5.0,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='led_indicator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='led_indicator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: led_current_ma=30 outside 1–20 mA — above that the ATmega328P-PU pin is past its recommended per-pin current; use a transistor; dht22_node: function='led_indicator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='led_indicator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "led_indicator",
+     "targets": {
+      "led_current_ma": 30.0
+     },
+     "constraints": {
+      "supply_v": 5.0,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Indicator LED at 30 mA from an Arduino Uno pin."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='led_indicator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='led_indicator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: led_current_ma=30 outside 1–20 mA — above that the ATmega328P-PU pin is past its recommended per-pin current; use a transistor; dht22_node: function='led_indicator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='led_indicator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "led_indicator",
+     "targets": {
+      "led_current_ma": 30.0
+     },
+     "constraints": {
+      "supply_v": 5.0,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Drive an indicator LED at 30 mA straight off an Uno GPIO."
+   }
+  },
+  {
+   "id": "R7-W06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='led_indicator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='led_indicator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: with R1=45.3Ω the pin could source up to 28.83 mA over part tolerance, above the 20 mA recommended per pin; dht22_node: function='led_indicator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='led_indicator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "led_indicator",
+     "targets": {
+      "led_current_ma": 20.0
+     },
+     "constraints": {
+      "supply_v": 3.3,
+      "mcu": "esp32_devkitc"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='led_indicator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='led_indicator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: with R1=45.3Ω the pin could source up to 28.83 mA over part tolerance, above the 20 mA recommended per pin; dht22_node: function='led_indicator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='led_indicator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "led_indicator",
+     "targets": {
+      "led_current_ma": 20.0
+     },
+     "constraints": {
+      "supply_v": 3.3,
+      "mcu": "esp32_devkitc"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "A 20 mA indicator LED on an ESP32 DevKitC."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='temperature_humidity_sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='temperature_humidity_sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='temperature_humidity_sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: cable_length_m=40 exceeds the 20 m the DHT22's single-wire bus is specified for; rs485_node: function='temperature_humidity_sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "temperature_humidity_sensor",
+     "targets": {},
+     "constraints": {
+      "cable_length_m": 40.0,
+      "supply_v": 5.0,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='temperature_humidity_sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='temperature_humidity_sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='temperature_humidity_sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: cable_length_m=40 exceeds the 20 m the DHT22's single-wire bus is specified for; rs485_node: function='temperature_humidity_sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "temperature_humidity_sensor",
+     "targets": {},
+     "constraints": {
+      "cable_length_m": 40.0,
+      "supply_v": 5.0,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "DHT22 temperature sensor on a 40 m cable to an Uno."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W08",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='modbus_rtu_master' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='modbus_rtu_master' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='modbus_rtu_master' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='modbus_rtu_master' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: baud=115200 is not one of [1200, 2400, 4800, 9600, 19200, 38400, 57600] — the firmware uses SoftwareSerial, which a 16 MHz Uno cannot receive reliably above 57600",
+    "intent_ir_requirements": {
+     "function": "modbus_rtu_master",
+     "targets": {},
+     "constraints": {
+      "supply_v": 5.0,
+      "baud": 115200,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='modbus_rtu_master' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='modbus_rtu_master' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='modbus_rtu_master' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='modbus_rtu_master' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: baud=115200 is not one of [1200, 2400, 4800, 9600, 19200, 38400, 57600] — the firmware uses SoftwareSerial, which a 16 MHz Uno cannot receive reliably above 57600",
+    "intent_ir_requirements": {
+     "function": "modbus_rtu_master",
+     "targets": {},
+     "constraints": {
+      "supply_v": 5.0,
+      "baud": 115200,
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Modbus RTU master at 115200 baud on an Arduino Uno."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W09",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='modbus_rtu_master' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='modbus_rtu_master' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='modbus_rtu_master' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='modbus_rtu_master' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: supply_v=12 outside the MAX485's 4.75–5.25 V; a 3.3 V bus needs the MAX3485 on a 3.3 V board (constraints.mcu)",
+    "intent_ir_requirements": {
+     "function": "modbus_rtu_master",
+     "targets": {},
+     "constraints": {
+      "supply_v": 12.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='modbus_rtu_master' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='modbus_rtu_master' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='modbus_rtu_master' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='modbus_rtu_master' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: supply_v=12 outside the MAX485's 4.75–5.25 V; a 3.3 V bus needs the MAX3485 on a 3.3 V board (constraints.mcu)",
+    "intent_ir_requirements": {
+     "function": "modbus_rtu_master",
+     "targets": {},
+     "constraints": {
+      "supply_v": 12.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "RS-485 Modbus master board powered at 12 V."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-W10",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: vout_v=0.01 from supply_v=5 is a ratio of 0.002, outside 0.01–0.99 — a divider cannot step up, and near 0 or 1 one resistor does all the work; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 0.01
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='voltage_divider' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: vout_v=0.01 from supply_v=5 is a ratio of 0.002, outside 0.01–0.99 — a divider cannot step up, and near 0 or 1 one resistor does all the work; led_indicator: function='voltage_divider' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_divider' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_divider' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_divider",
+     "targets": {
+      "vout_v": 0.01
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "A 10 mV reference from a 5 V rail using a resistor divider."
+   },
+   "truth": {
+    "refusal_label": "range_widen_existing"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'range_widen_existing' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-H01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 50.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 50.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "RC high-pass at 50 Hz to block DC from a sensor."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 50.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Block the DC on a sensor line with an RC high-pass, corner 50 Hz."
+   }
+  },
+  {
+   "id": "R7-H02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='ac_coupling_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='ac_coupling_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='ac_coupling_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='ac_coupling_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='ac_coupling_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "ac_coupling_filter",
+     "targets": {
+      "cutoff_hz": 20.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='ac_coupling_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='ac_coupling_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='ac_coupling_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='ac_coupling_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='ac_coupling_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "ac_coupling_filter",
+     "targets": {
+      "cutoff_hz": 20.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "AC coupling network with a 20 Hz corner for an audio input."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-H03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 0.1
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 0.1
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "High-pass filter at 0.1 Hz to remove accelerometer drift."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-H04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='rc_high_pass' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='rc_high_pass' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='rc_high_pass' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='rc_high_pass' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='rc_high_pass' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "rc_high_pass",
+     "targets": {
+      "cutoff_hz": 1000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='rc_high_pass' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='rc_high_pass' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='rc_high_pass' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='rc_high_pass' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='rc_high_pass' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "rc_high_pass",
+     "targets": {
+      "cutoff_hz": 1000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Passive CR high-pass with a 1 kHz corner, 5 V signal."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-H05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 5.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 5.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Strip the DC offset from a photodiode signal before the ADC: 5 Hz high-pass."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 5.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Before the ADC I want the photodiode's DC offset gone: high-pass around 5 Hz."
+   }
+  },
+  {
+   "id": "R7-H06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 300.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 300.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "First-order high-pass at 300 Hz for a microphone."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-H07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 10000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='high_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='high_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='high_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='high_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='high_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "high_pass_filter",
+     "targets": {
+      "cutoff_hz": 10000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "A high-pass filter that removes everything below 10 kHz."
+   },
+   "truth": {
+    "refusal_label": "high_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'high_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 300.0,
+      "high_cutoff_hz": 3400.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 300.0,
+      "high_cutoff_hz": 3400.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Band-pass from 300 Hz to 3.4 kHz for a voice channel."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 300.0,
+      "high_cutoff_hz": 3400.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Voice channel: keep 300 Hz to 3.4 kHz, reject the rest."
+   }
+  },
+  {
+   "id": "R7-B02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "center_hz": 40000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "center_hz": 40000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Bandpass around 40 kHz for an ultrasonic receiver."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='rc_band_pass' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='rc_band_pass' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='rc_band_pass' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='rc_band_pass' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='rc_band_pass' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "rc_band_pass",
+     "targets": {
+      "low_cutoff_hz": 1000.0,
+      "high_cutoff_hz": 10000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='rc_band_pass' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='rc_band_pass' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='rc_band_pass' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='rc_band_pass' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='rc_band_pass' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "rc_band_pass",
+     "targets": {
+      "low_cutoff_hz": 1000.0,
+      "high_cutoff_hz": 10000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "RC band-pass that passes 1 kHz to 10 kHz."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 18000.0,
+      "high_cutoff_hz": 22000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 18000.0,
+      "high_cutoff_hz": 22000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "A filter that passes only 18 to 22 kHz."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 0.5,
+      "high_cutoff_hz": 5.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "low_cutoff_hz": 0.5,
+      "high_cutoff_hz": 5.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Band-pass for a heart-rate sensor, 0.5 to 5 Hz."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='bandpass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='bandpass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='bandpass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='bandpass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='bandpass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "bandpass_filter",
+     "targets": {
+      "low_cutoff_hz": 100.0,
+      "high_cutoff_hz": 1000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='bandpass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='bandpass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='bandpass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='bandpass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='bandpass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "bandpass_filter",
+     "targets": {
+      "low_cutoff_hz": 100.0,
+      "high_cutoff_hz": 1000.0
+     },
+     "constraints": {
+      "supply_v": 5.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Passband from 100 Hz to 1 kHz on a 5 V signal."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-B07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "center_hz": 1000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='band_pass_filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='band_pass_filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='band_pass_filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='band_pass_filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='band_pass_filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "band_pass_filter",
+     "targets": {
+      "center_hz": 1000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 5,
+    "prompt": "Band-pass centred at 1 kHz."
+   },
+   "truth": {
+    "refusal_label": "band_pass_filter"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'band_pass_filter' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='op_amp_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='op_amp_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='op_amp_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='op_amp_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='op_amp_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "op_amp_amplifier",
+     "targets": {
+      "gain": 100.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='op_amp_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='op_amp_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='op_amp_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='op_amp_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='op_amp_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "op_amp_amplifier",
+     "targets": {
+      "gain": 100.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Microphone preamp with a gain of 100 using an op-amp."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='voltage_buffer' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='voltage_buffer' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='voltage_buffer' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_buffer' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_buffer' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_buffer",
+     "targets": {
+      "gain": 1.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='voltage_buffer' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='voltage_buffer' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='voltage_buffer' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='voltage_buffer' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='voltage_buffer' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "voltage_buffer",
+     "targets": {
+      "gain": 1.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Unity-gain op-amp buffer after a voltage divider."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='inverting_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='inverting_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='inverting_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='inverting_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='inverting_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "inverting_amplifier",
+     "targets": {
+      "gain": -4.7
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='inverting_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='inverting_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='inverting_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='inverting_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='inverting_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "inverting_amplifier",
+     "targets": {
+      "gain": -4.7
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Inverting amplifier with a gain of -4.7."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='transimpedance_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='transimpedance_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='transimpedance_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='transimpedance_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='transimpedance_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "transimpedance_amplifier",
+     "targets": {
+      "feedback_ohm": 1000000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='transimpedance_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='transimpedance_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='transimpedance_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='transimpedance_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='transimpedance_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "transimpedance_amplifier",
+     "targets": {
+      "feedback_ohm": 1000000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Transimpedance amplifier for a photodiode with a 1 Mohm feedback resistor."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='transimpedance_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='transimpedance_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='transimpedance_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='transimpedance_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='transimpedance_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "transimpedance_amplifier",
+     "targets": {
+      "feedback_ohm": 1000000.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Photodiode to voltage: a TIA with 1 Mohm in the feedback."
+   }
+  },
+  {
+   "id": "R7-O05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='non_inverting_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='non_inverting_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='non_inverting_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='non_inverting_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='non_inverting_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "non_inverting_amplifier",
+     "targets": {
+      "gain": 11.0
+     },
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='non_inverting_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='non_inverting_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='non_inverting_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='non_inverting_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='non_inverting_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "non_inverting_amplifier",
+     "targets": {
+      "gain": 11.0
+     },
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Non-inverting amplifier, gain 11, for a 0-300 mV sensor into a 3.3 V ADC."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='summing_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='summing_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='summing_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='summing_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='summing_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "summing_amplifier",
+     "targets": {
+      "inputs": 2
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='summing_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='summing_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='summing_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='summing_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='summing_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "summing_amplifier",
+     "targets": {
+      "inputs": 2
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Summing amplifier that mixes two audio signals."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-O07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='difference_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='difference_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='difference_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='difference_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='difference_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "difference_amplifier",
+     "targets": {
+      "gain": 20.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='difference_amplifier' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='difference_amplifier' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='difference_amplifier' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='difference_amplifier' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='difference_amplifier' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "difference_amplifier",
+     "targets": {
+      "gain": 20.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Op-amp difference amplifier across a current shunt, gain 20."
+   },
+   "truth": {
+    "refusal_label": "op_amp_stage"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'op_amp_stage' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='current_loop_input' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='current_loop_input' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='current_loop_input' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='current_loop_input' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='current_loop_input' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "current_loop_input",
+     "targets": {
+      "range_ma": [
+       4,
+       20
+      ]
+     },
+     "constraints": {
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='current_loop_input' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='current_loop_input' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='current_loop_input' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='current_loop_input' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='current_loop_input' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "current_loop_input",
+     "targets": {
+      "range_ma": [
+       4,
+       20
+      ]
+     },
+     "constraints": {
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "4-20 mA input for a pressure transmitter into an Arduino."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='current_loop_input' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='current_loop_input' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='current_loop_input' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='current_loop_input' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='current_loop_input' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "current_loop_input",
+     "targets": {
+      "range_ma": [
+       4,
+       20
+      ]
+     },
+     "constraints": {
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Arduino needs to read a pressure transmitter's 4-20 mA signal."
+   }
+  },
+  {
+   "id": "R7-I02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='analog_output_0_10v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='analog_output_0_10v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='analog_output_0_10v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='analog_output_0_10v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='analog_output_0_10v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "analog_output_0_10v",
+     "targets": {
+      "range_v": [
+       0,
+       10
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='analog_output_0_10v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='analog_output_0_10v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='analog_output_0_10v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='analog_output_0_10v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='analog_output_0_10v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "analog_output_0_10v",
+     "targets": {
+      "range_v": [
+       0,
+       10
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "0-10 V output to drive a VFD speed input."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='digital_input_24v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='digital_input_24v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='digital_input_24v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='digital_input_24v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='digital_input_24v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "digital_input_24v",
+     "targets": {
+      "input_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='digital_input_24v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='digital_input_24v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='digital_input_24v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='digital_input_24v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='digital_input_24v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "digital_input_24v",
+     "targets": {
+      "input_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "24 V digital input with an optocoupler for a proximity sensor."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='relay_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='relay_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='relay_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='relay_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='relay_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "relay_output",
+     "targets": {
+      "load_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='relay_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='relay_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='relay_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='relay_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='relay_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "relay_output",
+     "targets": {
+      "load_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Relay output to switch a 24 VAC damper actuator."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='relay_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='relay_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='relay_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='relay_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='relay_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "relay_output",
+     "targets": {
+      "load_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Switch a 24 VAC damper actuator with a relay output."
+   }
+  },
+  {
+   "id": "R7-I05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='analog_input_0_10v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='analog_input_0_10v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='analog_input_0_10v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='analog_input_0_10v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='analog_input_0_10v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "analog_input_0_10v",
+     "targets": {
+      "range_v": [
+       0,
+       10
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='analog_input_0_10v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='analog_input_0_10v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='analog_input_0_10v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='analog_input_0_10v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='analog_input_0_10v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "analog_input_0_10v",
+     "targets": {
+      "range_v": [
+       0,
+       10
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Read a 0-10 V humidity transmitter with an MCU."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='digital_input_24v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='digital_input_24v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='digital_input_24v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='digital_input_24v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='digital_input_24v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "digital_input_24v",
+     "targets": {
+      "channels": 8,
+      "input_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='digital_input_24v' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='digital_input_24v' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='digital_input_24v' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='digital_input_24v' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='digital_input_24v' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "digital_input_24v",
+     "targets": {
+      "channels": 8,
+      "input_v": 24.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Eight-channel opto-isolated 24 V input board."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='current_loop_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='current_loop_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='current_loop_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='current_loop_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='current_loop_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "current_loop_output",
+     "targets": {
+      "range_ma": [
+       4,
+       20
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='current_loop_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='current_loop_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='current_loop_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='current_loop_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='current_loop_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "current_loop_output",
+     "targets": {
+      "range_ma": [
+       4,
+       20
+      ]
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "4-20 mA output to a valve positioner."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-I08",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='relay_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='relay_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='relay_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='relay_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='relay_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "relay_output",
+     "targets": {
+      "channels": 4
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='relay_output' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='relay_output' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='relay_output' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='relay_output' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='relay_output' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "relay_output",
+     "targets": {
+      "channels": 4
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 2,
+    "prompt": "Relay board to switch contactor coils from a microcontroller."
+   },
+   "truth": {
+    "refusal_label": "industrial_io"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'industrial_io' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='buck_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='buck_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='buck_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='buck_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='buck_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "buck_converter",
+     "targets": {
+      "vout_v": 5.0,
+      "iout_a": 2.0
+     },
+     "constraints": {
+      "supply_v": 24.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='buck_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='buck_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='buck_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='buck_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='buck_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "buck_converter",
+     "targets": {
+      "vout_v": 5.0,
+      "iout_a": 2.0
+     },
+     "constraints": {
+      "supply_v": 24.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Buck converter from 24 V to 5 V at 2 A."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='buck_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='buck_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='buck_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='buck_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='buck_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "buck_converter",
+     "targets": {
+      "vout_v": 5.0,
+      "iout_a": 2.0
+     },
+     "constraints": {
+      "supply_v": 24.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "24 V in, 5 V out at 2 A, switching buck please."
+   }
+  },
+  {
+   "id": "R7-X02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='boost_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='boost_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='boost_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='boost_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='boost_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "boost_converter",
+     "targets": {
+      "vout_v": 12.0
+     },
+     "constraints": {
+      "supply_v": 3.7
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='boost_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='boost_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='boost_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='boost_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='boost_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "boost_converter",
+     "targets": {
+      "vout_v": 12.0
+     },
+     "constraints": {
+      "supply_v": 3.7
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Boost a 3.7 V Li-ion cell up to 12 V."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='flyback_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='flyback_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='flyback_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='flyback_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='flyback_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "flyback_converter",
+     "targets": {
+      "vout_v": 12.0
+     },
+     "constraints": {
+      "supply_vac": 230.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='flyback_converter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='flyback_converter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='flyback_converter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='flyback_converter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='flyback_converter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "flyback_converter",
+     "targets": {
+      "vout_v": 12.0
+     },
+     "constraints": {
+      "supply_vac": 230.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Flyback power supply from 230 VAC to 12 V."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='switching_regulator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='switching_regulator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='switching_regulator' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='switching_regulator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='switching_regulator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "switching_regulator",
+     "targets": {
+      "vout_v": 3.3,
+      "iout_a": 3.0
+     },
+     "constraints": {
+      "supply_v": 12.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='switching_regulator' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='switching_regulator' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='switching_regulator' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='switching_regulator' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='switching_regulator' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "switching_regulator",
+     "targets": {
+      "vout_v": 3.3,
+      "iout_a": 3.0
+     },
+     "constraints": {
+      "supply_v": 12.0
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Switch-mode regulator, 12 V to 3.3 V at 3 A."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='pcb_layout' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='pcb_layout' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='pcb_layout' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='pcb_layout' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='pcb_layout' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "pcb_layout",
+     "targets": {
+      "layers": 2
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='pcb_layout' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='pcb_layout' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='pcb_layout' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='pcb_layout' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='pcb_layout' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "pcb_layout",
+     "targets": {
+      "layers": 2
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Route my KiCad board and give me a two-layer layout."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='gerber_export' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='gerber_export' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='gerber_export' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='gerber_export' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='gerber_export' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "gerber_export",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='gerber_export' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='gerber_export' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='gerber_export' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='gerber_export' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='gerber_export' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "gerber_export",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Generate Gerber files for my existing PCB."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='flight_controller' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='flight_controller' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='flight_controller' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='flight_controller' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='flight_controller' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "flight_controller",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='flight_controller' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='flight_controller' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='flight_controller' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='flight_controller' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='flight_controller' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "flight_controller",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Design a complete quadcopter flight controller."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X08",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='smart_home_hub' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='smart_home_hub' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='smart_home_hub' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='smart_home_hub' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='smart_home_hub' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "smart_home_hub",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='smart_home_hub' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='smart_home_hub' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='smart_home_hub' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='smart_home_hub' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='smart_home_hub' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "smart_home_hub",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Build a smart-home hub with Zigbee, Wi-Fi and a touchscreen."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-X09",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='motor_esc' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='motor_esc' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='motor_esc' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='motor_esc' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='motor_esc' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "motor_esc",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='motor_esc' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='motor_esc' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='motor_esc' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='motor_esc' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='motor_esc' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "motor_esc",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Design an electric-skateboard motor controller (ESC)."
+   },
+   "truth": {
+    "refusal_label": "out_of_scope"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'out_of_scope' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "make my circuit better"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='garden_control' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='garden_control' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='garden_control' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='garden_control' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='garden_control' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "garden_control",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='garden_control' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='garden_control' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='garden_control' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='garden_control' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='garden_control' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "garden_control",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "something to control my garden"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='sensor' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "sensor",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='sensor' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "sensor",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "I need a sensor thing"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='noise_fix' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='noise_fix' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='noise_fix' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='noise_fix' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='noise_fix' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "noise_fix",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='noise_fix' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='noise_fix' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='noise_fix' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='noise_fix' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='noise_fix' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "noise_fix",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "fix the noise"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "filter",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "filter",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "a filter"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='filter' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='filter' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='filter' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='filter' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='filter' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "filter",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "filter"
+   }
+  },
+  {
+   "id": "R7-Q06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='car_circuit' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='car_circuit' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='car_circuit' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='car_circuit' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='car_circuit' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "car_circuit",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='car_circuit' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='car_circuit' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='car_circuit' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='car_circuit' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='car_circuit' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "car_circuit",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "circuit for my car"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "do the usual one"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Q08",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='unspecified' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='unspecified' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='unspecified' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='unspecified' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='unspecified' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "unspecified",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 3,
+    "prompt": "the board we talked about yesterday"
+   },
+   "truth": {
+    "refusal_label": "ambiguous_request"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'ambiguous_request' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z01",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='astable_555' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='astable_555' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='astable_555' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='astable_555' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='astable_555' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "astable_555",
+     "targets": {
+      "frequency_hz": 1.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='astable_555' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='astable_555' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='astable_555' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='astable_555' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='astable_555' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "astable_555",
+     "targets": {
+      "frequency_hz": 1.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "555 timer astable blinking an LED at 1 Hz."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z02",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='h_bridge_motor_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='h_bridge_motor_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='h_bridge_motor_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='h_bridge_motor_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='h_bridge_motor_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "h_bridge_motor_driver",
+     "targets": {
+      "motor_v": 12.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='h_bridge_motor_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='h_bridge_motor_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='h_bridge_motor_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='h_bridge_motor_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='h_bridge_motor_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "h_bridge_motor_driver",
+     "targets": {
+      "motor_v": 12.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "H-bridge to drive a 12 V DC motor in both directions."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='h_bridge_motor_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='h_bridge_motor_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='h_bridge_motor_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='h_bridge_motor_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='h_bridge_motor_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "h_bridge_motor_driver",
+     "targets": {
+      "motor_v": 12.0
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Drive a 12 V DC motor forwards and backwards (H-bridge)."
+   }
+  },
+  {
+   "id": "R7-Z03",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='stepper_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='stepper_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='stepper_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='stepper_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='stepper_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "stepper_driver",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='stepper_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='stepper_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='stepper_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='stepper_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='stepper_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "stepper_driver",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Stepper motor driver with an A4988."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z04",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='battery_charger' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='battery_charger' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='battery_charger' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='battery_charger' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='battery_charger' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "battery_charger",
+     "targets": {
+      "chemistry": "lipo"
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='battery_charger' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='battery_charger' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='battery_charger' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='battery_charger' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='battery_charger' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "battery_charger",
+     "targets": {
+      "chemistry": "lipo"
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "LiPo charger with a TP4056."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": true,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z05",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='touch_sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='touch_sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='touch_sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='touch_sensor' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='touch_sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "touch_sensor",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='touch_sensor' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='touch_sensor' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='touch_sensor' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='touch_sensor' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='touch_sensor' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "touch_sensor",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Capacitive touch button with a TTP223."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z06",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='ir_receiver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='ir_receiver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='ir_receiver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='ir_receiver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='ir_receiver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "ir_receiver",
+     "targets": {},
+     "constraints": {
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='ir_receiver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='ir_receiver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='ir_receiver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='ir_receiver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='ir_receiver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "ir_receiver",
+     "targets": {},
+     "constraints": {
+      "mcu": "arduino_uno"
+     },
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "IR remote receiver (TSOP38238) on an Arduino."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z07",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='buzzer_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='buzzer_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='buzzer_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='buzzer_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='buzzer_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "buzzer_driver",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='buzzer_driver' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='buzzer_driver' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='buzzer_driver' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='buzzer_driver' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='buzzer_driver' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "buzzer_driver",
+     "targets": {},
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Piezo buzzer driver."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry."
+  },
+  {
+   "id": "R7-Z08",
+   "state": {
+    "refusal_reason": "rc_lowpass: function='servo_control' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='servo_control' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='servo_control' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='servo_control' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='servo_control' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "servo_control",
+     "targets": {
+      "pin": 9
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1
+   },
+   "prompt_state": {
+    "refusal_reason": "rc_lowpass: function='servo_control' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='servo_control' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='servo_control' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='servo_control' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='servo_control' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "servo_control",
+     "targets": {
+      "pin": 9
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Hobby servo control on pin 9."
+   },
+   "truth": {
+    "refusal_label": "none_of_these"
+   },
+   "contestable": false,
+   "derivation": "Written as a request that needs 'none_of_these' (B13 definitions); refusal text from the snapshot registry.",
+   "paraphrase_state": {
+    "refusal_reason": "rc_lowpass: function='servo_control' is not low_pass_filter — this generator produces single-pole passive RC low-pass filters only; voltage_divider: function='servo_control' is not voltage_divider — this generator builds two-resistor dividers only; led_indicator: function='servo_control' is not led_indicator — this generator drives one LED from one MCU GPIO; dht22_node: function='servo_control' is not temperature_humidity_sensor — this generator builds one MCU board with one DHT22; rs485_node: function='servo_control' is not modbus_rtu_master — this generator builds a Modbus RTU master on one MAX485 (5 V) or MAX3485 (3.3 V)",
+    "intent_ir_requirements": {
+     "function": "servo_control",
+     "targets": {
+      "pin": 9
+     },
+     "constraints": {},
+     "preferences": {}
+    },
+    "rows_with_same_function_in_log": 1,
+    "prompt": "Control a hobby servo from pin 9."
+   }
+  }
+ ],
+ "set_id": "r7_refusal",
+ "created_utc": "2026-09-25T06:41:01+00:00",
+ "pinned_model": "jev-1.13.0"
+}

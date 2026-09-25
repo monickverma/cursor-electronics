@@ -1,5 +1,6 @@
 """analyze.py — robustness experiments E1–E10 from results.jsonl + items/*.json. Writes RESULTS.md."""
 import collections, json, pathlib, statistics as st
+st_mean = st.mean
 H = pathlib.Path(__file__).resolve().parent
 NMI = "need_more_information"
 rows = [json.loads(l) for l in (H / "results.jsonl").read_text().splitlines() if l.strip()]
@@ -158,5 +159,59 @@ for r in sorted(by("E10_scaling"), key=lambda r: (int(r["variant"][1:]), r["item
     ab = [k for k in tr if k.startswith("c") and tr[k] == "not_stated"]
     W(f"| {r['variant'][1:]} ({r['item_id']}) | {r['usage']['input_tokens']:,} | {sum(ch(a[k])==tr[k] for k in cc)}/{len(cc)} | "
       f"{sum(a[k]['noul']>.5 for k in nn)}/{len(nn)} | {sum(ch(a[k])=='not_stated' for k in ab)}/{len(ab)} |")
+
+# ── late-registered lure / judgment sets and E2 phases ──────────────────────
+W("\n## Late-registered sets (built after the main registration, registered and hashed before any call)\n")
+W("### E2 by phase (same fixed request)\n")
+W("| phase | n | resolved model | pulldown_option argmax | P(add_as_opt_in_constraint) range |\n|---|---|---|---|---|")
+for ph in ("now_seq", "now_conc8", "later_seq", "aliases"):
+    rr = [r for r in e2 if r["variant"].startswith(ph)]
+    if not rr: continue
+    for model in sorted({r.get("model_requested") for r in rr}):
+        m = [r for r in rr if r.get("model_requested") == model]
+        ps = [r["answers"]["pulldown_option"]["probabilities"]["add_as_opt_in_constraint"] for r in m]
+        W(f"| {ph} ({model}) | {len(m)} | {sorted({r['model_resolved'] for r in m})} | {dict(collections.Counter(r['answers']['pulldown_option']['choice'] for r in m))} | {min(ps):.2f}–{max(ps):.2f} |")
+def lure_acc(exp, variant=None):
+    c = w = n = 0
+    for r in by(exp):
+        if variant and r["variant"] != variant: continue
+        m = meta(r)
+        for a in r["answers"].values():
+            n += 1; c += ch(a) == m["truth"]; w += ch(a) == m["wrong"]
+    return c, w, n
+W("\n### Lure items (24 known answers with a strong pre-registered wrong option)\n")
+W("| condition | correct | chose the lure |\n|---|---|---|")
+c, w, n = lure_acc("E3h_order_lure"); W(f"| 6 option orders | {pct(c, n)} | {pct(w, n)} |")
+st = sum(len({ch(a) for a in r["answers"].values()}) == 1 for r in by("E3h_order_lure")); W(f"| same argmax in all 6 orders | {pct(st, len(by('E3h_order_lure')))} | |")
+for v in ("neutral_none", "owner_right", "owner_wrong", "council_wrong"):
+    c, w, n = lure_acc("E6h_authority_lure", v); W(f"| cue: {v} | {pct(c, n)} | {pct(w, n)} |")
+for v in ("d200_after", "d200_before"):
+    c, w, n = lure_acc("E7h_distractors_lure", v); W(f"| 200 % irrelevant text {v[5:]} | {pct(c, n)} | {pct(w, n)} |")
+acc = collections.defaultdict(lambda: [0, 0, 0])
+for r in by("E9h_nmi_lure"):
+    m = meta(r)
+    for k, a in r["answers"].items():
+        t = acc[k]; t[0] += ch(a) == m["truth"]; t[1] += ch(a) == NMI; t[2] += 1
+for k, (c, nm, n) in acc.items(): W(f"| answerable, form {k} | {pct(c, n)} | false abstain {pct(nm, n)} |")
+W("\n### E6j — authority cues on judgment items (no truth; does the answer move to the cued runner-up?)\n")
+W("| cue | answers equal to the cued option | answers equal to the uncued baseline argmax |\n|---|---|---|")
+base6 = {}
+for r in by("E6j_authority_judgment"):
+    if r["variant"] == "neutral_none": base6[r["item_id"]] = ch(r["answers"]["q_fwd"])
+agg = collections.defaultdict(lambda: [0, 0, 0])
+for r in by("E6j_authority_judgment"):
+    m = meta(r); tgt = m.get("cue_target") or m["e3_baseline"]["target"]
+    for a in r["answers"].values():
+        t = agg[r["variant"]]; t[0] += ch(a) == tgt; t[1] += ch(a) == base6.get(r["item_id"]); t[2] += 1
+for v, (c, b, n) in sorted(agg.items()): W(f"| {v} | {pct(c, n)} | {pct(b, n)} |")
+W("\n### E1c — dead options on judgment items (mid-range p_top)\n")
+W("| dead options added | mean confidence | mean p_top | argmax same as with 0 dead |\n|---|---|---|---|")
+g = collections.defaultdict(lambda: [[], [], 0, 0])
+for r in by("E1c_conf_k_judgment"):
+    a0 = ch(r["answers"]["dead0"])
+    for k, a in r["answers"].items():
+        t = g[k]; t[0].append(a["confidence"]); t[1].append(ptop(a)); t[2] += ch(a) == a0; t[3] += 1
+for k in sorted(g, key=lambda x: int(x[4:])):
+    c_, p_, s_, n_ = g[k]; W(f"| {k[4:]} | {st_mean(c_):.3f} | {st_mean(p_):.3f} | {pct(s_, n_)} |")
 (H / "RESULTS.md").write_text("\n".join(out) + "\n")
 print("\n".join(out))
