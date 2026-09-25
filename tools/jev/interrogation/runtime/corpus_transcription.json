@@ -1,0 +1,4624 @@
+{
+ "corpus": "transcription_fidelity_v1",
+ "items": [
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F01",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true,
+     "targets.tolerance_pct": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "A passive RC low-pass filter with a 1 kHz cutoff, within 5%, on a 5 V supply.",
+   "prompt_paraphrase": "I need a 5 V passive RC low-pass whose cutoff is 1 kHz, accurate to within 5%.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F02",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass at 2.2 kHz running from 3.3 V.",
+   "prompt_paraphrase": "Running from 3.3 V, build an RC low-pass at 2.2 kHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 3.3
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 2200
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F03",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.source_impedance_ohm": true,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "I need an anti-aliasing low-pass in front of my ADC: corner at 500 Hz, 12 V rail, and the signal comes from a 600 ohm source.",
+   "prompt_paraphrase": "Anti-alias filter for an ADC input: a low-pass with its corner at 500 Hz, fed from a 600 ohm source, on a 12 V rail.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 600,
+     "supply_v": 12
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 500
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F04",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true,
+     "targets.tolerance_pct": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Low-pass RC filter, cutoff 15 kHz, 1% tolerance, 5V.",
+   "prompt_paraphrase": "5V supply; an RC low-pass with a 15 kHz cutoff and 1% tolerance.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 15000,
+     "tolerance_pct": 1
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F05",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Make me a simple RC filter that lets through everything below 100 Hz and rolls off above it, on a 9 V supply.",
+   "prompt_paraphrase": "On a 9 V supply, give me a simple RC filter that rolls off above 100 Hz and lets lower frequencies through.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 9
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 100
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F06",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.source_impedance_ohm": true,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "First-order low pass, f_c = 40 kHz, supply 5 V, source impedance 50 Ω.",
+   "prompt_paraphrase": "Supply 5 V, source impedance 50 Ω, and a first-order low pass with f_c = 40 kHz.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 50,
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 40000
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F07",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true,
+     "targets.tolerance_pct": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Smooth a PWM signal with an RC low-pass: cutoff 200 Hz, powered at 5 V, within 10%.",
+   "prompt_paraphrase": "I want to smooth PWM using an RC low-pass with a 200 Hz cutoff, within 10%, powered at 5 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 200,
+     "tolerance_pct": 10
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.package": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F08",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "preferences.package": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass filter at 3 kHz from a 24 V supply, use 0805 parts.",
+   "prompt_paraphrase": "Use 0805 parts for an RC low-pass filter at 3 kHz fed from a 24 V supply.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 24
+    },
+    "function": "low_pass_filter",
+    "preferences": {
+     "package": "0805"
+    },
+    "targets": {
+     "cutoff_hz": 3000
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F09",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "A resistor voltage divider that gives 3.3 V from a 5 V supply.",
+   "prompt_paraphrase": "From a 5 V supply, give me 3.3 V with a resistor voltage divider.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F10",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Divide 12 V down to 2.5 V for an ADC input.",
+   "prompt_paraphrase": "For an ADC input, I need 12 V divided down to 2.5 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 2.5
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F11",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.tolerance_pct": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider: 24 V in, 3.0 V out, 1% tolerance.",
+   "prompt_paraphrase": "1% tolerance voltage divider taking 24 V in and giving 3.0 V out.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 24
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "tolerance_pct": 1,
+     "vout_v": 3.0
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.divider_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F12",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.divider_current_ma": true,
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "I want 1.8 V from a 9 V battery using two resistors, with about 1 mA flowing through the divider.",
+   "prompt_paraphrase": "Using two resistors, get 1.8 V from a 9 V battery; let about 1 mA flow through the divider.",
+   "requirements": {
+    "constraints": {
+     "divider_current_ma": 1,
+     "supply_v": 9
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 1.8
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.load_ohm": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F13",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.load_ohm": true,
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Scale my 15 V rail down to 3.3 V for a microcontroller pin, with a 10 kΩ load on the output.",
+   "prompt_paraphrase": "The output drives a 10 kΩ load: scale the 15 V rail down to 3.3 V for a microcontroller pin.",
+   "requirements": {
+    "constraints": {
+     "load_ohm": 10000,
+     "supply_v": 15
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F14",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.tolerance_pct": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Two-resistor divider, 5 V to 1.2 V, within 2%.",
+   "prompt_paraphrase": "Within 2%, turn 5 V into 1.2 V with a two-resistor divider.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "tolerance_pct": 2,
+     "vout_v": 1.2
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F15",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider producing 0.9 V from 6 V.",
+   "prompt_paraphrase": "From 6 V, a voltage divider that produces 0.9 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 6
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 0.9
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F16",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Resistive divider to sense a 20 V supply: I want 2.0 V at the output.",
+   "prompt_paraphrase": "I want 2.0 V at the output of a resistive divider that senses a 20 V supply.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 20
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 2.0
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.colour": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F17",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.colour": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Drive a red indicator LED at 10 mA from an Arduino Uno GPIO pin on a 5 V supply.",
+   "prompt_paraphrase": "On a 5 V supply, an Arduino Uno GPIO pin should drive a red indicator LED at 10 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "colour": "red"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F18",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Status LED on an ESP32 DevKitC at 5 mA, 3.3 V logic.",
+   "prompt_paraphrase": "An ESP32 DevKitC with 3.3 V logic driving a status LED at 5 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 5
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.gpio_pin": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F19",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.gpio_pin": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Blink an LED from pin D9 of an Arduino Uno at 8 mA, 5 V.",
+   "prompt_paraphrase": "Using pin D9 of an Arduino Uno at 5 V, blink an LED at 8 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 8
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F20",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Indicator LED at 12 mA on a Black Pill STM32F411 running at 3.3 V.",
+   "prompt_paraphrase": "A Black Pill STM32F411 running at 3.3 V with an indicator LED at 12 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "blackpill_f411ce",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 12
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.colour": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "preferences.gpio_pin": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F21",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.colour": true,
+     "preferences.gpio_pin": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "A red LED with a current-limiting resistor on GPIO4 of an ESP32 DevKitC, 6 mA, 3.3 V supply.",
+   "prompt_paraphrase": "On an ESP32 DevKitC with a 3.3 V supply, put a red LED and its current-limiting resistor on GPIO4 at 6 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "colour": "red",
+     "gpio_pin": "GPIO4"
+    },
+    "targets": {
+     "led_current_ma": 6
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F22",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true,
+     "targets.tolerance_pct": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Power indicator LED, 2 mA, driven from an Arduino Uno at 5 V, within 10%.",
+   "prompt_paraphrase": "Within 10%, a 2 mA power indicator LED driven from an Arduino Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 2,
+     "tolerance_pct": 10
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.gpio_pin": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F23",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.gpio_pin": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "LED on PA5 of a Black Pill board at 4 mA from 3.3 V.",
+   "prompt_paraphrase": "From 3.3 V, drive an LED at 4 mA on PA5 of a Black Pill board.",
+   "requirements": {
+    "constraints": {
+     "mcu": "blackpill_f411ce",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "PA5"
+    },
+    "targets": {
+     "led_current_ma": 4
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F24",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Drive an LED at 15 mA from a 5 V Arduino Uno pin.",
+   "prompt_paraphrase": "A 5 V Arduino Uno pin driving an LED at 15 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 15
+    }
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F25",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "An Arduino Uno reading a DHT22 temperature and humidity sensor on a 5 V supply, with 2 metres of cable to the sensor.",
+   "prompt_paraphrase": "DHT22 temperature and humidity sensor, 2 metres of cable away, read by an Arduino Uno on a 5 V supply.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F26",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 on an ESP32 DevKitC, 3.3 V, sensor 10 m away.",
+   "prompt_paraphrase": "Sensor 10 m away: a DHT22 on an ESP32 DevKitC at 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 10,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.alert_threshold_c": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F27",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.alert_threshold_c": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Temperature/humidity node with a DHT22 and an Arduino Uno at 5 V; 0.5 m lead; alert when it goes above 30 °C.",
+   "prompt_paraphrase": "Alert when it goes above 30 °C: a DHT22 temperature/humidity node on an Arduino Uno at 5 V with a 0.5 m lead.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 0.5,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.data_pin": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    }
+   },
+   "fault_type": null,
+   "id": "T-F28",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.data_pin": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 humidity sensor on a Black Pill at 3.3 V over a 5 m cable, data on pin PB6.",
+   "prompt_paraphrase": "Data on pin PB6: a DHT22 humidity sensor on a Black Pill at 3.3 V, 5 m cable.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 5,
+     "mcu": "blackpill_f411ce",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "data_pin": "PB6"
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.alert_threshold_c": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F29",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.alert_threshold_c": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Greenhouse monitor: DHT22 on an Uno, 5 V, 15 m cable run, warn above 35 C.",
+   "prompt_paraphrase": "Warn above 35 C. Greenhouse monitor with a DHT22 on an Uno at 5 V and a 15 m cable run.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 15,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 35
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.data_pin": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    }
+   },
+   "fault_type": null,
+   "id": "T-F30",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.data_pin": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Arduino Uno + DHT22, 5 V supply, 1 m cable, data pin D4.",
+   "prompt_paraphrase": "DHT22 with data pin D4, 1 m cable, on an Arduino Uno with a 5 V supply.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 1,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "data_pin": "D4"
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.alert_threshold_c": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F31",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.alert_threshold_c": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "An ESP32 DevKitC that reads a DHT22 over 3 m of cable at 3.3 V and flags temperatures over 28 °C.",
+   "prompt_paraphrase": "Flag temperatures over 28 °C using a DHT22 read by an ESP32 DevKitC at 3.3 V over 3 m of cable.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 3,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 28
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F32",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 sensor node, Arduino Uno, 5 V, 7.5 m of cable.",
+   "prompt_paraphrase": "7.5 m of cable to a DHT22 sensor node on a 5 V Arduino Uno.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 7.5,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F33",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "An Arduino Uno acting as a Modbus RTU master over RS-485 using a MAX485 transceiver at 5 V.",
+   "prompt_paraphrase": "Using a MAX485 transceiver at 5 V, an Arduino Uno as the Modbus RTU master on RS-485.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F34",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master on RS-485 from an ESP32 DevKitC at 3.3 V, 19200 baud.",
+   "prompt_paraphrase": "At 19200 baud, an ESP32 DevKitC running at 3.3 V as a Modbus RTU master on RS-485.",
+   "requirements": {
+    "constraints": {
+     "baud": 19200,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.modbus_slaves": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.poll_interval_ms": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F35",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.modbus_slaves": true,
+     "preferences.poll_interval_ms": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RS-485 Modbus RTU master on an Uno at 5 V polling slave address 7 every 1000 ms.",
+   "prompt_paraphrase": "Poll slave address 7 every 1000 ms from a Modbus RTU master on RS-485, Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 7
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.far_end_terminated": {
+     "numeric": false,
+     "snapshot_grounded": null,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F36",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.far_end_terminated": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Black Pill as a Modbus RTU master over RS-485, 3.3 V, 9600 baud, the far end of the bus is not terminated.",
+   "prompt_paraphrase": "The far end of the bus is not terminated. Black Pill Modbus RTU master over RS-485 at 3.3 V, 9600 baud.",
+   "requirements": {
+    "constraints": {
+     "baud": 9600,
+     "far_end_terminated": false,
+     "mcu": "blackpill_f411ce",
+     "supply_v": 3.3
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.modbus_slaves": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F37",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.modbus_slaves": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Arduino Uno Modbus RTU master at 5 V talking to slaves 1 and 2 over RS-485.",
+   "prompt_paraphrase": "Over RS-485, talk to slaves 1 and 2 from an Arduino Uno Modbus RTU master at 5 V.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      },
+      {
+       "address": 2
+      }
+     ]
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.poll_interval_ms": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F38",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.poll_interval_ms": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "ESP32 DevKitC Modbus master over RS-485 at 3.3 V, 38400 baud, polling every 500 ms.",
+   "prompt_paraphrase": "Polling every 500 ms at 38400 baud: an ESP32 DevKitC Modbus master over RS-485 at 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "baud": 38400,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "poll_interval_ms": 500
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.poll_interval_ms": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F39",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.poll_interval_ms": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master (RS-485, MAX485) on a 5 V Uno, poll every 2000 ms at 4800 baud.",
+   "prompt_paraphrase": "At 4800 baud, poll every 2000 ms: a Modbus RTU master (RS-485, MAX485) on a 5 V Uno.",
+   "requirements": {
+    "constraints": {
+     "baud": 4800,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "poll_interval_ms": 2000
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.far_end_terminated": {
+     "numeric": false,
+     "snapshot_grounded": null,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.modbus_slaves": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-F40",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.far_end_terminated": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.modbus_slaves": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RS-485 Modbus RTU master, Arduino Uno, 5 V, far end terminated, slave address 12.",
+   "prompt_paraphrase": "Slave address 12, far end terminated: an RS-485 Modbus RTU master on an Arduino Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "far_end_terminated": true,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 12
+      }
+     ]
+    },
+    "targets": {}
+   },
+   "seeding": "faithful transcription written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": null,
+   "id": "T-I01",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "LED indicator on a USB-powered Arduino Uno at 10 mA.",
+   "prompt_paraphrase": "At 10 mA, an LED indicator on an Arduino Uno powered over USB.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "seeding": "supply_v = 5 is implied by USB power, not written",
+   "stratum": "faithful_implied"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": null,
+   "id": "T-I02",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 on an ESP32 DevKitC's 3V3 pin with a 4 m cable.",
+   "prompt_paraphrase": "4 m cable to a DHT22 powered from the 3V3 pin of an ESP32 DevKitC.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 4,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "supply_v = 3.3 written as the pin name 3V3",
+   "stratum": "faithful_implied"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": null,
+   "id": "T-I03",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass at one kilohertz on a five volt supply.",
+   "prompt_paraphrase": "On a five volt supply, an RC low-pass at one kilohertz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "numbers written as words",
+   "stratum": "faithful_implied"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": null,
+   "id": "T-I04",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": false,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider taking the 12 V car battery down to half.",
+   "prompt_paraphrase": "Halve the 12 V car battery with a voltage divider.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 6
+    }
+   },
+   "seeding": "vout_v = 6 is half of 12 V (arithmetic)",
+   "stratum": "faithful_implied"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S01",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass filter with a 2 MHz cutoff on 5 V.",
+   "prompt_paraphrase": "On 5 V, an RC low-pass filter whose cutoff is 2 MHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "2 MHz recorded as 1000 Hz (the DEC:663-670 example); gold cutoff_hz = 2000000",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S02",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Low-pass RC at 2 kHz, 5 V supply.",
+   "prompt_paraphrase": "5 V supply, RC low-pass at 2 kHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 2
+    }
+   },
+   "seeding": "kilo dropped: 2 kHz recorded as 2 Hz; gold 2000",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S03",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.led_current_ma"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Drive an LED at 10 mA from an Arduino Uno pin on 5 V.",
+   "prompt_paraphrase": "An Arduino Uno pin on 5 V driving an LED at 10 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 10000
+    }
+   },
+   "seeding": "10 mA recorded as 10 A (10000 in the mA field); gold 10",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S04",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.cable_length_m"
+    ],
+    "stated": {
+     "constraints.cable_length_m": false,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 on an Arduino Uno at 5 V with a 15 m cable.",
+   "prompt_paraphrase": "A 15 m cable to a DHT22 on an Arduino Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 0.015,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "15 m read as 15 milli-units (0.015 m); gold 15",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S05",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.vout_v"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider giving 3.3 V from a 12 V supply.",
+   "prompt_paraphrase": "From a 12 V supply, a voltage divider that gives 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3300
+    }
+   },
+   "seeding": "3.3 V recorded as 3300 (mV value in a V field); gold 3.3",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S06",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.source_impedance_ohm"
+    ],
+    "stated": {
+     "constraints.source_impedance_ohm": false,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass with the corner at 50 kHz, powered from 3.3 V, source impedance 4.7 kΩ.",
+   "prompt_paraphrase": "Source impedance 4.7 kΩ, powered from 3.3 V: an RC low-pass with its corner at 50 kHz.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 4.7,
+     "supply_v": 3.3
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 50000
+    }
+   },
+   "seeding": "kilo dropped: 4.7 kΩ recorded as 4.7 ohm; gold 4700",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "T-S07",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.cutoff_hz"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass at 1.5 MHz on 5 V.",
+   "prompt_paraphrase": "On 5 V, an RC low-pass at 1.5 MHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1500
+    }
+   },
+   "seeding": "MHz read as kHz: 1.5 MHz recorded as 1500 Hz; gold 1500000",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S08",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC high-pass filter with a 100 Hz cutoff on 5 V.",
+   "prompt_paraphrase": "On 5 V, an RC high-pass filter whose cutoff is 100 Hz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 100
+    }
+   },
+   "seeding": "high-pass recorded as low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S09",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "Band-pass filter with cutoffs at 1 kHz and 5 kHz, 5 V supply.",
+   "prompt_paraphrase": "5 V supply; a band-pass filter with its cutoffs at 1 kHz and 5 kHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 5000
+    }
+   },
+   "seeding": "band-pass recorded as low_pass_filter at its upper cutoff; the 1 kHz lower cutoff has no entry",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S10",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "I need to block DC and pass audio above 20 Hz: an RC coupling filter on a 12 V rail.",
+   "prompt_paraphrase": "An RC coupling filter on a 12 V rail that blocks DC and passes audio above 20 Hz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 20
+    }
+   },
+   "seeding": "high-pass described without the word (block DC, pass above) recorded as low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S11",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC filter that attenuates everything below 1 kHz, 5 V.",
+   "prompt_paraphrase": "5 V, and an RC filter that attenuates everything below 1 kHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "high-pass described as 'attenuates below' recorded as low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S12",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Passive RC high pass, corner frequency 3 kHz, 3.3 V.",
+   "prompt_paraphrase": "3.3 V passive RC high pass with a 3 kHz corner frequency.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 3.3
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 3000
+    }
+   },
+   "seeding": "high pass recorded as low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_function",
+   "id": "T-S13",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "HPF, fc = 250 Hz, 5 V.",
+   "prompt_paraphrase": "5 V HPF with fc = 250 Hz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 250
+    }
+   },
+   "seeding": "abbreviation HPF recorded as low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S14",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "RC low-pass at 1 kHz on 5 V, within 1%.",
+   "prompt_paraphrase": "Within 1%, an RC low-pass at 1 kHz on 5 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "targets.tolerance_pct = 1 dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S15",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "LED indicator on an ESP32 DevKitC at 5 mA, 3.3 V.",
+   "prompt_paraphrase": "At 5 mA and 3.3 V, an LED indicator on an ESP32 DevKitC.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 5
+    }
+   },
+   "seeding": "constraints.mcu = esp32_devkitc dropped (the generator then defaults to arduino_uno)",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S16",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "DHT22 on an Arduino Uno at 5 V with a 3 m cable; alert above 40 °C.",
+   "prompt_paraphrase": "Alert above 40 °C from a DHT22 on an Arduino Uno at 5 V with a 3 m cable.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 3,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "preferences.alert_threshold_c = 40 dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S17",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "Modbus RTU master on RS-485, Arduino Uno, 5 V, 19200 baud, polling slave address 4.",
+   "prompt_paraphrase": "Polling slave address 4 at 19200 baud: a Modbus RTU master on RS-485, Arduino Uno, 5 V.",
+   "requirements": {
+    "constraints": {
+     "baud": 19200,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "preferences.modbus_slaves = [{address: 4}] dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S18",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "Voltage divider 12 V to 3.3 V feeding a 4.7 kΩ load.",
+   "prompt_paraphrase": "Feeding a 4.7 kΩ load, a voltage divider from 12 V to 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "seeding": "constraints.load_ohm = 4700 dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "dropped_requirement",
+   "id": "T-S19",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.source_impedance_ohm": true,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "Low-pass filter at 8 kHz on 5 V driven from a 1 kΩ source, using 0603 parts.",
+   "prompt_paraphrase": "Using 0603 parts, a low-pass filter at 8 kHz on 5 V, driven from a 1 kΩ source.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 1000,
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 8000
+    }
+   },
+   "seeding": "preferences.package = 0603 dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S20",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.tolerance_pct"
+    ],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true,
+     "targets.tolerance_pct": false
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass at 1 kHz on a 5 V supply.",
+   "prompt_paraphrase": "On a 5 V supply, an RC low-pass at 1 kHz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "seeding": "tolerance_pct = 5 invented; the number 5 also appears as 5 V (defeats presence-only grounding)",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.load_ohm": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S21",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.load_ohm"
+    ],
+    "stated": {
+     "constraints.load_ohm": false,
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider from 12 V down to 3.3 V.",
+   "prompt_paraphrase": "Down to 3.3 V from 12 V with a voltage divider.",
+   "requirements": {
+    "constraints": {
+     "load_ohm": 10000,
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "seeding": "load_ohm = 10000 invented",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.gpio_pin": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S22",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "preferences.gpio_pin"
+    ],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.gpio_pin": false,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Indicator LED at 10 mA on an Arduino Uno, 5 V.",
+   "prompt_paraphrase": "On an Arduino Uno at 5 V, an indicator LED at 10 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D13"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "seeding": "gpio_pin = D13 invented (a plausible default)",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.alert_threshold_c": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S23",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "preferences.alert_threshold_c"
+    ],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.alert_threshold_c": false
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 node on an ESP32 DevKitC at 3.3 V with a 2 m cable.",
+   "prompt_paraphrase": "A 2 m cable to a DHT22 node on an ESP32 DevKitC at 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "seeding": "alert_threshold_c = 30 invented",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S24",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.baud"
+    ],
+    "stated": {
+     "constraints.baud": false,
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master over RS-485 on an Arduino Uno at 5 V.",
+   "prompt_paraphrase": "On an Arduino Uno at 5 V, a Modbus RTU master over RS-485.",
+   "requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "baud = 9600 invented (the generator default)",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S25",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.source_impedance_ohm"
+    ],
+    "stated": {
+     "constraints.source_impedance_ohm": false,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Low-pass RC filter, 10 kHz cutoff, 3.3 V supply.",
+   "prompt_paraphrase": "3.3 V supply and a 10 kHz cutoff for a low-pass RC filter.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 50,
+     "supply_v": 3.3
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 10000
+    }
+   },
+   "seeding": "source_impedance_ohm = 50 invented",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.divider_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S26",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "targets.tolerance_pct",
+     "constraints.divider_current_ma"
+    ],
+    "stated": {
+     "constraints.divider_current_ma": false,
+     "constraints.supply_v": true,
+     "targets.tolerance_pct": false,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider: 5 V in, 2.5 V out.",
+   "prompt_paraphrase": "2.5 V out from 5 V in with a voltage divider.",
+   "requirements": {
+    "constraints": {
+     "divider_current_ma": 1,
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "tolerance_pct": 5,
+     "vout_v": 2.5
+    }
+   },
+   "seeding": "tolerance_pct = 5 (collides with 5 V) and divider_current_ma = 1 invented",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "hallucinated_value",
+   "id": "T-S27",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [
+     "constraints.supply_v"
+    ],
+    "stated": {
+     "constraints.supply_v": false,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": false,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass filter at 500 Hz.",
+   "prompt_paraphrase": "An RC low-pass filter at 500 Hz.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 500
+    }
+   },
+   "seeding": "required supply_v = 5 guessed instead of listed as underdetermined",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S28",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": false,
+     "targets.vout_v": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider giving 3.3 V from a 5 V supply.",
+   "prompt_paraphrase": "From a 5 V supply, a voltage divider that gives 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 3.3
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 5
+    }
+   },
+   "seeding": "vout_v and supply_v swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S29",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.cable_length_m": false,
+     "constraints.mcu": true,
+     "constraints.supply_v": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 on an ESP32 DevKitC, 5 m cable, 3.3 V.",
+   "prompt_paraphrase": "3.3 V, 5 m cable, DHT22 on an ESP32 DevKitC.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 3.3,
+     "mcu": "esp32_devkitc",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "cable_length_m and supply_v swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": false,
+     "unit_grounded_paraphrase": false
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S30",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": false,
+     "targets.led_current_ma": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "LED at 5 mA from an ESP32 DevKitC on 3.3 V.",
+   "prompt_paraphrase": "On 3.3 V, an ESP32 DevKitC driving an LED at 5 mA.",
+   "requirements": {
+    "constraints": {
+     "mcu": "esp32_devkitc",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 3.3
+    }
+   },
+   "seeding": "led_current_ma and supply_v swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.source_impedance_ohm": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S31",
+   "labels": {
+    "function_expected": "low_pass_filter",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.source_impedance_ohm": false,
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "RC low-pass at 600 Hz, source impedance 1 kΩ, 5 V.",
+   "prompt_paraphrase": "5 V, source impedance 1 kΩ, RC low-pass at 600 Hz.",
+   "requirements": {
+    "constraints": {
+     "source_impedance_ohm": 600,
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "cutoff_hz and source_impedance_ohm swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.modbus_slaves": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "preferences.poll_interval_ms": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S32",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true,
+     "preferences.modbus_slaves": false,
+     "preferences.poll_interval_ms": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master on an Uno at 5 V over RS-485, slave address 20, poll every 100 ms.",
+   "prompt_paraphrase": "Poll every 100 ms, slave address 20: Modbus RTU master over RS-485 on an Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 100
+      }
+     ],
+     "poll_interval_ms": 20
+    },
+    "targets": {}
+   },
+   "seeding": "slave address and poll interval swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.tolerance_pct": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "T-S33",
+   "labels": {
+    "function_expected": "voltage_divider",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.tolerance_pct": false,
+     "targets.vout_v": false
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Voltage divider, 9 V to 1.5 V, 2% tolerance.",
+   "prompt_paraphrase": "2% tolerance voltage divider from 9 V to 1.5 V.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 9
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "tolerance_pct": 1.5,
+     "vout_v": 2
+    }
+   },
+   "seeding": "vout_v and tolerance_pct swapped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S34",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": false,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Status LED on an ESP32 DevKitC at 7 mA, 3.3 V.",
+   "prompt_paraphrase": "At 7 mA and 3.3 V, a status LED on an ESP32 DevKitC.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 7
+    }
+   },
+   "seeding": "ESP32 DevKitC recorded as arduino_uno",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S35",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": false,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 on a Black Pill STM32F411 at 3.3 V, 2 m cable.",
+   "prompt_paraphrase": "2 m cable, 3.3 V, DHT22 on a Black Pill STM32F411.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 3.3
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "Black Pill recorded as arduino_uno",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.baud": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S36",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.baud": true,
+     "constraints.mcu": false,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master on RS-485 from an Arduino Uno at 5 V, 9600 baud.",
+   "prompt_paraphrase": "9600 baud Modbus RTU master on RS-485 from an Arduino Uno at 5 V.",
+   "requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "esp32_devkitc",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "Arduino Uno recorded as esp32_devkitc",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.led_current_ma": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S37",
+   "labels": {
+    "function_expected": "led_indicator",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": false,
+     "constraints.supply_v": true,
+     "targets.led_current_ma": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Status LED on an ESP32 at 8 mA, 3.3 V.",
+   "prompt_paraphrase": "3.3 V, 8 mA, status LED on an ESP32.",
+   "requirements": {
+    "constraints": {
+     "mcu": "blackpill_f411ce",
+     "supply_v": 3.3
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {
+     "led_current_ma": 8
+    }
+   },
+   "seeding": "ESP32 recorded as blackpill_f411ce",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.cable_length_m": {
+     "numeric": true,
+     "snapshot_grounded": false,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S38",
+   "labels": {
+    "function_expected": "temperature_humidity_sensor",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.cable_length_m": true,
+     "constraints.mcu": false,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "DHT22 temperature node on an Arduino Mega at 5 V with a 1 m cable.",
+   "prompt_paraphrase": "1 m cable to a DHT22 temperature node on an Arduino Mega at 5 V.",
+   "requirements": {
+    "constraints": {
+     "cable_length_m": 1,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "non-catalogue Arduino Mega silently recorded as arduino_uno (producer rule: record as named)",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": false,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "wrong_board",
+   "id": "T-S39",
+   "labels": {
+    "function_expected": "modbus_rtu_master",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": false,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU master on a Raspberry Pi Pico at 3.3 V over RS-485.",
+   "prompt_paraphrase": "Over RS-485, a Modbus RTU master on a Raspberry Pi Pico at 3.3 V.",
+   "requirements": {
+    "constraints": {
+     "mcu": "esp32_devkitc",
+     "supply_v": 3.3
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "non-catalogue Raspberry Pi Pico silently recorded as esp32_devkitc",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.vout_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S40",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.vout_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "A buck converter that steps 12 V down to 3.3 V at 2 A.",
+   "prompt_paraphrase": "Step 12 V down to 3.3 V at 2 A with a buck converter.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "seeding": "buck converter mapped to voltage_divider; 2 A load and switching topology have no entry",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S41",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "BME280 pressure, temperature and humidity sensor on an Arduino Uno over I2C, 5 V.",
+   "prompt_paraphrase": "Over I2C at 5 V, a BME280 pressure, temperature and humidity sensor on an Arduino Uno.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "BME280 (I2C, pressure) mapped to the DHT22 temperature_humidity_sensor",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S42",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": false
+   },
+   "prompt": "Modbus RTU slave device on RS-485 using an Arduino Uno at 5 V.",
+   "prompt_paraphrase": "Using an Arduino Uno at 5 V, a Modbus RTU slave device on RS-485.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "Modbus slave mapped to modbus_rtu_master (catalogue is master only); role mis-valued, nothing dropped",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    },
+    "targets.cutoff_hz": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S43",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.supply_v": true,
+     "targets.cutoff_hz": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "Sallen-Key active low-pass filter with an op-amp, 1 kHz cutoff, 12 V single supply.",
+   "prompt_paraphrase": "12 V single supply, 1 kHz cutoff, Sallen-Key active low-pass filter with an op-amp.",
+   "requirements": {
+    "constraints": {
+     "supply_v": 12
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000
+    }
+   },
+   "seeding": "active op-amp filter mapped to the passive RC low_pass_filter",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S44",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "WS2812 addressable RGB LED strip, 30 LEDs, driven from an ESP32 DevKitC at 5 V.",
+   "prompt_paraphrase": "Driven from an ESP32 DevKitC at 5 V: a WS2812 addressable RGB LED strip with 30 LEDs.",
+   "requirements": {
+    "constraints": {
+     "mcu": "esp32_devkitc",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "addressable LED strip mapped to the single-LED led_indicator",
+   "stratum": "seeded"
+  },
+  {
+   "deterministic": {
+    "constraints.mcu": {
+     "numeric": false,
+     "snapshot_grounded": true,
+     "unit_grounded": null,
+     "unit_grounded_paraphrase": null
+    },
+    "constraints.supply_v": {
+     "numeric": true,
+     "snapshot_grounded": true,
+     "unit_grounded": true,
+     "unit_grounded_paraphrase": true
+    }
+   },
+   "fault_type": "out_of_catalogue",
+   "id": "T-S45",
+   "labels": {
+    "function_expected": "none_of_these",
+    "item_faulty": true,
+    "retry_added_leaves": [],
+    "stated": {
+     "constraints.mcu": true,
+     "constraints.supply_v": true
+    },
+    "unrepresented_lenient": true,
+    "unrepresented_strict": true
+   },
+   "prompt": "CAN bus node with an MCP2515 on an Arduino Uno at 5 V.",
+   "prompt_paraphrase": "On an Arduino Uno at 5 V, a CAN bus node with an MCP2515.",
+   "requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {},
+    "targets": {}
+   },
+   "seeding": "CAN bus node mapped to modbus_rtu_master",
+   "stratum": "seeded"
+  }
+ ],
+ "label_definitions": {
+  "coverage_label": "True iff the operations together make every change the command asks for and nothing else.",
+  "function_expected": "The catalogue function the prompt asks for, or none_of_these when the request is outside the catalogue (high-pass, band-pass, converters, other sensors, Modbus slave, other buses, active filters, LED strips).",
+  "item_faulty": "True for every seeded item; False for faithful and faithful_implied items.",
+  "ops[k].label": "True iff the cited words of the command ask for exactly this operation (path and value, or removal of this path).",
+  "retry_added_leaf": "R3 emulation. Faithful items: the leaf a first attempt most plausibly omits (the function's first required field) - a stated value the X5 retry would add (R3 negative). Seeded unit_scale/hallucinated_value items: the faulty leaves - values a retry would add that the prompt does not state (R3 positives).",
+  "stated[<leaf>]": "True iff the prompt states, or leaves no other reading of, this exact value for this exact field (after unit conversion). False when the value is absent, differs in scale/unit, or belongs to another field.",
+  "unrepresented_lenient": "True iff anything the prompt asks for is not faithfully represented (dropped OR mis-valued OR wrong function/board). False for faithful items and for pure hallucinated additions.",
+  "unrepresented_strict": "True iff the prompt asks for something (a value, part, feature or role) that has NO entry at all in the recorded requirements (dropped fields; out-of-catalogue features). A field present with a wrong value is not counted."
+ },
+ "snapshot": "origin/phase2-stage0 @ e803a99",
+ "state_boards": {
+  "arduino_uno": "Arduino Uno R3",
+  "blackpill_f411ce": "WeAct Black Pill (STM32F411CEU6)",
+  "esp32_devkitc": "ESP32-DevKitC (ESP32-WROOM-32E module)"
+ },
+ "state_catalogue": {
+  "led_indicator": "One indicator LED driven from a microcontroller GPIO pin through a current-limiting resistor. Fields: targets.led_current_ma (mA), constraints.supply_v (V); optional constraints.mcu, targets.tolerance_pct (%), preferences.gpio_pin, preferences.colour.",
+  "low_pass_filter": "Passive first-order RC low-pass filter. Fields: targets.cutoff_hz (Hz), constraints.supply_v (V); optional targets.tolerance_pct (%), constraints.source_impedance_ohm (ohm), preferences.package.",
+  "modbus_rtu_master": "Microcontroller acting as a Modbus RTU master on RS-485 through a MAX485-class transceiver. Fields: constraints.supply_v (V); optional constraints.mcu, constraints.baud, constraints.far_end_terminated (true/false), preferences.modbus_slaves (list of {address}), preferences.poll_interval_ms (ms).",
+  "temperature_humidity_sensor": "DHT22 temperature/humidity sensor node on a microcontroller. Fields: constraints.cable_length_m (m), constraints.supply_v (V); optional constraints.mcu, preferences.data_pin, preferences.alert_threshold_c (°C).",
+  "voltage_divider": "Two-resistor DC voltage divider. Fields: targets.vout_v (V), constraints.supply_v (V); optional targets.tolerance_pct (%), constraints.divider_current_ma (mA), constraints.load_ohm (ohm)."
+ },
+ "units": {
+  "constraints.baud": "baud",
+  "constraints.cable_length_m": "m",
+  "constraints.divider_current_ma": "mA",
+  "constraints.far_end_terminated": "",
+  "constraints.load_ohm": "ohm",
+  "constraints.mcu": "",
+  "constraints.source_impedance_ohm": "ohm",
+  "constraints.supply_v": "V",
+  "preferences.alert_threshold_c": "°C",
+  "preferences.colour": "",
+  "preferences.data_pin": "",
+  "preferences.gpio_pin": "",
+  "preferences.modbus_slaves": "",
+  "preferences.package": "",
+  "preferences.poll_interval_ms": "ms",
+  "targets.cutoff_hz": "Hz",
+  "targets.led_current_ma": "mA",
+  "targets.tolerance_pct": "%",
+  "targets.vout_v": "V"
+ }
+}

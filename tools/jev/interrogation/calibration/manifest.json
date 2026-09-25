@@ -1,0 +1,144 @@
+{
+  "created_utc": "2026-09-24T22:55:47+00:00",
+  "items_file": "items.jsonl",
+  "items_sha256": "69a52ee5c689d37eb65cf6f59f6063937379eb446d5c862d2efc9b7cb67a86c9",
+  "n_items": 361,
+  "generator": "make_items.py",
+  "generator_sha256": "057151356f483634abd6e60a4fb3165801d6fbb7cfe9aab52b9a221d590ecad5",
+  "seed": 20260925,
+  "snapshot": "origin/phase2-stage0 @ e803a99 (p2/)",
+  "counts_by_category": {
+    "a_closed_form": {
+      "items": 120,
+      "noul": 76,
+      "choice": 30,
+      "score": 14,
+      "twin": 120,
+      "repeat": 24,
+      "solo": 4,
+      "near": 68,
+      "q1_true": 38
+    },
+    "b_units": {
+      "items": 36,
+      "noul": 22,
+      "choice": 12,
+      "score": 2,
+      "twin": 36,
+      "repeat": 7,
+      "solo": 4,
+      "near": 14,
+      "q1_true": 12
+    },
+    "f_multistep": {
+      "items": 38,
+      "noul": 27,
+      "choice": 6,
+      "score": 5,
+      "twin": 37,
+      "repeat": 8,
+      "solo": 4,
+      "near": 26,
+      "q1_true": 15
+    },
+    "c_qualitative": {
+      "items": 53,
+      "noul": 39,
+      "choice": 10,
+      "score": 4,
+      "twin": 53,
+      "repeat": 11,
+      "solo": 4,
+      "near": 0,
+      "q1_true": 19
+    },
+    "d_project_rules": {
+      "items": 42,
+      "noul": 30,
+      "choice": 10,
+      "score": 2,
+      "twin": 0,
+      "repeat": 8,
+      "solo": 4,
+      "near": 0,
+      "q1_true": 15
+    },
+    "e_unanswerable": {
+      "items": 36,
+      "noul": 18,
+      "choice": 18,
+      "score": 0,
+      "twin": 0,
+      "repeat": 7,
+      "solo": 0,
+      "near": 0,
+      "q1_true": 0
+    },
+    "g_comparison": {
+      "items": 36,
+      "noul": 6,
+      "choice": 24,
+      "score": 6,
+      "twin": 36,
+      "repeat": 7,
+      "solo": 4,
+      "near": 18,
+      "q1_true": 4
+    }
+  },
+  "planned_requests": 739,
+  "planned_by_variant": {
+    "base": 361,
+    "twin": 282,
+    "repeat": 72,
+    "solo": 24
+  },
+  "approx_input_tokens_planned": 231042,
+  "analysis_plan": {
+    "model": "jev-1.13.0",
+    "primary_pool": "answerable categories a,b,c,d,f,g; question q1 (canonical polarity / label order); base form; first run",
+    "correctness": {
+      "noul": "correct iff (p>0.5 and truth) or (p<0.5 and not truth); p==0.5 counts as wrong",
+      "choice": "correct iff the returned choice (argmax) equals the true label",
+      "score": "correct iff argmax level of probabilities equals the true level; also MAE of expected score"
+    },
+    "calibration": {
+      "brier": "noul (p-y)^2; choice/score multi-class sum_k (p_k - y_k)^2",
+      "log_loss": "-ln p(true outcome), p clipped to [0.005, 0.995] because answers carry 2-decimal resolution",
+      "ece": "10 equal-width bins on top-label confidence (noul max(p,1-p), choice/score p_top); also P(yes) reliability for nouls",
+      "p_top_bins": [
+        0.0,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        0.95,
+        0.99,
+        1.0001
+      ]
+    },
+    "selective": "coverage and accuracy among answers with p_top >= t for t in {0.6,0.7,0.8,0.9,0.95,0.99}",
+    "variants": {
+      "polarity": "noul q2 is the negated complement; coherence s = p(q1)+p(q2); incoherent if |s-1|>0.15; contradiction if both >0.5 or both <0.5",
+      "order": "choice/score q2 has reversed labels/levels; flip = argmax label differs from q1; also total variation distance between label-aligned distributions",
+      "repeat": "identical request re-sent; max |delta p|",
+      "solo": "q1 sent alone; |delta p| vs batched q1",
+      "twin": "precomputed (numbers computed in code and written into the state) or rule_in_state; paired vs base"
+    },
+    "abstention": {
+      "choice": "argmax == need_more_information",
+      "noul": "0.35 <= p <= 0.65 on unanswerable items (mid-band); also distribution of p",
+      "sufficiency_q3": "p(q3) < 0.5 means 'information missing'; truth true on answerable, false on unanswerable"
+    },
+    "ci": "percentile bootstrap, 2000 resamples, resampling items (clusters), seed 12345",
+    "hypotheses": {
+      "H1": "Accuracy on compute forms is lower than on the same items with numbers precomputed (paired).",
+      "H2": "Near-threshold (1-5%) numeric items are less accurate than far (25-300%) items.",
+      "H3": "Among answers with p_top >= 0.9, accuracy on compute items is below 0.9; on rule-in-state items it is at least 0.9.",
+      "H4": "Nouls on unanswerable items do not sit in the 0.35-0.65 band (they lean to 'no').",
+      "H5": "Choices with need_more_information abstain on at least 80 % of unanswerable items.",
+      "H6": "Polarity sums deviate from 1 more on compute items than on rule items."
+    }
+  }
+}

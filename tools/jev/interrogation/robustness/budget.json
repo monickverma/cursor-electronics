@@ -1,0 +1,7 @@
+{
+ "requests": 172,
+ "input_tokens": 317549,
+ "max_requests": 1500,
+ "max_input_tokens": 15000000,
+ "updated": "2026-09-24T22:58:28.080106+00:00"
+}

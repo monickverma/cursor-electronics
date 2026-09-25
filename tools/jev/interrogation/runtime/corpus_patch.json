@@ -1,0 +1,3651 @@
+{
+ "corpus": "patch_op_faithful_v1",
+ "items": [
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz",
+   "command_paraphrase": "Please set the cutoff to 2 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 2000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F01",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff to 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz and the supply 12 V",
+   "command_paraphrase": "I'd like a 12 V supply and a 2 kHz cutoff",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 12
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 2000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F02",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    },
+    {
+     "because": "supply 12 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "2 kHz cutoff",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    },
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "tolerance 1%",
+   "command_paraphrase": "Tighten the tolerance to 1%",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 1
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F03",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "tolerance 1%",
+     "op": "replace",
+     "path": "/targets/tolerance_pct",
+     "value": 1
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "tolerance to 1%",
+     "op": "replace",
+     "path": "/targets/tolerance_pct",
+     "value": 1
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "run it from 3.3V",
+   "command_paraphrase": "Power it from a 3.3V rail instead",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F04",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "3.3V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "3.3V rail",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "Use the 4.7k resistor I have",
+   "command_paraphrase": "I have a 4.7k resistor, please use it",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "pinned": {
+       "R1": "4.7k"
+      },
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F05",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "4.7k resistor",
+     "op": "add",
+     "path": "/constraints/pinned/R1",
+     "value": "4.7k"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "4.7k resistor",
+     "op": "add",
+     "path": "/constraints/pinned/R1",
+     "value": "4.7k"
+    }
+   ],
+   "seeding": "pin",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "drop the supply limit",
+   "command_paraphrase": "Remove the supply voltage constraint",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {},
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F06",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "drop the supply limit",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Remove the supply voltage constraint",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "seeding": "removal",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "Set the source impedance to 600 ohm and the cutoff to 5 kHz",
+   "command_paraphrase": "The source is 600 ohm, and move the cutoff to 5 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "source_impedance_ohm": 600,
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 5000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F07",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "source impedance to 600 ohm",
+     "op": "add",
+     "path": "/constraints/source_impedance_ohm",
+     "value": 600
+    },
+    {
+     "because": "cutoff to 5 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 5000
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "source is 600 ohm",
+     "op": "add",
+     "path": "/constraints/source_impedance_ohm",
+     "value": 600
+    },
+    {
+     "because": "cutoff to 5 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 5000
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "make it 0603 parts",
+   "command_paraphrase": "Use 0603 packages",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {
+      "package": "0603"
+     },
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F08",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "0603",
+     "op": "add",
+     "path": "/preferences/package",
+     "value": "0603"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "0603 packages",
+     "op": "add",
+     "path": "/preferences/package",
+     "value": "0603"
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "VD",
+   "command": "change the output voltage to 1.8 V",
+   "command_paraphrase": "I need 1.8 V at the output now",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 1.8
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F09",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "output voltage to 1.8 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "1.8 V at the output",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "VD",
+   "command": "Take it from a 12 V supply and give me 2.5 V out",
+   "command_paraphrase": "Output 2.5 V, input from a 12 V supply",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 12
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 2.5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F10",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    },
+    {
+     "because": "2.5 V out",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 2.5
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    },
+    {
+     "because": "Output 2.5 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 2.5
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "VD",
+   "command": "Keep the divider current at 0.5 mA",
+   "command_paraphrase": "Let 0.5 mA flow through the divider",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 0 value 0.5 not in 'divider current at 0.5 mA'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "divider_current_ma": 0.5,
+      "supply_v": 5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 3.3
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F11",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "divider current at 0.5 mA",
+     "op": "add",
+     "path": "/constraints/divider_current_ma",
+     "value": 0.5
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "0.5 mA",
+     "op": "add",
+     "path": "/constraints/divider_current_ma",
+     "value": 0.5
+    }
+   ],
+   "seeding": "mA field: snapshot guard misreads 0.5 mA as 0.0005",
+   "stratum": "faithful"
+  },
+  {
+   "base": "VD",
+   "command": "Add a 10 kΩ load on the output",
+   "command_paraphrase": "The output drives a 10 kΩ load",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "load_ohm": 10000,
+      "supply_v": 5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 3.3
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F12",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "10 kΩ load",
+     "op": "add",
+     "path": "/constraints/load_ohm",
+     "value": 10000
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "10 kΩ load",
+     "op": "add",
+     "path": "/constraints/load_ohm",
+     "value": 10000
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "LED",
+   "command": "Set the LED current to 5 mA",
+   "command_paraphrase": "Run the LED at 5 mA",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 0 value 5 not in 'LED current to 5 mA'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D9"
+     },
+     "targets": {
+      "led_current_ma": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F13",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "LED current to 5 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 5
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "LED at 5 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 5
+    }
+   ],
+   "seeding": "mA field: snapshot guard misreads 5 mA as 0.005",
+   "stratum": "faithful"
+  },
+  {
+   "base": "LED",
+   "command": "Switch to the ESP32 DevKitC at 3.3 V",
+   "command_paraphrase": "Move it to an ESP32 DevKitC running at 3.3 V",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "esp32_devkitc",
+      "supply_v": 3.3
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D9"
+     },
+     "targets": {
+      "led_current_ma": 10
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F14",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    },
+    {
+     "because": "3.3 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    },
+    {
+     "because": "3.3 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "LED",
+   "command": "Move the LED to pin D6",
+   "command_paraphrase": "Drive the LED from pin D6 instead",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D6"
+     },
+     "targets": {
+      "led_current_ma": 10
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F15",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "LED",
+   "command": "Make the tolerance 5% and the current 12 mA",
+   "command_paraphrase": "Current 12 mA, tolerance 5%",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 1 value 12 not in 'current 12 mA'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D9"
+     },
+     "targets": {
+      "led_current_ma": 12,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": null,
+   "id": "P-F16",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "tolerance 5%",
+     "op": "add",
+     "path": "/targets/tolerance_pct",
+     "value": 5
+    },
+    {
+     "because": "current 12 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "tolerance 5%",
+     "op": "add",
+     "path": "/targets/tolerance_pct",
+     "value": 5
+    },
+    {
+     "because": "Current 12 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 12
+    }
+   ],
+   "seeding": "multi-op; mA field misread by the guard",
+   "stratum": "faithful"
+  },
+  {
+   "base": "DHT",
+   "command": "The cable is now 10 metres",
+   "command_paraphrase": "Make the cable 10 metres long",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 10,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F17",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "10 metres",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 10
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cable 10 metres",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 10
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "DHT",
+   "command": "Alert above 35 C instead",
+   "command_paraphrase": "Raise the alert threshold to 35 C",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 2,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 35
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F18",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "35 C",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 35
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "threshold to 35 C",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 35
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "DHT",
+   "command": "Use the ESP32 DevKitC and a 3.3 V supply",
+   "command_paraphrase": "Run it on an ESP32 DevKitC with a 3.3 V supply",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 2,
+      "mcu": "esp32_devkitc",
+      "supply_v": 3.3
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F19",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    },
+    {
+     "because": "3.3 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    },
+    {
+     "because": "3.3 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "DHT",
+   "command": "Put the data line on pin D7",
+   "command_paraphrase": "Use pin D7 for the DHT22 data line",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 2,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30,
+      "data_pin": "D7"
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F20",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "pin D7",
+     "op": "add",
+     "path": "/preferences/data_pin",
+     "value": "D7"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "pin D7",
+     "op": "add",
+     "path": "/preferences/data_pin",
+     "value": "D7"
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "DHT",
+   "command": "cable 8 m",
+   "command_paraphrase": "The sensor cable is 8 m now",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 0 value 8 not in 'cable 8 m'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 8,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F21",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "cable 8 m",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 8
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "8 m",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 8
+    }
+   ],
+   "seeding": "metre field: snapshot guard misreads 8 m as 0.008",
+   "stratum": "faithful"
+  },
+  {
+   "base": "MB",
+   "command": "Use 19200 baud",
+   "command_paraphrase": "Change the bus speed to 19200 baud",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 19200,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 1000
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F22",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 19200
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 19200
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "MB",
+   "command": "Poll every 500 ms and talk only to slave address 3",
+   "command_paraphrase": "Only slave address 3 on the bus, polled every 500 ms",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 9600,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 3
+       }
+      ],
+      "poll_interval_ms": 500
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F23",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "every 500 ms",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 500
+    },
+    {
+     "because": "slave address 3",
+     "op": "replace",
+     "path": "/preferences/modbus_slaves",
+     "value": [
+      {
+       "address": 3
+      }
+     ]
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "every 500 ms",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 500
+    },
+    {
+     "because": "slave address 3",
+     "op": "replace",
+     "path": "/preferences/modbus_slaves",
+     "value": [
+      {
+       "address": 3
+      }
+     ]
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "MB",
+   "command": "Switch to the Black Pill F411CE",
+   "command_paraphrase": "Use a Black Pill F411CE board",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 9600,
+      "mcu": "blackpill_f411ce",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 1000
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F24",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "Black Pill F411CE",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "blackpill_f411ce"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Black Pill F411CE",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "blackpill_f411ce"
+    }
+   ],
+   "seeding": "faithful patch written by the author",
+   "stratum": "faithful"
+  },
+  {
+   "base": "MB",
+   "command": "Supply it from 3.3 V on an ESP32 DevKitC",
+   "command_paraphrase": "Use an ESP32 DevKitC powered at 3.3 V",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 9600,
+      "mcu": "esp32_devkitc",
+      "supply_v": 3.3
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 1000
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F25",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true,
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "3.3 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    },
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "3.3 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    },
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    }
+   ],
+   "seeding": "multi-op",
+   "stratum": "faithful"
+  },
+  {
+   "base": "MB",
+   "command": "Drop the poll interval setting",
+   "command_paraphrase": "Remove the poll interval",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 9600,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ]
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": null,
+   "id": "P-F26",
+   "labels": {
+    "coverage": true,
+    "item_faulty": false,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "Drop the poll interval setting",
+     "op": "remove",
+     "path": "/preferences/poll_interval_ms"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Remove the poll interval",
+     "op": "remove",
+     "path": "/preferences/poll_interval_ms"
+    }
+   ],
+   "seeding": "removal",
+   "stratum": "faithful"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz and the supply 12 V",
+   "command_paraphrase": "I'd like a 12 V supply and a 2 kHz cutoff",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 2000
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 12,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "P-S01",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "supply 12 V",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 12
+    },
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2000
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 12
+    },
+    {
+     "because": "2 kHz cutoff",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2000
+    }
+   ],
+   "seeding": "tests/test_intent_patcher.py:302 example",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "Take it from a 12 V supply and give me 2.5 V out",
+   "command_paraphrase": "Output 2.5 V, input from a 12 V supply",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 2.5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 12
+     }
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "P-S02",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "2.5 V out",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2.5
+    },
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Output 2.5 V",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2.5
+    },
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 12
+    }
+   ],
+   "seeding": "swapped_values",
+   "stratum": "seeded"
+  },
+  {
+   "base": "DHT",
+   "command": "Cable 6 metres and alert above 28 C",
+   "command_paraphrase": "Alert at 28 C, and the cable is 6 metres",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 28,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 6
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "P-S03",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "alert above 28 C",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 28
+    },
+    {
+     "because": "Cable 6 metres",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 6
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Alert at 28 C",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 28
+    },
+    {
+     "because": "cable is 6 metres",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 6
+    }
+   ],
+   "seeding": "swapped_values",
+   "stratum": "seeded"
+  },
+  {
+   "base": "MB",
+   "command": "Use 19200 baud and poll every 500 ms",
+   "command_paraphrase": "Poll every 500 ms at 19200 baud",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 500,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 19200
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "P-S04",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "poll every 500 ms",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 500
+    },
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 19200
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Poll every 500 ms",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 500
+    },
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 19200
+    }
+   ],
+   "seeding": "swapped_values",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Set the source impedance to 600 ohm and the cutoff to 5 kHz",
+   "command_paraphrase": "The source is 600 ohm, and move the cutoff to 5 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "source_impedance_ohm": 5000,
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 600,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "swapped_values",
+   "id": "P-S05",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff to 5 kHz",
+     "op": "add",
+     "path": "/constraints/source_impedance_ohm",
+     "value": 5000
+    },
+    {
+     "because": "source impedance to 600 ohm",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 600
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff to 5 kHz",
+     "op": "add",
+     "path": "/constraints/source_impedance_ohm",
+     "value": 5000
+    },
+    {
+     "because": "source is 600 ohm",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 600
+    }
+   ],
+   "seeding": "swapped_values",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz",
+   "command_paraphrase": "Please set the cutoff to 2 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {},
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 2000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "unrelated_removal",
+   "id": "P-S06",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    },
+    {
+     "because": "Make",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff to 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    },
+    {
+     "because": "Please",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "seeding": "tests/test_intent_patcher.py:307 example (cites 'the' there)",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "change the output voltage to 1.8 V and keep the rest",
+   "command_paraphrase": "I need 1.8 V at the output; keep everything else",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {},
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 1.8
+     }
+    }
+   },
+   "fault_type": "unrelated_removal",
+   "id": "P-S07",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "output voltage to 1.8 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    },
+    {
+     "because": "keep",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "1.8 V at the output",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    },
+    {
+     "because": "keep",
+     "op": "remove",
+     "path": "/constraints/supply_v"
+    }
+   ],
+   "seeding": "removal cites 'keep'",
+   "stratum": "seeded"
+  },
+  {
+   "base": "LED",
+   "command": "Move the LED to pin D6 please",
+   "command_paraphrase": "Please drive the LED from pin D6 instead",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D6"
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "unrelated_removal",
+   "id": "P-S08",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    },
+    {
+     "because": "please",
+     "op": "remove",
+     "path": "/targets/led_current_ma"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    },
+    {
+     "because": "Please",
+     "op": "remove",
+     "path": "/targets/led_current_ma"
+    }
+   ],
+   "seeding": "unrelated_removal",
+   "stratum": "seeded"
+  },
+  {
+   "base": "MB",
+   "command": "Use 19200 baud from now on",
+   "command_paraphrase": "From now on the bus speed is 19200 baud",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 19200,
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 1000
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "unrelated_removal",
+   "id": "P-S09",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 19200
+    },
+    {
+     "because": "now",
+     "op": "remove",
+     "path": "/constraints/mcu"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "19200 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 19200
+    },
+    {
+     "because": "now",
+     "op": "remove",
+     "path": "/constraints/mcu"
+    }
+   ],
+   "seeding": "unrelated_removal",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz and the tolerance 1%",
+   "command_paraphrase": "Set the tolerance to 1% and the cutoff to 2 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 2000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "missing_op",
+   "id": "P-S10",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff to 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2000
+    }
+   ],
+   "seeding": "tolerance op missing",
+   "stratum": "seeded"
+  },
+  {
+   "base": "LED",
+   "command": "Switch to the ESP32 DevKitC at 3.3 V",
+   "command_paraphrase": "Move it to an ESP32 DevKitC running at 3.3 V",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "esp32_devkitc",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D9"
+     },
+     "targets": {
+      "led_current_ma": 10
+     }
+    }
+   },
+   "fault_type": "missing_op",
+   "id": "P-S11",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "ESP32 DevKitC",
+     "op": "replace",
+     "path": "/constraints/mcu",
+     "value": "esp32_devkitc"
+    }
+   ],
+   "seeding": "supply op missing",
+   "stratum": "seeded"
+  },
+  {
+   "base": "DHT",
+   "command": "Alert above 35 C and put the data line on pin D7",
+   "command_paraphrase": "Use pin D7 for the data line and alert above 35 C",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 2,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 35
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "missing_op",
+   "id": "P-S12",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "Alert above 35 C",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 35
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "alert above 35 C",
+     "op": "replace",
+     "path": "/preferences/alert_threshold_c",
+     "value": 35
+    }
+   ],
+   "seeding": "data_pin op missing",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "Take it from a 12 V supply and give me 2.5 V out",
+   "command_paraphrase": "Output 2.5 V, input from a 12 V supply",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 12
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 3.3
+     }
+    }
+   },
+   "fault_type": "missing_op",
+   "id": "P-S13",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true
+    ]
+   },
+   "operations": [
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "12 V supply",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "seeding": "vout op missing",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "Set the output to 1.8 V — the 3.3 V version was too high",
+   "command_paraphrase": "The 3.3 V version was too high, so set the output to 1.8 V",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 3.3
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 1.8
+     }
+    }
+   },
+   "fault_type": "extra_op",
+   "id": "P-S14",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "output to 1.8 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    },
+    {
+     "because": "3.3 V version",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "output to 1.8 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1.8
+    },
+    {
+     "because": "3.3 V version",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 3.3
+    }
+   ],
+   "seeding": "extra_op",
+   "stratum": "seeded"
+  },
+  {
+   "base": "LED",
+   "command": "Move the LED to pin D6; it sits next to the 12 V relay",
+   "command_paraphrase": "The LED sits next to the 12 V relay, so move it to pin D6",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 12
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D6"
+     },
+     "targets": {
+      "led_current_ma": 10
+     }
+    }
+   },
+   "fault_type": "extra_op",
+   "id": "P-S15",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    },
+    {
+     "because": "12 V relay",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "pin D6",
+     "op": "replace",
+     "path": "/preferences/gpio_pin",
+     "value": "D6"
+    },
+    {
+     "because": "12 V relay",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "seeding": "extra_op",
+   "stratum": "seeded"
+  },
+  {
+   "base": "MB",
+   "command": "Poll every 2000 ms; our old PLC used 38400 baud",
+   "command_paraphrase": "Our old PLC used 38400 baud; poll every 2000 ms",
+   "current_requirements": {
+    "constraints": {
+     "baud": 9600,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "modbus_rtu_master",
+    "preferences": {
+     "modbus_slaves": [
+      {
+       "address": 1
+      }
+     ],
+     "poll_interval_ms": 1000
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "baud": 38400,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "modbus_rtu_master",
+     "preferences": {
+      "modbus_slaves": [
+       {
+        "address": 1
+       }
+      ],
+      "poll_interval_ms": 2000
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "extra_op",
+   "id": "P-S16",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "every 2000 ms",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 2000
+    },
+    {
+     "because": "38400 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 38400
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "every 2000 ms",
+     "op": "replace",
+     "path": "/preferences/poll_interval_ms",
+     "value": 2000
+    },
+    {
+     "because": "38400 baud",
+     "op": "replace",
+     "path": "/constraints/baud",
+     "value": 38400
+    }
+   ],
+   "seeding": "extra_op",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 3 kHz, like the 12 V board we built last year",
+   "command_paraphrase": "Like the 12 V board we built last year, make the cutoff 3 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 12
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 3000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "extra_op",
+   "id": "P-S17",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 3 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 3000
+    },
+    {
+     "because": "12 V board",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff 3 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 3000
+    },
+    {
+     "because": "12 V board",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 12
+    }
+   ],
+   "seeding": "extra_op",
+   "stratum": "seeded"
+  },
+  {
+   "base": "DHT",
+   "command": "The cable is now 10 metres, running next to a 24 V line",
+   "command_paraphrase": "It runs next to a 24 V line and the cable is now 10 metres",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 10,
+      "mcu": "arduino_uno",
+      "supply_v": 24
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "extra_op",
+   "id": "P-S18",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     true,
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "10 metres",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 10
+    },
+    {
+     "because": "24 V line",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 24
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "10 metres",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 10
+    },
+    {
+     "because": "24 V line",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 24
+    }
+   ],
+   "seeding": "extra_op",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "Make the supply 12 V",
+   "command_paraphrase": "Change the input supply to 12 V",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 12
+     }
+    }
+   },
+   "fault_type": "wrong_path",
+   "id": "P-S19",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "supply 12 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 12
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "supply to 12 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 12
+    }
+   ],
+   "seeding": "wrong_path",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Change the source impedance to 600 ohm",
+   "command_paraphrase": "The source impedance is 600 ohm",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 600,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "wrong_path",
+   "id": "P-S20",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "source impedance to 600 ohm",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 600
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "source impedance is 600 ohm",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 600
+    }
+   ],
+   "seeding": "wrong_path",
+   "stratum": "seeded"
+  },
+  {
+   "base": "DHT",
+   "command": "Set the alert threshold to 35 C",
+   "command_paraphrase": "Alert at 35 C from now on",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 35,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "wrong_path",
+   "id": "P-S21",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "alert threshold to 35 C",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 35
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Alert at 35 C",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 35
+    }
+   ],
+   "seeding": "wrong_path",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Make the tolerance 2%",
+   "command_paraphrase": "Tolerance should be 2%",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 2
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 1000,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "wrong_path",
+   "id": "P-S22",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "tolerance 2%",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "Tolerance should be 2%",
+     "op": "replace",
+     "path": "/constraints/supply_v",
+     "value": 2
+    }
+   ],
+   "seeding": "wrong_path",
+   "stratum": "seeded"
+  },
+  {
+   "base": "RC",
+   "command": "Make the cutoff 2 kHz",
+   "command_paraphrase": "Please set the cutoff to 2 kHz",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "low_pass_filter",
+    "preferences": {},
+    "targets": {
+     "cutoff_hz": 1000,
+     "tolerance_pct": 5
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 0 value 2 not in 'cutoff 2 kHz'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "low_pass_filter",
+     "preferences": {},
+     "targets": {
+      "cutoff_hz": 2,
+      "tolerance_pct": 5
+     }
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "P-S23",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "cutoff 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "cutoff to 2 kHz",
+     "op": "replace",
+     "path": "/targets/cutoff_hz",
+     "value": 2
+    }
+   ],
+   "seeding": "kilo dropped; the guard refuses it (ungrounded)",
+   "stratum": "seeded"
+  },
+  {
+   "base": "VD",
+   "command": "Set the output to 1.5 V",
+   "command_paraphrase": "I want 1.5 V at the output",
+   "current_requirements": {
+    "constraints": {
+     "supply_v": 5
+    },
+    "function": "voltage_divider",
+    "preferences": {},
+    "targets": {
+     "vout_v": 3.3
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "op 0 value 1500 not in 'output to 1.5 V'",
+    "guard_failure": "ungrounded_value",
+    "guard_failure_paraphrase": "ungrounded_value",
+    "guard_passes": false,
+    "guard_passes_paraphrase": false,
+    "requirements_after": {
+     "constraints": {
+      "supply_v": 5
+     },
+     "function": "voltage_divider",
+     "preferences": {},
+     "targets": {
+      "vout_v": 1500
+     }
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "P-S24",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "output to 1.5 V",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1500
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "1.5 V at the output",
+     "op": "replace",
+     "path": "/targets/vout_v",
+     "value": 1500
+    }
+   ],
+   "seeding": "V as mV; the guard refuses it (ungrounded)",
+   "stratum": "seeded"
+  },
+  {
+   "base": "LED",
+   "command": "Set the LED current to 12 mA",
+   "command_paraphrase": "Run the LED at 12 mA",
+   "current_requirements": {
+    "constraints": {
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "led_indicator",
+    "preferences": {
+     "gpio_pin": "D9"
+    },
+    "targets": {
+     "led_current_ma": 10
+    }
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "led_indicator",
+     "preferences": {
+      "gpio_pin": "D9"
+     },
+     "targets": {
+      "led_current_ma": 0.012
+     }
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "P-S25",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "LED current to 12 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 0.012
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "LED at 12 mA",
+     "op": "replace",
+     "path": "/targets/led_current_ma",
+     "value": 0.012
+    }
+   ],
+   "seeding": "12 mA written as 0.012 in the mA field; the guard PASSES it (quantities() reads 12 mA as 0.012)",
+   "stratum": "seeded"
+  },
+  {
+   "base": "DHT",
+   "command": "cable 7 m",
+   "command_paraphrase": "The sensor cable is 7 m now",
+   "current_requirements": {
+    "constraints": {
+     "cable_length_m": 2,
+     "mcu": "arduino_uno",
+     "supply_v": 5
+    },
+    "function": "temperature_humidity_sensor",
+    "preferences": {
+     "alert_threshold_c": 30
+    },
+    "targets": {}
+   },
+   "deterministic": {
+    "apply_patch_ok": true,
+    "guard_detail": "",
+    "guard_failure": null,
+    "guard_failure_paraphrase": null,
+    "guard_passes": true,
+    "guard_passes_paraphrase": true,
+    "requirements_after": {
+     "constraints": {
+      "cable_length_m": 0.007,
+      "mcu": "arduino_uno",
+      "supply_v": 5
+     },
+     "function": "temperature_humidity_sensor",
+     "preferences": {
+      "alert_threshold_c": 30
+     },
+     "targets": {}
+    }
+   },
+   "fault_type": "unit_scale",
+   "id": "P-S26",
+   "labels": {
+    "coverage": false,
+    "item_faulty": true,
+    "ops": [
+     false
+    ]
+   },
+   "operations": [
+    {
+     "because": "cable 7 m",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 0.007
+    }
+   ],
+   "operations_paraphrase": [
+    {
+     "because": "7 m",
+     "op": "replace",
+     "path": "/constraints/cable_length_m",
+     "value": 0.007
+    }
+   ],
+   "seeding": "7 m written as 0.007; the guard PASSES it (quantities() reads 7 m as 7 milli)",
+   "stratum": "seeded"
+  }
+ ],
+ "label_definitions": {
+  "coverage_label": "True iff the operations together make every change the command asks for and nothing else.",
+  "function_expected": "The catalogue function the prompt asks for, or none_of_these when the request is outside the catalogue (high-pass, band-pass, converters, other sensors, Modbus slave, other buses, active filters, LED strips).",
+  "item_faulty": "True for every seeded item; False for faithful and faithful_implied items.",
+  "ops[k].label": "True iff the cited words of the command ask for exactly this operation (path and value, or removal of this path).",
+  "retry_added_leaf": "R3 emulation. Faithful items: the leaf a first attempt most plausibly omits (the function's first required field) - a stated value the X5 retry would add (R3 negative). Seeded unit_scale/hallucinated_value items: the faulty leaves - values a retry would add that the prompt does not state (R3 positives).",
+  "stated[<leaf>]": "True iff the prompt states, or leaves no other reading of, this exact value for this exact field (after unit conversion). False when the value is absent, differs in scale/unit, or belongs to another field.",
+  "unrepresented_lenient": "True iff anything the prompt asks for is not faithfully represented (dropped OR mis-valued OR wrong function/board). False for faithful items and for pure hallucinated additions.",
+  "unrepresented_strict": "True iff the prompt asks for something (a value, part, feature or role) that has NO entry at all in the recorded requirements (dropped fields; out-of-catalogue features). A field present with a wrong value is not counted."
+ },
+ "snapshot": "origin/phase2-stage0 @ e803a99"
+}

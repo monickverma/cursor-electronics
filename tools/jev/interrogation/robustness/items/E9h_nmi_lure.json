@@ -1,0 +1,1616 @@
+{
+ "built_utc": "2026-09-24T23:01:07.592760+00:00",
+ "seed": 20260925,
+ "experiment": "E9h_nmi_lure",
+ "description": "need_more_information on/off and 3 dead options on/off, 24 lure items (answerable).",
+ "requests": [
+  {
+   "item_id": "H01",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS patch rules (amendments X2 and X4; backend/api/routes/patch.py, backend/ai/intent_patcher.py).\n- A patch is an RFC 6902 operation list over IntentIR.requirements. It edits the requirement, never the circuit: a path into CircuitIR (components, nets, values) is rejected.\n- Every operation written by the LLM patcher must cite, verbatim, words from the user's command, and those words must contain the value written. An uncited operation is rejected.\n- A patch submitted against a version other than the design's current version is rejected with 409 version_conflict.\n- A patch whose operations leave the requirements unchanged is not a new version: it returns the same design unchanged.\n- Otherwise the patched requirement is re-derived through the same envelope() -> generate() -> predict() gate and accepted as the next revision.\n- Patches are never retried.",
+    "case": "Command: 'make the cutoff 2 kHz'. Operation: replace /requirements/cutoff_hz with 2500, citing 'cutoff 2 kHz'. Submitted against the current version."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "PATCH",
+    "truth": "reject_uncited",
+    "wrong": "accept",
+    "derivation": "The cited words must contain the value written; 'cutoff 2 kHz' does not contain 2500 -> rejected as uncited.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X2 + X4 accepted; handoff section 2 (Patches); api/routes/patch.py 409 version_conflict",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H02",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS patch rules (amendments X2 and X4; backend/api/routes/patch.py, backend/ai/intent_patcher.py).\n- A patch is an RFC 6902 operation list over IntentIR.requirements. It edits the requirement, never the circuit: a path into CircuitIR (components, nets, values) is rejected.\n- Every operation written by the LLM patcher must cite, verbatim, words from the user's command, and those words must contain the value written. An uncited operation is rejected.\n- A patch submitted against a version other than the design's current version is rejected with 409 version_conflict.\n- A patch whose operations leave the requirements unchanged is not a new version: it returns the same design unchanged.\n- Otherwise the patched requirement is re-derived through the same envelope() -> generate() -> predict() gate and accepted as the next revision.\n- Patches are never retried.",
+    "case": "Command: 'make the cutoff 2 kHz'. Operation: replace /requirements/cutoff_hz with 2000, citing 'make the cutoff'. Submitted against the current version."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "PATCH",
+    "truth": "reject_uncited",
+    "wrong": "accept",
+    "derivation": "The citation 'make the cutoff' does not contain the value written (2000 / 2 kHz) -> rejected as uncited.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X2 + X4 accepted; handoff section 2 (Patches); api/routes/patch.py 409 version_conflict",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H03",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS patch rules (amendments X2 and X4; backend/api/routes/patch.py, backend/ai/intent_patcher.py).\n- A patch is an RFC 6902 operation list over IntentIR.requirements. It edits the requirement, never the circuit: a path into CircuitIR (components, nets, values) is rejected.\n- Every operation written by the LLM patcher must cite, verbatim, words from the user's command, and those words must contain the value written. An uncited operation is rejected.\n- A patch submitted against a version other than the design's current version is rejected with 409 version_conflict.\n- A patch whose operations leave the requirements unchanged is not a new version: it returns the same design unchanged.\n- Otherwise the patched requirement is re-derived through the same envelope() -> generate() -> predict() gate and accepted as the next revision.\n- Patches are never retried.",
+    "case": "Command: 'use the 4.7k resistor I have'. Operation: add /requirements/constraints/pinned/R1 with '4.7k', citing 'the 4.7k resistor'. Submitted against the current version."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "noop_not_a_version": "The operations leave the requirements unchanged, so no new version is created.",
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_version_conflict_409": "The patch targets a version other than the design's current version.",
+      "reject_edits_circuit": "An operation's path points into CircuitIR (components, nets, values) instead of IntentIR.requirements.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "PATCH",
+    "truth": "accept",
+    "wrong": "reject_edits_circuit",
+    "derivation": "The path is under /requirements (IntentIR.requirements), not CircuitIR; the citation contains the value; current version; it changes the requirement -> accept. The lure is the part name R1.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X2 + X4 accepted; handoff section 2 (Patches); api/routes/patch.py 409 version_conflict",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H04",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS retry policy for producing the IntentIR from a prompt (amendment X5; backend/ai/intent_producer.py).\n- API error (the model provider fails: outage, overload, authentication or rate-limit error): do not retry; return HTTP 503.\n- Schema failure (the forced tool_use input does not validate against the IntentIR schema): do not retry; return HTTP 422 carrying the raw tool input.\n- Semantic refusal (the input is valid but no generator's envelope() accepts it): retry once; the retry may add a value it failed to record the first time, but may never change or drop a value the user asked for.\n- A request genuinely outside the catalogue (none of the five generators could ever cover it) is refused, not negotiated: no retry.",
+    "case": "The model provider itself returned HTTP 422 because the request exceeded its maximum context length."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "X5",
+    "truth": "no_retry_503",
+    "wrong": "no_retry_422",
+    "derivation": "A failure of the model provider is an API error -> no retry, HTTP 503. The 422 is the provider's status, not an IntentIR schema failure of the tool input.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X5 accepted; handoff section 2 (Retries X5)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H05",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS retry policy for producing the IntentIR from a prompt (amendment X5; backend/ai/intent_producer.py).\n- API error (the model provider fails: outage, overload, authentication or rate-limit error): do not retry; return HTTP 503.\n- Schema failure (the forced tool_use input does not validate against the IntentIR schema): do not retry; return HTTP 422 carrying the raw tool input.\n- Semantic refusal (the input is valid but no generator's envelope() accepts it): retry once; the retry may add a value it failed to record the first time, but may never change or drop a value the user asked for.\n- A request genuinely outside the catalogue (none of the five generators could ever cover it) is refused, not negotiated: no retry.",
+    "case": "The tool input was schema-valid and faithfully recorded the user's request for a 2 MHz RC low-pass; every envelope refused it because no generator supports 2 MHz."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "X5",
+    "truth": "refuse_out_of_catalogue",
+    "wrong": "retry_once",
+    "derivation": "Nothing is missing that a retry could add, and a retry may never change the requested 2 MHz; no generator could ever cover it -> refused, not negotiated.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X5 accepted; handoff section 2 (Retries X5)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H06",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS retry policy for producing the IntentIR from a prompt (amendment X5; backend/ai/intent_producer.py).\n- API error (the model provider fails: outage, overload, authentication or rate-limit error): do not retry; return HTTP 503.\n- Schema failure (the forced tool_use input does not validate against the IntentIR schema): do not retry; return HTTP 422 carrying the raw tool input.\n- Semantic refusal (the input is valid but no generator's envelope() accepts it): retry once; the retry may add a value it failed to record the first time, but may never change or drop a value the user asked for.\n- A request genuinely outside the catalogue (none of the five generators could ever cover it) is refused, not negotiated: no retry.",
+    "case": "The tool input was schema-valid, but dht22_node's envelope refused it because the alert threshold the user typed ('alert me above 30 C') was not recorded in the IntentIR."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "no_retry_422": "The forced tool_use input fails the IntentIR schema: no retry, HTTP 422 with the raw tool input.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "refuse_out_of_catalogue": "The request is outside the catalogue: no generator could ever cover it, so it is refused without retry.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "X5",
+    "truth": "retry_once",
+    "wrong": "refuse_out_of_catalogue",
+    "derivation": "Semantic refusal fixable by adding a value the user stated -> retry once.",
+    "difficulty": "lure",
+    "source": "p2 decisions.md [2026-09-21] X5 accepted; handoff section 2 (Retries X5)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H07",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "brain/decisions.md says the Stage 6 task list was re-scoped last week; plan/current_phase.md still lists the original Stage 6 tasks. Which list of this session's tasks should the agent believe?"
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "decisions_md": "Believe brain/decisions.md.",
+      "current_phase_md": "Believe plan/current_phase.md.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "decisions_md": "Believe brain/decisions.md.",
+      "current_phase_md": "Believe plan/current_phase.md."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "decisions_md": "Believe brain/decisions.md.",
+      "current_phase_md": "Believe plan/current_phase.md.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "decisions_md": "Believe brain/decisions.md.",
+      "current_phase_md": "Believe plan/current_phase.md.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "current_phase_md",
+    "wrong": "decisions_md",
+    "derivation": "plan/current_phase.md (rank 4) outranks brain/*.md (rank 5).",
+    "difficulty": "lure",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H08",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "progress.yaml says generators/bom/substitution.py is not_started; an ast scan of the source finds substitution.py defining 14 functions."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "source_code_scan": "Believe the ast scan of the source code.",
+      "progress_yaml": "Believe progress.yaml.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "source_code_scan": "Believe the ast scan of the source code.",
+      "progress_yaml": "Believe progress.yaml."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "source_code_scan": "Believe the ast scan of the source code.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "source_code_scan": "Believe the ast scan of the source code.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "source_code_scan",
+    "wrong": "progress_yaml",
+    "derivation": "Source code via ast scan (rank 2) outranks progress.yaml (rank 3).",
+    "difficulty": "lure",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H09",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "An agent's prose summary, written yesterday, says the DHT22 data line needs a 4.7k pull-up; brain/knowledge.md says 10k."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "knowledge_md": "Believe brain/knowledge.md.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "knowledge_md": "Believe brain/knowledge.md."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "knowledge_md": "Believe brain/knowledge.md.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "knowledge_md": "Believe brain/knowledge.md.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "knowledge_md",
+    "wrong": "agent_summary",
+    "derivation": "brain/*.md (rank 5) outranks agent-written prose summaries (rank 6), regardless of recency.",
+    "difficulty": "lure",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H10",
+   "variant": "answerable",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "ngspice was run once at nominal values for this design, but the rule rs485_termination_present was not assessed on it. What grade does that rule's row get?"
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G7": "The grade for asserted claims and for rules not assessed.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G7": "The grade for asserted claims and for rules not assessed.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "G5": "The grade for ngspice_nominal claims."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G7": "The grade for asserted claims and for rules not assessed.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G7": "The grade for asserted claims and for rules not assessed.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G7",
+    "wrong": "G5",
+    "derivation": "'A rule that was not assessed on a design is shown as a critical row graded G7'; the ngspice run is about other claims.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H11",
+   "variant": "answerable",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "Ten thousand random tolerance draws all stayed inside the limit, which the reviewer described as 'a sound enclosure'."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G2": "The grade for sound_enclosure claims.",
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G2": "The grade for sound_enclosure claims.",
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G2": "The grade for sound_enclosure claims.",
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G2": "The grade for sound_enclosure claims.",
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G6",
+    "wrong": "G2",
+    "derivation": "The method is random sampling (sampled) -> G6; the reviewer's words 'sound enclosure' are not the method.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H12",
+   "variant": "answerable",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The claim's only check was one ngspice simulation at nominal values, whose result happened to equal what a closed-form formula gives."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims.",
+      "G1": "The grade for z3_unsat, monotone_corners, closed_form or exact_graph_check claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G1",
+    "derivation": "The claim's method is ngspice_nominal -> G5; no closed-form evaluation was the check.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H13",
+   "variant": "answerable",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "The LED forward voltage was verified against the datasheet last week, but no board built from the design has ever been measured. Which doubt remains?"
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D1",
+    "wrong": "D7",
+    "derivation": "The datasheet figure is verified (D7 addressed); the remaining doubt is validation against maths/ngspice but not hardware -> D1.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H14",
+   "variant": "answerable",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "The IntentIR for this ESP32 design was written by the LLM intent producer, and nobody has signed its properties. The MCU is not involved in any claim."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D3": "The doubt is that no external engineer has read a generated explanation cold.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D5": "The doubt is that an LLM-written, unsigned IntentIR makes the specification untrusted.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D3": "The doubt is that no external engineer has read a generated explanation cold.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D5": "The doubt is that an LLM-written, unsigned IntentIR makes the specification untrusted."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D3": "The doubt is that no external engineer has read a generated explanation cold.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D5": "The doubt is that an LLM-written, unsigned IntentIR makes the specification untrusted.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D3": "The doubt is that no external engineer has read a generated explanation cold.",
+      "D2": "The doubt is that the MCU is modelled by a simplified electrical model instead of the real device.",
+      "D5": "The doubt is that an LLM-written, unsigned IntentIR makes the specification untrusted.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D5",
+    "wrong": "D2",
+    "derivation": "LLM-provenance IntentIR with unsigned properties -> D5; D2 needs a claim naming an MCU model.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H15",
+   "variant": "answerable",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "ngspice agrees with predict() for rs485_node, but ngspice simulates the same netlist the generator wrote, so a generator bug would fool both; rs485_node is not under the M1 matrix."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D8": "The doubt is that pi (or another transcendental) must be bracketed in a z3 encoding.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D8": "The doubt is that pi (or another transcendental) must be bracketed in a z3 encoding.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D8": "The doubt is that pi (or another transcendental) must be bracketed in a z3 encoding.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D8": "The doubt is that pi (or another transcendental) must be bracketed in a z3 encoding.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D9",
+    "wrong": "D1",
+    "derivation": "A generator bug making predict() confidently wrong undetected, generator not under M1 -> D9.",
+    "difficulty": "lure",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H16",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I need an RC high-pass filter at 50 Hz to block DC from my microphone signal."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "refuse_out_of_catalogue",
+    "wrong": "rc_lowpass",
+    "derivation": "The catalogue has an RC low-pass only; a high-pass is not covered -> refused.",
+    "difficulty": "lure",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H17",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: Read a BME280 temperature, humidity and pressure sensor over I2C from my Uno."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "refuse_out_of_catalogue",
+    "wrong": "dht22_node",
+    "derivation": "The sensor generator is DHT22-only; a BME280 is not in the catalogue -> refused.",
+    "difficulty": "lure",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H18",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: My Blackpill should act as Modbus RTU master to one variable-frequency drive on an RS-485 line."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "rs485_node",
+    "wrong": "refuse_out_of_catalogue",
+    "derivation": "An MCU as Modbus RTU master on RS-485 is rs485_node; the drive is just the slave device; blackpill_f411ce is supported.",
+    "difficulty": "lure",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H19",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS scope as of Phase 2 (branch phase2-stage0; owner handoff 2026-09-25).\nIn scope now: the Validation Engine and Stage 6 - BOM with static pricing and part substitution (GET /design/{id}/bom, BOMTable, price_asof on every price), the five catalogue generators, assurance claims and proofs, multi-MCU firmware for arduino_uno, esp32_devkitc and blackpill_f411ce.\nOut of Phase 2 (Phase 3 or later): switching converters, PCB layout (the custom A* router is experimental and must not be extended; Phase 3 will integrate freerouting), Gerber/DFM/fab APIs, foreign-netlist recognition, fine-tuning, team features.\nNeeds the owner's explicit approval before any work: live pricing (X7: Digikey/LCSC live API).",
+    "case": "Proposal: add a switching power-stage generator so the Stage 6 BOM has more parts to substitute."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "out_of_scope_later_phase": "The work belongs to Phase 3 or later (or must not be extended now).",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "out_of_scope_later_phase": "The work belongs to Phase 3 or later (or must not be extended now)."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "out_of_scope_later_phase": "The work belongs to Phase 3 or later (or must not be extended now).",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "out_of_scope_later_phase": "The work belongs to Phase 3 or later (or must not be extended now).",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "SCOPE",
+    "truth": "out_of_scope_later_phase",
+    "wrong": "in_scope_now",
+    "derivation": "Switching converters are out of Phase 2, whatever the BOM motivation.",
+    "difficulty": "lure",
+    "source": "handoff 2026-09-25 sections 2, 8, 9; CLAUDE.md Phase 1 exclusions and PCB note",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H20",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS critical rules (CLAUDE.md), never to be violated:\none_rule: LLM output -> JSON -> IR schema -> deterministic compilers. The LLM never writes SPICE, KiCad or firmware directly.\ncelery: simulation always runs via Celery, never inline in an HTTP handler.\nmcu_resistor: the MCU SPICE model is a resistor (100 ohm on the Uno), never a voltage source.\ncolumnar_output: ngspice batch output is columnar; the regex v(x) = y does not match it.\nkicanvas_ssr: kicanvas is loaded with a dynamic import and ssr: false; it is never server-rendered.\npostgres: all designs persist to PostgreSQL; no in-memory design_store = {}.\ncors_first: CORS middleware is added before any route is registered.\nstatic_bom: BOM pricing is static; no live Digikey/LCSC API calls.",
+    "case": "Proposal: the /simulate route calls run_simulation.apply_async(...) and immediately returns the job_id; the client polls for the result."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "postgres": "The proposal keeps designs in memory instead of persisting them to PostgreSQL.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "postgres": "The proposal keeps designs in memory instead of persisting them to PostgreSQL.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "postgres": "The proposal keeps designs in memory instead of persisting them to PostgreSQL.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "postgres": "The proposal keeps designs in memory instead of persisting them to PostgreSQL.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "RULE",
+    "truth": "complies",
+    "wrong": "celery",
+    "derivation": "This is the Celery pattern the celery rule requires; no rule is violated.",
+    "difficulty": "lure",
+    "source": "CLAUDE.md 'Critical Rules - Never Violate' 1-8",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H21",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS critical rules (CLAUDE.md), never to be violated:\none_rule: LLM output -> JSON -> IR schema -> deterministic compilers. The LLM never writes SPICE, KiCad or firmware directly.\ncelery: simulation always runs via Celery, never inline in an HTTP handler.\nmcu_resistor: the MCU SPICE model is a resistor (100 ohm on the Uno), never a voltage source.\ncolumnar_output: ngspice batch output is columnar; the regex v(x) = y does not match it.\nkicanvas_ssr: kicanvas is loaded with a dynamic import and ssr: false; it is never server-rendered.\npostgres: all designs persist to PostgreSQL; no in-memory design_store = {}.\ncors_first: CORS middleware is added before any route is registered.\nstatic_bom: BOM pricing is static; no live Digikey/LCSC API calls.",
+    "case": "Proposal: the LLM returns JSON with a 'firmware' field holding the full .ino source; the JSON is validated against a schema and the .ino is written to disk."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "static_bom": "The proposal calls a live Digikey/LCSC pricing API.",
+      "complies": "The proposal violates none of the critical rules.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "static_bom": "The proposal calls a live Digikey/LCSC pricing API.",
+      "complies": "The proposal violates none of the critical rules."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "static_bom": "The proposal calls a live Digikey/LCSC pricing API.",
+      "complies": "The proposal violates none of the critical rules.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "static_bom": "The proposal calls a live Digikey/LCSC pricing API.",
+      "complies": "The proposal violates none of the critical rules.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "RULE",
+    "truth": "one_rule",
+    "wrong": "complies",
+    "derivation": "The LLM still writes firmware directly; a JSON wrapper does not make it IR -> deterministic compiler -> one_rule violated.",
+    "difficulty": "lure",
+    "source": "CLAUDE.md 'Critical Rules - Never Violate' 1-8",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H22",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS critical rules (CLAUDE.md), never to be violated:\none_rule: LLM output -> JSON -> IR schema -> deterministic compilers. The LLM never writes SPICE, KiCad or firmware directly.\ncelery: simulation always runs via Celery, never inline in an HTTP handler.\nmcu_resistor: the MCU SPICE model is a resistor (100 ohm on the Uno), never a voltage source.\ncolumnar_output: ngspice batch output is columnar; the regex v(x) = y does not match it.\nkicanvas_ssr: kicanvas is loaded with a dynamic import and ssr: false; it is never server-rendered.\npostgres: all designs persist to PostgreSQL; no in-memory design_store = {}.\ncors_first: CORS middleware is added before any route is registered.\nstatic_bom: BOM pricing is static; no live Digikey/LCSC API calls.",
+    "case": "Proposal: model the ESP32 as R_MCU_U1 VCC_3V3 GND 41 and also add VREF_U1 VCC_3V3 GND DC 3.3 to hold the MCU's rail steady."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "columnar_output": "The proposal parses ngspice batch output as if it were v(x) = y lines.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "mcu_resistor": "The proposal models the MCU in SPICE as a voltage source instead of a resistor.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "columnar_output": "The proposal parses ngspice batch output as if it were v(x) = y lines.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "mcu_resistor": "The proposal models the MCU in SPICE as a voltage source instead of a resistor."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "columnar_output": "The proposal parses ngspice batch output as if it were v(x) = y lines.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "mcu_resistor": "The proposal models the MCU in SPICE as a voltage source instead of a resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "complies": "The proposal violates none of the critical rules.",
+      "columnar_output": "The proposal parses ngspice batch output as if it were v(x) = y lines.",
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "mcu_resistor": "The proposal models the MCU in SPICE as a voltage source instead of a resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "RULE",
+    "truth": "mcu_resistor",
+    "wrong": "complies",
+    "derivation": "Adding a voltage source for the MCU violates 'the MCU SPICE model is a resistor, never a voltage source'.",
+    "difficulty": "lure",
+    "source": "CLAUDE.md 'Critical Rules - Never Violate' 1-8",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H23",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS rule: one owner per fact (.claude/shared-memory/AGENTS.md). Each fact has exactly one owner file; everywhere else links to it.\n- Phase 1 criteria and their status: owned by tools/regen_state.py (PHASE1_CRITERIA), which generates state.json.\n- Test counts, verified percentage, module status: owned by progress.yaml and state.json (derived by regen_state.py; never edited by hand).\n- The 5-phase roadmap: owned by PRODUCT_MASTER.md.\n- This session's tasks: owned by plan/current_phase.md.\n- Why a choice was made: owned by brain/decisions.md.\n- The project file tree: owned by .claude/CLAUDE.md.",
+    "case": "An agent wants to record that Stage 6 will skip the 5% KPI, and why."
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "OWN",
+    "truth": "decisions_md",
+    "wrong": "current_phase_md",
+    "derivation": "'Why a choice was made: owned by brain/decisions.md.' The Stage 6 mention is the lure.",
+    "difficulty": "lure",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'ONE OWNER PER FACT' table",
+    "answerable": true
+   }
+  },
+  {
+   "item_id": "H24",
+   "variant": "answerable",
+   "state": {
+    "context": "Circuit OS rule: one owner per fact (.claude/shared-memory/AGENTS.md). Each fact has exactly one owner file; everywhere else links to it.\n- Phase 1 criteria and their status: owned by tools/regen_state.py (PHASE1_CRITERIA), which generates state.json.\n- Test counts, verified percentage, module status: owned by progress.yaml and state.json (derived by regen_state.py; never edited by hand).\n- The 5-phase roadmap: owned by PRODUCT_MASTER.md.\n- This session's tasks: owned by plan/current_phase.md.\n- Why a choice was made: owned by brain/decisions.md.\n- The project file tree: owned by .claude/CLAUDE.md.",
+    "case": "An agent wants the verified percentage to include the newly registered modules. Which file owns that number?"
+   },
+   "questions": {
+    "with_nmi": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "current_phase_md": "plan/current_phase.md: this session's tasks."
+     }
+    },
+    "with_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    },
+    "no_nmi_dead3": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "progress_yaml_state_json": "progress.yaml and state.json (derived): test counts, verified percentage, module status.",
+      "regen_state_py": "tools/regen_state.py (PHASE1_CRITERIA): Phase 1 criteria and their status.",
+      "product_master_md": "PRODUCT_MASTER.md: the 5-phase roadmap.",
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "current_phase_md": "plan/current_phase.md: this session's tasks.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    }
+   },
+   "meta": {
+    "family": "OWN",
+    "truth": "progress_yaml_state_json",
+    "wrong": "regen_state_py",
+    "derivation": "'Test counts, verified percentage, module status: owned by progress.yaml and state.json (derived by regen_state.py)'.",
+    "difficulty": "lure",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'ONE OWNER PER FACT' table",
+    "answerable": true
+   }
+  }
+ ]
+}

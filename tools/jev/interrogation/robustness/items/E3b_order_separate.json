@@ -1,0 +1,1826 @@
+{
+ "built_utc": "2026-09-24T22:56:43.997897+00:00",
+ "seed": 20260925,
+ "experiment": "E3b_order_separate",
+ "description": "Validation of the within-request design: the 6 orders of 6 items sent as 36 separate single-question requests.",
+ "requests": [
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p0",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "progress_yaml": "Believe progress.yaml.",
+      "pytest_run": "Believe the pytest run.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 0,
+    "perm": [
+     "progress_yaml",
+     "pytest_run",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p1",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "progress_yaml": "Believe progress.yaml.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "pytest_run": "Believe the pytest run."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 1,
+    "perm": [
+     "progress_yaml",
+     "need_more_information",
+     "pytest_run"
+    ]
+   }
+  },
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p2",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "pytest_run": "Believe the pytest run.",
+      "progress_yaml": "Believe progress.yaml.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 2,
+    "perm": [
+     "pytest_run",
+     "progress_yaml",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p3",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "pytest_run": "Believe the pytest run.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "progress_yaml": "Believe progress.yaml."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 3,
+    "perm": [
+     "pytest_run",
+     "need_more_information",
+     "progress_yaml"
+    ]
+   }
+  },
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p4",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "progress_yaml": "Believe progress.yaml.",
+      "pytest_run": "Believe the pytest run."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 4,
+    "perm": [
+     "need_more_information",
+     "progress_yaml",
+     "pytest_run"
+    ]
+   }
+  },
+  {
+   "item_id": "TRUST02",
+   "variant": "separate_q_p5",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "A pytest run fails for test_parse, while progress.yaml still marks the function verified_done."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "pytest_run": "Believe the pytest run.",
+      "progress_yaml": "Believe progress.yaml."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "pytest_run",
+    "wrong": "progress_yaml",
+    "derivation": "Test results (rank 1) outrank progress.yaml (rank 3).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "k": 3,
+    "perm_index": 5,
+    "perm": [
+     "need_more_information",
+     "pytest_run",
+     "progress_yaml"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p0",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 0,
+    "perm": [
+     "D7",
+     "D1",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p1",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 1,
+    "perm": [
+     "D7",
+     "need_more_information",
+     "D1"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p2",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 2,
+    "perm": [
+     "D1",
+     "D7",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p3",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 3,
+    "perm": [
+     "D1",
+     "need_more_information",
+     "D7"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p4",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 4,
+    "perm": [
+     "need_more_information",
+     "D7",
+     "D1"
+    ]
+   }
+  },
+  {
+   "item_id": "DEF01",
+   "variant": "separate_q_p5",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "k": 3,
+    "perm_index": 5,
+    "perm": [
+     "need_more_information",
+     "D1",
+     "D7"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p0",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 0,
+    "perm": [
+     "G6",
+     "G5",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p1",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "G5": "The grade for ngspice_nominal claims."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 1,
+    "perm": [
+     "G6",
+     "need_more_information",
+     "G5"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p2",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 2,
+    "perm": [
+     "G5",
+     "G6",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p3",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G5": "The grade for ngspice_nominal claims.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "G6": "The grade for sampled claims."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 3,
+    "perm": [
+     "G5",
+     "need_more_information",
+     "G6"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p4",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 4,
+    "perm": [
+     "need_more_information",
+     "G6",
+     "G5"
+    ]
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "separate_q_p5",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "G6": "The grade for sampled claims."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "k": 3,
+    "perm_index": 5,
+    "perm": [
+     "need_more_information",
+     "G5",
+     "G6"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p0",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 0,
+    "perm": [
+     "rs485_node",
+     "voltage_divider",
+     "refuse_out_of_catalogue",
+     "led_indicator",
+     "dht22_node",
+     "rc_lowpass",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p1",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 1,
+    "perm": [
+     "need_more_information",
+     "rc_lowpass",
+     "dht22_node",
+     "led_indicator",
+     "refuse_out_of_catalogue",
+     "voltage_divider",
+     "rs485_node"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p2",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 2,
+    "perm": [
+     "rc_lowpass",
+     "need_more_information",
+     "refuse_out_of_catalogue",
+     "dht22_node",
+     "led_indicator",
+     "voltage_divider",
+     "rs485_node"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p3",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 3,
+    "perm": [
+     "voltage_divider",
+     "dht22_node",
+     "refuse_out_of_catalogue",
+     "led_indicator",
+     "need_more_information",
+     "rc_lowpass",
+     "rs485_node"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p4",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 4,
+    "perm": [
+     "voltage_divider",
+     "need_more_information",
+     "led_indicator",
+     "rs485_node",
+     "rc_lowpass",
+     "refuse_out_of_catalogue",
+     "dht22_node"
+    ]
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "separate_q_p5",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "dht22_node": "An MCU reading a DHT22 temperature and humidity sensor with an alert threshold.",
+      "rc_lowpass": "A passive RC low-pass filter for a requested cutoff frequency.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "rs485_node": "An MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "k": 7,
+    "perm_index": 5,
+    "perm": [
+     "dht22_node",
+     "rc_lowpass",
+     "voltage_divider",
+     "need_more_information",
+     "refuse_out_of_catalogue",
+     "led_indicator",
+     "rs485_node"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p0",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 0,
+    "perm": [
+     "add_as_default_now",
+     "add_as_opt_in_constraint",
+     "defer_with_trigger",
+     "do_not_add",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p1",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer.",
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 1,
+    "perm": [
+     "need_more_information",
+     "do_not_add",
+     "defer_with_trigger",
+     "add_as_opt_in_constraint",
+     "add_as_default_now"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p2",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 2,
+    "perm": [
+     "defer_with_trigger",
+     "add_as_default_now",
+     "do_not_add",
+     "add_as_opt_in_constraint",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p3",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer.",
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 3,
+    "perm": [
+     "do_not_add",
+     "need_more_information",
+     "defer_with_trigger",
+     "add_as_default_now",
+     "add_as_opt_in_constraint"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p4",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 4,
+    "perm": [
+     "need_more_information",
+     "add_as_opt_in_constraint",
+     "defer_with_trigger",
+     "do_not_add",
+     "add_as_default_now"
+    ]
+   }
+  },
+  {
+   "item_id": "RJ01",
+   "variant": "separate_q_p5",
+   "state": {
+    "project": "Circuit OS: AI hardware compiler (plain English -> validated circuit, SPICE, KiCad, compiled firmware, BOM, graded claims). Phase 2 (Validation Engine) Stage 6 in progress; Phase 3 (Industrial Layer, PCB via freerouting + constraint layer) next.",
+    "project_invariants": [
+     "The LLM writes only IntentIR (the requirement); deterministic generators write CircuitIR, SPICE, KiCad and firmware.",
+     "AI calls use forced tool_use; X5 retry rules; patches edit requirements only (RFC 6902 over IntentIR, X2/X4).",
+     "ngspice runs via Celery only; the MCU is modelled in SPICE as a resistor.",
+     "An accepted design never carries a failing claim; a claim's grade derives from its method only (G0..G7).",
+     "A generator VERSION change makes signed designs return 409 generator_changed until re-patched.",
+     "Pricing is static with price_asof; pricing never gates validation; live pricing (X7) needs the owner's explicit approval.",
+     "Jev's answer never overrides these rules or any project gate."
+    ],
+    "team": "One engineer (the owner). No oscilloscope or signal generator; bench work only when the owner chooses. OpenRouter LLM credits exhausted as of 2026-09-23.",
+    "decision": {
+     "question": "Should the rs485_node generator add a 10 kOhm pull-down from the transceiver DE/RE net to GND?",
+     "history": "Raised during Phase 2 as a product call the owner kept. It keeps a rebooting node's driver off the bus (MCU pins float during reset) and could let the fail-safe claim stop citing D2 (MCU is a simplified model).",
+     "facts": [
+      {
+       "fact": "Topology U1 pin D2 drives the MAX485/MAX3485 DE and /RE pins together; PIN_DE_RE = 'D2'.",
+       "source": "backend/generators/rs485_node.py:1-35,107"
+      },
+      {
+       "fact": "Claims on the design: rs485.failsafe_bias (monotone corners), driver_load, termination_dissipation, rail_current; D2 is cited per claim where the real MCU can reach it.",
+       "source": "backend/generators/rs485_node.py:330-350; commit 94b61c1"
+      },
+      {
+       "fact": "D2 register text: nothing in Phase 2 is scheduled to close it.",
+       "source": "backend/validation/defeaters.py:58-67"
+      },
+      {
+       "fact": "Added idle current when DE/RE is driven high: 5 V / 10 kOhm = 0.5 mA on Uno; 3.3 V / 10 kOhm = 0.33 mA on 3.3 V boards.",
+       "source": "arithmetic"
+      },
+      {
+       "fact": "Changing the default output means rs485_node 0.2.0 -> version bump -> every signed RS-485 design returns 409 until re-patched.",
+       "source": "generators/realize.py stamping rule; handoff §2"
+      },
+      {
+       "fact": "M1 seeded-fault margin on this generator is thin: a 5% component fault moves V_AB by 2.3% against a 2% gate.",
+       "source": "backend/validation/grid_adapters.py:187-196"
+      },
+      {
+       "fact": "DE/RE default pin per board: Uno D2, ESP32-DevKitC GPIO4, Black Pill F411 PB0. None is a strapping pin (ESP32 straps are GPIO0, 2, 5, 12, 15; F411 strap is PB2/BOOT1) and none is reserved.",
+       "source": "backend/data/mcu_targets.py:91,98-104,130-131,170,178"
+      },
+      {
+       "fact": "Stated assumption, not datasheet-verified: during MCU reset the GPIO driving DE/RE is a high-impedance input, and the MAX485/MAX3485 DE and /RE inputs are not specified to default to a safe state, so the driver may be enabled while the MCU reboots. The catalogue records only 'DE and RE tied, driven by one MCU GPIO; HIGH = transmit'. D7 (datasheet figures unverified) applies.",
+       "source": "backend/data/component_constraints.py:50-79; agent reading"
+      }
+     ],
+     "options": [
+      {
+       "id": "add_as_default_now",
+       "what_changes": "Every new RS-485 design gets R4 10k DE/RE->GND; generator version bump.",
+       "benefits": "Reboot contention removed by default; possible D2 drop on fail-safe claim.",
+       "costs": "Signed RS-485 designs invalidated (409); one more part; 0.33-0.5 mA idle.",
+       "reversibility": {
+        "how_to_undo": "Remove R4 and bump again; signatures already invalidated stay invalidated.",
+        "signatures_invalidated": true
+       }
+      },
+      {
+       "id": "add_as_opt_in_constraint",
+       "what_changes": "constraints.de_re_pulldown (default false) adds R4 when set.",
+       "benefits": "Users on multi-drop buses get it; existing designs byte-identical.",
+       "costs": "Another constraint to test and document.",
+       "reversibility": {
+        "how_to_undo": "Remove the constraint; no signed design changed.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "defer_with_trigger",
+       "what_changes": "Nothing now; record trigger: first multi-drop bus or first flashed RS-485 board.",
+       "benefits": "Zero cost now.",
+       "costs": "Risk stays for anyone who flashes a node on a shared bus.",
+       "reversibility": {
+        "how_to_undo": "Nothing to undo.",
+        "signatures_invalidated": false
+       }
+      },
+      {
+       "id": "do_not_add",
+       "what_changes": "Close the question.",
+       "benefits": "No change.",
+       "costs": "Loses the option if the risk is real.",
+       "reversibility": {
+        "how_to_undo": "Reopen later.",
+        "signatures_invalidated": false
+       }
+      }
+     ],
+     "excluded_by_rule": []
+    },
+    "unknowns": [
+     "How many users will put a node on a shared multi-drop bus in Phase 2/3."
+    ]
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+     "criteria": {
+      "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer.",
+      "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+      "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+      "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+      "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 5,
+    "request_file": "rs485_de_re_pulldown.json",
+    "question": "pulldown_option",
+    "perm_index": 5,
+    "perm": [
+     "need_more_information",
+     "add_as_opt_in_constraint",
+     "do_not_add",
+     "add_as_default_now",
+     "defer_with_trigger"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p0",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first.",
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 0,
+    "perm": [
+     "rc_lowpass_first",
+     "led_indicator_first",
+     "voltage_divider_first",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p1",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first.",
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 1,
+    "perm": [
+     "need_more_information",
+     "voltage_divider_first",
+     "led_indicator_first",
+     "rc_lowpass_first"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p2",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first.",
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first.",
+      "need_more_information": "The state does not contain enough information to choose any other option."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 2,
+    "perm": [
+     "voltage_divider_first",
+     "led_indicator_first",
+     "rc_lowpass_first",
+     "need_more_information"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p3",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 3,
+    "perm": [
+     "rc_lowpass_first",
+     "need_more_information",
+     "led_indicator_first",
+     "voltage_divider_first"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p4",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first.",
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 4,
+    "perm": [
+     "need_more_information",
+     "rc_lowpass_first",
+     "led_indicator_first",
+     "voltage_divider_first"
+    ]
+   }
+  },
+  {
+   "item_id": "J01",
+   "variant": "separate_q_p5",
+   "state": {
+    "context": "D1 bench session planning (docs/BENCH_D1.md; owner handoff 2026-09-25). The owner has no oscilloscope and no function generator; a multimeter and a bench supply are available. One generator's claims will be checked on the bench first.\nrc_lowpass 0.2.3: its key claim is the AC cutoff frequency; measuring it needs a function generator and an oscilloscope.\nled_indicator 0.2.0: its key claims are LED current and exact dissipation (Task 4.5); both are DC and measurable with a multimeter. The bench sheet still names version 0.1.1.\nvoltage_divider 0.1.0: its key claim is the DC output voltage; measurable with a multimeter; the simplest generator, with the fewest parts.\nThe evidence-record code that stores a bench result against a claim has been decided but not built.",
+    "case": "Decision: which generator should the first D1 bench session check?"
+   },
+   "questions": {
+    "q": {
+     "type": "choice",
+     "instructions": "Which option should be chosen for the decision in the case?",
+     "criteria": {
+      "led_indicator_first": "Bench-check the led_indicator generator's claims first.",
+      "need_more_information": "The state does not contain enough information to choose any other option.",
+      "voltage_divider_first": "Bench-check the voltage_divider generator's claims first.",
+      "rc_lowpass_first": "Bench-check the rc_lowpass generator's claims first."
+     }
+    }
+   },
+   "meta": {
+    "truth": null,
+    "k": 4,
+    "perm_index": 5,
+    "perm": [
+     "led_indicator_first",
+     "need_more_information",
+     "voltage_divider_first",
+     "rc_lowpass_first"
+    ]
+   }
+  }
+ ]
+}

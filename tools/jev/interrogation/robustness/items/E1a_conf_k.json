@@ -1,0 +1,2756 @@
+{
+ "built_utc": "2026-09-24T22:56:43.964296+00:00",
+ "seed": 20260925,
+ "experiment": "E1a_conf_k",
+ "description": "Choice confidence vs k: 2 live options (truth, pre-registered wrong) + 0..6 clearly inapplicable options; one request per item.",
+ "requests": [
+  {
+   "item_id": "DEF01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "A reviewer notes that the LED forward voltage used in the dissipation claim was typed in from memory and never checked against the manufacturer's datasheet."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D7": "The doubt is that datasheet parameters (ratings, forward voltages, pin tables) are unverified.",
+      "D1": "The doubt is that circuit behaviour was checked only against maths or ngspice, not against hardware.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D7",
+    "wrong": "D1",
+    "derivation": "D7 covers 'claims that read ratings, forward voltages or pin tables' whose datasheet parameters are unverified; an unverified forward voltage is exactly that.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "D7",
+       "D1"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "D7",
+       "D1",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "D7",
+       "D1"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "DEF07",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Defeater register of Circuit OS (backend/validation/defeaters.py). A defeater is a recorded doubt about a claim; a claim that cites an open defeater is reported as defeasible.\nD1. Doubt: predict() is validated against mathematics and ngspice, not hardware. Applies to: every closed-form or simulated claim about circuit behaviour. Eliminated by: a bench measurement agreeing within tolerance.\nD2. Doubt: the MCU is represented by simplified electrical models (a resistive supply load sized from its run current, and a Thevenin GPIO pin), not the device. Applies to: claims whose scope.model names an MCU model. Eliminated by: reachset conformance against the real device.\nD3. Doubt: no external engineer has read a generated explanation cold. Applies to: the explanation layer. Eliminated by: criterion 12's review.\nD4. Doubt: coverage growth cost may outrun one engineer. Applies to: the generator library as a whole. Eliminated by: measured authoring cost per generator.\nD5. Doubt: an LLM may write the IntentIR, so the specification is untrusted. Applies to: designs whose IntentIR provenance is llm and whose properties nobody has signed. Eliminated by: a person signing the back-translated properties.\nD6. Doubt: block proofs may not compose into board claims. Applies to: any design built from more than one generator. Eliminated by: interface contracts, first tested when two generators share a rail.\nD7. Doubt: datasheet parameters feeding predict() and the rule tables are unverified. Applies to: claims that read ratings, forward voltages or pin tables. Eliminated by: provenance per parameter.\nD8. Doubt: pi is irrational, so a z3 encoding of a cutoff frequency must bracket it. Applies to: z3-proved claims involving pi or another transcendental. Eliminated by: rational bracketing in the proof compiler.\nD9. Doubt: a generator bug makes predict() confidently wrong and nothing catches it. Applies to: every generator not yet under the M1 mutation matrix. Eliminated by: the M1 matrix detecting seeded faults in that generator's output.",
+    "case": "Adding the fifth generator took the owner three weeks of evenings; at that rate, extending coverage may cost more than one engineer can give."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which defeater in the register records the doubt described in the case?",
+     "criteria": {
+      "D4": "The doubt is that the cost of growing generator coverage may outrun one engineer.",
+      "D9": "The doubt is that a generator bug could make predict() confidently wrong without detection.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "DEF",
+    "truth": "D4",
+    "wrong": "D9",
+    "derivation": "D4: 'coverage growth cost may outrun one engineer'; applies to the generator library as a whole.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/defeaters.py REGISTER (D1-D9)",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "D4",
+       "D9"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "D4",
+       "D9",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "D4",
+       "D9"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "GRD01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "The cutoff claim was checked by running ngspice once with every component at its nominal value."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G6": "The grade for sampled claims.",
+      "G5": "The grade for ngspice_nominal claims.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G5",
+    "wrong": "G6",
+    "derivation": "ngspice_nominal (one ngspice simulation at nominal values) -> G5.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "G6",
+       "G5"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "G6",
+       "G5",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "G6",
+       "G5"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "GRD06",
+   "variant": "k2..k8",
+   "state": {
+    "context": "How Circuit OS grades a claim (backend/validation/claims.py). A claim's grade is derived from its checking method through one table; it is never typed per claim.\nproof_checked (the proof was checked by a proof checker) -> G0\nz3_unsat (z3 finds no counterexample over the declared box) -> G1\nmonotone_corners (exact when monotone in every argument; the corners are evaluated) -> G1\nclosed_form (an exact formula at the declared nominal scope) -> G1\nexact_graph_check (exhaustive over the design as written) -> G1\nsound_enclosure (interval arithmetic enclosing every possible value) -> G2\ncertificate -> G3\nbounded_model_check (all states explored up to a bound) -> G4\nngspice_nominal (one ngspice simulation at nominal values) -> G5\nsampled (random samples of the parameter space) -> G6\nasserted (stated; no check was run) -> G7\nA rule that was not assessed on a design is shown as a critical row graded G7.",
+    "case": "An independent proof checker replayed the proof and accepted it."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "What grade does the claim in the case receive?",
+     "criteria": {
+      "G3": "The grade for certificate claims.",
+      "G0": "The grade for claims whose proof was checked by a proof checker.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "GRD",
+    "truth": "G0",
+    "wrong": "G3",
+    "derivation": "proof_checked (the proof was checked by a proof checker) -> G0.",
+    "difficulty": "normal",
+    "source": "p2/backend/validation/claims.py METHOD_GRADE and Claim validator (not assessed -> G7)",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "G3",
+       "G0"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "G3",
+       "G0",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "G3",
+       "G0"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "X501",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS retry policy for producing the IntentIR from a prompt (amendment X5; backend/ai/intent_producer.py).\n- API error (the model provider fails: outage, overload, authentication or rate-limit error): do not retry; return HTTP 503.\n- Schema failure (the forced tool_use input does not validate against the IntentIR schema): do not retry; return HTTP 422 carrying the raw tool input.\n- Semantic refusal (the input is valid but no generator's envelope() accepts it): retry once; the retry may add a value it failed to record the first time, but may never change or drop a value the user asked for.\n- A request genuinely outside the catalogue (none of the five generators could ever cover it) is refused, not negotiated: no retry.",
+    "case": "While producing the IntentIR, the model provider returned HTTP 529 (overloaded)."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "How should Circuit OS handle the failure in the case?",
+     "criteria": {
+      "no_retry_503": "The failure is an API error from the model provider (outage, overload, authentication or rate limit): no retry, HTTP 503.",
+      "retry_once": "The input is schema-valid, a generator envelope refused it, and one retry could add a missing value without changing what the user asked.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "X5",
+    "truth": "no_retry_503",
+    "wrong": "retry_once",
+    "derivation": "An overload from the model provider is an API error -> no retry, HTTP 503.",
+    "difficulty": "normal",
+    "source": "p2 decisions.md [2026-09-21] X5 accepted; handoff section 2 (Retries X5)",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "no_retry_503",
+       "retry_once",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "no_retry_503",
+       "retry_once"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "ROUTE01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: I want to blink a red LED from pin 9 of my Arduino Uno, with a resistor so it doesn't burn out."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "led_indicator": "An LED driven from an MCU GPIO pin through a current-limiting resistor.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "led_indicator",
+    "wrong": "voltage_divider",
+    "derivation": "An LED on an MCU GPIO pin with a current-limiting resistor is led_indicator (TPL_003).",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "voltage_divider",
+       "led_indicator",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "voltage_divider",
+       "led_indicator"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "ROUTE06",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS generator catalogue (the entire catalogue; free-form circuits are out of scope). Boards: arduino_uno, esp32_devkitc, blackpill_f411ce.\n- rc_lowpass (TPL_004): a passive RC low-pass filter; the user gives a cutoff frequency.\n- voltage_divider (TPL_005): a two-resistor divider from a supply voltage to a lower target voltage.\n- led_indicator (TPL_003): an MCU GPIO pin driving an LED through a current-limiting resistor.\n- dht22_node (TPL_001): an MCU reading a DHT22 temperature and humidity sensor, with an alert threshold.\n- rs485_node (TPL_002): an MCU with a MAX485 transceiver acting as a Modbus RTU master on RS-485.\nAny request that none of these five covers is refused as out of catalogue.",
+    "case": "User: Design a 24 VAC to 3.3 V switching power supply for a thermostat."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which generator should handle the user's request?",
+     "criteria": {
+      "refuse_out_of_catalogue": "None of the five generators covers the request.",
+      "voltage_divider": "A two-resistor divider from a supply voltage to a lower target voltage.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "ROUTE",
+    "truth": "refuse_out_of_catalogue",
+    "wrong": "voltage_divider",
+    "derivation": "A switching power supply is none of the five generators -> refused as out of catalogue.",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 section 5 (five generators = entire catalogue; free-form out of scope); CLAUDE.md TPL_001-005",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "refuse_out_of_catalogue",
+       "voltage_divider",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "refuse_out_of_catalogue",
+       "voltage_divider"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "OWN01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS rule: one owner per fact (.claude/shared-memory/AGENTS.md). Each fact has exactly one owner file; everywhere else links to it.\n- Phase 1 criteria and their status: owned by tools/regen_state.py (PHASE1_CRITERIA), which generates state.json.\n- Test counts, verified percentage, module status: owned by progress.yaml and state.json (derived by regen_state.py; never edited by hand).\n- The 5-phase roadmap: owned by PRODUCT_MASTER.md.\n- This session's tasks: owned by plan/current_phase.md.\n- Why a choice was made: owned by brain/decisions.md.\n- The project file tree: owned by .claude/CLAUDE.md.",
+    "case": "An agent wants to record why ngspice was chosen over LTspice."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which file owns the fact in the case?",
+     "criteria": {
+      "decisions_md": "brain/decisions.md: why a choice was made.",
+      "claude_md": ".claude/CLAUDE.md: the project file tree.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "OWN",
+    "truth": "decisions_md",
+    "wrong": "claude_md",
+    "derivation": "'Why a choice was made: owned by brain/decisions.md.'",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'ONE OWNER PER FACT' table",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "decisions_md",
+       "claude_md",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "decisions_md",
+       "claude_md"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "TRUST01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS trust hierarchy (AGENTS.md). When sources disagree, the higher one wins:\n1. Test results and simulation outputs (highest)\n2. Source code via ast scan\n3. progress.yaml and state.json\n4. plan/current_phase.md\n5. brain/*.md files\n6. Agent-written prose summaries (lowest)",
+    "case": "progress.yaml marks parser.parse as verified_done; an agent's prose summary says the parser is broken."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which source should be believed?",
+     "criteria": {
+      "agent_summary": "Believe the agent's prose summary.",
+      "progress_yaml": "Believe progress.yaml.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "TRUST",
+    "truth": "progress_yaml",
+    "wrong": "agent_summary",
+    "derivation": "progress.yaml (rank 3) outranks agent-written prose summaries (rank 6).",
+    "difficulty": "normal",
+    "source": "p2/.claude/shared-memory/AGENTS.md 'TRUST HIERARCHY'",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "agent_summary",
+       "progress_yaml",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "agent_summary",
+       "progress_yaml"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "PATCH01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS patch rules (amendments X2 and X4; backend/api/routes/patch.py, backend/ai/intent_patcher.py).\n- A patch is an RFC 6902 operation list over IntentIR.requirements. It edits the requirement, never the circuit: a path into CircuitIR (components, nets, values) is rejected.\n- Every operation written by the LLM patcher must cite, verbatim, words from the user's command, and those words must contain the value written. An uncited operation is rejected.\n- A patch submitted against a version other than the design's current version is rejected with 409 version_conflict.\n- A patch whose operations leave the requirements unchanged is not a new version: it returns the same design unchanged.\n- Otherwise the patched requirement is re-derived through the same envelope() -> generate() -> predict() gate and accepted as the next revision.\n- Patches are never retried.",
+    "case": "Command: 'make the cutoff 2 kHz'. Operation: replace /requirements/cutoff_hz with 2000, citing 'cutoff 2 kHz'. Submitted against the current version."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "What happens to the patch in the case?",
+     "criteria": {
+      "accept": "The patch edits IntentIR.requirements, every operation is cited, it targets the current version and it changes something: accepted as the next revision.",
+      "reject_uncited": "An operation does not cite the user's command verbatim with the written value.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "PATCH",
+    "truth": "accept",
+    "wrong": "reject_uncited",
+    "derivation": "Path in IntentIR.requirements, cited words contain the value ('2 kHz' = 2000), current version, value changes -> accept.",
+    "difficulty": "normal",
+    "source": "p2 decisions.md [2026-09-21] X2 + X4 accepted; handoff section 2 (Patches); api/routes/patch.py 409 version_conflict",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "accept",
+       "reject_uncited"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "accept",
+       "reject_uncited",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "accept",
+       "reject_uncited"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "SCOPE01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS scope as of Phase 2 (branch phase2-stage0; owner handoff 2026-09-25).\nIn scope now: the Validation Engine and Stage 6 - BOM with static pricing and part substitution (GET /design/{id}/bom, BOMTable, price_asof on every price), the five catalogue generators, assurance claims and proofs, multi-MCU firmware for arduino_uno, esp32_devkitc and blackpill_f411ce.\nOut of Phase 2 (Phase 3 or later): switching converters, PCB layout (the custom A* router is experimental and must not be extended; Phase 3 will integrate freerouting), Gerber/DFM/fab APIs, foreign-netlist recognition, fine-tuning, team features.\nNeeds the owner's explicit approval before any work: live pricing (X7: Digikey/LCSC live API).",
+    "case": "Proposal: fetch live Digikey prices for every BOM line."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "How should the proposed work in the case be classified?",
+     "criteria": {
+      "in_scope_now": "The work is part of the current Phase 2 scope.",
+      "needs_owner_approval": "The work needs the owner's explicit approval before it starts.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "SCOPE",
+    "truth": "needs_owner_approval",
+    "wrong": "in_scope_now",
+    "derivation": "Live pricing (X7: Digikey/LCSC live API) needs the owner's explicit approval.",
+    "difficulty": "normal",
+    "source": "handoff 2026-09-25 sections 2, 8, 9; CLAUDE.md Phase 1 exclusions and PCB note",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "in_scope_now",
+       "needs_owner_approval",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "in_scope_now",
+       "needs_owner_approval"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "item_id": "RULE01",
+   "variant": "k2..k8",
+   "state": {
+    "context": "Circuit OS critical rules (CLAUDE.md), never to be violated:\none_rule: LLM output -> JSON -> IR schema -> deterministic compilers. The LLM never writes SPICE, KiCad or firmware directly.\ncelery: simulation always runs via Celery, never inline in an HTTP handler.\nmcu_resistor: the MCU SPICE model is a resistor (100 ohm on the Uno), never a voltage source.\ncolumnar_output: ngspice batch output is columnar; the regex v(x) = y does not match it.\nkicanvas_ssr: kicanvas is loaded with a dynamic import and ssr: false; it is never server-rendered.\npostgres: all designs persist to PostgreSQL; no in-memory design_store = {}.\ncors_first: CORS middleware is added before any route is registered.\nstatic_bom: BOM pricing is static; no live Digikey/LCSC API calls.",
+    "case": "Proposal: have the LLM return the SPICE netlist as text and pass it straight to ngspice."
+   },
+   "questions": {
+    "k2": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery."
+     }
+    },
+    "k3": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply."
+     }
+    },
+    "k4": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan."
+     }
+    },
+    "k5": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast."
+     }
+    },
+    "k6": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website."
+     }
+    },
+    "k7": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit."
+     }
+    },
+    "k8": {
+     "type": "choice",
+     "instructions": "Which critical rule, if any, does the proposal in the case violate?",
+     "criteria": {
+      "one_rule": "The proposal lets LLM output reach SPICE, KiCad or firmware without the JSON -> IR -> compiler path.",
+      "celery": "The proposal runs a simulation inline in an HTTP handler instead of via Celery.",
+      "office_coffee_supply": "Choose when the case is about restocking the office coffee supply.",
+      "marketing_slogan": "Choose when the case is about the wording of a marketing slogan.",
+      "weather_forecast": "Choose when the case is about tomorrow's weather forecast.",
+      "font_licensing": "Choose when the case is about licensing a typeface for the website.",
+      "parking_permit": "Choose when the case is about an employee parking permit.",
+      "holiday_calendar": "Choose when the case is about the company holiday calendar."
+     }
+    }
+   },
+   "meta": {
+    "family": "RULE",
+    "truth": "one_rule",
+    "wrong": "celery",
+    "derivation": "one_rule: the LLM never writes SPICE directly.",
+    "difficulty": "normal",
+    "source": "CLAUDE.md 'Critical Rules - Never Violate' 1-8",
+    "qmeta": {
+     "k2": {
+      "k": 2,
+      "labels": [
+       "one_rule",
+       "celery"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": []
+     },
+     "k3": {
+      "k": 3,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply"
+      ]
+     },
+     "k4": {
+      "k": 4,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply",
+       "marketing_slogan"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan"
+      ]
+     },
+     "k5": {
+      "k": 5,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast"
+      ]
+     },
+     "k6": {
+      "k": 6,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing"
+      ]
+     },
+     "k7": {
+      "k": 7,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit"
+      ]
+     },
+     "k8": {
+      "k": 8,
+      "labels": [
+       "one_rule",
+       "celery",
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ],
+      "live": [
+       "one_rule",
+       "celery"
+      ],
+      "dead": [
+       "office_coffee_supply",
+       "marketing_slogan",
+       "weather_forecast",
+       "font_licensing",
+       "parking_permit",
+       "holiday_calendar"
+      ]
+     }
+    }
+   }
+  }
+ ]
+}
