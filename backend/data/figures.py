@@ -11,10 +11,13 @@ claim". This module is the provenance: one record per figure a claim reads.
   (`<owner>/<key>`); `value()` reads it. Nothing here restates a number.
 - **`record_hash`** covers the record *and* the current value, so editing
   either voids a verification.
-- **The agent wrote these records and cannot verify them.** It did not open
-  the documents in the session that wrote them; each `statement` is the
-  agent's reading from memory, never a quotation. Only a person checking the
-  document (`scripts/verify_figures.py`) makes a figure trusted.
+- **The agent wrote these records and cannot verify them.** It first wrote
+  them from memory; on 2026-09-25 it opened the makers' documents it could
+  obtain, corrected what they contradicted, and recorded page by page what it
+  found in `data/figure_evidence.json` ([2026-09-25]). A `statement` is the
+  agent's reading, never a quotation. Only a person — reading the document,
+  or confirming the agent's cited evidence (`scripts/verify_figures.py`) —
+  makes a figure trusted.
 - **Trusted** means verified *and* a guaranteed limit, a standard's figure, or
   a policy the project sets for itself (verification confirms the citation);
   or derived from trusted inputs. A typical or a stated assumption is never
@@ -48,8 +51,8 @@ class Kind(str, Enum):
 
 TRUSTABLE = (Kind.GUARANTEED, Kind.STANDARD, Kind.POLICY)
 
-RECORDED_BY = ("the agent (an LLM), 2026-09-25, from its reading of the document — the "
-               "document was not opened; not verified")
+RECORDED_BY = ("the agent (an LLM), 2026-09-25; its check against the document, where it could get "
+               "one, is in data/figure_evidence.json — not a person's verification")
 
 
 @dataclass(frozen=True)
@@ -71,31 +74,34 @@ class Figure:
 
 # ── Sources ──────────────────────────────────────────────────────────────────
 
-_ATMEGA = Source("Microchip", "ATmega48A/PA/88A/PA/168A/PA/328/P datasheet (DS40002061)",
-                 "§ Electrical Characteristics — DC Characteristics; Absolute Maximum Ratings")
-_ESP32 = Source("Espressif", "ESP32-WROOM-32E & ESP32-WROOM-32UE datasheet",
-                "§ Electrical Characteristics — Recommended Operating Conditions; DC Characteristics")
+_ATMEGA = Source("Microchip", "ATmega48A/PA/88A/PA/168A/PA/328/P datasheet (DS40002061B)",
+                 "§29.1 Absolute Maximum Ratings; Table 29-8; Table 30-1 Common DC characteristics; "
+                 "Figure 31-355")
+_ESP32 = Source("Espressif", "ESP32-WROOM-32E & ESP32-WROOM-32UE datasheet v2.1; ESP32 Series datasheet v5.3",
+                "module Tables 13–15 (ratings, operating conditions, DC characteristics); series datasheet "
+                "§5 power consumption and the notes on the ESP32 pin lists")
 _STM32 = Source("STMicroelectronics", "STM32F411xC/xE datasheet (DS10314)",
                 "§ Electrical characteristics — I/O port characteristics; operating conditions")
 _LED = Source("Everlight", "67-21URC/S530-A3/TR8 datasheet", "Electro-Optical Characteristics; Absolute Maximum Ratings")
-_DHT = Source("Aosong", "AM2302 (DHT22) product manual", "§ Electrical characteristics; single-bus timing")
+_DHT = Source("Aosong (ASAIR)", "AM2302 Technical Manual V1.0", "Table 2 Electric Specification; single-bus timing table")
 _MAX485 = Source("Analog Devices (Maxim)", "MAX481/MAX483/MAX485/MAX487–MAX491/MAX1487 datasheet",
                  "Electrical Characteristics")
 _MAX3485 = Source("Analog Devices (Maxim)", "MAX3483/MAX3485/MAX3486/MAX3488/MAX3490/MAX3491 datasheet",
                   "Electrical Characteristics")
 _TIA485 = Source("TIA", "TIA/EIA-485-A", "receiver sensitivity; driver output into the specified load")
-_YAGEO = Source("Yageo", "RC_L series (RC0100–RC2512) thick-film chip resistor datasheet",
-                "ordering code; Electrical Characteristics table")
-_SAMSUNG = Source("Samsung Electro-Mechanics", "CL series MLCC product specification",
-                  "part-numbering system (size, dielectric, capacitance, tolerance, rated voltage)")
+_YAGEO = Source("Yageo", "General purpose chip resistors RC_L series, product specification V.14 (2025-11-14)",
+                "ordering information (tolerance code); Tables 2 and 3 (power, maximum working voltage)")
+_SAMSUNG = Source("Samsung Electro-Mechanics", "component library data sheet for the part",
+                  "capacitance, tolerance, rated voltage, TCC and size")
 
 
-def _mcu(part: str, src: Source, vmax: str, rout: str, rec: str, run: str) -> List[Figure]:
+def _mcu(part: str, src: Source, vmax: str, rout: str, rec: str, run: str, leak: str) -> List[Figure]:
     return [
         Figure(f"{part}/supply_voltage_max", Kind.GUARANTEED, vmax, src),
         Figure(f"{part}/gpio_output_resistance_ohm", Kind.TYPICAL, rout, src),
         Figure(f"{part}/gpio_recommended_current_ma", Kind.POLICY, rec, src),
         Figure(f"{part}/supply_model_ohm", Kind.ASSUMPTION, run, src),
+        Figure(f"{part}/pin_leakage_ua", Kind.GUARANTEED, leak, src),
     ]
 
 
@@ -115,6 +121,10 @@ def _transceiver(part: str, src: Source, supply: str) -> List[Figure]:
         Figure(f"{part}/requires_termination_ohm", Kind.STANDARD,
                "terminate each end of the bus in the cable's characteristic impedance, nominally 120 Ω",
                _TIA485),
+        Figure(f"{part}/logic_input_vil_v", Kind.GUARANTEED,
+               "input low voltage of DE, RE and DI: 0.8 V maximum", src),
+        Figure(f"{part}/logic_input_current_ua", Kind.GUARANTEED,
+               "input current of DE, RE and DI: ±2 µA maximum", src),
     ]
 
 
@@ -136,25 +146,31 @@ def _capacitor(part: str, what: str) -> List[Figure]:
 
 _SCALARS: List[Figure] = [
     *_mcu("ATmega328P-PU", _ATMEGA,
-          "5.5 V maximum operating voltage (6.0 V absolute maximum)",
-          "at most 40 Ω, derived: V_OH ≥ 4.2 V at I_OH = 20 mA with VCC = 5 V (guaranteed); the "
-          "15 Ω minimum and 25 Ω typical are read from the typical output-drive curves",
+          "5.5 V maximum operating voltage (the DC tables' VCC = 1.8–5.5 V); 6.0 V is the absolute maximum",
+          "at most 40 Ω, derived: V_OH ≥ 4.2 V at I_OH = 20 mA with VCC = 5 V (guaranteed, Table 30-1); "
+          "25 Ω typical from the 25 °C output-drive curve (about 26 Ω, Figure 31-355); the 15 Ω minimum "
+          "is the project's conservative figure — the curves show about 22 Ω at −40 °C",
           "20 mA — the current at which the datasheet specifies V_OH; 40 mA is the absolute maximum",
           "100 Ω on 5 V is 50 mA — the whole Uno board's run current (regulator, USB bridge, LEDs), "
-          "not the ATmega328P's own few mA"),
+          "not the ATmega328P's own few mA",
+          "I/O pin input leakage |I_IL|, |I_IH|: 1 µA maximum at VCC = 5.5 V"),
     *_mcu("ESP32-WROOM-32E", _ESP32,
           "3.6 V maximum of the 3.0–3.6 V recommended operating range",
-          "at most 33 Ω, derived: V_OH ≥ 0.8 × VDD at the default drive strength's 20 mA; the minimum "
-          "and typical are estimates",
+          "about 33 Ω at the default drive strength, an estimate: the module gives V_OH ≥ 0.8 × VDD, and "
+          "I_OH = 40 mA typical at V_OH ≥ 2.64 V with the drive strength at its maximum; the default "
+          "strength (2 of 0–3) is ~20 mA, so the agent halves the current at the same V_OH, "
+          "(3.3 − 2.64) / 0.02 = 33 Ω; the minimum and typical are estimates too",
           "20 mA — the default drive strength's rated source current",
           "41 Ω on 3.3 V is 80 mA — the module's run current without the radio, rounded up from the "
-          "modem-sleep figures"),
+          "modem-sleep figures",
+          "input current I_IH, I_IL: 50 nA maximum, specified at 3.3 V and 25 °C only"),
     *_mcu("STM32F411CEU6", _STM32,
           "3.6 V maximum operating supply",
           "at most 65 Ω, derived: V_OH ≥ VDD − 1.3 V at |I_IO| = 20 mA; the minimum and typical are "
           "estimates",
           "20 mA — inside the ±25 mA per-pin absolute maximum, where V_OH is specified",
-          "132 Ω on 3.3 V is 25 mA — the run current at 100 MHz with peripherals off"),
+          "132 Ω on 3.3 V is 25 mA — the run current at 100 MHz with peripherals off",
+          "input leakage I_lkg of a standard I/O pin: ±1 µA maximum for V_SS ≤ V_IN ≤ V_DD"),
     Figure("67-21URC/S530-A3/TR8/forward_voltage_v", Kind.GUARANTEED,
            "V_F 1.7 V minimum, 2.4 V maximum at I_F = 20 mA; 2.0 V typical", _LED),
     Figure("67-21URC/S530-A3/TR8/test_current_ma", Kind.GUARANTEED, "the forward-voltage test condition, 20 mA", _LED),
@@ -164,20 +180,23 @@ _SCALARS: List[Figure] = [
            "the diode model's ideality factor, 2.0 — not published; chosen so one Shockley curve "
            "spans the V_F range", _LED),
     Figure("DHT22/supply_voltage_min", Kind.GUARANTEED, "3.3 V minimum supply", _DHT),
-    Figure("DHT22/supply_voltage_max", Kind.GUARANTEED,
-           "the agent recalls 3.3–6 V DC in the product manual; the table uses 5.5 V, the more "
-           "conservative figure — the check should settle which", _DHT),
+    Figure("DHT22/supply_voltage_max", Kind.GUARANTEED, "5.5 V maximum supply (3.3 V minimum, 5 V typical)",
+           _DHT),
     Figure("DHT22/current_draw_ma", Kind.ASSUMPTION,
-           "2.5 mA — above the manual's 1–1.5 mA while measuring; a conservative figure of the project's", _DHT),
+           "2.5 mA — above the manual's 1.2 mA typical while measuring, for which it gives no maximum; a "
+           "conservative figure of the project's", _DHT),
     Figure("DHT22/bus_capacitance_pf_per_m", Kind.ASSUMPTION,
            "50–100 pF per metre of sensor cable, ribbon to twisted pair; the manual gives none", None),
     Figure("DHT22/input_capacitance_pf", Kind.ASSUMPTION,
-           "10 pF each for the MCU pin and the sensor's pin; neither is published for this bus", None),
+           "10 pF each for the MCU pin and the sensor's pin — the AM2302 manual and the ATmega328P "
+           "datasheet give none; the ESP32 module gives 2 pF typical, well under it", None),
     Figure("DHT22/rise_time_limit_us", Kind.ASSUMPTION,
-           "5 µs, a 5× margin inside the 26–28 µs high time of a '0' bit the manual gives", _DHT),
+           "5 µs — over a 4× margin inside the 22 µs minimum high time of a '0' bit (T_H0 22–30 µs, "
+           "26 µs typical)", _DHT),
     Figure("DHT22/open_drain_sink_limit_ma", Kind.ASSUMPTION,
-           "4 mA through the sensor's open-drain output — the conservative figure open-drain buses "
-           "(I²C: 3 mA) are designed to; the manual gives none", None),
+           "4 mA through the sensor's open-drain output — half the 8 mA typical output current the manual "
+           "gives, for which it gives no maximum; about what open-drain buses (I²C: 3 mA) are designed to",
+           _DHT),
     *_transceiver("MAX485ECSA", _MAX485, "4.75–5.25 V supply"),
     *_transceiver("MAX3485ECSA", _MAX3485, "3.0–3.6 V supply"),
     *_resistor_series("RC0402FR", "F = ±1%", "62.5 mW (1/16 W)", "50 V"),
@@ -220,6 +239,8 @@ def _pin_records() -> List[Figure]:
                 parts.append(f"reserved — {pin.reserved}")
             if pin.strapping:
                 parts.append(f"strapping — {pin.strapping}")
+            parts.append(f"weak pull-{pin.reset_pull} from reset until firmware sets the pin" if pin.reset_pull
+                         else "high-impedance, no pull, from reset until firmware sets the pin")
             out.append(Figure(f"board:{target_id}/{name}", Kind.GUARANTEED, "; ".join(parts),
                               _BOARD_SOURCES.get(target_id)))
         out.append(Figure(f"board:{target_id}/console_uart", Kind.GUARANTEED,
@@ -259,6 +280,21 @@ def record_hash(figure_id: str) -> str:
     record = FIGURES[figure_id]
     payload = {"record": asdict(record), "value": value(figure_id)}
     return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+
+# ── The agent's evidence ([2026-09-25]) — never a verification ───────────────
+
+EVIDENCE_PATH = Path(__file__).parent / "figure_evidence.json"
+
+
+def evidence(path: Optional[str] = None) -> Dict[str, Any]:
+    """The agent's check of each record against its document; {} if there is none. Read by
+    scripts/verify_figures.py and the tests — never by a claim."""
+    path = str(path or EVIDENCE_PATH)
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 # ── Verifications ────────────────────────────────────────────────────────────

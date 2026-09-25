@@ -26,14 +26,14 @@ from typing import Dict, List, Tuple
 import pytest
 
 from core.intent_ir import IntentIR, Producer, Provenance
-from core.ir_examples import IR_001, IR_003
+from core.ir_examples import IR_001, IR_003, IR_005
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.protocol import ClaimScope, EnvelopeDecision, PortContract, grid_of
 from generators.realize import realize
 from proof.dependence import mcu_elements_reached, measured_nodes
 from proof.netlist import parse
 from test_simulation_accuracy import _skip_no_ngspice
-from validation.claims import assess, derive_mcu_models, graded
+from validation.claims import assess, derive_mcu_models, graded, held_to_rail
 from validation.defeaters import REGISTER
 from validation.grid_adapters import ADAPTERS, board_cases, simulate
 
@@ -148,14 +148,37 @@ class TestTheThreeRoutes:
             assert models(rows[cid]) == [], cid
 
     @pytest.mark.parametrize("name,board", RS485_CASES)
-    def test_the_failsafe_claim_keeps_d2_through_its_assumed_pin_state(self, name, board):
-        # Idle means the driver is off — DE/RE low — and nothing but the MCU
-        # pin holds it there. Route 3, inherited by the proof.
+    def test_the_failsafe_claim_keeps_d2_through_the_pins_load_on_de_re(self, name, board):
+        # Idle means the driver is off — DE/RE low. Since rs485_node 0.3.0 R4
+        # holds it low while the pin is high-impedance, so the MCU reaches the
+        # node only through its load: route 3 names mcu_pin_load, and D2 stays
+        # ([2026-09-25]). Inherited by the proof.
         rows = claims(name, board)
         for cid in ("rs485.failsafe_bias", "proof.rs485.failsafe_bias"):
             assert "D2" in rows[cid]["defeaters"], cid
-            assert models(rows[cid]) == ["mcu_pin_state"], cid
+            assert models(rows[cid]) == ["mcu_pin_load"], cid
             assert rows[cid]["scope"]["assumes"] == ["RS485_DE_RE"], cid
+
+    @pytest.mark.parametrize("name,board", RS485_CASES)
+    def test_without_the_pull_down_the_state_is_the_pins_again(self, name, board):
+        # The mutation: take R4 out of the netlist and the same declaration
+        # names mcu_pin_state, as it did for 0.2.0.
+        generator, intent, circuit = case(name, board)
+        netlist = SpiceNetlistGenerator().generate(circuit)
+        assert "rs485_de_re" in held_to_rail(circuit, netlist)
+        stripped = "\n".join(line for line in netlist.splitlines() if not line.startswith("R_R4 "))
+        assert "rs485_de_re" not in held_to_rail(circuit, stripped)
+        measure = [("vdiff(rs485_a,rs485_b)", ())]
+        assert derive_mcu_models(circuit, netlist, measure, ("RS485_DE_RE",)) == ("mcu_pin_load",)
+        assert derive_mcu_models(circuit, stripped, measure, ("RS485_DE_RE",)) == ("mcu_pin_state",)
+
+    @pytest.mark.parametrize("name,board", RS485_CASES)
+    def test_the_pull_down_claim_holds_and_names_the_pins_load(self, name, board):
+        row = claims(name, board)["rs485.driver_default_off"]
+        assert row["verdict"] == "holds_defeasible" and row["grade"] == "G1"
+        assert models(row) == ["mcu_pin_load"] and "D2" in row["defeaters"]
+        assert row["scope"]["measures"] == ["v(rs485_de_re)"]
+        assert any(f.endswith("/pin_leakage_ua") for f in row["scope"]["figures"])
 
     @pytest.mark.parametrize("name,board", DHT_CASES)
     def test_the_dht22_pullup_check_is_structural(self, name, board):
@@ -212,8 +235,9 @@ class TestTheThreeRoutes:
     def test_the_released_count_on_the_ci_cases(self):
         # 42 citations before, 9 released: driver load (Stage 3 and proof) and
         # terminator dissipation on RS-485, the pull-up check on DHT22 — all x3.
+        # [2026-09-25]: +3 — the DE/RE pull-down claim, on each board.
         cited = sum("D2" in r["defeaters"] for n, b in MCU_CASES for r in claims(n, b).values() if r["critical"])
-        assert cited == 33
+        assert cited == 36
 
 
 class _Declares:
@@ -253,10 +277,18 @@ class TestDeclarationsDecide:
         assert "mcu_pin_load" in row.scope.model and "D2" in row.defeaters
 
     def test_an_assumed_mcu_pin_state_cites_d2(self):
+        # Phase 1's RS-485 example: DE/RE held by nothing but the MCU pin.
+        row = _row(_Declares(measures=("v(vcc_5v)",), assumes=("RS485_DE_RE",)), IR_005)
+        assert "mcu_pin_state" in row.scope.model and "D2" in row.defeaters
+
+    def test_an_assumed_node_a_resistor_holds_names_the_pins_load(self):
+        # The DHT22 data line has its pull-up: while the pin is not driving,
+        # the resistor holds the node, and the pin reaches it by its load.
         node = next(c.node_id for c in IR_001.connections
                     if c.component_id == "U1" and c.node_id.startswith("DHT"))
         row = _row(_Declares(measures=("v(vcc_5v)",), assumes=(node,)), IR_001)
-        assert "mcu_pin_state" in row.scope.model and "D2" in row.defeaters
+        assert "mcu_pin_load" in row.scope.model and "mcu_pin_state" not in row.scope.model
+        assert "D2" in row.defeaters
 
     def test_an_unreadable_declaration_falls_back_rather_than_releasing(self):
         row = _row(_Declares(measures=("v(nowhere)",)), IR_001)

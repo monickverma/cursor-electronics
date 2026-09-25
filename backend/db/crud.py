@@ -277,3 +277,33 @@ async def finish_firmware_build(db: AsyncSession, build_hash: str, status: str, 
     await db.execute(update(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash)
                      .values(status=status, log=log, seconds=seconds, finished_at=datetime.utcnow()))
 
+
+# ── [2026-09-25]: the live price cache ───────────────────────────────────────
+
+async def get_price_quotes(db: AsyncSession, source: str, keys: list[str]) -> dict:
+    """{key: stored quote JSON} for the keys this source has a row for, fresh or not."""
+    from db.models import PriceQuote
+
+    if not keys:
+        return {}
+    rows = (await db.execute(select(PriceQuote).where(PriceQuote.source == source,
+                                                      PriceQuote.part_number.in_(keys)))).scalars()
+    return {row.part_number: row.quote for row in rows}
+
+
+async def put_price_quotes(db: AsyncSession, source: str, quotes: dict) -> None:
+    """Upsert {key: quote JSON}: a newer answer replaces the older one."""
+    from sqlalchemy.dialects.postgresql import insert
+
+    from db.models import PriceQuote
+
+    if not quotes:
+        return
+    values = [{"source": source, "part_number": k, "found": bool(q["found"]),
+               "fetched_at": datetime.fromisoformat(str(q["fetched_at"])), "quote": q}
+              for k, q in quotes.items()]
+    statement = insert(PriceQuote).values(values)
+    await db.execute(statement.on_conflict_do_update(
+        index_elements=["source", "part_number"],
+        set_={"found": statement.excluded.found, "fetched_at": statement.excluded.fetched_at,
+              "quote": statement.excluded.quote}))

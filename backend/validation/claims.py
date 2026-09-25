@@ -30,7 +30,9 @@ claim cites D2 only where the real MCU can reach it: its quantity depends on
 an MCU model element (`mcu_as_<R>R`, `mcu_pin_thevenin`; decided by symbolic
 nodal analysis, `proof/dependence.py`), it measures a node an unmodelled MCU
 pin sits on (`mcu_pin_load`), or it takes as given a node state an MCU pin sets
-(`mcu_pin_state`). What a claim measures comes from its declaration
+(`mcu_pin_state`) — or, where a resistor of the design holds that node to a
+rail, one the pin reaches only through its load (`mcu_pin_load`, since
+[2026-09-25]). What a claim measures comes from its declaration
 (`ClaimScope.measures`) or from the proof that re-derives it. A claim that
 declares nothing keeps the netlist-wide rule — every MCU model in the netlist,
 and D2 — so a generator can narrow D2 only by saying what it measures, never
@@ -324,6 +326,31 @@ def _pin_modelled(netlist: str) -> frozenset:
                      for line in netlist.splitlines() if line.startswith("R_PIN_"))
 
 
+#: Elements the netlist adds that are not parts of the design: the floating-node
+#: tie-downs, the MCU and transceiver supply loads, the Thevenin pin model.
+_NOT_DESIGN_PARTS = ("R_TIE_", "R_PIN_", "R_MCU_", "R_LOAD_")
+
+
+def held_to_rail(circuit: CircuitIR, netlist: str) -> frozenset:
+    """
+    Nodes (lower case) a resistor of the design ties to ground or a supply
+    rail — a pull-up or pull-down. Such a node keeps its state while the MCU
+    pin on it is high-impedance, so the pin reaches it only through its load.
+    """
+    kinds = (SignalType.POWER.value, SignalType.GROUND.value)
+    rails = {"0", "gnd"} | {n.id.lower() for n in circuit.nodes if getattr(n.type, "value", n.type) in kinds}
+    held = set()
+    for line in netlist.splitlines():
+        fields = line.split()
+        name = fields[0].upper() if fields else ""
+        if len(fields) < 4 or not name.startswith("R_") or name.startswith(_NOT_DESIGN_PARTS):
+            continue
+        a, b = fields[1].lower(), fields[2].lower()
+        if (a in rails) != (b in rails):
+            held.add(b if a in rails else a)
+    return frozenset(held)
+
+
 Measure = Tuple[str, Tuple[str, ...]]      # (quantity, test-bench lines)
 
 
@@ -336,7 +363,10 @@ def derive_mcu_models(
 
     1. the quantity depends on an MCU model element (exact, symbolic);
     2. a measured node carries an MCU signal pin the netlist does not model;
-    3. an assumed node is one an MCU pin is wired to.
+    3. an assumed node is one an MCU pin is wired to: `mcu_pin_state` if
+       nothing else holds it, `mcu_pin_load` if a resistor of the design holds
+       it to a rail — the pin then reaches it only through its leakage
+       ([2026-09-25], the RS-485 DE/RE pull-down). D2 stays either way.
 
     Raises `KeyError` / `ValueError` when a measure names something the
     netlist does not have; `assess` then falls back to the netlist-wide rule.
@@ -362,8 +392,13 @@ def derive_mcu_models(
     signal = mcu_signal_nodes(circuit)
     if measured & (signal - _pin_modelled(netlist)):
         add(MODEL_MCU_PIN_LOAD)
-    if {a.lower() for a in assumes} & signal:
-        add(MODEL_MCU_PIN_STATE)
+    assumed = {a.lower() for a in assumes} & signal
+    if assumed:
+        held = held_to_rail(circuit, netlist)
+        if assumed & held:
+            add(MODEL_MCU_PIN_LOAD)
+        if assumed - held:
+            add(MODEL_MCU_PIN_STATE)
     return tuple(models)
 
 

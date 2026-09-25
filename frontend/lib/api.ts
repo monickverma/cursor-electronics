@@ -179,12 +179,41 @@ export interface BOMRow {
   price_known?: boolean
   // Stage 6: a row is priced only as the exact part it names. Responses from
   // before Stage 6 may still say 'part_number_prefix' or 'equivalent_value'.
-  price_source?: 'part_number' | 'lcsc_pn' | 'unknown' | 'part_number_prefix' | 'equivalent_value'
-  // Stage 6: when the price was recorded, and what kind of price it is.
+  // 'mouser': a live quote for that exact part number ([2026-09-25]).
+  price_source?: 'part_number' | 'lcsc_pn' | 'unknown' | 'part_number_prefix' | 'equivalent_value' | 'mouser'
+  // Stage 6: when the price was recorded, and what kind of price it is. For a
+  // live quote, the time it was fetched (ISO, UTC).
   price_asof?: string | null
   price_note?: string | null
+  // The price shown and its currency: the static catalogue's USD, or a live
+  // quote's own currency — never converted. `unit_price_usd` stays static.
+  unit_price?: number | null
+  currency?: string | null
+  live?: LivePrice | null
   // Always null since Stage 6; kept so older stored responses still type.
   priced_as?: string | null
+}
+
+// [2026-09-25]: a live distributor quote for the exact part number.
+export interface LivePrice {
+  source: 'mouser'
+  distributor_pn: string | null
+  currency: string
+  unit_price: number
+  price_break: number
+  breaks: { quantity: number; unit_price: number }[]
+  stock: number | null
+  min_order: number | null
+  order_multiple: number | null
+  product_url: string | null
+  fetched_at: string
+}
+
+export interface CurrencyTotal {
+  currency: string
+  amount: number
+  rows: number
+  sources: string[]
 }
 
 // ── Stage 6: substitutes, each checked against the original's checks ───────
@@ -204,6 +233,7 @@ export interface Substitute {
   unit_price_usd?: number | null
   price_asof?: string | null
   price_delta_usd?: number | null
+  live?: LivePrice | null        // a cached or fetched Mouser quote, shown beside; never decides
   checks: number                 // claims and properties re-checked
   ops: PatchOpJSON[]             // the patch that applies it
 }
@@ -218,9 +248,20 @@ export interface BOMView {
   circuit_id: string
   version: number
   rows: BOMRow[]
-  total_usd: number
+  total_usd: number              // the static catalogue total
+  totals?: CurrencyTotal[]       // what the rows show, one total per currency
   coverage: { priced: number; total: number; complete: boolean; unpriced_ids: string[] }
   pricing: string
+  live_pricing?: {
+    enabled: boolean
+    source: string
+    requested: number
+    quoted: number
+    from_cache: number
+    fetched: number
+    error: string | null           // Mouser could not price the rows; they stay static
+    cache_error?: string | null    // the price cache failed; the prices shown are unaffected
+  }
   substitutes: Substitute[]
   rejected: RejectedSubstitute[]
   substitutes_unavailable: string | null

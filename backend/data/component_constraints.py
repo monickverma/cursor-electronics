@@ -68,6 +68,11 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         # Datasheet/standard-derived: defeater D7.
         "receiver_threshold_mv": 200.0,
         "driver_rated_load_ohm": 54.0,
+        # Logic inputs DE, RE, DI: the ceiling a pull-down must hold DE/RE under
+        # while the MCU pin is high-impedance, and the current each input may
+        # draw doing it (`rs485.driver_default_off`, [2026-09-25]). Defeater D7.
+        "logic_input_vil_v": 0.8,
+        "logic_input_current_ua": 2.0,
         "notes": [
             "DE and RE pins must be tied together and driven by one MCU GPIO",
             "HIGH = transmit mode, LOW = receive mode",
@@ -90,6 +95,9 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         # sets them, not the part. Defeater D7.
         "receiver_threshold_mv": 200.0,
         "driver_rated_load_ohm": 54.0,
+        # Logic inputs DE, RE, DI, as for the MAX485 above. Defeater D7.
+        "logic_input_vil_v": 0.8,
+        "logic_input_current_ua": 2.0,
         "notes": [
             "3.3V version of MAX485. Use when MCU logic is 3.3V.",
             "Same wiring as MAX485 but 3.3V supply and logic levels.",
@@ -109,14 +117,17 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "flash_kb": 32,
         "ram_bytes": 2048,
         # Output drive, for the Thevenin pin model (Stage 3, `mcu_pin_thevenin`).
-        # Datasheet §28.2: V_OH >= 4.2 V at I_OH = 20 mA, VCC = 5 V -> at most
-        # (5 - 4.2) / 0.02 = 40 ohm. Typical curves sit near 25 ohm. Read by
+        # Datasheet Table 30-1: V_OH >= 4.2 V at I_OH = 20 mA, VCC = 5 V -> at
+        # most (5 - 4.2) / 0.02 = 40 ohm. Typical curves sit near 25 ohm. Read by
         # both spice.py and the LED generator, so the netlist and predict()
         # cannot disagree about the pin. Datasheet-derived: defeater D7.
         "gpio_output_resistance_ohm": {"min": 15.0, "typ": 25.0, "max": 40.0},
         "gpio_recommended_current_ma": 20,
         # Supply-load model (X6, `mcu_as_100R`, D2): 100 ohm on the 5 V rail.
         "supply_model_ohm": 100.0,
+        # I/O pin input leakage, |I_IL| and |I_IH| at VCC = 5.5 V (Table 30-1):
+        # what a high-impedance pin can push into a pull-down. Defeater D7.
+        "pin_leakage_ua": 1.0,
         "notes": [
             "Max 40mA per GPIO pin — LED without current limiter will damage the MCU",
             "Max 200mA total from all I/O pins combined",
@@ -160,6 +171,9 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         # resistor on the 3.3 V rail: 3.3 V / 80 mA.
         "current_draw_active_ma": 80,
         "supply_model_ohm": 41.0,
+        # I_IH / I_IL, DC characteristics at 3.3 V and 25 °C — the datasheet
+        # gives no figure across temperature. Defeater D7.
+        "pin_leakage_ua": 0.05,
         "notes": [
             "3.3V logic — do NOT connect 5V signals without level shifting",
             "GPIO34–39 are input-only; GPIO6–11 are the module's flash",
@@ -179,6 +193,8 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         # Supply-load model: ~25 mA at 100 MHz, as 3.3 V / 25 mA.
         "current_draw_active_ma": 25,
         "supply_model_ohm": 132.0,
+        # I_lkg, standard I/O pin, V_SS <= V_IN <= V_DD. Defeater D7.
+        "pin_leakage_ua": 1.0,
         "notes": [
             "3.3V logic; most pins are 5V-tolerant as inputs only",
             "PC13–PC15 sink at most 3 mA and must not source current",

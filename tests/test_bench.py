@@ -156,3 +156,23 @@ def test_every_recorded_bench_measurement_agrees_and_is_current():
     for record in load_records():
         for finding in evaluate(record):
             assert finding.status == "agrees", finding
+
+
+def test_the_prefilled_templates_name_the_designs_as_they_are_built_now():
+    """docs/bench_templates ([2026-09-25]): a template of a design the generator has since changed is stale."""
+    import importlib.util
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    spec = importlib.util.spec_from_file_location("bench_template", root / "scripts" / "bench_template.py")
+    tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tool)
+    folder = root / "docs" / "bench_templates"
+    assert {p.stem for p in folder.glob("*.json")} == set(tool.STANDARD)
+    for name, (function, fields) in tool.STANDARD.items():
+        written = json.loads((folder / f"{name}.json").read_text(encoding="utf-8"))
+        now = tool.template(function, fields)
+        assert written["netlist_sha256"] == now["netlist_sha256"], (
+            f"{name}: regenerate with python scripts/bench_template.py --standard docs/bench_templates")
+        assert set(written["parts"]) == set(now["parts"]) and set(written["measures"]) == set(now["measures"])
+        assert all(r["value"] is None for r in list(written["parts"].values()) + list(written["measures"].values()))

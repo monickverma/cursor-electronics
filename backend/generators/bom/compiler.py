@@ -1,8 +1,10 @@
 """BOM compiler — static pricing from component_db.json.
 
-No live Digikey/LCSC API calls: Stage 6 kept pricing static, and live pricing
-waits for the user's approval (`brain/decisions.md` [2026-09-25] Stage 6).
-Returns a list of dicts, one per component.
+Deterministic and offline: the compiler never calls a distributor. Live Mouser
+prices, when a key is set, are laid over its rows afterwards by
+`pricing/live.py`, from `GET /design/{id}/bom` only (`brain/decisions.md`
+[2026-09-25]). Returns a list of dicts, one per component; every priced row
+carries `unit_price` and `currency` beside the static `unit_price_usd`.
 
 STAGE 6 — A PRICE IS THE PART'S, WITH ITS DATE
 ==============================================
@@ -300,6 +302,10 @@ class BOMCompiler:
                 "digikey_pn": digikey_pn,
                 "unit_price_usd": price,
                 "total_price_usd": price,
+                # The price shown, in its own currency: the static catalogue's
+                # USD here; a live quote's when pricing/live.py replaces it.
+                "unit_price": price if price_known else None,
+                "currency": "USD" if price_known else None,
                 # Pricing provenance — lets the UI show "unknown" rather than
                 # presenting an unpriced part as if it were free.
                 "price_known": price_known,

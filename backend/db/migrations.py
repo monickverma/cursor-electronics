@@ -39,6 +39,11 @@ MIGRATIONS: Sequence[str] = (
     " build_hash VARCHAR(64) PRIMARY KEY, target VARCHAR(50) NOT NULL,"
     " status VARCHAR(20) NOT NULL, log TEXT, seconds DOUBLE PRECISION,"
     " created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), finished_at TIMESTAMPTZ)",
+    # [2026-09-25] — live distributor quotes, one row per source and part number.
+    "CREATE TABLE IF NOT EXISTS price_quotes ("
+    " source VARCHAR(20) NOT NULL, part_number VARCHAR(100) NOT NULL,"
+    " found BOOLEAN NOT NULL, fetched_at TIMESTAMPTZ NOT NULL, quote JSONB NOT NULL,"
+    " PRIMARY KEY (source, part_number))",
 )
 
 

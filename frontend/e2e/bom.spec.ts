@@ -5,9 +5,13 @@
  *  - Substitutes arrive already checked; the refused ones say why.
  *  - "Use this part" sends exactly the substitute's patch, stays on the tab,
  *    and shows the re-derived design's BOM.
+ *  - [2026-09-25] A live Mouser quote shows its source, currency and fetch
+ *    time; a part Mouser does not list keeps its dated catalogue price; a BOM
+ *    in two currencies shows two totals.
  *
- * Fixtures: scripts/export_ui_fixtures.py — an RS-485 node on the Uno, and
- * api/routes/bom.py::bom_view's own answers before and after the patch.
+ * Fixtures: scripts/export_ui_fixtures.py — an RS-485 node on the Uno, and the
+ * route's own answers (bom_view, then pricing/live.py) before and after the
+ * patch; `bom_live` is that view priced from synthetic Mouser quotes.
  */
 import { expect, test, type Page, type Route } from '@playwright/test'
 import bom from './fixtures/bom.json'
@@ -15,7 +19,7 @@ import bom from './fixtures/bom.json'
 const API = 'http://backend.test'
 type Json = Record<string, unknown>
 
-async function mockBackend(page: Page) {
+async function mockBackend(page: Page, { live = false } = {}) {
   const design = bom.generate as Json
   const patches: unknown[] = []
   const unexpected: string[] = []
@@ -29,7 +33,9 @@ async function mockBackend(page: Page) {
     if (path === '/health') return json(route, { status: 'ok', pcb_engine_enabled: false })
     if (path === '/auth/login') return json(route, { access_token: 'test-token', token_type: 'bearer' })
     if (path === '/design/generate') return json(route, design)
-    if (path === `/design/${design.circuit_id}/bom`) return json(route, patches.length ? bom.bom_after : bom.bom)
+    if (path === `/design/${design.circuit_id}/bom`) {
+      return json(route, live ? bom.bom_live : patches.length ? bom.bom_after : bom.bom)
+    }
     if (path === `/design/${design.circuit_id}/patch` && req.method() === 'POST') {
       patches.push(req.postDataJSON())
       return json(route, bom.patch)
@@ -64,7 +70,8 @@ test('prices are dated, and the terminator is never priced as an 0402', async ({
   await expect(terminator).not.toContainText('C25071')          // the 0402's LCSC number
   const priced = table.getByRole('row').filter({ hasText: 'CL05B104KO5NNNC' })
   await expect(priced).toContainText('2026-07-25')
-  await expect(page.getByText('Live distributor pricing is not enabled.')).toBeVisible()
+  await expect(page.getByText(/Live Mouser pricing is off/)).toBeVisible()
+  await expect(priced).toContainText('catalogue')
   expect(unexpected).toEqual([])
 })
 
@@ -90,4 +97,22 @@ test('using a substitute sends its patch, stays on the tab and shows the new par
   await expect.poll(() => patches.length).toBe(1)
   expect(patches[0]).toEqual({ ops: used.ops })
   await expect(page.getByTestId('bom-table').getByRole('row').filter({ hasText: used.part_number })).toBeVisible()
+})
+
+test('a live quote shows its source, currency and time; an unlisted part keeps its dated price', async ({ page }) => {
+  const { unexpected } = await mockBackend(page, { live: true })
+  await openBom(page)
+  const table = page.getByTestId('bom-table')
+  const quoted = table.getByRole('row').filter({ hasText: 'CL05B104KO5NNNC' })
+  await expect(quoted).toContainText('€0.0085')
+  await expect(quoted).toContainText('2026-09-25 09:30 UTC')
+  await expect(quoted.getByRole('link', { name: 'Mouser' })).toHaveAttribute('href', /mouser\.com/)
+  const unlisted = table.getByRole('row').filter({ hasText: 'ATmega328P-PU' })   // not in the synthetic answer
+  await expect(unlisted).toContainText('2026-07-25')
+  await expect(unlisted).toContainText('catalogue')
+  const total = page.getByTestId('bom-total')
+  await expect(total).toContainText('€')
+  await expect(total).toContainText('$')
+  await expect(page.getByText(/Live Mouser prices on \d+ of \d+ rows/)).toBeVisible()
+  expect(unexpected).toEqual([])
 })

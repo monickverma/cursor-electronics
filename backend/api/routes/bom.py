@@ -2,7 +2,9 @@
 `GET /design/{id}/bom` — the bill of materials and each line's checked substitutes.
 
 Stage 6, `brain/decisions.md` [2026-09-25]. A row is priced only as the exact
-part it names, with the date the price was recorded; a substitute is offered
+part it names, with the date the price was recorded — or, when `MOUSER_API_KEY`
+is set, with a live Mouser quote for that exact part number and the time it
+was fetched (`pricing/live.py`; cached in PostgreSQL). A substitute is offered
 only after it passed every check the original passed
 (`generators/bom/substitution.py`), with the patch that applies it — accepting
 one is `POST /design/{id}/patch` with those `ops`: zero model calls, a new
@@ -20,6 +22,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.routes.auth import get_current_user
+from core.config import settings
 from core.intent_ir import IntentIR
 from core.ir_schema import CircuitIR
 from db.crud import get_design
@@ -29,11 +32,12 @@ from generators.bom.substitution import substitutes
 from generators.realize import generator_tag
 from generators.registry import default_registry
 from middleware.rate_limit import limiter
+from pricing.live import price_view
+from pricing.quotes import totals
 
 router = APIRouter()
 
-PRICING = ("Static prices from the parts catalogue, each with the date it was recorded. Live distributor "
-           "pricing is not enabled.")
+PRICING = "Static prices from the parts catalogue, each with the date it was recorded."
 
 
 def bom_view(design: Any) -> Dict[str, Any]:
@@ -45,7 +49,9 @@ def bom_view(design: Any) -> Dict[str, Any]:
         "circuit_id": current.circuit_id,
         "version": current.version,
         "rows": rows,
+        # The static catalogue total, in USD; `totals` is what the rows show, per currency.
         "total_usd": compiler.total_cost(rows),
+        "totals": list(totals(rows)),
         "coverage": compiler.pricing_coverage(rows),
         "pricing": PRICING,
         "substitutes": [],
@@ -83,4 +89,6 @@ async def get_bom(
     if str(design.user_id) != str(user.id):
         raise HTTPException(403, detail="Access denied")
     # Each candidate is re-derived and re-proved: seconds of work, off the event loop.
-    return await run_in_threadpool(bom_view, design)
+    view = await run_in_threadpool(bom_view, design)
+    # Live prices over it, when a key is set; a failure leaves the static prices and says why.
+    return await price_view(db, view, api_key=settings.mouser_api_key, cache_hours=settings.price_cache_hours)

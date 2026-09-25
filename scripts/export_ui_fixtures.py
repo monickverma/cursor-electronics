@@ -134,35 +134,83 @@ def _firmware(registry) -> dict:
     }
 
 
+#: [2026-09-25] The live fixture's quotes: Mouser's answer *shape*, with made-up
+#: prices, in euros as a non-US account sees them. Not real prices — the UI test
+#: needs a live row, a currency that is not the catalogue's, and an unlisted part.
+SYNTHETIC_MOUSER = {
+    "CL05B104KO5NNNC": ("187-CL05B104KO5NNNC", "0,0085 €", "81000"),
+    "RC0402FR-0710KL": ("603-RC0402FR-0710KL", "0,0090 €", "250000"),
+}
+
+
+def _synthetic_mouser():
+    import httpx
+
+    def answer(request):
+        asked = json.loads(request.content)["SearchByPartRequest"]["mouserPartNumber"].split("|")
+        parts = [{"ManufacturerPartNumber": pn, "MouserPartNumber": SYNTHETIC_MOUSER[pn][0],
+                  "Manufacturer": "(synthetic)", "Min": "1", "Mult": "1",
+                  "PriceBreaks": [{"Quantity": 1, "Price": SYNTHETIC_MOUSER[pn][1], "Currency": "EUR"}],
+                  "AvailabilityInStock": SYNTHETIC_MOUSER[pn][2],
+                  "ProductDetailUrl": f"https://www.mouser.com/ProductDetail/{pn}"}
+                 for pn in asked if pn in SYNTHETIC_MOUSER]
+        return httpx.Response(200, json={"Errors": [], "SearchResults": {"Parts": parts}})
+
+    return lambda: httpx.AsyncClient(transport=httpx.MockTransport(answer))
+
+
+def _route_view(record, api_key: str = "", client_factory=None) -> dict:
+    """What the route answers: bom_view, then live pricing — off without a key."""
+    from datetime import datetime, timezone
+
+    from api.routes.bom import bom_view
+    from pricing.live import price_view
+
+    async def nothing_cached(db, source, keys):
+        return {}
+
+    async def store_nothing(db, source, quotes):
+        return None
+
+    kwargs = {"client_factory": client_factory} if client_factory else {}
+    return asyncio.run(price_view(None, bom_view(record), api_key=api_key, cache_hours=24,
+                                  now=datetime(2026, 9, 25, 9, 30, tzinfo=timezone.utc),
+                                  get_cached=nothing_cached, put_cached=store_nothing, **kwargs))
+
+
 def _bom(registry) -> dict:
     """
     Stage 6: an RS-485 node on the Uno; what GET /design/{id}/bom answers for it
     (dated rows, checked substitutes, the terminators refused by name); what the
     patch route answers when the first substitute is used; and the BOM after.
+    [2026-09-25]: the same view with live pricing on, from synthetic quotes.
     """
     from types import SimpleNamespace
 
-    from api.routes.bom import bom_view
     from core.intent_patch import PatchOp, apply_patch
 
     intent = FormProducer(registry).build("modbus_rtu_master", {"mcu": "arduino_uno"})
     generator = registry.dispatch(intent).generator
     ir = realize(generator, intent)
     record = SimpleNamespace(ir_json=ir.model_dump(mode="json"), intent_ir=intent.model_dump(mode="json"))
-    before = bom_view(record)
+    before = _route_view(record)
     if not before["substitutes"]:
         raise SystemExit("the RS-485 design offered no substitutes — the fixture would test nothing")
     used = before["substitutes"][0]
     patched = apply_patch(intent, [PatchOp(**op) for op in used["ops"]]).intent
     after_ir = realize(generator, patched)
-    after = bom_view(SimpleNamespace(ir_json=after_ir.model_dump(mode="json"),
-                                     intent_ir=patched.model_dump(mode="json")))
+    after = _route_view(SimpleNamespace(ir_json=after_ir.model_dump(mode="json"),
+                                        intent_ir=patched.model_dump(mode="json")))
+    live = _route_view(record, api_key="synthetic-key", client_factory=_synthetic_mouser())
+    if not any(r.get("live") for r in live["rows"]):
+        raise SystemExit("no row took a synthetic live quote — the live fixture would test nothing")
     generate = _generate_response(ir, {"status": "unavailable", "message": "not built for this fixture"})
     patch = {**_generate_response(after_ir, {"status": "unavailable", "message": "not built for this fixture"}),
              "changes": [f"constraints.pinned.{used['component_id']}: (none) → {used['part_number']}"],
              "note_to_user": "", "predict_delta": [], "citations": [],
              "generator": after_ir.generator, "generator_changed": None}
-    return {"generate": generate, "bom": before, "used": used, "patch": patch, "bom_after": after}
+    return {"generate": generate, "bom": before, "used": used, "patch": patch, "bom_after": after,
+            "bom_live": live}
 
 
 def main() -> None:

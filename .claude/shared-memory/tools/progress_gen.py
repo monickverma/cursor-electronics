@@ -475,10 +475,12 @@ PLANNED = {
     },
     "generators/rs485_node": {
         "file": "backend/generators/rs485_node.py",
-        "test_file": "tests/test_generator_library.py",
+        "test_file": ["tests/test_generator_library.py", "tests/test_d2_dependence.py"],
         "entries": [
             ("RS485NodeGenerator", "class", "TPL_002 on the contract; fail-safe bias is the claim"),
             ("select", "function", "Largest bias pair keeping idle V_AB 25% over threshold"),
+            ("DeHold", "class", "R4 against the pin's leakage and DE/RE input current, under V_IL"),
+            ("de_hold", "function", "The DE/RE pull-down as placed; refused if it cannot hold the driver off"),
         ],
     },
     "validation/claims": {
@@ -491,6 +493,8 @@ PLANNED = {
             ("graded",             "function", "A claim whose grade is derived from its method"),
             ("assess",             "function", "Every claim for a design: physics, X6 models, X8 catalogue"),
             ("netlist_models",     "function", "X6 — MCU models read from the netlist, never remembered"),
+            ("derive_mcu_models",  "function", "D2 per claim: dependence, an unmodelled pin, an assumed state"),
+            ("held_to_rail",       "function", "Nodes a design resistor holds to a rail: the pin reaches them by its load"),
         ],
     },
     "validation/defeaters": {
@@ -656,6 +660,7 @@ PLANNED = {
             ("untrusted",    "function", "The figures a claim reads that keep D7 open"),
             ("of",           "function", "Figure ids a claim reads; refuses an unrecorded one"),
             ("passive",      "function", "A placed passive's figures, by its series or its part"),
+            ("evidence",     "function", "The agent's page-cited check of each record — never a verification"),
         ],
     },
     "validation/figure_audit": {
@@ -687,12 +692,44 @@ PLANNED = {
     },
     "validation/bench": {
         "file": "backend/validation/bench.py",
-        "test_file": "tests/test_bench.py",
+        "test_file": ["tests/test_bench.py", "tests/test_bench_rc_method.py"],
         "entries": [
             ("BenchRecord",        "class",    "A measurement of one design: parts, quantities, instruments"),
             ("predicted_interval", "function", "The model for the parts as measured, exactly at the corners"),
             ("evaluate",           "function", "agrees | disagrees | stale, per measured property"),
             ("evidence_for",       "function", "What drops D1 on this design; nothing if the family disagrees"),
+        ],
+    },
+    # [2026-09-25]: live Mouser pricing, optional; never read by validation.
+    "pricing/quotes": {
+        "file": "backend/pricing/quotes.py",
+        "test_file": "tests/test_pricing.py",
+        "entries": [
+            ("Quote",       "class",    "One distributor's answer for one exact part number, dated"),
+            ("parse_price", "function", "A number from a locale-formatted price ('6,85 €', '$1,234.56')"),
+            ("parse_count", "function", "Stock and order quantities from Mouser's strings"),
+            ("key",         "function", "How a part number is stored and matched"),
+            ("totals",      "function", "One total per currency, never converted"),
+        ],
+    },
+    "pricing/mouser": {
+        "file": "backend/pricing/mouser.py",
+        "test_file": "tests/test_pricing.py",
+        "entries": [
+            ("MouserUnavailable", "class",    "A failure whose message carries no URL and no key"),
+            ("batches",           "function", "Ten exact part numbers to a request"),
+            ("quote_from",        "function", "A listing that is exactly the part asked for, or nothing"),
+            ("fetch",             "function", "The Search API, exact part numbers only"),
+            ("redact",            "function", "The key out of any text httpx would log"),
+        ],
+    },
+    "pricing/live": {
+        "file": "backend/pricing/live.py",
+        "test_file": ["tests/test_pricing.py", "tests/test_bom_route.py"],
+        "entries": [
+            ("live_fields", "function", "What a row shows for a live quote"),
+            ("apply",       "function", "Quotes over rows and substitutes; totals per currency"),
+            ("price_view",  "function", "Cache, then Mouser, then the rows — off without a key"),
         ],
     },
 }

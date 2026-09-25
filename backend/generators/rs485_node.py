@@ -4,7 +4,8 @@ Arduino Uno + MAX485 RS-485 Modbus RTU master — Stage 3, Phase 1 TPL_002.
     VCC ── R2 (bias) ──┬── RS485_A ──┐
                        R1 (term.)    MAX485 A/B ── bus ── far-end terminator
     GND ── R3 (bias) ──┴── RS485_B ──┘
-    U1 D11 → DI,  D10 ← RO,  D2 → DE/RE   (SoftwareSerial, as the firmware uses)
+    U1 D11 → DI,  D10 ← RO,  D2 → DE/RE ── R4 (pull-down) ── GND
+    (SoftwareSerial, as the firmware uses)
 
 **The claim this generator exists to make is fail-safe bias.** When every
 driver on the bus is off, A and B float, and a receiver reading a floating
@@ -32,6 +33,15 @@ hardware UART — while `modbus_master.ino.j2` drives it with SoftwareSerial on
 D10/D11 (`brain/decisions.md` [2026-06-02]). The schematic and the firmware
 disagreed about which pins carry the bus. This generator wires what the
 firmware drives.
+
+**DE/RE has a pull-down (0.3.0).** Until 0.2.0 nothing but the MCU pin held
+DE/RE, and that pin is high-impedance while the MCU is in reset and until the
+firmware sets it — on the Uno, through the bootloader's second or two. A
+floating DE can switch the driver on and put DI, also floating, onto a bus
+two other nodes are using. R4 holds the transceiver in receive mode then, and
+`rs485.driver_default_off` proves it holds: the pin's leakage and the
+transceiver's input current through R4 stay under V_IL
+(`brain/decisions.md` [2026-09-25]).
 """
 
 from __future__ import annotations
@@ -92,7 +102,7 @@ from generators.protocol import (
 )
 
 NAME = "rs485_node"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 FUNCTION = "modbus_rtu_master"
 
 XCVR_PART = "MAX485ECSA"
@@ -111,6 +121,9 @@ BAUD_RATES = (1200, 2400, 4800, 9600, 19200, 38400, 57600)
 HARDWARE_BAUD_RATES = BAUD_RATES + (115200,)
 #: The Uno pins modbus_master.ino.j2 drives; other boards' are in data/mcu_targets.py.
 PIN_TX, PIN_RX, PIN_DE_RE = "D11", "D10", "D2"
+#: R4, DE/RE to GND. Microamps of leakage through it are millivolts; the pin
+#: driving it high to transmit sources well under a milliamp.
+DE_PULLDOWN_OHM = 10_000.0
 
 #: Stage 5: a 3.3 V board takes the MAX3485. The bus figures are TIA-485's, not
 #: the part's, so the thresholds above hold for both — checked, not assumed.
@@ -127,7 +140,7 @@ def transceiver(target) -> tuple:
 
 def baud_rates(target) -> tuple:
     return BAUD_RATES if target.rs485_uart is None else HARDWARE_BAUD_RATES
-PINNABLE = ("R1", "R2", "R3")
+PINNABLE = ("R1", "R2", "R3", "R4")
 
 DEFAULT_SLAVES = [
     {"address": 1, "register_start": 0, "register_count": 4, "name": "Device_1"},
@@ -180,7 +193,7 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '120', '560')")
         pins[part] = ohms
-    figs = PartFigures(pinned_parts(intent, PINNABLE, {"R1": "resistor", "R2": "resistor", "R3": "resistor"}))
+    figs = PartFigures(pinned_parts(intent, PINNABLE, {p: "resistor" for p in PINNABLE}))
     return _Spec(supply=supply, far_end=far_end, baud=baud, budget=budget,
                  slaves=[dict(s) for s in slaves], poll_ms=poll, pins=pins, target=target, figs=figs)
 
@@ -222,6 +235,43 @@ def _bands(spec: _Spec, r1: float, r2: float, r3: float):
         worst_corners(vab, boxes), vab(r1, r2, r3, far),
         worst_corners(load, boxes), load(r1, r2, r3, far),
     )
+
+
+class DeHold:
+    """R4 against what can lift DE/RE while the MCU pin is not driving it."""
+
+    def __init__(self, spec: "_Spec", r4: float):
+        target = spec.target
+        _, xcvr = transceiver(target)
+        mcu_table = get_constraints(target.mcu_part)
+        self.r4 = r4
+        self.r4_max = r4 * (1 + spec.figs.tolerance("R4"))
+        self.r4_min = r4 * (1 - spec.figs.tolerance("R4"))
+        self.pin = target.pin(target.defaults["rs485_de"])
+        self.leak_ua = float(mcu_table["pin_leakage_ua"])
+        self.input_ua = float(xcvr["logic_input_current_ua"])
+        self.vil_mv = float(xcvr["logic_input_vil_v"]) * 1000.0
+        # DE and RE are two inputs on the one node.
+        self.worst_mv = self.r4_max * (self.leak_ua + 2 * self.input_ua) * 1e-3
+        self.drive_ma = spec.supply / self.r4_min * 1000.0
+        self.drive_limit_ma = float(mcu_table["gpio_recommended_current_ma"])
+
+    def refusal(self) -> Optional[str]:
+        if self.pin.reset_pull == "up":
+            return (f"the DE/RE pin {self.pin.name} is pulled up inside the MCU from reset, and a pull-down "
+                    f"cannot be shown to hold it low without that pull's minimum resistance")
+        if self.worst_mv >= self.vil_mv:
+            return (f"R4={self.r4:g}Ω lets DE/RE rise to {self.worst_mv:.0f} mV while the MCU pin is "
+                    f"high-impedance, not below the transceiver's {self.vil_mv / 1000:g} V V_IL — the "
+                    f"driver could switch on during reset")
+        if self.drive_ma > self.drive_limit_ma:
+            return (f"R4={self.r4:g}Ω takes {self.drive_ma:.1f} mA from the MCU pin while it transmits, "
+                    f"over the {self.drive_limit_ma:g} mA the pin is specified at")
+        return None
+
+
+def de_hold(spec: "_Spec") -> DeHold:
+    return DeHold(spec, spec.pins.get("R4", DE_PULLDOWN_OHM))
 
 
 def select(spec: _Spec):
@@ -306,6 +356,10 @@ class RS485NodeGenerator:
                 f"R1={chosen[0]:g}Ω takes up to {term_mw:.0f} mW with the pair driven to "
                 f"{spec.supply:g} V, above the {spec.r1_power_w() * 1000:g} mW rating of {what}"
             )
+        # The same invariant for R4: its own claim must hold on any design accepted.
+        why = de_hold(spec).refusal()
+        if why:
+            return EnvelopeDecision.refuse(why)
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power", voltage_range_v=Interval.at(spec.supply, "V")),
             PortContract(name="RS485_A", direction="bidirectional"),
@@ -335,12 +389,15 @@ class RS485NodeGenerator:
         term_lo, _ = _term_tol(spec, r1)
         rail = self._rail_ma(spec, r1, r2, r3)
         term_worst = spec.supply ** 2 / term_lo * 1000.0
+        hold = de_hold(spec)
         return Prediction(
             quantities={
                 "v_ab_idle_mv": Interval(lo=vlo, hi=vhi, nominal=vnom, units="mV"),
                 "bus_load_ohm": Interval(lo=llo, hi=lhi, nominal=lnom, units="ohm"),
                 "termination_power_mw": Interval(lo=0.0, hi=term_worst, nominal=term_worst, units="mW"),
                 "supply_current_ma": Interval.at(rail, "mA"),
+                # Leakage and input currents are maxima: the band is 0 to the bound.
+                "de_idle_mv": Interval(lo=0.0, hi=hold.worst_mv, nominal=hold.worst_mv, units="mV"),
             },
             scope=ClaimScope(parameters="tolerance_box",
                              model=f"mna_ideal+{mcu_supply_model(mcu_supply_ohms(spec.target.mcu_part))}",
@@ -366,6 +423,10 @@ class RS485NodeGenerator:
         bus_tol = passive(placed["R1"], "tolerance") + passive(placed["R2"], "tolerance") + \
             passive(placed["R3"], "tolerance") + far
         rail_reads = of(mcu, "supply_model_ohm") + of(xcvr, "current_draw_ma", "supply_voltage_max")
+        hold, de = de_hold(spec), q["de_idle_mv"]
+        hold_reads = (passive(placed["R4"], "tolerance") + of(mcu, "pin_leakage_ua")
+                      + of(xcvr, "logic_input_current_ua", "logic_input_vil_v")
+                      + of(f"board:{spec.target.id}", hold.pin.name))
         return [
             graded("rs485.failsafe_bias",
                    f"the idle bus holds V_AB above the receivers' {THRESHOLD_MV:g} mV threshold {bus}",
@@ -396,6 +457,17 @@ class RS485NodeGenerator:
                    detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
                    defeaters=("D1", "D2", "D7"), covers=("power_supply_adequate",)),
+            # D2 is derived: the node it measures carries an MCU pin the
+            # netlist does not model, so it names mcu_pin_load.
+            graded("rs485.driver_default_off",
+                   f"while the MCU pin is not driving it — in reset, and until the firmware sets it — R4 "
+                   f"holds DE/RE below the transceiver's {hold.vil_mv / 1000:g} V V_IL, so the driver "
+                   f"stays off",
+                   de.hi < hold.vil_mv, "monotone_corners",
+                   scope.model_copy(update={"measures": ("v(rs485_de_re)",), "figures": hold_reads}),
+                   detail=f"V_DE ≤ {de.hi:.1f} mV: R4 ≤ {hold.r4_max:.0f} Ω × ({hold.leak_ua:g} µA pin "
+                          f"leakage + 2 × {hold.input_ua:g} µA DE/RE input current)",
+                   defeaters=("D1", "D7")),
         ]
 
     # ── properties() ──────────────────────────────────────────────────────
@@ -476,6 +548,8 @@ class RS485NodeGenerator:
                          f"MCU's RX pin.")
         where = "" if target.id == "arduino_uno" else f" on the {target.board}"
         r1_part, r1_package, r1_maker = spec.figs.resistor("R1", r1, TERMINATOR_SERIES.code)
+        hold = de_hold(spec)
+        r4_part, r4_package, r4_maker = spec.figs.resistor("R4", hold.r4)
         return CircuitIR(
             intent=f"Modbus RTU master on RS-485 at {int(spec.baud)} baud, {len(slaves)} slave(s){where}",
             application_class=ApplicationClass.MODBUS_RTU,
@@ -502,6 +576,19 @@ class RS485NodeGenerator:
                 ),
                 bias("R2", r2, "VCC", "A"),
                 bias("R3", r3, "GND", "B"),
+                Component(
+                    id="R4", type=ComponentType.RESISTOR, part_number=r4_part, manufacturer=r4_maker,
+                    package=r4_package, value=value_string(hold.r4),
+                    supply_voltage_max=spec.figs.voltage_max("R4"), confidence=0.95,
+                    justification=(
+                        f"{hold.r4:g}Ω pull-down on DE/RE. While the MCU is in reset, and until the firmware "
+                        f"sets it, {de} is high-impedance, and a floating DE can switch the driver on and put "
+                        f"noise on a bus other nodes are using. This holds the transceiver in receive mode: "
+                        f"DE/RE stays at or below {hold.worst_mv:.0f} mV against the pin's leakage, under the "
+                        f"{hold.vil_mv / 1000:g} V the transceiver reads as low. It draws current only while "
+                        f"the pin drives DE high to transmit."
+                    ),
+                ),
                 decoupling("U2", target.logic_v),
             ],
             nodes=[
@@ -532,6 +619,8 @@ class RS485NodeGenerator:
                 Connection(component_id="R2", pin="B", node_id="RS485_A"),
                 Connection(component_id="R3", pin="A", node_id="RS485_B"),
                 Connection(component_id="R3", pin="B", node_id="GND"),
+                Connection(component_id="R4", pin="A", node_id="RS485_DE_RE"),
+                Connection(component_id="R4", pin="B", node_id="GND"),
             ],
             constraints={
                 "supply_voltage": spec.supply,
@@ -569,7 +658,7 @@ class RS485NodeGenerator:
             # Found by the Stage 3 locality sweep, which this closure first failed.
             "constraints.supply_v": frozenset({"R1", "R2", "R3"}),
             "constraints.far_end_terminated": frozenset({"R2", "R3"}),
-            "constraints.pinned": frozenset({"R1", "R2", "R3"}),
+            "constraints.pinned": frozenset({"R1", "R2", "R3", "R4"}),
             "constraints.baud": frozenset(),
             "constraints.supply_current_ma": frozenset(),
             "preferences": frozenset(),
@@ -579,4 +668,4 @@ class RS485NodeGenerator:
             if path in closures:
                 return closures[path]
             path = path.rpartition(".")[0]
-        return frozenset({"U1", "U2", "R1", "R2", "R3", "C1"})
+        return frozenset({"U1", "U2", "R1", "R2", "R3", "R4", "C1"})

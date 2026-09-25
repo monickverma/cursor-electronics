@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-24T20:18:52.678715Z",
-  "generated_from_commit": "94b61c1",
+  "generated_at": "2026-09-25T11:30:21.642683Z",
+  "generated_from_commit": "f817d2c",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -454,13 +454,31 @@
       "file": "backend/validation/bench.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "pricing/quotes": {
+      "status": "verified_done",
+      "file": "backend/pricing/quotes.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "pricing/mouser": {
+      "status": "verified_done",
+      "file": "backend/pricing/mouser.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "pricing/live": {
+      "status": "verified_done",
+      "file": "backend/pricing/live.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 2141,
+    "passed": 2203,
     "failed": 0,
     "skipped": 30,
-    "total": 2141
+    "total": 2203
   },
   "phase1_criteria": [
     {
@@ -657,6 +675,7 @@
           "rs485.driver_load",
           "rs485.termination_dissipation",
           "rs485.rail_current",
+          "rs485.driver_default_off",
           "rule.no_floating_nodes",
           "rule.voltage_ratings_ok",
           "rule.rs485_termination_present",
@@ -679,13 +698,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "f817d2c feat(phase2): Stage 6 — BOM and substitution; D7 provenance; D1 bench evidence",
     "94b61c1 feat(defeaters): D2 derived per claim — D1, D2, D7 decided with TypeSafe",
     "e803a99 fix(ci): firmware route annotations resolve under the pinned FastAPI 0.115",
     "3cdc9e9 brain: /update-memory — Stages 3–5 into architecture and timeline; 2001 passing at 1126d15",
-    "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1",
-    "bb3eb21 feat(phase2): Stage 5 — multi-MCU firmware: boards as data, pins as claims, compile before display"
+    "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md | 145 ++++++++++++\n backend/generators/dht22_node.py         |   4 +-\n backend/generators/led_indicator.py      |   7 +-\n backend/generators/netlist/models.py ",
+  "last_diff_stat": ".claude/CLAUDE.md                           |   17 +-\n .claude/rules/simulation.md                 |    8 +\n .claude/shared-memory/brain/architecture.md |   22 +-\n .claude/shared-memory/brain/decision",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

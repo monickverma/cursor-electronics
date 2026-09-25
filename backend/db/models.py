@@ -109,6 +109,22 @@ class FirmwareBuild(Base):
     finished_at = Column(DateTime(timezone=True))
 
 
+class PriceQuote(Base):
+    """
+    A distributor's quote for one part number, cached — never in memory.
+    `brain/decisions.md` [2026-09-25]: reused until it is older than
+    `PRICE_CACHE_HOURS`; "not listed" is cached too, a failed request is not.
+    """
+
+    __tablename__ = "price_quotes"
+
+    source = Column(String(20), primary_key=True)            # "mouser"
+    part_number = Column(String(100), primary_key=True)      # pricing.quotes.key()
+    found = Column(Boolean, nullable=False)
+    fetched_at = Column(DateTime(timezone=True), nullable=False)
+    quote = Column(JSONB, nullable=False)                    # pricing.quotes.Quote
+
+
 class PatchHistory(Base):
     __tablename__ = "patch_history"
 

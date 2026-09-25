@@ -14,6 +14,9 @@ os.environ.setdefault("ANTHROPIC_API_KEY", "")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test_db")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-minimum-32-characters-long")
+# No test may ask a live distributor for a price, whatever .env or the shell
+# holds: tests of pricing/ inject their own transport ([2026-09-25]).
+os.environ["MOUSER_API_KEY"] = ""
 
 # Keep the request-log sidecar out of the source tree. No test has a database,
 # so every request any test makes through the app falls back to this file —

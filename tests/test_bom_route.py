@@ -108,14 +108,18 @@ def test_rows_are_priced_as_themselves_and_dated(env):
     assert rows["R1"]["lcsc_pn"] is None and rows["R1"]["priced_as"] is None
     for row in body["rows"]:
         assert (row["price_asof"] is not None) == row["price_known"]
-    assert "not enabled" in body["pricing"]
+        assert row["live"] is None
+    # No key in a test, ever (conftest): live pricing is off and says so.
+    assert "Live Mouser pricing is off" in body["pricing"] and body["live_pricing"]["enabled"] is False
+    assert {t["currency"] for t in body["totals"]} == {"USD"}
 
 
 def test_substitutes_arrive_checked_and_the_terminator_is_refused_by_name(env):
     cid = env.store.add("rs485_node", "arduino_uno")
     body = env.client.get(f"/design/{cid}/bom").json()
     assert body["substitutes_unavailable"] is None
-    assert {s["component_id"] for s in body["substitutes"]} == {"R2", "R3"}
+    # R4, the DE/RE pull-down (rs485_node 0.3.0), has substitutes of its own.
+    assert {s["component_id"] for s in body["substitutes"]} == {"R2", "R3", "R4"}
     refused = {r["part_number"]: r["reason"] for r in body["rejected"] if r["component_id"] == "R1"}
     assert "62.5 mW rating" in refused["RC0402FR-07120RL"]
 
@@ -152,3 +156,39 @@ def test_someone_elses_design_is_not_shown(env):
     cid = env.store.add("dht22_node", "arduino_uno", user=OTHER)
     assert env.client.get(f"/design/{cid}/bom").status_code == 403
     assert env.client.get("/design/no-such-design/bom").status_code == 404
+
+
+def test_with_a_key_the_route_lays_live_quotes_over_the_rows(env, monkeypatch):
+    """The route's own path with a key set: cache, then Mouser (mocked), then the rows."""
+    import httpx
+
+    import db.crud as crud
+    import pricing.live as live
+
+    stored = {}
+
+    async def get_cached(db, source, keys):
+        return {k: stored[k] for k in keys if k in stored}
+
+    async def put_cached(db, source, quotes):
+        stored.update(quotes)
+
+    def answer(request):
+        asked = json.loads(request.content)["SearchByPartRequest"]["mouserPartNumber"].split("|")
+        parts = [{"ManufacturerPartNumber": pn, "MouserPartNumber": f"603-{pn}", "Min": "1", "Mult": "1",
+                  "PriceBreaks": [{"Quantity": 1, "Price": "$0.0123", "Currency": "USD"}],
+                  "AvailabilityInStock": "5000"} for pn in asked if pn.startswith("RC0402FR")]
+        return httpx.Response(200, json={"Errors": [], "SearchResults": {"Parts": parts}})
+
+    monkeypatch.setattr(bom_route.settings, "mouser_api_key", "route-test-key")
+    monkeypatch.setattr(crud, "get_price_quotes", get_cached)
+    monkeypatch.setattr(crud, "put_price_quotes", put_cached)
+    monkeypatch.setattr(live, "_default_client", lambda: httpx.AsyncClient(transport=httpx.MockTransport(answer)))
+    cid = env.store.add("rs485_node", "arduino_uno")
+    body = env.client.get(f"/design/{cid}/bom").json()
+    rows = {r["id"]: r for r in body["rows"]}
+    assert rows["R4"]["price_source"] == "mouser" and rows["R4"]["unit_price"] == 0.0123
+    assert rows["R1"]["live"] is None, "the 1206 terminator is not an RC0402FR part"
+    assert body["live_pricing"]["enabled"] and body["live_pricing"]["fetched"] > 0
+    assert stored, "the quotes were cached"
+    assert "route-test-key" not in json.dumps(body)

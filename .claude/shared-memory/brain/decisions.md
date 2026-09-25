@@ -2048,3 +2048,193 @@ KPI (deferred, trigger: an engineer is available).
   repository record that disagrees or is stale.
 - **Nothing has been measured.** D1 is open on every claim, exactly as
   before. The RC timing sketch the sheet describes has not been written or run.
+
+---
+
+## [2026-09-25] The RS-485 DE/RE pull-down, live Mouser pricing, and the agent's datasheet pass
+
+**Decision:** On the instruction "bench and verification work you do — then tell
+me what's with the RS-485 driver-enable pull-down and do what needs to be done;
+add live distributor pricing", with the user's answers to three questions:
+distributor **Mouser**; the agent **may download the makers' datasheets** (into
+the session scratchpad, never the repository); D7 **"you check, I confirm"**.
+Written before the code.
+
+### 1. The DE/RE pull-down — a product fix (`rs485_node` 0.3.0)
+
+**The defect.** DE and RE are tied to one MCU pin and nothing else. While the
+MCU is in reset every pin is high-impedance, and on the Uno the bootloader
+leaves D2 alone for a second or two after that; the STM32's PB0 is a floating
+input after reset. Neither the MAX485 nor the MAX3485 specifies a pull on DE or
+RE. A floating DE can enable the driver, which then puts DI — also floating
+until the UART is set up — onto the bus: every reset of this node can corrupt a
+frame between two others. That is a defect whatever D2 says, which is why it is
+fixed now although Jev preferred not to change the design *for D2's sake*
+([2026-09-24], 0.72): the user asked for it as a product fix.
+
+**The fix.** R4, 10 kΩ (RC0402FR-0710KL), from RS485_DE_RE to GND. 10 kΩ
+because leakage in microamps then gives tens of millivolts, and the pin driving
+it high to transmit sources 0.5 mA. The firmware already drives DE low in
+`setup()` and high only to transmit; it does not change. DI stays unpulled:
+with the driver held off it cannot reach the bus.
+
+**A new claim, `rs485.driver_default_off`:** while the pin is not driving, R4
+holds DE/RE at `V_DE ≤ R4_max · (I_lkg,MCU + I_IN,DE + I_IN,RE)`, below the
+transceiver's V_IL. Monotone in every input, so its corners are exact (G1). It
+reads four new figure records — the MCU pin's input leakage, the transceiver's
+logic-input current and V_IL, and the DE pin's **reset state**, a new
+`Pin.reset_pull` field — and R4's tolerance. A pull-down at reset only lowers
+V_DE, so ignoring one is conservative; a pull-*up* at reset would need its
+minimum resistance, so a DE pin with one is refused by name (none of the three
+boards' DE pins has one). The envelope also refuses a pinned R4 that breaks the
+bound, or that would make the pin source more than its recommended current.
+
+**D2 — route 3 refined, and one place the agent departs from Jev.** A node a
+claim *assumes* is now told apart by what holds it: held to a rail through a
+resistor in the netlist, the MCU reaches it only through its pin's load (its
+leakage), so the claim names `mcu_pin_load`; held by nothing but the pin, it
+keeps `mcu_pin_state`. The fail-safe claim therefore **keeps D2**, now naming
+`mcu_pin_load`. Jev put 0.69 on "a pull-down would make fail-safe independent of
+the MCU"; the agent does not take that: the pin's leakage still reaches the
+node, the new claim bounds it with a datasheet figure (D7), and D2 is eliminated
+only by its named evidence — reachset conformance — never by a margin. The new
+claim cites D2 too (route 2: it measures a node an unmodelled MCU pin sits on).
+
+### 2. Live distributor pricing — Mouser (X7)
+
+- **Optional.** `MOUSER_API_KEY` in `.env`, empty by default. Without it nothing
+  changes: static, dated prices. The user creates the account and enters the
+  key; the agent never handles it beyond the setting.
+- **Only `GET /design/{id}/bom` fetches.** Generation, patching and validation
+  never do; pricing never gates validation, and the Stage 6 scan extends to the
+  new package.
+- **A part is priced only as itself.** One Search API request per ten parts
+  (`partSearchOptions: Exact`), and a result is used only when Mouser's
+  manufacturer part number equals the BOM's: `MAX485ECSA+` is not `MAX485ECSA`.
+- **Cached in PostgreSQL**, never in memory: `price_quotes`, keyed by source and
+  part number, with `fetched_at`, reused for 24 h (configurable). "Not listed"
+  is cached too; errors are not.
+- **Every live row says what it is:** `price_source: "mouser"`, `price_asof` the
+  fetch time in UTC, the currency Mouser quotes the account in, the price break
+  used, stock, and the Mouser part number. Prices are parsed from Mouser's
+  locale-formatted strings ("$0.10", "6,85 €") into a number and a currency
+  code, never converted; totals are per currency, so a mixed BOM shows two
+  totals, not a converted sum.
+- **Failure falls back, visibly.** Timeout, HTTP error, Mouser's `Errors`, or
+  its limits (30 requests a minute, 1000 a day) leave the static price and the
+  view says why. Mouser takes the key in the query string, so it is redacted
+  from httpx's log lines and never put in an error message.
+- **Substitutes** keep static prices for ordering — price never decides one —
+  and show a live price beside them when one is cached.
+- Rejected: DigiKey (OAuth2 client-credentials setup), LCSC (no official public
+  API), Nexar/Octopart (paid). The user chose Mouser.
+
+### 3. The datasheet pass — the agent checks, a person confirms (D7)
+
+- The agent downloads each maker's document into the session scratchpad, reads
+  it, and records per figure: document, revision, page, table or section, what
+  it states, and whether the record agrees — `data/figure_evidence.json`, bound
+  to the record hash it checked. A record found wrong is corrected in its
+  owning table first, and said so here.
+- **An agent's check never makes a figure trusted** — D7 is eliminated by
+  "no LLM-extracted rating gates a claim". `scripts/verify_figures.py review`
+  shows each record beside the evidence; `confirm --by <name>` records a
+  person's verification of every figure whose evidence agrees and whose hash has
+  not moved since, with the method stated ("reviewed the agent's evidence
+  against the cited page"). D7 closes per figure only then.
+- Pin rows are checked against the chip datasheets. What only a board document
+  says (which pins the board wires to USB, the LED, the button) is marked as
+  not checked where the board document was not read.
+
+### 4. Bench preparation (D1)
+
+The RC timing sketch `docs/BENCH_D1.md` describes is written, compiled with
+PlatformIO, and its method checked on ngspice before anyone builds it; record
+templates are pre-filled for the CI designs. **Nothing is measured** — D1 stays
+open until a person measures.
+
+### The DE/RE pull-down, built — 2026-09-25
+
+- `rs485_node` 0.3.0: R4, 10 kΩ RC0402FR-0710KL, DE/RE to GND. Claim
+  `rs485.driver_default_off` holds on every board at G1: V_DE ≤ 50.5 mV on the
+  Uno and the Black Pill (1 µA pin leakage), 40.9 mV on the ESP32 (50 nA),
+  against the transceivers' 0.8 V V_IL. It cites D1, D7 and — derived, route
+  2 — D2 as `mcu_pin_load`.
+- Route 3 refined as decided (`validation/claims.py::held_to_rail`): the
+  fail-safe claim and its proof now name `mcu_pin_load`, D2 kept. Critical D2
+  citations on the CI cases 33 → 36 (the new claim, ×3). A test takes R4 out
+  of the netlist and sees `mcu_pin_state` come back.
+- The envelope refuses a DE pin with an internal pull-up at reset, an R4 that
+  cannot hold V_IL, or one that would make the pin source more than its
+  recommended current. None of the three boards' DE pins has a reset pull-up
+  (the ESP32's GPIO4 has a weak pull-down, which only helps).
+- New figure records: the three MCUs' pin leakage; both transceivers' logic
+  input current and V_IL; each pin's reset state (`Pin.reset_pull`, from the
+  ESP32's IO_MUX table; the Black Pill's from the agent's memory, unchecked).
+  The completeness audit passes with no new skip; R4 gets substitutes.
+
+### Live Mouser pricing, built — 2026-09-25
+
+- `backend/pricing/` — `quotes.py` (the quote, locale-proof price parsing,
+  per-currency totals), `mouser.py` (Search API, exact part numbers, ten to a
+  request), `live.py` (cache, then Mouser, then the rows); the `price_quotes`
+  table (model, `schema.sql`, a startup migration); `MOUSER_API_KEY` and
+  `PRICE_CACHE_HOURS` in settings and `.env.example`. The BOM tab shows each
+  price's source, currency and fetch time, and one total per currency.
+- **Found building it: httpx logs every request's URL at INFO — with the key
+  in it.** `mouser.py` installs a redaction filter on httpx's loggers; a test
+  shows the key in the log without it and not with it.
+- Nothing has reached Mouser: there is no key. The request shape is Mouser's
+  documented v1 Search API as third-party clients use it — its own docs page
+  is script-rendered and could not be read. If the first real answer is not
+  the expected shape, the view keeps the static prices and says why.
+- Tests never reach the network: `conftest.py` blanks the key.
+
+### The datasheet pass, built — 2026-09-25
+
+Obtained from the makers: Microchip DS40002061B; Espressif's WROOM-32E v2.1,
+ESP32 v5.3 and the DevKitC V4 guide; Aosong's AM2302 manual V1.0; Yageo's RC_L
+specification V.14; Samsung's data sheet page for each CL05 part. **Analog
+Devices and ST reset every scripted download**; the browser offered the user a
+save dialog, and the three files were not saved during the session.
+
+`data/figure_evidence.json`: **80 agree, 22 agree in part** (the Uno's pin rows
+— the chip side checks, the board's own wiring needs its schematic — and the
+Uno's supply model), **60 not checked** (the two transceivers, the STM32 and
+the Black Pill, the LED), **0 differ** once seven records were corrected:
+the ATmega's output resistance (the curves give about 22 Ω at −40 °C, not the
+15 Ω minimum the record credited to them); the ESP32's (the 20 mA pairing is
+the agent's estimate); the DHT22's supply maximum (5.5 V, settling what the
+record asked), current (1.2 mA typical), '0'-bit high time (22–30 µs), sink
+current (the manual does give 8 mA typical) and the pin capacitance (the ESP32
+module gives 2 pF). **No value changed, so no design changed.**
+
+Found, for the user:
+- **The LED part number 67-21URC/S530-A3/TR8 may not exist.** Everlight's own
+  catalogue search for "67-21URC" returns only 67-21SURC parts, and no
+  distributor lists it. Its four figures cannot be checked until the part is
+  identified; replacing it changes every LED design and needs the real part's
+  datasheet — the user's call.
+- **GPIO16, the ESP32 RS-485 RX default, is wired to the PSRAM on WROOM-32E
+  variants with PSRAM** (module datasheet, Table 3 note 3). Free on the plain
+  WROOM-32E the target names; recorded as a pin note, default unchanged.
+- GPIO6–11 are not led out of the WROOM-32E at all (reserved either way).
+
+`scripts/verify_figures.py --review` shows every record beside its evidence;
+`--confirm-agreeing --by "<name>"` records a person's verification of the 80,
+saying in each entry that it confirmed the agent's cited evidence. Until then
+D7 stands exactly where it stood.
+
+### Bench preparation, built — 2026-09-25
+
+- `scripts/bench/rc_timer`: the Uno sketch the sheet describes (comparator
+  input capture on Timer1, two thresholds, 200 runs each). It compiles; it has
+  not run on a board.
+- `tests/test_bench_rc_method.py` checks the method on ngspice. **Found: the
+  comparator offset's budget is up to 5.2 %, not the agent's first estimate of
+  about 2 %** — that assumed one sign at both thresholds; the datasheet bounds
+  the offset (40 mV) but not its sign at each common-mode level. Still inside
+  the 15 % gate; `docs/BENCH_D1.md` now says to carry it in the accuracy.
+- `docs/bench_templates/`: a pre-filled record for each family, kept in step
+  with the generators by a test.
+- **Nothing has been measured.** D1 is open on every claim.

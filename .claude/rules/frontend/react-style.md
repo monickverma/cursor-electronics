@@ -67,7 +67,7 @@ For direct API calls in `lib/api.ts`, use the `NEXT_PUBLIC_API_URL` env var — 
 | `ChatPanel.tsx` | Auth form + chat input + message history | Handles both first-generate and follow-up-patch |
 | `SchematicViewer.tsx` | Renders `.kicad_sch` via kicanvas | Must be `dynamic import`, `ssr: false` |
 | `SimulationResults.tsx` | Polls simulation status every 3s | Clears interval on component unmount |
-| `BOMTable.tsx` | Displays component list, CSV export | No live pricing in Phase 1 |
+| `BOMTable.tsx` | Displays component list, CSV export | Each price shows its source, currency and date; one total per currency, never converted (2026-09-25) |
 | `ValidationReport.tsx` | Error/warning list + explanation text | Shows explanation from `ExplanationEngine` |
 | `FirmwareViewer.tsx` | Code display + `.ino` download | Returns null message for passive circuits |
 

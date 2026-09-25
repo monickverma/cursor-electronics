@@ -180,6 +180,9 @@ Datasheet excerpts are 4,000+ tokens each. Embedding 20 components' datasheets a
 **Adding a new circuit type before all 5 templates pass tests.**
 Breadth before depth = nothing works reliably. Finish the template system first.
 
+**Calling a distributor API outside `backend/pricing/`.** (Since 2026-09-25 Mouser is allowed there, for
+`GET /design/{id}/bom` only; a price never reaches a claim.)
+
 **Calling Digikey/LCSC API in Phase 1.**
 Static pricing only. Live API integration is Phase 2. Adding it early creates an authenticated, rate-limited, cacheable dependency that slows development.
 

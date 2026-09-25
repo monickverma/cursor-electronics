@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     # variable must not end up serving an untested surface by omission.
     pcb_engine_enabled: bool | None = None
 
+    # Live distributor pricing (Mouser Search API) — optional. Empty: the BOM
+    # shows only the static, dated catalogue prices. The key is the account
+    # holder's own and is never logged. `brain/decisions.md` [2026-09-25].
+    mouser_api_key: str = ""
+    # How long a cached quote is reused before Mouser is asked again.
+    price_cache_hours: float = 24.0
+
     @property
     def broker_url(self) -> str:
         return self.celery_broker_url or self.redis_url

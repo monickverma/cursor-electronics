@@ -9,7 +9,9 @@ equipment a student is likely to have: **a multimeter and an Arduino Uno**.
 
 ## How a measurement counts
 
-1. Pick a design and print its record template:
+1. Pick a design and take its record template. The five below are already
+   written, one per family, in `docs/bench_templates/` (a test keeps them in
+   step with the generators); for any other design, print one:
 
    ```bash
    python scripts/bench_template.py voltage_divider '{"vout_v": 3.3, "supply_v": 5}'
@@ -51,7 +53,7 @@ values, not packages — but then record *its* value.
 | Voltage divider | `divider.vout` | R1, R2, `VIN`, then VOUT | Power VIN from the Uno's 5 V pin; meter on VIN (record as `VIN`), then on VOUT. Nothing else on VOUT — a 10 MΩ meter against kΩ resistors loads it by well under 0.1%. |
 | LED indicator (Uno) | `led.current` | R1, `PIN_LED_CTRL`, then the current | Sketch: `pinMode(13, OUTPUT); digitalWrite(13, HIGH);` (use the pin the design names). Record the Uno's 5 V rail as `PIN_LED_CTRL` (the pin's source in the model). Read the current as the voltage across R1 divided by R1 — no meter in series, so no shunt burden. Current in amperes. |
 | DHT22 node | `dht.sink_current` | R1, the rail (`VCC_5V` on the Uno), then the current | With the sensor unpowered or removed, hold DATA to ground through the meter's mA range: that is the current the property bounds. In amperes. |
-| RS-485 node | `rs485.failsafe_bias` | R1 (terminator), R2, R3, the rail, then V(A) − V(B) | Idle bus, driver off (DE/RE low). **Many MAX485 modules carry their own 120 Ω terminator and 10–20 kΩ bias resistors** — remove them, or the circuit measured is not the design. Meter across A–B. In volts. |
+| RS-485 node | `rs485.failsafe_bias` | R1 (terminator), R2, R3, R4, the rail, then V(A) − V(B) | Idle bus, driver off (DE/RE low — R4 holds it there even with the Uno in reset). **Many MAX485 modules carry their own 120 Ω terminator and 10–20 kΩ bias resistors** — remove them, or the circuit measured is not the design. Meter across A–B. In volts. Worth a look while you are there, though no record judges it yet: hold the Uno's RESET button and read DE/RE — `rs485.driver_default_off` says it stays under 51 mV. |
 | RC low-pass | `rc.cutoff` | R1, C1 if the meter has a capacitance range, then f_c | See below: the Uno times the charge curve. In hertz. |
 
 ### The RC filter without a signal generator
@@ -65,24 +67,45 @@ the comparator:
 t2 − t1 = RC · ln((1 − k1) / (1 − k2))
 ```
 
-With an Uno: drive IN from a digital pin, put OUT on the analog comparator's
-AIN0 (D6), and put two reference dividers on ADC0 and ADC1, selected in turn
-as the comparator's negative input (ACME). Discharge (pin LOW for ≥ 10·RC),
-set the pin HIGH and start Timer1 together, and capture the comparator edge
-(input capture, 62.5 ns per tick at 16 MHz). Average ≥ 100 runs per threshold.
-Measure both dividers' ratios `k1`, `k2` with the meter. The pin's own output
-resistance (≈ 25 Ω) adds to R1: pick a design where R1 is kilohms and it is
-under 1%, or add it to the accuracy you record. This works well up to about
-10 kHz; above that the timing error grows and a signal generator and
-oscilloscope are the better instruments.
+The sketch is `scripts/bench/rc_timer` (it compiles; it has not yet run on a
+board). Wiring: IN from **D12**; OUT to **D6** (AIN0, the comparator's +
+input); two dividers from 5 V — about 1/3 on **A0** and 2/3 on **A1** (for
+example 10 kΩ over 4.7 kΩ, and 4.7 kΩ over 10 kΩ) — which the sketch selects
+in turn as the comparator's − input (ACME). It discharges the capacitor for
+20× the charge time, sets D12 high with Timer1 running, captures the
+comparator's edge (62.5 ns a tick), and averages 200 runs per threshold.
 
-*The sketch for this is not written or run yet — it is the first thing to
-build at the bench, and until it has been run this row is the least tested
-method on the sheet.*
+```bash
+pio run -d scripts/bench/rc_timer -t upload
+pio device monitor -b 115200
+```
+
+Measure both ratios with the meter — `k1 = V(A0)/V(5V)`, `k2 = V(A1)/V(5V)`
+— and put them in `K1`, `K2` at the top of `src/main.cpp` (or recompute RC
+from the printed t1, t2). It prints RC and f_c.
+
+**What the number is worth** — checked on ngspice before anyone builds it
+(`tests/test_bench_rc_method.py`):
+
+- Any fixed delay (the port write, the comparator, the capture) cancels.
+- The pin's output resistance (≈ 25 Ω) is in series with R1 and reads as
+  +1.6 % on a 1.59 kΩ R1: record R1 as R1 + 25 Ω, or add 1.6 % to the accuracy.
+- **The comparator's input offset** — 40 mV maximum at VCC/2 (ATmega328P
+  datasheet, Table 30-1) — moves RC by up to **5.2 %** if it differs in sign
+  at the two thresholds, 1.7 % if not. The datasheet does not say which, so
+  record f_c's accuracy as at least ±5.5 % (f_c goes as 1/RC), plus the meter's accuracy on
+  k1 and k2. That is well inside the 15 % gate, and tighter than the design's
+  own ±10 % capacitor.
+- Keep both thresholds above 0.5 V: below it the datasheet's offset figure
+  is 500 mV.
+
+It works up to about 10 kHz; above that the charge is over in a few hundred
+ticks and a signal generator and oscilloscope are the better instruments.
 
 ## What it closes, and what it does not
 
 An agreeing record closes D1 on the claims it measured, for that design, and
-nothing else. The register keeps D1 open for the library. The DHT22 rise time
+nothing else. The machinery, the sketch and the templates are ready; **nothing
+has been measured** — that needs your hands, a meter and an Uno. The register keeps D1 open for the library. The DHT22 rise time
 needs a timed edge on a real cable (the Uno method above, on the DATA line),
 and the RS-485 bias on a real bus needs a second node; both are later sessions.

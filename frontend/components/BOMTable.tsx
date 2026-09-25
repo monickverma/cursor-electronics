@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { applyPatchOps, BOMRow, BOMView, getBom, PatchResponse, Substitute } from '@/lib/api'
+import { applyPatchOps, BOMRow, BOMView, CurrencyTotal, getBom, PatchResponse, Substitute } from '@/lib/api'
 
 interface Props {
   rows: BOMRow[]
@@ -25,8 +25,55 @@ function priceTitle(r: BOMRow): string | undefined {
   return r.price_note ?? undefined
 }
 
-function money(v: number | null | undefined, digits = 4): string {
-  return v === null || v === undefined ? '—' : `$${v.toFixed(digits)}`
+// The price a row shows, in its own currency: a live quote's, else the
+// catalogue's USD. Never converted ([2026-09-25]).
+function shown(r: BOMRow): { price: number; currency: string } | null {
+  if (!isPriced(r)) return null
+  if (r.unit_price != null && r.currency) return { price: r.unit_price, currency: r.currency }
+  return { price: r.unit_price_usd, currency: 'USD' }
+}
+
+function money(v: number | null | undefined, currency = 'USD', digits?: number): string {
+  if (v === null || v === undefined) return '—'
+  const d = digits ?? (Math.abs(v) < 1 ? 4 : 2)
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency', currency, minimumFractionDigits: d, maximumFractionDigits: d,
+    }).format(v)
+  } catch {
+    return `${v.toFixed(d)} ${currency}`
+  }
+}
+
+function asOf(r: BOMRow): string {
+  if (!isPriced(r)) return '—'
+  if (r.live) return `${r.live.fetched_at.slice(0, 16).replace('T', ' ')} UTC`
+  return r.price_asof ?? 'undated'
+}
+
+// One total per currency — a mixed BOM shows two totals, not a converted sum.
+function rowTotals(rows: BOMRow[]): CurrencyTotal[] {
+  const by = new Map<string, CurrencyTotal>()
+  for (const r of rows) {
+    const s = shown(r)
+    if (!s) continue
+    const t = by.get(s.currency) ?? { currency: s.currency, amount: 0, rows: 0, sources: [] }
+    t.amount += s.price * r.quantity
+    t.rows += 1
+    const source = r.price_source ?? 'unknown'
+    if (!t.sources.includes(source)) t.sources.push(source)
+    by.set(s.currency, t)
+  }
+  return Array.from(by.values())
+}
+
+function totalsText(totals: CurrencyTotal[]): string {
+  return totals.length ? totals.map(t => money(t.amount, t.currency, 2)).join(' + ') : money(0, 'USD', 2)
+}
+
+// Only a Mouser product page is linked; anything else in the field stays text.
+function mouserLink(url: string | null | undefined): string | null {
+  return url && /^https:\/\/(www\.)?mouser\.[a-z.]+\//i.test(url) ? url : null
 }
 
 export default function BOMTable({ rows: initialRows, circuitId, version, token, onPatched }: Props) {
@@ -70,7 +117,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
     )
   }
 
-  const total = rows.reduce((sum, r) => sum + r.total_price_usd, 0)
+  const totals = view?.totals ?? rowTotals(rows)
   const unpriced = rows.filter(r => !isPriced(r))
   const byComponent = new Map<string, Substitute[]>()
   for (const s of view?.substitutes ?? []) {
@@ -81,22 +128,27 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
   function handleExportCSV() {
     const header = [
       'ID', 'Part Number', 'Manufacturer', 'Package', 'Value', 'Qty',
-      'LCSC PN', 'Unit Price (USD)', 'Total (USD)', 'Price as of', 'Price Source',
+      'LCSC PN', 'Unit Price', 'Total', 'Currency', 'Price as of', 'Price Source', 'Mouser PN',
     ].join(',')
     const esc = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
-    const body = rows.map(r => [
-      r.id,
-      esc(r.part_number),
-      esc(r.manufacturer),
-      r.package,
-      r.value || '',
-      String(r.quantity),
-      r.lcsc_pn || '',
-      isPriced(r) ? r.unit_price_usd.toFixed(4) : '',
-      isPriced(r) ? r.total_price_usd.toFixed(4) : '',
-      r.price_asof || '',
-      r.price_source || '',
-    ].join(',')).join('\n')
+    const body = rows.map(r => {
+      const s = shown(r)
+      return [
+        r.id,
+        esc(r.part_number),
+        esc(r.manufacturer),
+        r.package,
+        r.value || '',
+        String(r.quantity),
+        r.lcsc_pn || '',
+        s ? s.price.toFixed(4) : '',
+        s ? (s.price * r.quantity).toFixed(4) : '',
+        s ? s.currency : '',
+        r.price_asof || '',
+        r.price_source || '',
+        r.live?.distributor_pn || '',
+      ].join(',')
+    }).join('\n')
 
     const blob = new Blob([header + '\n' + body], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -113,7 +165,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
         <span className="text-xs text-muted">
           {rows.length} components ·{' '}
           {unpriced.length === 0 ? 'Estimated total: ' : 'Partial total: '}
-          <span className="text-lavender">${total.toFixed(2)} USD</span>
+          <span className="text-lavender" data-testid="bom-total">{totalsText(totals)}</span>
           {unpriced.length > 0 && (
             <span className="text-amber-400">
               {' '}· {unpriced.length} unpriced ({unpriced.map(r => r.id).join(', ')})
@@ -132,7 +184,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
         <table className="w-full text-sm" data-testid="bom-table">
           <thead className="sticky top-0 bg-surface border-b border-border">
             <tr>
-              {['ID', 'Part Number', 'Manufacturer', 'Package', 'Value', 'LCSC PN', 'Unit $', 'Total $', 'Price as of'].map(h => (
+              {['ID', 'Part Number', 'Manufacturer', 'Package', 'Value', 'LCSC PN', 'Unit', 'Total', 'Price as of', 'Source'].map(h => (
                 <th key={h} className="text-left px-3 py-2 text-xs text-muted font-normal whitespace-nowrap">
                   {h}
                 </th>
@@ -141,7 +193,8 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
           </thead>
           <tbody>
             {rows.map((row, i) => {
-              const priced = isPriced(row)
+              const price = shown(row)
+              const link = mouserLink(row.live?.product_url)
               return (
                 <tr key={i} className="border-b border-border/50 hover:bg-surface/50 transition-colors">
                   <td className="px-3 py-2 font-mono text-xs text-lavender-dim">{row.id}</td>
@@ -157,13 +210,29 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
                     )}
                   </td>
                   <td className="px-3 py-2 text-xs text-right font-mono text-cream-dim" title={priceTitle(row)}>
-                    {priced ? `$${row.unit_price_usd.toFixed(2)}` : <span className="text-amber-400">unknown</span>}
+                    {price ? money(price.price, price.currency) : <span className="text-amber-400">unknown</span>}
                   </td>
                   <td className="px-3 py-2 text-xs text-right font-mono text-cream">
-                    {priced ? `$${row.total_price_usd.toFixed(2)}` : <span className="text-amber-400">unknown</span>}
+                    {price ? money(price.price * row.quantity, price.currency) : <span className="text-amber-400">unknown</span>}
                   </td>
-                  <td className="px-3 py-2 text-xs text-muted font-mono" title={priceTitle(row)}>
-                    {priced ? (row.price_asof ?? 'undated') : '—'}
+                  <td className="px-3 py-2 text-xs text-muted font-mono whitespace-nowrap" title={priceTitle(row)}>
+                    {asOf(row)}
+                  </td>
+                  <td className="px-3 py-2 text-xs whitespace-nowrap" title={priceTitle(row)}>
+                    {row.live ? (
+                      <span className="text-lavender">
+                        {link
+                          ? <a href={link} target="_blank" rel="noopener noreferrer" className="underline">Mouser</a>
+                          : 'Mouser'}
+                        {row.live.stock != null && (
+                          <span className="text-muted"> · {row.live.stock.toLocaleString('en-US')} in stock</span>
+                        )}
+                      </span>
+                    ) : price ? (
+                      <span className="text-muted">catalogue</span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </td>
                 </tr>
               )
@@ -173,11 +242,12 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
             <tr>
               <td colSpan={7} className="px-3 py-2 text-xs text-muted text-right">
                 {unpriced.length > 0 ? `Total (${unpriced.length} unpriced)` : 'Total'}
+                {totals.length > 1 && ' — one per currency, not converted'}
               </td>
-              <td className="px-3 py-2 text-xs font-medium text-right text-lavender font-mono">
-                ${total.toFixed(2)}
+              <td className="px-3 py-2 text-xs font-medium text-right text-lavender font-mono whitespace-nowrap">
+                {totalsText(totals)}
               </td>
-              <td />
+              <td colSpan={2} />
             </tr>
           </tfoot>
         </table>
@@ -213,6 +283,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
                             {s.unit_price_usd != null
                               ? <>{money(s.unit_price_usd)} as of {s.price_asof}{s.price_delta_usd != null && ` (${s.price_delta_usd >= 0 ? '+' : ''}${s.price_delta_usd.toFixed(4)})`}</>
                               : 'price unknown'}
+                            {s.live && <> · Mouser {money(s.live.unit_price, s.live.currency)}</>}
                             {' '}· {s.checks} checks passed
                           </div>
                         </div>

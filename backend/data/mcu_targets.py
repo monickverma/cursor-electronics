@@ -40,6 +40,11 @@ class Pin:
     reserved: Optional[str] = None     # why it must not be assigned
     strapping: Optional[str] = None    # what it straps at reset
     note: Optional[str] = None
+    #: An internal pull the silicon enables during reset or right after it,
+    #: until firmware configures the pin: "up", "down", or None for a
+    #: high-impedance input. What holds a node while the MCU is not driving it
+    #: (`rs485.driver_default_off`, `brain/decisions.md` [2026-09-25]).
+    reset_pull: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -95,6 +100,13 @@ def _uno() -> Target:
 
 # ── ESP32-DevKitC (ESP32-WROOM-32E) ──────────────────────────────────────────
 
+#: ESP32 Series Datasheet v5.3, Appendix A.4 Table IO_MUX, columns "At Reset"
+#: and "After Reset": wpu / wpd. GPIO13 and GPIO14 take theirs only after reset.
+_ESP32_RESET_PULL = {
+    **{n: "up" for n in (0, 1, 3, 5, 6, 7, 8, 9, 10, 11, 14, 15)},
+    **{n: "down" for n in (2, 4, 12, 13)},
+}
+
 _ESP32_STRAPS = {
     0: "boot mode — must be high at reset; low enters the download bootloader",
     2: "boot mode — must be low or floating at reset for serial download",
@@ -118,10 +130,16 @@ def _esp32() -> Target:
             reserved = "UART0 TX — the USB console and uploads"
         elif n == 3:
             reserved = "UART0 RX — the USB console and uploads"
+        note = "input only, no internal pull-up or pull-down" if input_only else None
+        if n == 16:
+            # WROOM-32E datasheet v2.1, Table 3 note 3 (found checking D7, [2026-09-25]).
+            note = ("wired to the module's PSRAM on WROOM-32E variants with PSRAM (ordering codes ending "
+                    "R2), and unusable there; free on the plain WROOM-32E this target names")
         pins[f"GPIO{n}"] = Pin(
             name=f"GPIO{n}", firmware=str(n), output=not input_only, pwm=not input_only,
             adc=n in adc, reserved=reserved, strapping=_ESP32_STRAPS.get(n),
-            note="input only, no internal pull-up or pull-down" if input_only else None,
+            note=note,
+            reset_pull=_ESP32_RESET_PULL.get(n),
         )
     return Target(
         id="esp32_devkitc", board="ESP32-DevKitC (ESP32-WROOM-32E)", mcu_part="ESP32-WROOM-32E",
@@ -154,6 +172,12 @@ _F411_RESERVED = {
     "PC13": "the on-board LED; PC13–PC15 may sink at most 3 mA and must not source current",
     "PA0": "the on-board KEY button — pressing it shorts the pin to GND",
 }
+#: The debug pins come out of reset in their JTAG/SWD alternate function with
+#: a pull; every other pin is a floating input. From the agent's memory of
+#: RM0383 §8.3.1 — ST's documents could not be obtained, so this is not
+#: checked (data/figure_evidence.json marks every Black Pill row so).
+_F411_RESET_PULL = {"PA13": "up", "PA14": "down", "PA15": "up", "PB4": "up"}
+
 _F411_NOTES = {
     "PA15": "a JTAG pin after reset; free when only SWD is used",
     "PB3": "a JTAG pin after reset; free when only SWD is used",
@@ -168,7 +192,7 @@ def _blackpill() -> Target:
         n: Pin(name=n, firmware=n, pwm=n in _F411_PWM, adc=n in _F411_ADC, uart=_F411_UART.get(n, ()),
                reserved=_F411_RESERVED.get(n),
                strapping="BOOT1 — held at GND through 10 kΩ on the board" if n == "PB2" else None,
-               note=_F411_NOTES.get(n))
+               note=_F411_NOTES.get(n), reset_pull=_F411_RESET_PULL.get(n))
         for n in names
     }
     return Target(

@@ -71,9 +71,11 @@ class TestRegistry:
                 assert f"board:{tid}/{pin}" in F.FIGURES
 
     def test_records_are_the_agents_and_say_so(self):
-        # The agent cannot verify its own reading: every record says it is unverified.
+        # The agent cannot verify its own reading: every record says it is the
+        # agent's, and that its check of the document is not a verification.
         for record in F.FIGURES.values():
-            assert "not verified" in record.recorded_by and "not opened" in record.recorded_by
+            assert "the agent" in record.recorded_by
+            assert "figure_evidence.json" in record.recorded_by and "not a person's verification" in record.recorded_by
 
     def test_assumptions_and_typicals_are_labelled_as_such(self):
         assert F.FIGURES["DHT22/bus_capacitance_pf_per_m"].kind == F.Kind.ASSUMPTION
@@ -224,6 +226,58 @@ class TestVerifyTool:
     def test_the_repositorys_store_starts_empty(self):
         data = json.loads((ROOT / "backend" / "data" / "figure_verifications.json").read_text(encoding="utf-8"))
         assert data["verifications"] == []
+
+
+# ── The agent's evidence ([2026-09-25]) — evidence, never verification ───────
+
+class TestAgentEvidence:
+    def _run(self, store_path, *args):
+        env = {**os.environ, "CIRCUITOS_FIGURE_VERIFICATIONS": str(store_path), "PYTHONIOENCODING": "utf-8"}
+        return subprocess.run([sys.executable, str(ROOT / "scripts" / "verify_figures.py"), *args],
+                              capture_output=True, text=True, env=env, timeout=120)
+
+    def test_every_record_has_evidence_checked_against_it_as_it_is_now(self):
+        # A record edited after its check has stale evidence: check it again, or mark it not checked.
+        figures = F.evidence()["figures"]
+        assert set(figures) == set(F.FIGURES)
+        stale = [f for f in F.FIGURES if figures[f]["record_hash"] != F.record_hash(f)]
+        assert stale == []
+
+    def test_agreeing_evidence_cites_a_document_a_page_and_what_it_reads(self):
+        ev = F.evidence()
+        for fid, item in ev["figures"].items():
+            assert item["verdict"] in ev["verdicts"], fid
+            if item["verdict"] in ("agrees", "agrees_in_part"):
+                assert item["documents"] and all(d in ev["documents"] for d in item["documents"]), fid
+                assert item["pages"] and item["reads"], fid
+            else:
+                assert item["note"], f"{fid}: a record not checked says why"
+
+    def test_the_evidence_alone_trusts_nothing(self):
+        assert F.untrusted(list(F.FIGURES), rows=()) == tuple(F.FIGURES)
+
+    def test_confirming_is_a_named_persons_act_and_says_how_it_was_made(self, tmp_path):
+        path = tmp_path / "v.json"
+        path.write_text(json.dumps({"verifications": []}), encoding="utf-8")
+        assert self._run(path, "--confirm-agreeing").returncode != 0, "it must name a person"
+        result = self._run(path, "--confirm-agreeing", "--by", "A. Engineer")
+        assert result.returncode == 0, result.stderr
+        entries = json.loads(path.read_text(encoding="utf-8"))["verifications"]
+        agreeing = {f for f, i in F.evidence()["figures"].items() if i["verdict"] == "agrees"}
+        assert {e["figure"] for e in entries} == agreeing
+        assert all("agent's cited evidence" in e["method"] and e["by"] == "A. Engineer" for e in entries)
+        rows = F.verifications(str(path))
+        assert F.trusted("RC0402FR/power_w", rows), "a confirmed guaranteed limit is trusted"
+        assert not F.trusted("ATmega328P-PU/gpio_output_resistance_ohm", rows), "a typical never is"
+        assert not F.trusted("MAX485ECSA/logic_input_vil_v", rows), "an unchecked one is not confirmed"
+        again = self._run(path, "--confirm-agreeing", "--by", "A. Engineer")
+        assert "recorded 0 verifications" in again.stdout
+
+    def test_review_lists_what_would_and_would_not_be_confirmed(self, tmp_path):
+        result = self._run(tmp_path / "none.json", "--review")
+        assert result.returncode == 0, result.stderr
+        assert "would be confirmed by --confirm-agreeing" in result.stdout
+        assert "STM32F411CEU6/pin_leakage_ua: not checked" in result.stdout
 
 
 # ── Completeness, by experiment ──────────────────────────────────────────────

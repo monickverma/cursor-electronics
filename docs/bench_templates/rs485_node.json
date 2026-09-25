@@ -1,0 +1,69 @@
+{
+ "id": "rs485_node-2026-09-25",
+ "measured_by": "your name",
+ "date": "2026-09-25",
+ "generator": "rs485_node",
+ "board": "arduino_uno",
+ "requirements": {
+  "function": "modbus_rtu_master",
+  "targets": {},
+  "constraints": {
+   "mcu": "arduino_uno"
+  },
+  "preferences": {}
+ },
+ "netlist_sha256": "1eec952f8427fd93091d757ba1b95e992ccc876aee19f446fd927f6fc211117d",
+ "parts": {
+  "R1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC1206FR-07120RL, 120"
+  },
+  "R2": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-07549RL, 549"
+  },
+  "R3": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-07549RL, 549"
+  },
+  "R4": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-0710KL, 10000"
+  },
+  "C1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "CL05B104KO5NNNC, 100nF"
+  },
+  "VCC_5V": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the supply as measured on the bench, in volts"
+  }
+ },
+ "measures": {
+  "rs485.failsafe_bias": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the idle bus voltage V(A) − V(B), in V (vdiff(rs485_a,rs485_b))"
+  },
+  "rs485.driver_load": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the resistance the driver sees across A–B, in ohm (rth(rs485_a,rs485_b))"
+  }
+ },
+ "notes": "Delete every part and measure you did not read; keep only real readings."
+}

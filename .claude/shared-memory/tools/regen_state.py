@@ -118,7 +118,7 @@ MODULES = {
     "generators/voltage_divider": {"file": "backend/generators/voltage_divider.py", "test": "tests/test_generator_library.py",   "phase": 2},
     "generators/led_indicator":   {"file": "backend/generators/led_indicator.py",   "test": "tests/test_generator_library.py",   "phase": 2},
     "generators/dht22_node":      {"file": "backend/generators/dht22_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
-    "generators/rs485_node":      {"file": "backend/generators/rs485_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
+    "generators/rs485_node":      {"file": "backend/generators/rs485_node.py",      "test": ["tests/test_generator_library.py", "tests/test_d2_dependence.py"], "phase": 2},
     "validation/claims":          {"file": "backend/validation/claims.py",          "test": ["tests/test_claims.py", "tests/test_generator_library.py", "tests/test_d2_dependence.py", "tests/test_d7_figures.py"], "phase": 2},
     "validation/defeaters":       {"file": "backend/validation/defeaters.py",       "test": "tests/test_claims.py",               "phase": 2},
     "simulation/waveforms":       {"file": "backend/simulation/waveforms.py",       "test": "tests/test_waveforms.py",            "phase": 2},
@@ -143,7 +143,11 @@ MODULES = {
     "validation/figure_audit":    {"file": "backend/validation/figure_audit.py",    "test": "tests/test_d7_figures.py",           "phase": 2},
     "generators/bom/substitution": {"file": "backend/generators/bom/substitution.py", "test": ["tests/test_substitution.py", "tests/test_bom_route.py"], "phase": 2},
     "api/routes/bom":             {"file": "backend/api/routes/bom.py",             "test": "tests/test_bom_route.py",            "phase": 2},
-    "validation/bench":           {"file": "backend/validation/bench.py",           "test": "tests/test_bench.py",                "phase": 2},
+    "validation/bench":           {"file": "backend/validation/bench.py",           "test": ["tests/test_bench.py", "tests/test_bench_rc_method.py"], "phase": 2},
+    # [2026-09-25]: live Mouser pricing, optional; never read by validation.
+    "pricing/quotes":             {"file": "backend/pricing/quotes.py",             "test": "tests/test_pricing.py",              "phase": 2},
+    "pricing/mouser":             {"file": "backend/pricing/mouser.py",             "test": "tests/test_pricing.py",              "phase": 2},
+    "pricing/live":               {"file": "backend/pricing/live.py",               "test": ["tests/test_pricing.py", "tests/test_bom_route.py"], "phase": 2},
 }
 
 PHASE1_CRITERIA = [

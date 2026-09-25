@@ -125,6 +125,9 @@ backend/
 │   └── bom/substitution.py    Stage 6 — candidates of the same kind and value, each tried as a
 │                              pinned-part patch; surfaces only if every original check passes
 │
+├── pricing/                   2026-09-25 — optional live Mouser quotes, exact part number only,
+│                              cached in PostgreSQL (price_quotes); read by the BOM route alone
+│
 ├── simulation/
 │   ├── runner.py              NgspiceRunner — async subprocess
 │   │                          On Windows: uses -o outfile (not stdout pipe capture)
@@ -171,7 +174,8 @@ backend/
 │   │                          POST …/sign-off (Stage 4): sign the shown properties_hash
 │   ├── firmware.py            GET /design/{id}/firmware (100/hour); firmware_view is the
 │   │                          one gate generate and patch use too — source only once built
-│   ├── bom.py                 GET /design/{id}/bom (60/hour) — dated rows, checked substitutes
+│   ├── bom.py                 GET /design/{id}/bom (60/hour) — dated rows, checked substitutes;
+│   │                          live Mouser quotes over them when MOUSER_API_KEY is set (pricing/)
 │   ├── simulate.py            GET /design/{id}/simulation/{job_id} (100/hour)
 │   │                          POST /design/{id}/simulation/start
 │   └── auth.py                POST /auth/register, /auth/login (OAuth2 form), /auth/me
@@ -199,7 +203,8 @@ frontend/
 │   ├── SimulationResults.tsx  Polls every 3s, clears interval on unmount
 │   ├── FirmwareViewer.tsx     Build status; polls while compiling; source + .ino / ini
 │   │                          download only once compiled (Stage 5)
-│   ├── BOMTable.tsx           Dated prices, CSV export; checked substitutes and "Use this part" (Stage 6)
+│   ├── BOMTable.tsx           Dated prices, CSV export; checked substitutes and "Use this part" (Stage 6);
+│   │                          each price's source, currency and time, a total per currency (2026-09-25)
 │   ├── ValidationReport.tsx   Error/warning list
 │   ├── ClaimsTable.tsx        Every claim a row, most urgent first (Stage 3)
 │   ├── PropertiesPanel.tsx    The proved sentences and sign-off by hash (Stage 4)

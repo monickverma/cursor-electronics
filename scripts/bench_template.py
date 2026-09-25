@@ -3,6 +3,7 @@ Print a bench record to fill in for one design — defeater D1.
 
     python scripts/bench_template.py voltage_divider '{"vout_v": 3.3, "supply_v": 5}'
     python scripts/bench_template.py led_indicator '{"led_current_ma": 10, "mcu": "arduino_uno"}'
+    python scripts/bench_template.py --standard docs/bench_templates   # the five on the sheet
 
 The first argument is the function (the form's name for it: low_pass_filter,
 voltage_divider, led_indicator, temperature_humidity_sensor,
@@ -65,7 +66,33 @@ def template(function: str, fields: dict) -> dict:
     }
 
 
+#: The designs docs/BENCH_D1.md walks through, one per family, on the Uno —
+#: written pre-filled by `--standard` ([2026-09-25]).
+STANDARD = {
+    "voltage_divider": ("voltage_divider", {"vout_v": 3.3, "supply_v": 5}),
+    "led_indicator": ("led_indicator", {"led_current_ma": 10, "mcu": "arduino_uno"}),
+    "rc_lowpass": ("low_pass_filter", {"cutoff_hz": 1000, "supply_v": 5}),
+    "dht22_node": ("temperature_humidity_sensor", {"mcu": "arduino_uno"}),
+    "rs485_node": ("modbus_rtu_master", {"mcu": "arduino_uno"}),
+}
+
+
+def write_standard(folder: Path) -> list:
+    folder.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name, (function, fields) in STANDARD.items():
+        record = template(function, fields)
+        path = folder / f"{name}.json"
+        path.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+        written.append(path)
+    return written
+
+
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == "--standard":
+        for path in write_standard(Path(sys.argv[2])):
+            print(f"wrote {path}")
+        raise SystemExit(0)
     if len(sys.argv) != 3:
         raise SystemExit(__doc__)
     print(json.dumps(template(sys.argv[1], json.loads(sys.argv[2])), indent=1, ensure_ascii=False))

@@ -11,6 +11,18 @@ confirm the record's statement and the table's value agree with it.
     python scripts/verify_figures.py --show RC0402FR/power_w
     python scripts/verify_figures.py --verify RC0402FR/power_w --by "Your Name"
 
+Since [2026-09-25] the agent has checked the records against the documents it
+could obtain and cited each page (`backend/data/figure_evidence.json`). That is
+evidence, not verification. To confirm it:
+
+    python scripts/verify_figures.py --review            # every record beside the agent's evidence
+    python scripts/verify_figures.py --confirm-agreeing --by "Your Name"
+
+`--confirm-agreeing` records your verification of every figure whose evidence
+agrees and whose record has not changed since it was checked, and says in each
+entry that you confirmed the agent's cited evidence rather than read the page
+yourself. Everything else is listed for you to check with `--verify`.
+
 A verification is bound to the record's hash, which covers the record and the
 table's current value: edit either and the verification no longer counts.
 Verifying a typical or a stated assumption is allowed — it confirms the record
@@ -31,7 +43,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
-from data.figures import FIGURES, TRUSTABLE, VERIFICATIONS_PATH, record_hash, trusted, value, verified  # noqa: E402
+from data.figures import (  # noqa: E402
+    FIGURES, TRUSTABLE, VERIFICATIONS_PATH, evidence, record_hash, trusted, value, verified,
+)
+
+#: What a verification says about how it was made.
+METHOD_DOCUMENT = "read the document"
+METHOD_AGENT_EVIDENCE = "confirmed the agent's cited evidence (backend/data/figure_evidence.json)"
 
 
 def _store() -> Path:
@@ -56,18 +74,85 @@ def show(figure_id: str) -> str:
     return "\n".join(line for line in lines if line)
 
 
+def _record(entries: list) -> None:
+    path = _store()
+    data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"verifications": []}
+    replaced = {e["figure"] for e in entries}
+    data["verifications"] = [v for v in data.get("verifications", []) if v.get("figure") not in replaced] + entries
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _entry(figure_id: str, by: str, note: str, method: str) -> dict:
+    return {"figure": figure_id, "record_hash": record_hash(figure_id), "by": by.strip(),
+            "at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+            "method": method, "note": note}
+
+
 def verify(figure_id: str, by: str, note: str = "") -> dict:
     if figure_id not in FIGURES:
         raise SystemExit(f"no record {figure_id!r} in backend/data/figures.py")
     if not by.strip():
         raise SystemExit("--by is required: a verification names the person who checked the document")
-    path = _store()
-    data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"verifications": []}
-    entry = {"figure": figure_id, "record_hash": record_hash(figure_id), "by": by.strip(),
-             "at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "note": note}
-    data["verifications"] = [v for v in data.get("verifications", []) if v.get("figure") != figure_id] + [entry]
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    entry = _entry(figure_id, by, note, METHOD_DOCUMENT)
+    _record([entry])
     return entry
+
+
+def confirmable(ev: dict) -> tuple:
+    """(figures the agent's evidence lets a person confirm, {figure: why not} for the rest)."""
+    ok, not_ok = [], {}
+    for fid in FIGURES:
+        item = (ev.get("figures") or {}).get(fid)
+        if item is None:
+            not_ok[fid] = "no evidence"
+        elif item["verdict"] != "agrees":
+            not_ok[fid] = item["verdict"].replace("_", " ") + (f" — {item['note']}" if item.get("note") else "")
+        elif item["record_hash"] != record_hash(fid):
+            not_ok[fid] = "stale: the record or its value changed after the agent checked it"
+        elif verified(fid):
+            not_ok[fid] = "already verified"
+        else:
+            ok.append(fid)
+    return ok, not_ok
+
+
+def confirm_agreeing(by: str) -> list:
+    if not by.strip():
+        raise SystemExit("--by is required: a confirmation names the person who reviewed the evidence")
+    ok, _ = confirmable(evidence())
+    entries = [_entry(fid, by, "", METHOD_AGENT_EVIDENCE) for fid in ok]
+    if entries:
+        _record(entries)
+    return entries
+
+
+def review(show_all: bool = False) -> str:
+    ev = evidence()
+    if not ev:
+        return "No agent evidence (backend/data/figure_evidence.json)."
+    docs = ev.get("documents", {})
+    ok, not_ok = confirmable(ev)
+    lines = [f"Agent evidence, {ev.get('checked_by', '')}. Not a verification until you confirm it.", ""]
+    for fid in ok if not show_all else list(FIGURES):
+        item = ev["figures"].get(fid) or {}
+        record = FIGURES[fid]
+        cited = "; ".join(f"{docs[d]['maker']} {docs[d]['title']} {docs[d]['revision']}"
+                          for d in item.get("documents", []) if d in docs)
+        lines += [f"{fid}   [{item.get('verdict', 'no evidence')}]",
+                  f"  value      {value(fid)!r}",
+                  f"  record     {record.statement}",
+                  f"  document   {cited or '—'}",
+                  f"  page       {item.get('pages') or '—'}   {item.get('location') or ''}",
+                  f"  it reads   {item.get('reads') or '—'}"]
+        if item.get("note"):
+            lines.append(f"  note       {item['note']}")
+        lines.append("")
+    lines.append(f"{len(ok)} figures would be confirmed by --confirm-agreeing.")
+    if not_ok:
+        lines.append(f"{len(not_ok)} would not, and need --verify after you check them yourself:")
+        for fid, why in not_ok.items():
+            lines.append(f"  {fid}: {why}")
+    return "\n".join(lines)
 
 
 def unverified_summary() -> str:
@@ -87,10 +172,22 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--show", metavar="FIGURE")
     parser.add_argument("--verify", metavar="FIGURE")
+    parser.add_argument("--review", action="store_true", help="the agent's evidence beside each record")
+    parser.add_argument("--all", action="store_true", help="with --review: every record, not only the agreeing")
+    parser.add_argument("--confirm-agreeing", action="store_true",
+                        help="record your verification of every figure whose evidence agrees and is current")
     parser.add_argument("--by", default="")
     parser.add_argument("--note", default="")
     args = parser.parse_args(argv)
-    if args.verify:
+    if args.confirm_agreeing:
+        entries = confirm_agreeing(args.by)
+        print(f"recorded {len(entries)} verifications by {args.by.strip()}, method: {METHOD_AGENT_EVIDENCE}")
+        for e in entries:
+            print(f"  {e['figure']}")
+        print(unverified_summary())
+    elif args.review:
+        print(review(args.all))
+    elif args.verify:
         entry = verify(args.verify, args.by, args.note)
         print(f"recorded: {entry['figure']} checked by {entry['by']} at {entry['at']}")
         print(show(args.verify))

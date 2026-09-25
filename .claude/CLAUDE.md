@@ -32,6 +32,7 @@ cursor-electronics/
 │   │   ├── parts.py                  # Stage 6 — passives as data: series, capacitors, one owner
 │   │   ├── figures.py                # D7 — provenance per part figure; trusted only once verified
 │   │   ├── figure_verifications.json # a person's checks, bound to each record's hash
+│   │   ├── figure_evidence.json      # the agent's page-cited check of each record — evidence, not a verification
 │   │   ├── bench/                    # D1 — bench records, judged by validation/bench.py
 │   │   └── component_db.json         # 100-entry component database, prices dated
 │   ├── ai/
@@ -81,6 +82,8 @@ cursor-electronics/
 │   │   ├── dependence.py           # D2 — which MCU model elements a quantity depends on, exactly
 │   │   ├── properties.py           # PropertySpec → Statement; English by template; hashes
 │   │   └── prover.py               # z3 over tolerance boxes; frozen refine loop; mutation gate
+│   ├── pricing/                    # Live Mouser quotes over the BOM, optional (MOUSER_API_KEY); cached in
+│   │                               # PostgreSQL; exact part number only; never read by validation
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
@@ -92,7 +95,8 @@ cursor-electronics/
 │   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.
 │   └── lib/api.ts                  # Typed API client
 ├── scripts/                        # capture_explanation.py, review_panel.py, verify_figures.py (D7),
-│                                   # bench_template.py (D1), export_ui_fixtures.py
+│                                   # bench_template.py (D1), export_ui_fixtures.py,
+│                                   # bench/rc_timer/ (D1: the Uno sketch that times an RC)
 ├── tests/                          # pytest, conftest.py, 12 test modules + fixtures/
 └── docker-compose.yml
 ```
@@ -137,7 +141,8 @@ Do not add these — they are Phase 2+ scope:
   with a frontend tab. Pulled forward from Phase 3. Scope decision 2026-08-22 is
   **(b) experimental**, excluded from the v0.1.0 gate. Do not extend it; when
   Phase 3 begins, integrate freerouting instead. See `PHASE1_COMPLETE.md` §4.
-- Live Digikey/LCSC pricing API
+- ~~Live distributor pricing~~ — **exists since 2026-09-25**: Mouser, optional (`MOUSER_API_KEY`),
+  on `GET /design/{id}/bom` only; see `brain/decisions.md` [2026-09-25]. No Digikey/LCSC.
 - Qdrant vector DB / RAG (use `component_constraints.py`)
 - ~~ESP32 or STM32 firmware~~ — **exists since Phase 2 Stage 5**: `constraints.mcu`
   picks the Uno (default), ESP32-DevKitC or WeAct Black Pill (STM32F411CEU6);

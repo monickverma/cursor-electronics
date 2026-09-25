@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-25 (D1, D2, D7 decided with TypeSafe; Stage 6 done — Phase 2's stages complete)
+> Last updated: 2026-09-25 (RS-485 DE/RE pull-down; live Mouser pricing; the agent's datasheet pass; bench preparation)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -831,6 +831,50 @@ terminator.
 Phase 2's seven stages are done. Closing it — the phase's own review against
 `PHASE_2_PLAN_v2.md` §3 (claim G-P2) and what stays open (D1, D2, D7, the KPI,
 criterion 12) — is the next planning step; it is not planned here.
+
+---
+
+# The DE/RE pull-down, live pricing, the datasheet pass, bench preparation ✅ DONE 2026-09-25
+
+Decided in `brain/decisions.md` [2026-09-25] **The RS-485 DE/RE pull-down, live
+Mouser pricing, and the agent's datasheet pass** (before the code); what was
+built and found is under it.
+
+## Task P.1 — The DE/RE pull-down ✅
+
+`generators/rs485_node.py` 0.3.0 (`DeHold`, `de_hold`; claim
+`rs485.driver_default_off`), `validation/claims.py` (`held_to_rail`; route 3
+refined), `data/mcu_targets.py` (`Pin.reset_pull`), new figure records.
+`tests/test_d2_dependence.py`.
+
+## Task P.2 — Live Mouser pricing ✅ (off until a key is set)
+
+`backend/pricing/` (`quotes.py`, `mouser.py`, `live.py`), the `price_quotes`
+table, `GET /design/{id}/bom`, `BOMTable.tsx`. `tests/test_pricing.py`,
+`tests/test_bom_route.py`, `frontend/e2e/bom.spec.ts`.
+
+## Task P.3 — The agent's datasheet pass ✅ (a person's confirmation outstanding)
+
+`data/figure_evidence.json`, `scripts/verify_figures.py --review /
+--confirm-agreeing`. `tests/test_d7_figures.py::TestAgentEvidence`.
+
+## Task P.4 — Bench preparation ✅ (nothing measured)
+
+`scripts/bench/rc_timer` (compiles), `docs/bench_templates/`,
+`tests/test_bench_rc_method.py`, `docs/BENCH_D1.md`.
+
+## For the user
+
+- **Confirm the evidence:** `python scripts/verify_figures.py --review`, then
+  `--confirm-agreeing --by "<name>"`. Only that closes D7, figure by figure.
+- **The three documents that could not be downloaded** (MAX485, MAX3485,
+  STM32F411): saved by hand, the agent can check them.
+- **The LED part number** (67-21URC/S530-A3/TR8) may not exist — choosing a
+  real part is a catalogue change and the user's call.
+- **GPIO16 on PSRAM variants of the WROOM-32E** — the ESP32 RS-485 RX default;
+  fine on the plain module the target names.
+- **A Mouser key** in `.env` (`MOUSER_API_KEY`) turns live pricing on.
+- **A bench session** (`docs/BENCH_D1.md`): the only thing that closes D1.
 
 
 ---

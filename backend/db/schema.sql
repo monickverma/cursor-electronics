@@ -150,6 +150,17 @@ CREATE TABLE firmware_builds (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     finished_at TIMESTAMPTZ
 );
+
+-- [2026-09-25]: live distributor quotes (Mouser), cached. Reused while fresh;
+-- a part the distributor does not list is cached as found = FALSE.
+CREATE TABLE price_quotes (
+    source VARCHAR(20) NOT NULL,          -- "mouser"
+    part_number VARCHAR(100) NOT NULL,    -- trimmed, upper case
+    found BOOLEAN NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL,
+    quote JSONB NOT NULL,                 -- pricing/quotes.py Quote
+    PRIMARY KEY (source, part_number)
+);
 CREATE INDEX idx_request_log_outcome ON request_log(outcome);
 CREATE INDEX idx_request_log_prompt_hash ON request_log(prompt_hash);
 CREATE INDEX idx_request_log_generator ON request_log(generator);
