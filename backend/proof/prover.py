@@ -72,6 +72,8 @@ from pydantic import BaseModel, ConfigDict
 
 from core.ir_schema import CircuitIR, ComponentType
 from data.component_constraints import get_constraints
+from data.parts import capacitor as catalogue_capacitor
+from data.parts import resistor_series
 from generators.netlist.models import MODEL_MCU_PIN, mcu_supply_model
 from proof import brackets, mna
 from proof.netlist import Netlist, parse
@@ -174,6 +176,10 @@ _CAP_CODES = {"F": Fraction(1, 100), "G": Fraction(2, 100), "J": Fraction(5, 100
 
 
 def resistor_tolerance(part: str) -> Tuple[Fraction, str]:
+    series = resistor_series(part)
+    if series is not None:
+        tol = Fraction(str(series.tolerance))
+        return tol, f"{int(tol * 100)}% resistor"
     m = re.match(r"^RC\d{4}([FJ])R", part or "")
     if m:
         return (Fraction(1, 100), "1% resistor") if m.group(1) == "F" else (Fraction(5, 100), "5% resistor")
@@ -181,6 +187,10 @@ def resistor_tolerance(part: str) -> Tuple[Fraction, str]:
 
 
 def capacitor_tolerance(part: str) -> Tuple[Fraction, str]:
+    cap = catalogue_capacitor(part)
+    if cap is not None:
+        tol = Fraction(str(cap.tolerance))
+        return tol, f"{int(tol * 100)}% capacitor"
     m = re.match(r"^CL\d\d[A-Z]\d{3}([A-Z])", part or "")
     if m and m.group(1) in _CAP_CODES:
         tol = _CAP_CODES[m.group(1)]

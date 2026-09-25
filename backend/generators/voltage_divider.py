@@ -45,16 +45,18 @@ from core.ir_schema import (
     SimulationSpec,
     ValidationRule,
 )
+from data.figures import passive
 from generators.common import (
     RESISTOR_POWER_W,
     RESISTOR_TOLERANCE,
     RESISTOR_VMAX,
     Unreadable,
     e96_values,
+    PartFigures,
     pinned_number,
+    pinned_parts,
     read_number,
     read_pins,
-    resistor_part,
     snap_to_e96,
     value_string,
     worst_corners,
@@ -96,11 +98,13 @@ def divider_vout(vin: float, r1: float, r2: float, load: Optional[float]) -> flo
 
 
 class _Spec:
-    __slots__ = ("vout", "supply", "tolerance", "bleed", "load", "pins")
+    __slots__ = ("vout", "supply", "tolerance", "bleed", "load", "pins", "figs")
 
-    def __init__(self, vout, supply, tolerance, bleed, load, pins):
+    def __init__(self, vout, supply, tolerance, bleed, load, pins, figs=None):
         self.vout, self.supply, self.tolerance = vout, supply, tolerance
         self.bleed, self.load, self.pins = bleed, load, pins
+        # Stage 6: a pinned part's own figures, else the default 0402 series'.
+        self.figs = figs or PartFigures()
 
 
 class _Selection:
@@ -134,7 +138,8 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={ohms:g}Ω is outside "
                              f"{MIN_OHMS:g}–{MAX_OHMS:g}Ω")
         pins[part] = ohms
-    return _Spec(vout, supply, tolerance, bleed, load, pins)
+    figs = PartFigures(pinned_parts(intent, PINNABLE, {"R1": "resistor", "R2": "resistor"}))
+    return _Spec(vout, supply, tolerance, bleed, load, pins, figs)
 
 
 def select(spec: _Spec) -> Optional[_Selection]:
@@ -218,10 +223,11 @@ class VoltageDividerGenerator:
                 "constraints.supply_v is missing — a divider's ratio means nothing "
                 "without the input rail"
             )
-        if spec.supply > MAX_SUPPLY_V:
+        vmax = min(spec.figs.voltage_max("R1"), spec.figs.voltage_max("R2"))
+        if spec.supply > vmax:
+            placed = "resistors pinned" if spec.figs.parts else "0402 resistors this generator places"
             return EnvelopeDecision.refuse(
-                f"supply_v={spec.supply:g} exceeds the {MAX_SUPPLY_V:g} V rating of the "
-                f"0402 resistors this generator places"
+                f"supply_v={spec.supply:g} exceeds the {vmax:g} V rating of the {placed}"
             )
         ratio = spec.vout / spec.supply
         if not (MIN_RATIO <= ratio <= MAX_RATIO):
@@ -250,16 +256,19 @@ class VoltageDividerGenerator:
             )
         power = self._power_bounds(spec, sel)
         for part, (_, hi) in power.items():
-            if hi > RESISTOR_POWER_W:
+            rating = spec.figs.power_w(part)
+            if hi > rating:
+                what = (f"{spec.figs.parts[part].part_number}" if part in spec.figs.parts
+                        else "an 0402 resistor")
                 return EnvelopeDecision.refuse(
                     f"{part} could dissipate up to {hi * 1000:.1f} mW, above the "
-                    f"{RESISTOR_POWER_W * 1000:g} mW rating of an 0402 resistor — raise the "
+                    f"{rating * 1000:g} mW rating of {what} — raise the "
                     f"resistance or lower divider_current_ma"
                 )
         return EnvelopeDecision.accept(self._ports(spec, sel))
 
     def _ports(self, spec: _Spec, sel: _Selection) -> Sequence[PortContract]:
-        z_out = self._box(sel)
+        z_out = self._box(sel, spec=spec)
         r1b, r2b = z_out
         zo = lambda a, b: a * b / (a + b)  # noqa: E731
         lo, hi = worst_corners(zo, [(r1b.lo, r1b.hi), (r2b.lo, r2b.hi)])
@@ -279,11 +288,11 @@ class VoltageDividerGenerator:
 
     # ── predict() ─────────────────────────────────────────────────────────
 
-    def _box(self, sel: _Selection, box: Optional[Mapping[str, Interval]] = None):
-        r1 = Interval(lo=sel.r1 * (1 - RESISTOR_TOLERANCE), hi=sel.r1 * (1 + RESISTOR_TOLERANCE),
-                      nominal=sel.r1, units="ohm")
-        r2 = Interval(lo=sel.r2 * (1 - RESISTOR_TOLERANCE), hi=sel.r2 * (1 + RESISTOR_TOLERANCE),
-                      nominal=sel.r2, units="ohm")
+    def _box(self, sel: _Selection, box: Optional[Mapping[str, Interval]] = None, spec: Optional[_Spec] = None):
+        figs = spec.figs if spec is not None else PartFigures()
+        t1, t2 = figs.tolerance("R1"), figs.tolerance("R2")
+        r1 = Interval(lo=sel.r1 * (1 - t1), hi=sel.r1 * (1 + t1), nominal=sel.r1, units="ohm")
+        r2 = Interval(lo=sel.r2 * (1 - t2), hi=sel.r2 * (1 + t2), nominal=sel.r2, units="ohm")
         if box:
             unknown = set(box) - {"R1", "R2"}
             if unknown:
@@ -293,13 +302,13 @@ class VoltageDividerGenerator:
         return r1, r2
 
     def _vout_band(self, spec, sel, box=None) -> Interval:
-        r1, r2 = self._box(sel, box)
+        r1, r2 = self._box(sel, box, spec)
         f = lambda a, b: divider_vout(spec.supply, a, b, spec.load)  # noqa: E731
         lo, hi = worst_corners(f, [(r1.lo, r1.hi), (r2.lo, r2.hi)])
         return Interval(lo=lo, hi=hi, nominal=f(r1.nominal, r2.nominal), units="V")
 
     def _current_band(self, spec, sel, box=None, scale=1000.0) -> Interval:
-        r1, r2 = self._box(sel, box)
+        r1, r2 = self._box(sel, box, spec)
 
         def current(a, b):
             b_eff = b if spec.load is None else b * spec.load / (b + spec.load)
@@ -318,7 +327,7 @@ class VoltageDividerGenerator:
         does — numerator at its largest, denominator at its smallest — which is
         sound and loose: a `sound_enclosure`, G2.
         """
-        r1, r2 = self._box(sel, box)
+        r1, r2 = self._box(sel, box, spec)
         load = spec.load
 
         def eff(lo_or_hi):
@@ -380,6 +389,14 @@ class VoltageDividerGenerator:
         nominal = ClaimScope(parameters="nominal", model="mna_ideal")
         load = "unloaded" if spec.load is None else f"into R_L={spec.load:g}Ω"
         vout, cur = q["vout_v"], q["supply_current_ma"]
+        # D7: what each claim reads (data/figures.py), from the parts placed.
+        placed = {c.id: c.part_number for c in self.generate(intent).components}
+        tolerance = passive(placed["R1"], "tolerance") + passive(placed["R2"], "tolerance")
+        rating = tolerance + passive(placed["R1"], "power_w") + passive(placed["R2"], "power_w")
+        box_tol = box.model_copy(update={"figures": tolerance})
+        rating1, rating2 = spec.figs.power_w("R1"), spec.figs.power_w("R2")
+        t1, t2 = spec.figs.tolerance("R1"), spec.figs.tolerance("R2")
+        within = f"{t1 * 100:g}%" if t1 == t2 else f"{t1 * 100:g}% and {t2 * 100:g}% respectively"
         return [
             graded(
                 "divider.vout_nominal",
@@ -390,20 +407,21 @@ class VoltageDividerGenerator:
             ),
             graded(
                 "divider.vout_band",
-                f"V_out lies in [{vout.lo:.4g}, {vout.hi:.4g}] V for every R1, R2 within 1% ({load})",
-                True, "monotone_corners", box,
+                f"V_out lies in [{vout.lo:.4g}, {vout.hi:.4g}] V for every R1, R2 within {within} ({load})",
+                True, "monotone_corners", box_tol,
                 detail=f"band width {100 * (vout.hi - vout.lo) / vout.nominal:.2f}% of nominal",
             ),
             graded(
                 "divider.supply_current",
                 f"the divider draws {cur.lo:.4g}–{cur.hi:.4g} mA from the {spec.supply:g} V rail",
-                True, "monotone_corners", box.model_copy(update={"measures": ("i(V_VIN)",)}),
+                True, "monotone_corners", box_tol.model_copy(update={"measures": ("i(V_VIN)",)}),
             ),
             graded(
                 "divider.resistor_dissipation",
-                f"each resistor stays below its {RESISTOR_POWER_W * 1000:g} mW rating",
-                max(q["r1_power_mw"].hi, q["r2_power_mw"].hi) <= RESISTOR_POWER_W * 1000,
-                "sound_enclosure", box,
+                (f"each resistor stays below its {rating1 * 1000:g} mW rating" if rating1 == rating2 else
+                 f"R1 and R2 stay below their {rating1 * 1000:g} and {rating2 * 1000:g} mW ratings"),
+                q["r1_power_mw"].hi <= rating1 * 1000 and q["r2_power_mw"].hi <= rating2 * 1000,
+                "sound_enclosure", box.model_copy(update={"figures": rating}),
                 detail=f"R1 ≤ {q['r1_power_mw'].hi:.3g} mW, R2 ≤ {q['r2_power_mw'].hi:.3g} mW "
                        f"(interval bound, loose by construction)",
                 defeaters=("D1", "D7"),
@@ -430,16 +448,16 @@ class VoltageDividerGenerator:
             describe=f"a {si(exact(spec.load), 'ohm')} load on VOUT",
         ),)
         lo, hi = outward(band.lo, band.hi)
-        rating = exact(RESISTOR_POWER_W)
+        rating1, rating2 = exact(spec.figs.power_w("R1")), exact(spec.figs.power_w("R2"))
         return [
             PropertySpec(id="divider.vout", label="the voltage at VOUT", quantity="v(vout)",
                          relation="within", lo=lo, hi=hi, units="V", bench=bench,
                          re_derives="divider.vout_band"),
             PropertySpec(id="divider.r1_power", label="R1's dissipation", quantity="power(R_R1)",
-                         relation="le", hi=rating, units="W", bench=bench,
+                         relation="le", hi=rating1, units="W", bench=bench,
                          re_derives="divider.resistor_dissipation", datasheet_bound=True),
             PropertySpec(id="divider.r2_power", label="R2's dissipation", quantity="power(R_R2)",
-                         relation="le", hi=rating, units="W", bench=bench,
+                         relation="le", hi=rating2, units="W", bench=bench,
                          re_derives="divider.resistor_dissipation", datasheet_bound=True),
         ]
 
@@ -461,23 +479,25 @@ class VoltageDividerGenerator:
                         f"the part in hand, assumed from the same 1% series. {role}")
             return f"{ohms:g}Ω, E96 (1%). {role}"
 
+        r1_part, r1_package, r1_maker = spec.figs.resistor("R1", sel.r1)
+        r2_part, r2_package, r2_maker = spec.figs.resistor("R2", sel.r2)
         return CircuitIR(
             intent=f"Voltage divider: {spec.vout:g} V from {spec.supply:g} V{load}",
             application_class=ApplicationClass.HOBBY_ARDUINO,
             components=[
                 Component(
-                    id="R1", type=ComponentType.RESISTOR, part_number=resistor_part(sel.r1),
-                    manufacturer="Yageo", package="0402", value=value_string(sel.r1),
-                    supply_voltage_max=RESISTOR_VMAX, confidence=0.95,
+                    id="R1", type=ComponentType.RESISTOR, part_number=r1_part,
+                    manufacturer=r1_maker, package=r1_package, value=value_string(sel.r1),
+                    supply_voltage_max=spec.figs.voltage_max("R1"), confidence=0.95,
                     justification=reason("R1", sel.r1,
                         f"Upper leg: with R2={sel.r2:g}Ω it sets V_out = {sel.vout:.4g} V "
                         f"({sel.error_pct:.2f}% from the {spec.vout:g} V asked for). Raising R1 "
                         f"lowers V_out; the pair draws {current_ma:.3g} mA from the rail."),
                 ),
                 Component(
-                    id="R2", type=ComponentType.RESISTOR, part_number=resistor_part(sel.r2),
-                    manufacturer="Yageo", package="0402", value=value_string(sel.r2),
-                    supply_voltage_max=RESISTOR_VMAX, confidence=0.95,
+                    id="R2", type=ComponentType.RESISTOR, part_number=r2_part,
+                    manufacturer=r2_maker, package=r2_package, value=value_string(sel.r2),
+                    supply_voltage_max=spec.figs.voltage_max("R2"), confidence=0.95,
                     justification=reason("R2", sel.r2,
                         f"Lower leg: V_out appears across it. Output impedance is "
                         f"R1∥R2 = {sel.r1 * sel.r2 / (sel.r1 + sel.r2):.4g}Ω — a load much "

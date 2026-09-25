@@ -176,17 +176,16 @@ class TestPricingLookup:
         ]))[0]
         assert row["lcsc_pn"] == "C19528"
 
-    def test_part_number_prefix_resolved_via_package(self):
-        """'ATmega328P' matches both -PU (DIP-28) and -AU (TQFP-32);
-        the package disambiguates."""
+    def test_a_bare_prefix_is_not_priced_as_an_orderable_part(self):
+        """Stage 6: 'ATmega328P' is not the same part as 'ATmega328P-PU' — the
+        grade and package are part of the part. Priced only as itself."""
         row = BOMCompiler().compile(_StubIR([
             _component(id="U1", type=ComponentType.MICROCONTROLLER,
                        part_number="ATmega328P", manufacturer="Microchip",
                        package="DIP-28", value=None)
         ]))[0]
-        assert row["price_source"] == "part_number_prefix"
-        assert row["priced_as"] == "ATmega328P-PU"
-        assert row["unit_price_usd"] == pytest.approx(1.85)
+        assert row["price_known"] is False and row["price_source"] == "unknown"
+        assert row["priced_as"] is None and row["lcsc_pn"] is None
 
     def test_ambiguous_prefix_without_package_is_not_guessed(self):
         """Picking an arbitrary package would put the wrong part on an order."""
@@ -203,15 +202,17 @@ class TestPricingLookup:
         ("CFR-25JB-52-1K", "1k", ComponentType.RESISTOR),
         ("K104K15X7RF53L2", "100nF", ComponentType.CAPACITOR),
     ])
-    def test_unknown_passive_priced_from_equivalent(self, pn, value, ctype):
-        """Parts absent from the database are priced from an equivalent."""
+    def test_an_unknown_passive_is_never_priced_or_ordered_as_another(self, pn, value, ctype):
+        """Stage 6, gate 1: a same-value part is a substitute, and a substitute
+        is offered only after it passes the original's checks — never silently
+        as a price and an order number on the original's row."""
         row = BOMCompiler().compile(_StubIR([
             _component(id="R1", type=ctype, part_number=pn, value=value,
                        manufacturer="Yageo", package="0.25W")
         ]))[0]
-        assert row["price_source"] == "equivalent_value"
-        assert row["unit_price_usd"] > 0
-        assert row["priced_as"] is not None
+        assert row["price_source"] == "unknown" and row["price_known"] is False
+        assert row["priced_as"] is None
+        assert row["lcsc_pn"] is None and row["digikey_pn"] is None
 
     def test_active_parts_are_never_value_substituted(self):
         """An ATmega328P is not interchangeable with an ATmega2560."""
@@ -233,8 +234,9 @@ class TestPricingLookup:
         assert row["price_known"] is False
         assert row["unit_price_usd"] == 0.0
 
-    def test_screenshot_bom_is_fully_priced(self):
-        """End-to-end: the 9-component circuit that reported $0.00 in the UI."""
+    def test_screenshot_bom_prices_exact_parts_and_flags_the_rest(self):
+        """End-to-end: the 9-component circuit that once reported $0.00. Exact
+        parts are priced; generic ones are flagged, not priced as something else."""
         spec = [
             ("U1", ComponentType.MICROCONTROLLER, "ATmega328P", "DIP-28", None),
             ("U2", ComponentType.SENSOR, "DHT22", "4-PIN", None),
@@ -250,11 +252,21 @@ class TestPricingLookup:
                  for i, t, p, k, v in spec]
 
         compiler = BOMCompiler()
-        rows = compiler.compile(_StubIR(comps))
-        coverage = compiler.pricing_coverage(rows)
+        rows = {r["id"]: r for r in compiler.compile(_StubIR(comps))}
+        assert rows["U2"]["price_known"] and compiler.total_cost(list(rows.values())) > 0
+        for rid in ("U1", "R1", "R2", "C1", "C2"):
+            assert rows[rid]["price_known"] is False and rows[rid]["priced_as"] is None
+        assert set(compiler.pricing_coverage(list(rows.values()))["unpriced_ids"]) >= {"U1", "R1", "R2", "C1", "C2"}
 
-        assert coverage["complete"], f"unpriced: {coverage['unpriced_ids']}"
-        assert compiler.total_cost(rows) > 0
+    def test_every_price_carries_its_date(self):
+        """Stage 6, gate 2: a priced row says when the price was recorded."""
+        for ir in ALL_EXAMPLES:
+            for row in BOMCompiler().compile(ir):
+                if row["price_known"]:
+                    assert row["price_asof"] == "2026-07-25"
+                    assert "not a distributor quote" in row["price_note"]
+                else:
+                    assert row["price_asof"] is None
 
 
 class TestPricingCoverage:
@@ -280,7 +292,4 @@ class TestPricingCoverage:
     def test_every_example_row_declares_price_provenance(self, ir):
         for row in BOMCompiler().compile(ir):
             assert "price_known" in row
-            assert row["price_source"] in {
-                "part_number", "lcsc_pn", "part_number_prefix",
-                "equivalent_value", "unknown",
-            }
+            assert row["price_source"] in {"part_number", "lcsc_pn", "unknown"}

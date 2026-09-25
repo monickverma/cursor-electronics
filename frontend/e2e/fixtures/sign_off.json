@@ -1,5 +1,5 @@
 {
- "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
+ "circuit_id": "a7729ca5-6f1e-5e52-bdf5-b6ebc1378987",
  "intent_ir": {},
  "properties_hash": "979c063b769a05afa44bad81a61d63e490c6fe30ab12f8279659a445c2bff566",
  "signed_by": "engineer@example.com",
@@ -18,8 +18,13 @@
     "kind": "analytic",
     "method": "closed_form",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "nominal"
     },
@@ -30,7 +35,8 @@
     "covers": [],
     "critical": false,
     "defeaters": [
-     "D1"
+     "D1",
+     "D7"
     ],
     "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold; superseded by proof.rc.cutoff (signed proofs)",
     "grade": "G1",
@@ -38,8 +44,16 @@
     "kind": "analytic",
     "method": "monotone_corners",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/tolerance",
+      "CL05B473KO5NNNC/tolerance"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "tolerance_box"
     },
@@ -58,8 +72,13 @@
     "kind": "analytic",
     "method": "closed_form",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "nominal"
     },
@@ -71,7 +90,8 @@
     "critical": true,
     "defeaters": [
      "D1",
-     "D8"
+     "D8",
+     "D7"
     ],
     "detail": "7 obligation(s) UNSAT over the box (signed off)",
     "grade": "G1",
@@ -79,8 +99,16 @@
     "kind": "analytic",
     "method": "z3_unsat",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/tolerance",
+      "CL05B473KO5NNNC/tolerance"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "netlist_mna",
      "parameters": "tolerance_box"
     },
@@ -97,8 +125,11 @@
     "kind": "analytic",
     "method": "exact_graph_check",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [],
      "model": "design_graph",
      "parameters": "nominal"
     },
@@ -117,8 +148,14 @@
     "kind": "analytic",
     "method": "exact_graph_check",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/voltage_max",
+      "CL05B473KO5NNNC/voltage_max"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [],
      "model": "design_graph",
      "parameters": "nominal"
     },

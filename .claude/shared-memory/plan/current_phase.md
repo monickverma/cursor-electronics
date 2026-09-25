@@ -1,7 +1,7 @@
 # Current Phase: Phase 2 — Validation Engine
 
 > Worker's instruction sheet. Set by the planner after each session.
-> Last updated: 2026-09-24 (Stage 5 done; Stage 6 next, unplanned)
+> Last updated: 2026-09-25 (D1, D2, D7 decided with TypeSafe; Stage 6 done — Phase 2's stages complete)
 >
 > **Phase 1 closed 2026-08-25 at 11 of 12 criteria.** Criterion 11 met by
 > substitute, criterion 12 deferred with a trigger. Neither is met — see
@@ -748,14 +748,90 @@ dispatched again. `FirmwareViewer` polls while it compiles.
 - **Strapping-pin checks are conservative**: any external connection to a
   strapping pin is refused, even where a careful design could use one.
 
-## Next — Stage 6, BOM and substitution
+# D1, D2, D7 — decided with TypeSafe ✅ DONE 2026-09-25
 
-Not yet planned at function level. Gates (v2 §5): no substitution surfaces
-that fails the original's checks (G1); every price carries `price_asof`, and
-pricing never gates validation (G1). Amendment X7 (live pricing supersedes
-the static-BOM rule) says "Stage 5 only", but its content is Stage 6's
-second gate; it is treated as Stage 6's. Live pricing is an authenticated,
-rate-limited external dependency — ask the user before adding it.
+The answers, the reading of them and every design choice are in
+`brain/decisions.md` [2026-09-24] **D1, D2, D7** — read them there, not here.
+
+## Task D.1 — D2 derived per claim ✅
+
+`proof/dependence.py` (symbolic, exact), `validation/claims.py`
+(`derive_mcu_models`), `ClaimScope.measures` / `assumes`.
+`tests/test_d2_dependence.py`, including an ngspice check that a claim names an
+MCU model exactly when its quantity moves with it. 42 → 33 citations on the CI
+designs; the RS-485 fail-safe keeps D2 through its assumed DE/RE state.
+
+## Task D.2 — D7 provenance and verification ✅
+
+`data/parts.py` (passive figures, one owner), `data/figures.py` (155 records),
+`scripts/verify_figures.py`, `ClaimScope.figures`, `validation/figure_audit.py`
+(completeness by experiment). `tests/test_d7_figures.py`. Nothing is verified,
+so D7 stands where it stood — plus six under-citations the declarations
+exposed (76 → 82).
+
+## Task D.3 — D1 bench evidence ✅ (machinery; nothing measured)
+
+`validation/bench.py`, `data/bench/`, `scripts/bench_template.py`,
+`docs/BENCH_D1.md` for a multimeter and an Uno. `tests/test_bench.py`.
+
+## For the user
+
+- **The RS-485 DE/RE pull-down** — a design change, the user's call.
+- **A bench session** (`docs/BENCH_D1.md`) and **a verification pass**
+  (`scripts/verify_figures.py`) — whenever the engineer chooses.
+
+---
+
+# Phase 2 — Stage 6: BOM and substitution ✅ DONE 2026-09-25
+
+Gates in `PHASE_2_PLAN_v2.md` §5 Stage 6; decisions and findings in
+`brain/decisions.md` [2026-09-25] **Stage 6** and **Stage 6, built**.
+
+## Task 6.1 — Record Stage 6 before code ✅
+
+## Task 6.2 — A price is the part's, with its date ✅
+
+`generators/bom/compiler.py`: exact part or LCSC match only; `price_asof` and
+`price_note` on every priced row; `data/component_db.json` dated. Fixed the
+unchecked same-value substitution that ordered an 0402 for the RS-485
+terminator.
+
+## Task 6.3 — Pinned parts in every generator ✅
+
+`constraints.pinned.<id> = {"part": ...}`; `generators/common.py`
+(`PartPin`, `PartFigures`). Unpinned designs byte-identical (49 CI designs).
+
+## Task 6.4 — Substitution through the gate ✅
+
+`generators/bom/substitution.py`. `tests/test_substitution.py`.
+
+## Task 6.5 — API and UI ✅
+
+`api/routes/bom.py` (`GET /design/{id}/bom`), `frontend/components/BOMTable.tsx`,
+`frontend/e2e/bom.spec.ts`. `tests/test_bom_route.py`.
+
+## Stage 6 gates
+
+| Gate | Result |
+|---|---|
+| No substitution surfaces that fails the original's checks (G1) | ✅ `test_substitution.py` — every surfaced part re-derived and re-proved on all 11 CI designs; the under-rated terminator and the 5% band-breakers refused by name |
+| Every price carries `price_asof`; pricing never gates validation (G1) | ✅ `test_substitution.py::TestPricing`, `test_bom.py::test_every_price_carries_its_date` |
+| 5%-of-manual-engineer KPI | ⏭ deferred, trigger: an engineer is available |
+
+## Stage 6 — not done, and why
+
+- **Live pricing** — not added; it needs the user's approval (X7, and the
+  standing rule). The price layer names its source per row.
+- **ICs, the MCU and the LED are not substituted** — each needs its own models.
+- **Only parts in `data/parts.py` can be pinned or offered.** A substitute's
+  figures are only as good as their records, which nobody has verified (D7).
+
+## Next
+
+Phase 2's seven stages are done. Closing it — the phase's own review against
+`PHASE_2_PLAN_v2.md` §3 (claim G-P2) and what stays open (D1, D2, D7, the KPI,
+criterion 12) — is the next planning step; it is not planned here.
+
 
 ---
 

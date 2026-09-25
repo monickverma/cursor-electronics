@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from api.routes import auth, design, firmware, patch, pcb, simulate
+from api.routes import auth, bom, design, firmware, patch, pcb, simulate
 from core.config import settings
 from middleware.instrumentation import RequestLogMiddleware
 from middleware.rate_limit import limiter
@@ -71,6 +71,7 @@ app.include_router(design.router, prefix="/design", tags=["design"])
 app.include_router(simulate.router, prefix="/design", tags=["simulation"])
 app.include_router(patch.router, prefix="/design", tags=["patch"])
 app.include_router(firmware.router, prefix="/design", tags=["firmware"])
+app.include_router(bom.router, prefix="/design", tags=["bom"])
 app.include_router(pcb.router, prefix="/pcb", tags=["pcb"])
 
 

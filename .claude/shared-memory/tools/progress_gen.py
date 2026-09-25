@@ -99,7 +99,7 @@ PLANNED = {
     },
     "generators/bom": {
         "file": "backend/generators/bom/compiler.py",
-        "test_file": "tests/test_bom.py",
+        "test_file": ["tests/test_bom.py", "tests/test_substitution.py"],
         "entries": [
             ("BOMCompiler",         "class",  "CircuitIR → BOM rows with static pricing"),
             ("BOMCompiler.compile", "method", "Main entry: returns list of BOM row dicts"),
@@ -483,7 +483,8 @@ PLANNED = {
     },
     "validation/claims": {
         "file": "backend/validation/claims.py",
-        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py"],
+        "test_file": ["tests/test_claims.py", "tests/test_generator_library.py",
+                      "tests/test_d2_dependence.py", "tests/test_d7_figures.py"],
         "entries": [
             ("Claim",              "class",    "kind / grade / scope / defeaters + an honest verdict"),
             ("ValidationCoverage", "class",    "coverage_le_g2, grade_floor, open_defeaters — never fused"),
@@ -618,6 +619,80 @@ PLANNED = {
             ("FirmwareView",  "class",    "Build status; source only when compiled"),
             ("firmware_view", "function", "The one gate every route's firmware goes through"),
             ("get_firmware",  "function", "GET /design/{id}/firmware — poll a build"),
+        ],
+    },
+    # D2, D7 and Stage 6. decisions.md [2026-09-24] D1, D2, D7; [2026-09-25] Stage 6.
+    "proof/dependence": {
+        "file": "backend/proof/dependence.py",
+        "test_file": "tests/test_d2_dependence.py",
+        "entries": [
+            ("is_mcu_element",       "function", "R_MCU_, R_PIN_, V_PIN_ — the MCU's models in a netlist"),
+            ("measured_nodes",       "function", "The nodes a quantity reads"),
+            ("mcu_elements_reached", "function", "D2 route 1: the MCU elements a quantity depends on, exactly"),
+        ],
+    },
+    "data/parts": {
+        "file": "backend/data/parts.py",
+        "test_file": ["tests/test_d7_figures.py", "tests/test_substitution.py"],
+        "entries": [
+            ("ResistorSeries",  "class",    "A resistor family's figures: tolerance, power, voltage, package"),
+            ("Capacitor",       "class",    "One capacitor part and its figures"),
+            ("resistor_series", "function", "The series a resistor part number belongs to"),
+            ("capacitor",       "function", "A tabulated capacitor by part number"),
+            ("resistor_part",   "function", "The part number of a value in a series"),
+            ("resistor_value",  "function", "Ohms from a Yageo part number"),
+            ("passive_figures", "function", "(owner, tolerance, power, voltage) of a tabulated passive"),
+        ],
+    },
+    "data/figures": {
+        "file": "backend/data/figures.py",
+        "test_file": "tests/test_d7_figures.py",
+        "entries": [
+            ("Figure",       "class",    "A provenance record: kind, source, the agent's reading"),
+            ("value",        "function", "A figure's value, read from the table that owns it"),
+            ("record_hash",  "function", "Covers the record and the value; an edit voids a verification"),
+            ("verified",     "function", "Checked by a person, and still the record that was checked"),
+            ("trusted",      "function", "Verified and a guarantee, standard or policy — or derived from trusted"),
+            ("untrusted",    "function", "The figures a claim reads that keep D7 open"),
+            ("of",           "function", "Figure ids a claim reads; refuses an unrecorded one"),
+            ("passive",      "function", "A placed passive's figures, by its series or its part"),
+        ],
+    },
+    "validation/figure_audit": {
+        "file": "backend/validation/figure_audit.py",
+        "test_file": "tests/test_d7_figures.py",
+        "entries": [
+            ("perturbed", "function", "Move one figure in its owning table"),
+            ("audit",     "function", "Every claim that moves with a figure must declare it"),
+        ],
+    },
+    "generators/bom/substitution": {
+        "file": "backend/generators/bom/substitution.py",
+        "test_file": ["tests/test_substitution.py", "tests/test_bom_route.py"],
+        "entries": [
+            ("Substitute",  "class",    "A part that passed every check the original passed"),
+            ("Rejected",    "class",    "A candidate that did not, and the check it failed"),
+            ("candidates",  "function", "Catalogue parts of the same kind and value"),
+            ("check",       "function", "One candidate through the gate, as a patch to the requirement"),
+            ("substitutes", "function", "Every candidate for every pinnable passive; price only orders"),
+        ],
+    },
+    "api/routes/bom": {
+        "file": "backend/api/routes/bom.py",
+        "test_file": "tests/test_bom_route.py",
+        "entries": [
+            ("bom_view", "function", "Dated rows and checked substitutes for a stored design"),
+            ("get_bom",  "function", "GET /design/{id}/bom"),
+        ],
+    },
+    "validation/bench": {
+        "file": "backend/validation/bench.py",
+        "test_file": "tests/test_bench.py",
+        "entries": [
+            ("BenchRecord",        "class",    "A measurement of one design: parts, quantities, instruments"),
+            ("predicted_interval", "function", "The model for the parts as measured, exactly at the corners"),
+            ("evaluate",           "function", "agrees | disagrees | stale, per measured property"),
+            ("evidence_for",       "function", "What drops D1 on this design; nothing if the family disagrees"),
         ],
     },
 }

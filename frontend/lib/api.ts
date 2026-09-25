@@ -177,9 +177,63 @@ export interface BOMRow {
   // Pricing provenance from BOMCompiler. `price_known: false` means the part is
   // absent from component_db.json — distinct from a genuinely $0.00 part.
   price_known?: boolean
-  price_source?: 'part_number' | 'lcsc_pn' | 'part_number_prefix' | 'equivalent_value' | 'unknown'
-  // Set when priced via a substitute: the database part the price came from.
+  // Stage 6: a row is priced only as the exact part it names. Responses from
+  // before Stage 6 may still say 'part_number_prefix' or 'equivalent_value'.
+  price_source?: 'part_number' | 'lcsc_pn' | 'unknown' | 'part_number_prefix' | 'equivalent_value'
+  // Stage 6: when the price was recorded, and what kind of price it is.
+  price_asof?: string | null
+  price_note?: string | null
+  // Always null since Stage 6; kept so older stored responses still type.
   priced_as?: string | null
+}
+
+// ── Stage 6: substitutes, each checked against the original's checks ───────
+
+export interface PatchOpJSON {
+  op: 'add' | 'remove' | 'replace' | 'test'
+  path: string
+  value?: unknown
+}
+
+export interface Substitute {
+  component_id: string
+  part_number: string
+  package: string
+  replaces: string
+  changes: string[]              // "R1: RC0402FR-0710KL → RC0603FR-0710KL", "package 0402 → 0603", …
+  unit_price_usd?: number | null
+  price_asof?: string | null
+  price_delta_usd?: number | null
+  checks: number                 // claims and properties re-checked
+  ops: PatchOpJSON[]             // the patch that applies it
+}
+
+export interface RejectedSubstitute {
+  component_id: string
+  part_number: string
+  reason: string
+}
+
+export interface BOMView {
+  circuit_id: string
+  version: number
+  rows: BOMRow[]
+  total_usd: number
+  coverage: { priced: number; total: number; complete: boolean; unpriced_ids: string[] }
+  pricing: string
+  substitutes: Substitute[]
+  rejected: RejectedSubstitute[]
+  substitutes_unavailable: string | null
+}
+
+export async function getBom(circuitId: string, token: string): Promise<BOMView> {
+  return apiGet(`/design/${circuitId}/bom`, token)
+}
+
+// Applying a substitute is an ordinary patch to the requirement: zero model
+// calls, a new version, the design re-derived through the same gate.
+export async function applyPatchOps(circuitId: string, ops: PatchOpJSON[], token: string): Promise<PatchResponse> {
+  return apiPost(`/design/${circuitId}/patch`, { ops }, token)
 }
 
 export interface SimulationStatus {

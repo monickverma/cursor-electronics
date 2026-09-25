@@ -57,7 +57,7 @@ MODULES = {
                                                                                              "tests/test_simulation_accuracy.py"], "phase": 1},
     "generators/firmware":     {"file": "backend/generators/firmware/arduino.py",   "test": "tests/test_firmware_generator.py", "phase": 1},
     "generators/kicad":        {"file": "backend/generators/schematic/kicad.py",    "test": "tests/test_schematic_generator.py","phase": 1},
-    "generators/bom":          {"file": "backend/generators/bom/compiler.py",       "test": "tests/test_bom.py",                "phase": 1},
+    "generators/bom":          {"file": "backend/generators/bom/compiler.py",       "test": ["tests/test_bom.py", "tests/test_substitution.py"], "phase": 1},
     "simulation/runner":       {"file": "backend/simulation/runner.py",             "test": ["tests/test_simulation.py",
                                                                                              "tests/test_simulation_accuracy.py"], "phase": 1},
     "simulation/parser":       {"file": "backend/simulation/parser.py",             "test": ["tests/test_simulation.py",
@@ -119,7 +119,7 @@ MODULES = {
     "generators/led_indicator":   {"file": "backend/generators/led_indicator.py",   "test": "tests/test_generator_library.py",   "phase": 2},
     "generators/dht22_node":      {"file": "backend/generators/dht22_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
     "generators/rs485_node":      {"file": "backend/generators/rs485_node.py",      "test": "tests/test_generator_library.py",   "phase": 2},
-    "validation/claims":          {"file": "backend/validation/claims.py",          "test": ["tests/test_claims.py", "tests/test_generator_library.py"], "phase": 2},
+    "validation/claims":          {"file": "backend/validation/claims.py",          "test": ["tests/test_claims.py", "tests/test_generator_library.py", "tests/test_d2_dependence.py", "tests/test_d7_figures.py"], "phase": 2},
     "validation/defeaters":       {"file": "backend/validation/defeaters.py",       "test": "tests/test_claims.py",               "phase": 2},
     "simulation/waveforms":       {"file": "backend/simulation/waveforms.py",       "test": "tests/test_waveforms.py",            "phase": 2},
     "validation/grid_adapters":   {"file": "backend/validation/grid_adapters.py",   "test": "tests/test_generator_library.py",   "phase": 2},
@@ -136,6 +136,14 @@ MODULES = {
     "generators/firmware/compile_gate": {"file": "backend/generators/firmware/compile_gate.py", "test": "tests/test_firmware_gate.py", "phase": 2},
     "tasks/firmware_task":        {"file": "backend/tasks/firmware_task.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
     "api/routes/firmware":        {"file": "backend/api/routes/firmware.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
+    # D2, D7 and Stage 6. decisions.md [2026-09-24] D1, D2, D7; [2026-09-25] Stage 6.
+    "proof/dependence":           {"file": "backend/proof/dependence.py",           "test": "tests/test_d2_dependence.py",        "phase": 2},
+    "data/parts":                 {"file": "backend/data/parts.py",                 "test": ["tests/test_d7_figures.py", "tests/test_substitution.py"], "phase": 2},
+    "data/figures":               {"file": "backend/data/figures.py",               "test": "tests/test_d7_figures.py",           "phase": 2},
+    "validation/figure_audit":    {"file": "backend/validation/figure_audit.py",    "test": "tests/test_d7_figures.py",           "phase": 2},
+    "generators/bom/substitution": {"file": "backend/generators/bom/substitution.py", "test": ["tests/test_substitution.py", "tests/test_bom_route.py"], "phase": 2},
+    "api/routes/bom":             {"file": "backend/api/routes/bom.py",             "test": "tests/test_bom_route.py",            "phase": 2},
+    "validation/bench":           {"file": "backend/validation/bench.py",           "test": "tests/test_bench.py",                "phase": 2},
 }
 
 PHASE1_CRITERIA = [

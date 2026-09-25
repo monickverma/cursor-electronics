@@ -14,8 +14,12 @@ parts; every choice stays in the generator that makes it.
 from __future__ import annotations
 
 import math
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, Mapping, NamedTuple, Optional, Sequence, Tuple
 
+from data.parts import DEFAULT_RESISTOR_SERIES, RESISTOR_SERIES, resistor_series, resistor_value
+from data.parts import capacitor as catalogue_capacitor
+from data.parts import resistor_part as _catalogue_part
+from data.parts import yageo_code as _catalogue_code
 from generators.protocol import IntentLike
 
 # E96 — the 1% series. E24 would be the wrong table for an F-code part.
@@ -31,10 +35,11 @@ E96 = (
 )
 
 #: Yageo RC0402FR — 1% thick film, 62.5 mW, 50 V. The resistor every generator
-#: places, so its limits are stated once.
-RESISTOR_TOLERANCE = 0.01
-RESISTOR_POWER_W = 0.0625
-RESISTOR_VMAX = 50.0
+#: places; its figures are owned by `data/parts.py` (Stage 6) and read here.
+_DEFAULT = RESISTOR_SERIES[DEFAULT_RESISTOR_SERIES]
+RESISTOR_TOLERANCE = _DEFAULT.tolerance
+RESISTOR_POWER_W = _DEFAULT.power_w
+RESISTOR_VMAX = _DEFAULT.voltage_max
 
 
 def snap_to_e96(ohms: float) -> float:
@@ -72,25 +77,12 @@ def e96_values(lo: float, hi: float) -> Sequence[float]:
 
 
 def yageo_code(ohms: float) -> str:
-    """
-    Yageo's value encoding: the unit letter stands in for the decimal point.
-    1590 → 1K59, 10000 → 10K, 100 → 100R.
-    """
-    if ohms >= 1e6:
-        scaled, unit = ohms / 1e6, "M"
-    elif ohms >= 1e3:
-        scaled, unit = ohms / 1e3, "K"
-    else:
-        scaled, unit = ohms, "R"
-    text = f"{scaled:.10g}"
-    if "." in text:
-        whole, frac = text.split(".")
-        return f"{whole}{unit}{frac}"
-    return f"{text}{unit}"
+    """Yageo's value encoding (1590 → 1K59); owned by `data/parts.py`."""
+    return _catalogue_code(ohms)
 
 
 def resistor_part(ohms: float) -> str:
-    return f"RC0402FR-07{yageo_code(ohms)}L"
+    return _catalogue_part(ohms)
 
 
 def value_string(ohms: float) -> str:
@@ -171,8 +163,95 @@ def read_pins(intent: IntentLike, pinnable: Sequence[str]) -> Dict[str, Any]:
     return dict(pinned)
 
 
+class PartPin(NamedTuple):
+    """A pinned *part* (Stage 6): its value and its own figures, from `data/parts.py`."""
+
+    part_number: str
+    kind: str                      # resistor | capacitor
+    value: float                   # ohms or farads
+    tolerance: float
+    power_w: Optional[float]       # resistors only
+    voltage_max: float
+    package: str
+    manufacturer: str
+
+
+def pinned_part(raw: object, pid: str = "part") -> Optional[PartPin]:
+    """
+    A part pin `{"part": "<part number>"}` resolved against the parts
+    catalogue; None for a value pin. A part the catalogue does not hold is
+    refused by name — without its figures no claim could be checked against it.
+    """
+    if not isinstance(raw, Mapping):
+        return None
+    number = raw.get("part")
+    if set(raw) != {"part"} or not isinstance(number, str) or not number.strip():
+        raise Unreadable(
+            f"constraints.pinned.{pid} must be a value or {{'part': '<part number>'}}; got {dict(raw)!r}"
+        )
+    number = number.strip()
+    series = resistor_series(number)
+    ohms = resistor_value(number)
+    if series is not None and ohms:
+        return PartPin(number, "resistor", ohms, series.tolerance, series.power_w, series.voltage_max,
+                       series.package, series.manufacturer)
+    cap = catalogue_capacitor(number)
+    if cap is not None:
+        return PartPin(number, "capacitor", cap.farads, cap.tolerance, None, cap.voltage_max,
+                       cap.package, cap.manufacturer)
+    raise Unreadable(
+        f"constraints.pinned.{pid}: {number} is not in the parts catalogue (data/parts.py), so its "
+        f"tolerance and ratings are unknown and nothing about it could be checked"
+    )
+
+
+def pinned_parts(intent: IntentLike, pinnable: Sequence[str], kinds: Mapping[str, str]) -> Dict[str, PartPin]:
+    """The part pins among `constraints.pinned`, each checked to be the kind of part its slot holds."""
+    out = {}
+    for pid, raw in read_pins(intent, pinnable).items():
+        part = pinned_part(raw, pid)
+        if part is None:
+            continue
+        if part.kind != kinds[pid]:
+            raise Unreadable(f"constraints.pinned.{pid}: {part.part_number} is a {part.kind}; {pid} is a {kinds[pid]}")
+        out[pid] = part
+    return out
+
+
+class PartFigures:
+    """
+    The figures of each placed passive: a pinned part's own, else the default
+    0402 series'. One object per design, so tolerance, rating and package can
+    never come from two different parts for the same slot.
+    """
+
+    def __init__(self, parts: Optional[Mapping[str, PartPin]] = None) -> None:
+        self.parts: Dict[str, PartPin] = dict(parts or {})
+
+    def tolerance(self, pid: str, default: float = RESISTOR_TOLERANCE) -> float:
+        return self.parts[pid].tolerance if pid in self.parts else default
+
+    def power_w(self, pid: str, default: float = RESISTOR_POWER_W) -> float:
+        part = self.parts.get(pid)
+        return part.power_w if part is not None and part.power_w is not None else default
+
+    def voltage_max(self, pid: str, default: float = RESISTOR_VMAX) -> float:
+        return self.parts[pid].voltage_max if pid in self.parts else default
+
+    def resistor(self, pid: str, ohms: float, series: str = DEFAULT_RESISTOR_SERIES) -> Tuple[str, str, str]:
+        """(part number, package, manufacturer) of the resistor in slot `pid`."""
+        if pid in self.parts:
+            p = self.parts[pid]
+            return p.part_number, p.package, p.manufacturer
+        s = RESISTOR_SERIES[series]
+        return _catalogue_part(ohms, series), s.package, s.manufacturer
+
+
 def pinned_number(raw: object, parse: Callable[[str], Optional[float]]) -> Optional[float]:
-    """A pin's value as a number, via the netlist's own parser. None if unreadable."""
+    """A pin's value as a number, via the netlist's own parser, or a part pin's value. None if unreadable."""
+    if isinstance(raw, Mapping):
+        part = pinned_part(raw)
+        return part.value if part is not None else None
     if isinstance(raw, bool):
         return None
     if isinstance(raw, (int, float)):

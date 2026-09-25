@@ -1,0 +1,3869 @@
+{
+ "bom": {
+  "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+  "coverage": {
+   "complete": false,
+   "priced": 2,
+   "total": 6,
+   "unpriced_ids": [
+    "U2",
+    "R1",
+    "R2",
+    "R3"
+   ]
+  },
+  "pricing": "Static prices from the parts catalogue, each with the date it was recorded. Live distributor pricing is not enabled.",
+  "rejected": [
+   {
+    "component_id": "R1",
+    "part_number": "RC0402FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 62.5 mW rating of RC0402FR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0402JR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 219 mW with the pair driven to 5 V, above the 62.5 mW rating of RC0402JR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0603FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 100 mW rating of RC0603FR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0805FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 125 mW rating of RC0805FR-07120RL"
+   }
+  ],
+  "rows": [
+   {
+    "confidence": 0.97,
+    "digikey_pn": "ATMEGA328P-PU-ND",
+    "id": "U1",
+    "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+    "lcsc_pn": "C14877",
+    "manufacturer": "Microchip",
+    "package": "DIP-28",
+    "part_number": "ATmega328P-PU",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 1.85,
+    "unit_price_usd": 1.85,
+    "value": null
+   },
+   {
+    "confidence": 0.96,
+    "digikey_pn": null,
+    "id": "U2",
+    "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+    "lcsc_pn": "C6456",
+    "manufacturer": "Maxim",
+    "package": "SOIC-8",
+    "part_number": "MAX485ECSA",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": null
+   },
+   {
+    "confidence": 0.97,
+    "digikey_pn": null,
+    "id": "R1",
+    "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "1206",
+    "part_number": "RC1206FR-07120RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "120"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R2",
+    "justification": "549Ω fail-safe bias, A to VCC: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R3",
+    "justification": "549Ω fail-safe bias, B to GND: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.99,
+    "digikey_pn": "1276-1000-1-ND",
+    "id": "C1",
+    "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+    "lcsc_pn": "C1525",
+    "manufacturer": "Samsung",
+    "package": "0402",
+    "part_number": "CL05B104KO5NNNC",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.01,
+    "unit_price_usd": 0.01,
+    "value": "100nF"
+   }
+  ],
+  "substitutes": [
+   {
+    "changes": [
+     "R2: RC0402FR-07549RL → RC0603FR-07549RL",
+     "package 0402 → 0603",
+     "power rating 62.5 → 100 mW",
+     "voltage rating 50 → 75 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC0603FR-07549RL"
+      }
+     }
+    ],
+    "package": "0603",
+    "part_number": "RC0603FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R2: RC0402FR-07549RL → RC0805FR-07549RL",
+     "package 0402 → 0805",
+     "power rating 62.5 → 125 mW",
+     "voltage rating 50 → 150 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC0805FR-07549RL"
+      }
+     }
+    ],
+    "package": "0805",
+    "part_number": "RC0805FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R2: RC0402FR-07549RL → RC1206FR-07549RL",
+     "package 0402 → 1206",
+     "power rating 62.5 → 250 mW",
+     "voltage rating 50 → 200 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC1206FR-07549RL"
+      }
+     }
+    ],
+    "package": "1206",
+    "part_number": "RC1206FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC0603FR-07549RL",
+     "package 0402 → 0603",
+     "power rating 62.5 → 100 mW",
+     "voltage rating 50 → 75 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC0603FR-07549RL"
+      }
+     }
+    ],
+    "package": "0603",
+    "part_number": "RC0603FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC0805FR-07549RL",
+     "package 0402 → 0805",
+     "power rating 62.5 → 125 mW",
+     "voltage rating 50 → 150 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC0805FR-07549RL"
+      }
+     }
+    ],
+    "package": "0805",
+    "part_number": "RC0805FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC1206FR-07549RL",
+     "package 0402 → 1206",
+     "power rating 62.5 → 250 mW",
+     "voltage rating 50 → 200 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC1206FR-07549RL"
+      }
+     }
+    ],
+    "package": "1206",
+    "part_number": "RC1206FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   }
+  ],
+  "substitutes_unavailable": null,
+  "total_usd": 1.86,
+  "version": 1
+ },
+ "bom_after": {
+  "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+  "coverage": {
+   "complete": false,
+   "priced": 2,
+   "total": 6,
+   "unpriced_ids": [
+    "U2",
+    "R1",
+    "R2",
+    "R3"
+   ]
+  },
+  "pricing": "Static prices from the parts catalogue, each with the date it was recorded. Live distributor pricing is not enabled.",
+  "rejected": [
+   {
+    "component_id": "R1",
+    "part_number": "RC0402FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 62.5 mW rating of RC0402FR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0402JR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 219 mW with the pair driven to 5 V, above the 62.5 mW rating of RC0402JR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0603FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 100 mW rating of RC0603FR-07120RL"
+   },
+   {
+    "component_id": "R1",
+    "part_number": "RC0805FR-07120RL",
+    "reason": "refused: R1=120Ω takes up to 210 mW with the pair driven to 5 V, above the 125 mW rating of RC0805FR-07120RL"
+   }
+  ],
+  "rows": [
+   {
+    "confidence": 0.97,
+    "digikey_pn": "ATMEGA328P-PU-ND",
+    "id": "U1",
+    "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+    "lcsc_pn": "C14877",
+    "manufacturer": "Microchip",
+    "package": "DIP-28",
+    "part_number": "ATmega328P-PU",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 1.85,
+    "unit_price_usd": 1.85,
+    "value": null
+   },
+   {
+    "confidence": 0.96,
+    "digikey_pn": null,
+    "id": "U2",
+    "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+    "lcsc_pn": "C6456",
+    "manufacturer": "Maxim",
+    "package": "SOIC-8",
+    "part_number": "MAX485ECSA",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": null
+   },
+   {
+    "confidence": 0.97,
+    "digikey_pn": null,
+    "id": "R1",
+    "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "1206",
+    "part_number": "RC1206FR-07120RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "120"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R2",
+    "justification": "549Ω fail-safe bias, A to VCC: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0603",
+    "part_number": "RC0603FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R3",
+    "justification": "549Ω fail-safe bias, B to GND: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.99,
+    "digikey_pn": "1276-1000-1-ND",
+    "id": "C1",
+    "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+    "lcsc_pn": "C1525",
+    "manufacturer": "Samsung",
+    "package": "0402",
+    "part_number": "CL05B104KO5NNNC",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.01,
+    "unit_price_usd": 0.01,
+    "value": "100nF"
+   }
+  ],
+  "substitutes": [
+   {
+    "changes": [
+     "R2: RC0603FR-07549RL → RC0402FR-07549RL",
+     "package 0603 → 0402",
+     "power rating 100 → 62.5 mW",
+     "voltage rating 75 → 50 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC0402FR-07549RL"
+      }
+     }
+    ],
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0603FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R2: RC0603FR-07549RL → RC0805FR-07549RL",
+     "package 0603 → 0805",
+     "power rating 100 → 125 mW",
+     "voltage rating 75 → 150 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC0805FR-07549RL"
+      }
+     }
+    ],
+    "package": "0805",
+    "part_number": "RC0805FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0603FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R2: RC0603FR-07549RL → RC1206FR-07549RL",
+     "package 0603 → 1206",
+     "power rating 100 → 250 mW",
+     "voltage rating 75 → 200 V"
+    ],
+    "checks": 26,
+    "component_id": "R2",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R2",
+      "value": {
+       "part": "RC1206FR-07549RL"
+      }
+     }
+    ],
+    "package": "1206",
+    "part_number": "RC1206FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0603FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC0603FR-07549RL",
+     "package 0402 → 0603",
+     "power rating 62.5 → 100 mW",
+     "voltage rating 50 → 75 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC0603FR-07549RL"
+      }
+     }
+    ],
+    "package": "0603",
+    "part_number": "RC0603FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC0805FR-07549RL",
+     "package 0402 → 0805",
+     "power rating 62.5 → 125 mW",
+     "voltage rating 50 → 150 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC0805FR-07549RL"
+      }
+     }
+    ],
+    "package": "0805",
+    "part_number": "RC0805FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   },
+   {
+    "changes": [
+     "R3: RC0402FR-07549RL → RC1206FR-07549RL",
+     "package 0402 → 1206",
+     "power rating 62.5 → 250 mW",
+     "voltage rating 50 → 200 V"
+    ],
+    "checks": 26,
+    "component_id": "R3",
+    "ops": [
+     {
+      "op": "add",
+      "path": "/constraints/pinned/R3",
+      "value": {
+       "part": "RC1206FR-07549RL"
+      }
+     }
+    ],
+    "package": "1206",
+    "part_number": "RC1206FR-07549RL",
+    "price_asof": null,
+    "price_delta_usd": null,
+    "replaces": "RC0402FR-07549RL",
+    "unit_price_usd": null
+   }
+  ],
+  "substitutes_unavailable": null,
+  "total_usd": 1.86,
+  "version": 2
+ },
+ "generate": {
+  "application_class": "modbus_rtu",
+  "bom": [
+   {
+    "confidence": 0.97,
+    "digikey_pn": "ATMEGA328P-PU-ND",
+    "id": "U1",
+    "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+    "lcsc_pn": "C14877",
+    "manufacturer": "Microchip",
+    "package": "DIP-28",
+    "part_number": "ATmega328P-PU",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 1.85,
+    "unit_price_usd": 1.85,
+    "value": null
+   },
+   {
+    "confidence": 0.96,
+    "digikey_pn": null,
+    "id": "U2",
+    "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+    "lcsc_pn": "C6456",
+    "manufacturer": "Maxim",
+    "package": "SOIC-8",
+    "part_number": "MAX485ECSA",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": null
+   },
+   {
+    "confidence": 0.97,
+    "digikey_pn": null,
+    "id": "R1",
+    "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "1206",
+    "part_number": "RC1206FR-07120RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "120"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R2",
+    "justification": "549Ω fail-safe bias, A to VCC: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R3",
+    "justification": "549Ω fail-safe bias, B to GND: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.99,
+    "digikey_pn": "1276-1000-1-ND",
+    "id": "C1",
+    "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+    "lcsc_pn": "C1525",
+    "manufacturer": "Samsung",
+    "package": "0402",
+    "part_number": "CL05B104KO5NNNC",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.01,
+    "unit_price_usd": 0.01,
+    "value": "100nF"
+   }
+  ],
+  "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+  "explanation": "",
+  "firmware": null,
+  "firmware_build": {
+   "message": "not built for this fixture",
+   "status": "unavailable"
+  },
+  "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
+  "ir": {
+   "application_class": "modbus_rtu",
+   "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+   "components": [
+    {
+     "confidence": 0.97,
+     "current_draw_ma": 50.0,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "U1",
+     "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+     "lcsc_pn": "C14877",
+     "manufacturer": "Microchip",
+     "operating_temp_max": 85.0,
+     "operating_temp_min": -40.0,
+     "package": "DIP-28",
+     "part_number": "ATmega328P-PU",
+     "sensor_type": null,
+     "supply_voltage_max": 5.5,
+     "supply_voltage_min": 1.8,
+     "type": "microcontroller",
+     "value": null
+    },
+    {
+     "confidence": 0.96,
+     "current_draw_ma": 0.3,
+     "datasheet_notes": [
+      "DE and RE pins must be tied together and driven by one MCU GPIO",
+      "HIGH = transmit mode, LOW = receive mode",
+      "120Ω termination resistor required between A and B at both ends of long bus",
+      "560Ω bias resistors: A-line to VCC, B-line to GND",
+      "100nF decoupling capacitor on VCC pin — place close to IC",
+      "Logic levels: 5V only (MAX485) or 3.3V (MAX3485)"
+     ],
+     "digikey_pn": null,
+     "id": "U2",
+     "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+     "lcsc_pn": "C6456",
+     "manufacturer": "Maxim",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "SOIC-8",
+     "part_number": "MAX485ECSA",
+     "sensor_type": null,
+     "supply_voltage_max": 5.25,
+     "supply_voltage_min": 4.75,
+     "type": "transceiver",
+     "value": null
+    },
+    {
+     "confidence": 0.97,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R1",
+     "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "1206",
+     "part_number": "RC1206FR-07120RL",
+     "sensor_type": null,
+     "supply_voltage_max": 200.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "120"
+    },
+    {
+     "confidence": 0.95,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R2",
+     "justification": "549Ω fail-safe bias, A to VCC: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0402",
+     "part_number": "RC0402FR-07549RL",
+     "sensor_type": null,
+     "supply_voltage_max": 50.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "549"
+    },
+    {
+     "confidence": 0.95,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R3",
+     "justification": "549Ω fail-safe bias, B to GND: the largest E96 value keeping idle V_AB ≥ 250 mV over tolerance with a far-end terminator. Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0402",
+     "part_number": "RC0402FR-07549RL",
+     "sensor_type": null,
+     "supply_voltage_max": 50.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "549"
+    },
+    {
+     "confidence": 0.99,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "C1",
+     "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+     "lcsc_pn": "C1525",
+     "manufacturer": "Samsung",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0402",
+     "part_number": "CL05B104KO5NNNC",
+     "sensor_type": null,
+     "supply_voltage_max": 16.0,
+     "supply_voltage_min": null,
+     "type": "capacitor",
+     "value": "100nF"
+    }
+   ],
+   "connections": [
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "VCC_5V",
+     "pin": "VCC"
+    },
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "GND",
+     "pin": "GND"
+    },
+    {
+     "component_id": "C1",
+     "direction": "bidirectional",
+     "node_id": "VCC_5V",
+     "pin": "+"
+    },
+    {
+     "component_id": "C1",
+     "direction": "bidirectional",
+     "node_id": "GND",
+     "pin": "-"
+    },
+    {
+     "component_id": "U1",
+     "direction": "output",
+     "node_id": "UART_TX",
+     "pin": "D11"
+    },
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "UART_RX",
+     "pin": "D10"
+    },
+    {
+     "component_id": "U1",
+     "direction": "output",
+     "node_id": "RS485_DE_RE",
+     "pin": "D2"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "VCC_5V",
+     "pin": "VCC"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "GND",
+     "pin": "GND"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "UART_TX",
+     "pin": "DI"
+    },
+    {
+     "component_id": "U2",
+     "direction": "output",
+     "node_id": "UART_RX",
+     "pin": "RO"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "RS485_DE_RE",
+     "pin": "DE"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "RS485_DE_RE",
+     "pin": "RE"
+    },
+    {
+     "component_id": "U2",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "A"
+    },
+    {
+     "component_id": "U2",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "B"
+    },
+    {
+     "component_id": "R1",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "A"
+    },
+    {
+     "component_id": "R1",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "B"
+    },
+    {
+     "component_id": "R2",
+     "direction": "bidirectional",
+     "node_id": "VCC_5V",
+     "pin": "A"
+    },
+    {
+     "component_id": "R2",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "B"
+    },
+    {
+     "component_id": "R3",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "A"
+    },
+    {
+     "component_id": "R3",
+     "direction": "bidirectional",
+     "node_id": "GND",
+     "pin": "B"
+    }
+   ],
+   "constraints": {
+    "far_end_terminated": true,
+    "modbus_baud": 9600,
+    "modbus_slaves": [
+     {
+      "address": 1,
+      "name": "Device_1",
+      "register_count": 4,
+      "register_start": 0
+     }
+    ],
+    "poll_interval_ms": 5000,
+    "supply_current_ma": 500.0,
+    "supply_voltage": 5.0
+   },
+   "generator": "rs485_node@0.2.0",
+   "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
+   "nodes": [
+    {
+     "frequency_hz": null,
+     "id": "VCC_5V",
+     "protocol": null,
+     "type": "power",
+     "voltage_nominal": 5.0
+    },
+    {
+     "frequency_hz": null,
+     "id": "GND",
+     "protocol": null,
+     "type": "ground",
+     "voltage_nominal": 0.0
+    },
+    {
+     "frequency_hz": null,
+     "id": "UART_TX",
+     "protocol": "UART",
+     "type": "uart_tx",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "UART_RX",
+     "protocol": "UART",
+     "type": "uart_rx",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_DE_RE",
+     "protocol": null,
+     "type": "digital",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_A",
+     "protocol": "RS485",
+     "type": "rs485_a",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_B",
+     "protocol": "RS485",
+     "type": "rs485_b",
+     "voltage_nominal": null
+    }
+   ],
+   "patch_history": [],
+   "safety_class": "general",
+   "simulation_passed": null,
+   "simulation_results": null,
+   "simulation_spec": {
+    "analyses": [
+     {
+      "description": "Idle bus bias and rail current",
+      "f_start": null,
+      "f_stop": null,
+      "points_per_decade": null,
+      "step_time": null,
+      "stop_time": null,
+      "type": "dc_op"
+     }
+    ],
+    "expected_outputs": {
+     "VCC_5V": 5.0
+    }
+   },
+   "target_mcu": "arduino_uno",
+   "validation_coverage": {
+    "claims": [
+     {
+      "claim": "the idle bus holds V_AB above the receivers' 200 mV threshold with the far end terminated",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7",
+       "D2"
+      ],
+      "detail": "V_AB ∈ [254, 264] mV over every resistor within 1%",
+      "grade": "G1",
+      "id": "rs485.failsafe_bias",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [
+        "RS485_DE_RE"
+       ],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/receiver_threshold_mv"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "vdiff(rs485_a,rs485_b)"
+       ],
+       "model": "mna_ideal+mcu_pin_state",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "the driver sees no less than the 54 Ω it is specified into",
+      "covers": [
+       "current_limits_ok"
+      ],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "56.3–57.5 Ω",
+      "grade": "G1",
+      "id": "rs485.driver_load",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/driver_rated_load_ohm"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "rth(rs485_a,rs485_b)"
+       ],
+       "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "R1 stays within its 250 mW rating with the pair driven to the full 5 V",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+      "grade": "G1",
+      "id": "rs485.termination_dissipation",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC1206FR/power_w"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "power(R_R1)"
+       ],
+       "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "the idle rail stays within its 500 mA budget",
+      "covers": [
+       "power_supply_adequate"
+      ],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D2",
+       "D7"
+      ],
+      "detail": "54.6 mA, of which the MCU model is 50 mA",
+      "grade": "G1",
+      "id": "rs485.rail_current",
+      "kind": "analytic",
+      "method": "closed_form",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "ATmega328P-PU/supply_model_ohm",
+        "MAX485ECSA/current_draw_ma",
+        "MAX485ECSA/supply_voltage_max"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "i(V_VCC_5V)"
+       ],
+       "model": "mna_ideal+mcu_as_100R",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+      "covers": [],
+      "critical": false,
+      "defeaters": [
+       "D1",
+       "D2",
+       "D7"
+      ],
+      "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+      "grade": "G1",
+      "id": "proof.rs485.failsafe_bias",
+      "kind": "analytic",
+      "method": "z3_unsat",
+      "scope": {
+       "assumes": [
+        "RS485_DE_RE"
+       ],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/receiver_threshold_mv"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "vdiff(rs485_a,rs485_b)"
+       ],
+       "model": "netlist_mna+mcu_pin_state",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+      "covers": [],
+      "critical": false,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+      "grade": "G1",
+      "id": "proof.rs485.driver_load",
+      "kind": "analytic",
+      "method": "z3_unsat",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/driver_rated_load_ohm"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "rth(rs485_a,rs485_b)"
+       ],
+       "model": "netlist_mna",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every node has at least two connections, counting declared ports",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "no node below two connections",
+      "grade": "G1",
+      "id": "rule.no_floating_nodes",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "every part's rated supply voltage covers the circuit's supply",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "all ratings at or above the supply",
+      "grade": "G1",
+      "id": "rule.voltage_ratings_ok",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "ATmega328P-PU/supply_voltage_max",
+        "MAX485ECSA/supply_voltage_max",
+        "RC1206FR/voltage_max",
+        "RC0402FR/voltage_max",
+        "CL05B104KO5NNNC/voltage_max"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every I2C line has a pull-up to a supply rail",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no I2C lines",
+      "grade": null,
+      "id": "rule.i2c_pullups_present",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "the RS-485 A/B pair is terminated with 100–150 ohm",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "present",
+      "grade": "G1",
+      "id": "rule.rs485_termination_present",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "RS-485 A is biased to VCC and B to GND",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "present",
+      "grade": "G1",
+      "id": "rule.rs485_bias_resistors",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.pin_assignment_valid",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.peripheral_conflict_free",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "nothing external is wired to a strapping pin",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.strapping_pins_safe",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no PWM signals",
+      "grade": null,
+      "id": "rule.pwm_pin_valid",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule current_limits_ok (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "covered by claim rs485.driver_load",
+      "grade": null,
+      "id": "rule.current_limits_ok",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule power_supply_adequate (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "covered by claim rs485.rail_current",
+      "grade": null,
+      "id": "rule.power_supply_adequate",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule pullup_on_open_drain (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no open-drain line: RS-485 is driven differentially, and the bias network is its own rule (rs485_bias_resistors)",
+      "grade": null,
+      "id": "rule.pullup_on_open_drain",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule operating_temp_range",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope: thermal",
+      "grade": null,
+      "id": "rule.operating_temp_range",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "RF above 100 MHz",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.rf_gt_100mhz",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "EMI / EMC",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.emi_emc",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "thermal behaviour, including operating temperature range",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.thermal",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "manufacturing yield",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.manufacturing_yield",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "switching converters",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.switching_converters",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     }
+    ],
+    "coverage_le_g2": 1.0,
+    "grade_floor": "G1",
+    "not_assessed": [],
+    "open_defeaters": [
+     "D1",
+     "D2",
+     "D7"
+    ],
+    "out_of_scope": [
+     "rule.operating_temp_range",
+     "scope.rf_gt_100mhz",
+     "scope.emi_emc",
+     "scope.thermal",
+     "scope.manufacturing_yield",
+     "scope.switching_converters"
+    ],
+    "properties": [
+     {
+      "counterexample": null,
+      "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+      "grade": "G1",
+      "hash": "1634201c6be04f55e1bfd64970fa4fc8669e904dad47dadbd142516d50da3cf1",
+      "id": "rs485.failsafe_bias",
+      "method": "z3_unsat",
+      "re_derives": "rs485.failsafe_bias",
+      "status": "proven"
+     },
+     {
+      "counterexample": null,
+      "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+      "grade": "G1",
+      "hash": "15ad0f6ba374ec1cce0534eb9ea304e3ca6862f1d64954fc0146c81a3064c515",
+      "id": "rs485.driver_load",
+      "method": "z3_unsat",
+      "re_derives": "rs485.driver_load",
+      "status": "proven"
+     }
+    ],
+    "properties_hash": "71f0e291c6be3d6c8ab97423bc8b2c48413a340895f1e8e43d5bc32efc968dbc",
+    "properties_signed": false,
+    "signed_by": null
+   },
+   "validation_results": null,
+   "validation_rules": [
+    "no_floating_nodes",
+    "voltage_ratings_ok",
+    "rs485_termination_present",
+    "rs485_bias_resistors"
+   ],
+   "version": 1
+  },
+  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"d7b624e8-366f-5751-9bd6-b379cb2d4326\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4c7d9ee2-fd4c-5fee-9bb9-a55a38c0b2c8\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"bcc78aaf-6874-5d72-841a-f2de0518a07c\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4a0c1ef6-c6c4-51c3-8c4f-7f15ae267d56\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"d7bf31fe-518f-5087-9558-664999cf3393\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"0300915a-c5e1-5e1d-88ef-f5dad6a63e36\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c155b7b7-d39b-5cb0-b0e5-4c9db9d73b4d\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"18675ba2-8939-50c5-a8e7-03142ae5099f\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"8f62b19c-c6fd-577f-9637-47a9c5762320\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"91a55972-fdae-5089-b020-68480d201c8d\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"71ee0c81-ff48-5c5b-9bfc-a9dafaef2dd2\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f120d4de-e424-5d5d-9218-a4351cc64f7d\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"86f5060c-cef7-5b13-80ba-87fa70e3cf85\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"73d2b60a-2857-5309-a239-e6502432a3df\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3891d014-82b2-5044-92af-5a4e996ca01e\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"0c827ad1-4fcf-5d06-9441-7f259aa12562\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"5819bec7-0866-5d78-8034-998628ac09dd\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"ef060056-3310-5628-b6f4-eaec470abf1c\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"377246e8-9683-5390-a739-232405eca3f9\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"375734a7-e3e4-5e21-8fef-871ce4091ec2\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"a3afe81c-fad9-59ae-b144-4a8726157b49\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"4a76665b-1421-5fbd-b389-0ff9c6aaa1eb\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"24d299c9-2449-59d8-ab19-2b0525a9286c\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"92eacb3a-f527-500d-8f58-ece14ac78465\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"fa99968c-a221-59dd-adb3-0675d5bd77fa\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"799dc7bd-6c5a-538e-ac6d-ba2284a62cb5\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c6a1b56e-191c-592a-87e4-fb8762d1cc20\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ed7003ff-4d38-57a7-b515-fd5961da87d5\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"85d78346-d8c1-59ef-bae1-4f7c5fb50e67\"))\n  (text \"R2: RC0402FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1fc8c870-079b-5876-85f4-8fa07046f484\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"bae94f55-ea05-5329-aa95-044746df54db\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6981518c-cb82-5f76-b9ec-bffb69bc43b8\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"77437067-828d-539f-b2d4-d359e6dc55c0\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"10f74faa-d935-5f15-aed2-5a2d392805ee\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1a87bba4-e779-56ce-8212-11e0b9d5a4a0\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3517db43-60a8-5ba5-a70f-63b0812cfbec\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"45f4f720-d90e-5c81-919b-f9ab10f3b451\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1f03a80b-6a19-5181-b8f6-2cc325b56527\"))\n  (text \"VCC_5V\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"335e44e2-7170-5d06-8626-8833cf77c5a9\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f7098c5f-26dd-5200-a2fa-3fe0a9db185f\"))\n\n)",
+  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
+  "target_mcu": "arduino_uno",
+  "validation": {
+   "errors": [],
+   "passed": true,
+   "warnings": []
+  },
+  "validation_coverage": {
+   "claims": [
+    {
+     "claim": "the idle bus holds V_AB above the receivers' 200 mV threshold with the far end terminated",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7",
+      "D2"
+     ],
+     "detail": "V_AB ∈ [254, 264] mV over every resistor within 1%",
+     "grade": "G1",
+     "id": "rs485.failsafe_bias",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [
+       "RS485_DE_RE"
+      ],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/receiver_threshold_mv"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "vdiff(rs485_a,rs485_b)"
+      ],
+      "model": "mna_ideal+mcu_pin_state",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "the driver sees no less than the 54 Ω it is specified into",
+     "covers": [
+      "current_limits_ok"
+     ],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "56.3–57.5 Ω",
+     "grade": "G1",
+     "id": "rs485.driver_load",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/driver_rated_load_ohm"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "rth(rs485_a,rs485_b)"
+      ],
+      "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "R1 stays within its 250 mW rating with the pair driven to the full 5 V",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+     "grade": "G1",
+     "id": "rs485.termination_dissipation",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC1206FR/power_w"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "power(R_R1)"
+      ],
+      "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "the idle rail stays within its 500 mA budget",
+     "covers": [
+      "power_supply_adequate"
+     ],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D2",
+      "D7"
+     ],
+     "detail": "54.6 mA, of which the MCU model is 50 mA",
+     "grade": "G1",
+     "id": "rs485.rail_current",
+     "kind": "analytic",
+     "method": "closed_form",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "ATmega328P-PU/supply_model_ohm",
+       "MAX485ECSA/current_draw_ma",
+       "MAX485ECSA/supply_voltage_max"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "i(V_VCC_5V)"
+      ],
+      "model": "mna_ideal+mcu_as_100R",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+     "covers": [],
+     "critical": false,
+     "defeaters": [
+      "D1",
+      "D2",
+      "D7"
+     ],
+     "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+     "grade": "G1",
+     "id": "proof.rs485.failsafe_bias",
+     "kind": "analytic",
+     "method": "z3_unsat",
+     "scope": {
+      "assumes": [
+       "RS485_DE_RE"
+      ],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/receiver_threshold_mv"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "vdiff(rs485_a,rs485_b)"
+      ],
+      "model": "netlist_mna+mcu_pin_state",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+     "covers": [],
+     "critical": false,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+     "grade": "G1",
+     "id": "proof.rs485.driver_load",
+     "kind": "analytic",
+     "method": "z3_unsat",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/driver_rated_load_ohm"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "rth(rs485_a,rs485_b)"
+      ],
+      "model": "netlist_mna",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every node has at least two connections, counting declared ports",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "no node below two connections",
+     "grade": "G1",
+     "id": "rule.no_floating_nodes",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "every part's rated supply voltage covers the circuit's supply",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "all ratings at or above the supply",
+     "grade": "G1",
+     "id": "rule.voltage_ratings_ok",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "ATmega328P-PU/supply_voltage_max",
+       "MAX485ECSA/supply_voltage_max",
+       "RC1206FR/voltage_max",
+       "RC0402FR/voltage_max",
+       "CL05B104KO5NNNC/voltage_max"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every I2C line has a pull-up to a supply rail",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no I2C lines",
+     "grade": null,
+     "id": "rule.i2c_pullups_present",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "the RS-485 A/B pair is terminated with 100–150 ohm",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "present",
+     "grade": "G1",
+     "id": "rule.rs485_termination_present",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "RS-485 A is biased to VCC and B to GND",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "present",
+     "grade": "G1",
+     "id": "rule.rs485_bias_resistors",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.pin_assignment_valid",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.peripheral_conflict_free",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "nothing external is wired to a strapping pin",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.strapping_pins_safe",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no PWM signals",
+     "grade": null,
+     "id": "rule.pwm_pin_valid",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule current_limits_ok (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "covered by claim rs485.driver_load",
+     "grade": null,
+     "id": "rule.current_limits_ok",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule power_supply_adequate (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "covered by claim rs485.rail_current",
+     "grade": null,
+     "id": "rule.power_supply_adequate",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule pullup_on_open_drain (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no open-drain line: RS-485 is driven differentially, and the bias network is its own rule (rs485_bias_resistors)",
+     "grade": null,
+     "id": "rule.pullup_on_open_drain",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule operating_temp_range",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope: thermal",
+     "grade": null,
+     "id": "rule.operating_temp_range",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "RF above 100 MHz",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.rf_gt_100mhz",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "EMI / EMC",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.emi_emc",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "thermal behaviour, including operating temperature range",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.thermal",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "manufacturing yield",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.manufacturing_yield",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "switching converters",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.switching_converters",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    }
+   ],
+   "coverage_le_g2": 1.0,
+   "grade_floor": "G1",
+   "not_assessed": [],
+   "open_defeaters": [
+    "D1",
+    "D2",
+    "D7"
+   ],
+   "out_of_scope": [
+    "rule.operating_temp_range",
+    "scope.rf_gt_100mhz",
+    "scope.emi_emc",
+    "scope.thermal",
+    "scope.manufacturing_yield",
+    "scope.switching_converters"
+   ],
+   "properties": [
+    {
+     "counterexample": null,
+     "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+     "grade": "G1",
+     "hash": "1634201c6be04f55e1bfd64970fa4fc8669e904dad47dadbd142516d50da3cf1",
+     "id": "rs485.failsafe_bias",
+     "method": "z3_unsat",
+     "re_derives": "rs485.failsafe_bias",
+     "status": "proven"
+    },
+    {
+     "counterexample": null,
+     "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+     "grade": "G1",
+     "hash": "15ad0f6ba374ec1cce0534eb9ea304e3ca6862f1d64954fc0146c81a3064c515",
+     "id": "rs485.driver_load",
+     "method": "z3_unsat",
+     "re_derives": "rs485.driver_load",
+     "status": "proven"
+    }
+   ],
+   "properties_hash": "71f0e291c6be3d6c8ab97423bc8b2c48413a340895f1e8e43d5bc32efc968dbc",
+   "properties_signed": false,
+   "signed_by": null
+  },
+  "version": 1
+ },
+ "patch": {
+  "application_class": "modbus_rtu",
+  "bom": [
+   {
+    "confidence": 0.97,
+    "digikey_pn": "ATMEGA328P-PU-ND",
+    "id": "U1",
+    "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+    "lcsc_pn": "C14877",
+    "manufacturer": "Microchip",
+    "package": "DIP-28",
+    "part_number": "ATmega328P-PU",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 1.85,
+    "unit_price_usd": 1.85,
+    "value": null
+   },
+   {
+    "confidence": 0.96,
+    "digikey_pn": null,
+    "id": "U2",
+    "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+    "lcsc_pn": "C6456",
+    "manufacturer": "Maxim",
+    "package": "SOIC-8",
+    "part_number": "MAX485ECSA",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": null
+   },
+   {
+    "confidence": 0.97,
+    "digikey_pn": null,
+    "id": "R1",
+    "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "1206",
+    "part_number": "RC1206FR-07120RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "120"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R2",
+    "justification": "549Ω fail-safe bias, A to VCC: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0603",
+    "part_number": "RC0603FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.95,
+    "digikey_pn": null,
+    "id": "R3",
+    "justification": "549Ω fail-safe bias, B to GND: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+    "lcsc_pn": null,
+    "manufacturer": "Yageo",
+    "package": "0402",
+    "part_number": "RC0402FR-07549RL",
+    "price_asof": null,
+    "price_known": false,
+    "price_note": null,
+    "price_source": "unknown",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.0,
+    "unit_price_usd": 0.0,
+    "value": "549"
+   },
+   {
+    "confidence": 0.99,
+    "digikey_pn": "1276-1000-1-ND",
+    "id": "C1",
+    "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+    "lcsc_pn": "C1525",
+    "manufacturer": "Samsung",
+    "package": "0402",
+    "part_number": "CL05B104KO5NNNC",
+    "price_asof": "2026-07-25",
+    "price_known": true,
+    "price_note": "static catalogue price, recorded in the repository on 2026-07-25; when it was first observed is not recorded — not a distributor quote",
+    "price_source": "part_number",
+    "priced_as": null,
+    "quantity": 1,
+    "total_price_usd": 0.01,
+    "unit_price_usd": 0.01,
+    "value": "100nF"
+   }
+  ],
+  "changes": [
+   "constraints.pinned.R2: (none) → RC0603FR-07549RL"
+  ],
+  "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+  "citations": [],
+  "explanation": "",
+  "firmware": null,
+  "firmware_build": {
+   "message": "not built for this fixture",
+   "status": "unavailable"
+  },
+  "generator": "rs485_node@0.2.0",
+  "generator_changed": null,
+  "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
+  "ir": {
+   "application_class": "modbus_rtu",
+   "circuit_id": "1e07703a-8a8e-5259-9708-2e57ab1beffc",
+   "components": [
+    {
+     "confidence": 0.97,
+     "current_draw_ma": 50.0,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "U1",
+     "justification": "Arduino Uno MCU as Modbus RTU master: SoftwareSerial TX on D11, RX on D10, direction on D2. Hardware Serial (D0/D1) stays free for uploads and debugging.",
+     "lcsc_pn": "C14877",
+     "manufacturer": "Microchip",
+     "operating_temp_max": 85.0,
+     "operating_temp_min": -40.0,
+     "package": "DIP-28",
+     "part_number": "ATmega328P-PU",
+     "sensor_type": null,
+     "supply_voltage_max": 5.5,
+     "supply_voltage_min": 1.8,
+     "type": "microcontroller",
+     "value": null
+    },
+    {
+     "confidence": 0.96,
+     "current_draw_ma": 0.3,
+     "datasheet_notes": [
+      "DE and RE pins must be tied together and driven by one MCU GPIO",
+      "HIGH = transmit mode, LOW = receive mode",
+      "120Ω termination resistor required between A and B at both ends of long bus",
+      "560Ω bias resistors: A-line to VCC, B-line to GND",
+      "100nF decoupling capacitor on VCC pin — place close to IC",
+      "Logic levels: 5V only (MAX485) or 3.3V (MAX3485)"
+     ],
+     "digikey_pn": null,
+     "id": "U2",
+     "justification": "MAX485 half-duplex transceiver, DE and RE tied to D2: high transmits, low listens. Its supply window is 4.75–5.25 V; a 3.3 V design needs the MAX3485 instead.",
+     "lcsc_pn": "C6456",
+     "manufacturer": "Maxim",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "SOIC-8",
+     "part_number": "MAX485ECSA",
+     "sensor_type": null,
+     "supply_voltage_max": 5.25,
+     "supply_voltage_min": 4.75,
+     "type": "transceiver",
+     "value": null
+    },
+    {
+     "confidence": 0.97,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R1",
+     "justification": "120Ω termination across A/B, matching the cable's 120 Ω impedance so edges do not reflect. 1206, not 0402: a driver can put 5 V across it (208 mW), over three times an 0402's rating.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "1206",
+     "part_number": "RC1206FR-07120RL",
+     "sensor_type": null,
+     "supply_voltage_max": 200.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "120"
+    },
+    {
+     "confidence": 0.95,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R2",
+     "justification": "549Ω fail-safe bias, A to VCC: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0603",
+     "part_number": "RC0603FR-07549RL",
+     "sensor_type": null,
+     "supply_voltage_max": 75.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "549"
+    },
+    {
+     "confidence": 0.95,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "R3",
+     "justification": "549Ω fail-safe bias, B to GND: pinned by the requirement (constraints.pinned). Idle V_AB is 259 mV nominal, 254 mV worst case; a larger value would let the idle bus sag toward the 200 mV threshold, where receivers read noise.",
+     "lcsc_pn": null,
+     "manufacturer": "Yageo",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0402",
+     "part_number": "RC0402FR-07549RL",
+     "sensor_type": null,
+     "supply_voltage_max": 50.0,
+     "supply_voltage_min": null,
+     "type": "resistor",
+     "value": "549"
+    },
+    {
+     "confidence": 0.99,
+     "current_draw_ma": null,
+     "datasheet_notes": [],
+     "digikey_pn": null,
+     "id": "C1",
+     "justification": "100nF X7R bypass on U2's supply pin, placed close to it. It supplies the fast edges the rail's trace inductance cannot; without it switching noise couples into every line on the board. Rated 16 V against the 5 V rail.",
+     "lcsc_pn": "C1525",
+     "manufacturer": "Samsung",
+     "operating_temp_max": null,
+     "operating_temp_min": null,
+     "package": "0402",
+     "part_number": "CL05B104KO5NNNC",
+     "sensor_type": null,
+     "supply_voltage_max": 16.0,
+     "supply_voltage_min": null,
+     "type": "capacitor",
+     "value": "100nF"
+    }
+   ],
+   "connections": [
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "VCC_5V",
+     "pin": "VCC"
+    },
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "GND",
+     "pin": "GND"
+    },
+    {
+     "component_id": "C1",
+     "direction": "bidirectional",
+     "node_id": "VCC_5V",
+     "pin": "+"
+    },
+    {
+     "component_id": "C1",
+     "direction": "bidirectional",
+     "node_id": "GND",
+     "pin": "-"
+    },
+    {
+     "component_id": "U1",
+     "direction": "output",
+     "node_id": "UART_TX",
+     "pin": "D11"
+    },
+    {
+     "component_id": "U1",
+     "direction": "input",
+     "node_id": "UART_RX",
+     "pin": "D10"
+    },
+    {
+     "component_id": "U1",
+     "direction": "output",
+     "node_id": "RS485_DE_RE",
+     "pin": "D2"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "VCC_5V",
+     "pin": "VCC"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "GND",
+     "pin": "GND"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "UART_TX",
+     "pin": "DI"
+    },
+    {
+     "component_id": "U2",
+     "direction": "output",
+     "node_id": "UART_RX",
+     "pin": "RO"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "RS485_DE_RE",
+     "pin": "DE"
+    },
+    {
+     "component_id": "U2",
+     "direction": "input",
+     "node_id": "RS485_DE_RE",
+     "pin": "RE"
+    },
+    {
+     "component_id": "U2",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "A"
+    },
+    {
+     "component_id": "U2",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "B"
+    },
+    {
+     "component_id": "R1",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "A"
+    },
+    {
+     "component_id": "R1",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "B"
+    },
+    {
+     "component_id": "R2",
+     "direction": "bidirectional",
+     "node_id": "VCC_5V",
+     "pin": "A"
+    },
+    {
+     "component_id": "R2",
+     "direction": "bidirectional",
+     "node_id": "RS485_A",
+     "pin": "B"
+    },
+    {
+     "component_id": "R3",
+     "direction": "bidirectional",
+     "node_id": "RS485_B",
+     "pin": "A"
+    },
+    {
+     "component_id": "R3",
+     "direction": "bidirectional",
+     "node_id": "GND",
+     "pin": "B"
+    }
+   ],
+   "constraints": {
+    "far_end_terminated": true,
+    "modbus_baud": 9600,
+    "modbus_slaves": [
+     {
+      "address": 1,
+      "name": "Device_1",
+      "register_count": 4,
+      "register_start": 0
+     }
+    ],
+    "poll_interval_ms": 5000,
+    "supply_current_ma": 500.0,
+    "supply_voltage": 5.0
+   },
+   "generator": "rs485_node@0.2.0",
+   "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
+   "nodes": [
+    {
+     "frequency_hz": null,
+     "id": "VCC_5V",
+     "protocol": null,
+     "type": "power",
+     "voltage_nominal": 5.0
+    },
+    {
+     "frequency_hz": null,
+     "id": "GND",
+     "protocol": null,
+     "type": "ground",
+     "voltage_nominal": 0.0
+    },
+    {
+     "frequency_hz": null,
+     "id": "UART_TX",
+     "protocol": "UART",
+     "type": "uart_tx",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "UART_RX",
+     "protocol": "UART",
+     "type": "uart_rx",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_DE_RE",
+     "protocol": null,
+     "type": "digital",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_A",
+     "protocol": "RS485",
+     "type": "rs485_a",
+     "voltage_nominal": null
+    },
+    {
+     "frequency_hz": null,
+     "id": "RS485_B",
+     "protocol": "RS485",
+     "type": "rs485_b",
+     "voltage_nominal": null
+    }
+   ],
+   "patch_history": [],
+   "safety_class": "general",
+   "simulation_passed": null,
+   "simulation_results": null,
+   "simulation_spec": {
+    "analyses": [
+     {
+      "description": "Idle bus bias and rail current",
+      "f_start": null,
+      "f_stop": null,
+      "points_per_decade": null,
+      "step_time": null,
+      "stop_time": null,
+      "type": "dc_op"
+     }
+    ],
+    "expected_outputs": {
+     "VCC_5V": 5.0
+    }
+   },
+   "target_mcu": "arduino_uno",
+   "validation_coverage": {
+    "claims": [
+     {
+      "claim": "the idle bus holds V_AB above the receivers' 200 mV threshold with the far end terminated",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7",
+       "D2"
+      ],
+      "detail": "V_AB ∈ [254, 264] mV over every resistor within 1%",
+      "grade": "G1",
+      "id": "rs485.failsafe_bias",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [
+        "RS485_DE_RE"
+       ],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0603FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/receiver_threshold_mv"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "vdiff(rs485_a,rs485_b)"
+       ],
+       "model": "mna_ideal+mcu_pin_state",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "the driver sees no less than the 54 Ω it is specified into",
+      "covers": [
+       "current_limits_ok"
+      ],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "56.3–57.5 Ω",
+      "grade": "G1",
+      "id": "rs485.driver_load",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0603FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/driver_rated_load_ohm"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "rth(rs485_a,rs485_b)"
+       ],
+       "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "R1 stays within its 250 mW rating with the pair driven to the full 5 V",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+      "grade": "G1",
+      "id": "rs485.termination_dissipation",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC1206FR/power_w"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "power(R_R1)"
+       ],
+       "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "the idle rail stays within its 500 mA budget",
+      "covers": [
+       "power_supply_adequate"
+      ],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D2",
+       "D7"
+      ],
+      "detail": "54.6 mA, of which the MCU model is 50 mA",
+      "grade": "G1",
+      "id": "rs485.rail_current",
+      "kind": "analytic",
+      "method": "closed_form",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "ATmega328P-PU/supply_model_ohm",
+        "MAX485ECSA/current_draw_ma",
+        "MAX485ECSA/supply_voltage_max"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "i(V_VCC_5V)"
+       ],
+       "model": "mna_ideal+mcu_as_100R",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+      "covers": [],
+      "critical": false,
+      "defeaters": [
+       "D1",
+       "D2",
+       "D7"
+      ],
+      "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+      "grade": "G1",
+      "id": "proof.rs485.failsafe_bias",
+      "kind": "analytic",
+      "method": "z3_unsat",
+      "scope": {
+       "assumes": [
+        "RS485_DE_RE"
+       ],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0603FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/receiver_threshold_mv"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "vdiff(rs485_a,rs485_b)"
+       ],
+       "model": "netlist_mna+mcu_pin_state",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+      "covers": [],
+      "critical": false,
+      "defeaters": [
+       "D1",
+       "D7"
+      ],
+      "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+      "grade": "G1",
+      "id": "proof.rs485.driver_load",
+      "kind": "analytic",
+      "method": "z3_unsat",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC1206FR/tolerance",
+        "RC0603FR/tolerance",
+        "RC0402FR/tolerance",
+        "MAX485ECSA/requires_termination_ohm",
+        "MAX485ECSA/driver_rated_load_ohm"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [
+        "rth(rs485_a,rs485_b)"
+       ],
+       "model": "netlist_mna",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every node has at least two connections, counting declared ports",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "no node below two connections",
+      "grade": "G1",
+      "id": "rule.no_floating_nodes",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "every part's rated supply voltage covers the circuit's supply",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "all ratings at or above the supply",
+      "grade": "G1",
+      "id": "rule.voltage_ratings_ok",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "ATmega328P-PU/supply_voltage_max",
+        "MAX485ECSA/supply_voltage_max",
+        "RC1206FR/voltage_max",
+        "RC0603FR/voltage_max",
+        "RC0402FR/voltage_max",
+        "CL05B104KO5NNNC/voltage_max"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every I2C line has a pull-up to a supply rail",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no I2C lines",
+      "grade": null,
+      "id": "rule.i2c_pullups_present",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "the RS-485 A/B pair is terminated with 100–150 ohm",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "present",
+      "grade": "G1",
+      "id": "rule.rs485_termination_present",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "RS-485 A is biased to VCC and B to GND",
+      "covers": [],
+      "critical": true,
+      "defeaters": [],
+      "detail": "present",
+      "grade": "G1",
+      "id": "rule.rs485_bias_resistors",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds"
+     },
+     {
+      "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.pin_assignment_valid",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.peripheral_conflict_free",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "nothing external is wired to a strapping pin",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D7"
+      ],
+      "detail": "every assigned pin passes",
+      "grade": "G1",
+      "id": "rule.strapping_pins_safe",
+      "kind": "analytic",
+      "method": "exact_graph_check",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "board:arduino_uno/D11",
+        "board:arduino_uno/D10",
+        "board:arduino_uno/D2",
+        "board:arduino_uno/console_uart"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "design_graph",
+       "parameters": "nominal"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no PWM signals",
+      "grade": null,
+      "id": "rule.pwm_pin_valid",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule current_limits_ok (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "covered by claim rs485.driver_load",
+      "grade": null,
+      "id": "rule.current_limits_ok",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule power_supply_adequate (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "covered by claim rs485.rail_current",
+      "grade": null,
+      "id": "rule.power_supply_adequate",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule pullup_on_open_drain (no rule-engine implementation)",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "no open-drain line: RS-485 is driven differentially, and the bias network is its own rule (rs485_bias_resistors)",
+      "grade": null,
+      "id": "rule.pullup_on_open_drain",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "not_applicable"
+     },
+     {
+      "claim": "rule operating_temp_range",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope: thermal",
+      "grade": null,
+      "id": "rule.operating_temp_range",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "RF above 100 MHz",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.rf_gt_100mhz",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "EMI / EMC",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.emi_emc",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "thermal behaviour, including operating temperature range",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.thermal",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "manufacturing yield",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.manufacturing_yield",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     },
+     {
+      "claim": "switching converters",
+      "covers": [],
+      "critical": false,
+      "defeaters": [],
+      "detail": "declared out of scope (v2 §3)",
+      "grade": null,
+      "id": "scope.switching_converters",
+      "kind": "analytic",
+      "method": null,
+      "scope": null,
+      "verdict": "out_of_scope"
+     }
+    ],
+    "coverage_le_g2": 1.0,
+    "grade_floor": "G1",
+    "not_assessed": [],
+    "open_defeaters": [
+     "D1",
+     "D2",
+     "D7"
+    ],
+    "out_of_scope": [
+     "rule.operating_temp_range",
+     "scope.rf_gt_100mhz",
+     "scope.emi_emc",
+     "scope.thermal",
+     "scope.manufacturing_yield",
+     "scope.switching_converters"
+    ],
+    "properties": [
+     {
+      "counterexample": null,
+      "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+      "grade": "G1",
+      "hash": "1634201c6be04f55e1bfd64970fa4fc8669e904dad47dadbd142516d50da3cf1",
+      "id": "rs485.failsafe_bias",
+      "method": "z3_unsat",
+      "re_derives": "rs485.failsafe_bias",
+      "status": "proven"
+     },
+     {
+      "counterexample": null,
+      "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+      "grade": "G1",
+      "hash": "15ad0f6ba374ec1cce0534eb9ea304e3ca6862f1d64954fc0146c81a3064c515",
+      "id": "rs485.driver_load",
+      "method": "z3_unsat",
+      "re_derives": "rs485.driver_load",
+      "status": "proven"
+     }
+    ],
+    "properties_hash": "71f0e291c6be3d6c8ab97423bc8b2c48413a340895f1e8e43d5bc32efc968dbc",
+    "properties_signed": false,
+    "signed_by": null
+   },
+   "validation_results": null,
+   "validation_rules": [
+    "no_floating_nodes",
+    "voltage_ratings_ok",
+    "rs485_termination_present",
+    "rs485_bias_resistors"
+   ],
+   "version": 2
+  },
+  "note_to_user": "",
+  "predict_delta": [],
+  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"d7b624e8-366f-5751-9bd6-b379cb2d4326\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v2\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4c7d9ee2-fd4c-5fee-9bb9-a55a38c0b2c8\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"bcc78aaf-6874-5d72-841a-f2de0518a07c\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4a0c1ef6-c6c4-51c3-8c4f-7f15ae267d56\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"d7bf31fe-518f-5087-9558-664999cf3393\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"0300915a-c5e1-5e1d-88ef-f5dad6a63e36\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c155b7b7-d39b-5cb0-b0e5-4c9db9d73b4d\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"18675ba2-8939-50c5-a8e7-03142ae5099f\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"8f62b19c-c6fd-577f-9637-47a9c5762320\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"91a55972-fdae-5089-b020-68480d201c8d\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"71ee0c81-ff48-5c5b-9bfc-a9dafaef2dd2\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f120d4de-e424-5d5d-9218-a4351cc64f7d\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"86f5060c-cef7-5b13-80ba-87fa70e3cf85\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"73d2b60a-2857-5309-a239-e6502432a3df\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3891d014-82b2-5044-92af-5a4e996ca01e\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"0c827ad1-4fcf-5d06-9441-7f259aa12562\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"5819bec7-0866-5d78-8034-998628ac09dd\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"ef060056-3310-5628-b6f4-eaec470abf1c\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"377246e8-9683-5390-a739-232405eca3f9\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"375734a7-e3e4-5e21-8fef-871ce4091ec2\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"a3afe81c-fad9-59ae-b144-4a8726157b49\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"4a76665b-1421-5fbd-b389-0ff9c6aaa1eb\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"24d299c9-2449-59d8-ab19-2b0525a9286c\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"92eacb3a-f527-500d-8f58-ece14ac78465\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"fa99968c-a221-59dd-adb3-0675d5bd77fa\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"799dc7bd-6c5a-538e-ac6d-ba2284a62cb5\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c6a1b56e-191c-592a-87e4-fb8762d1cc20\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ed7003ff-4d38-57a7-b515-fd5961da87d5\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"85d78346-d8c1-59ef-bae1-4f7c5fb50e67\"))\n  (text \"R2: RC0603FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1fc8c870-079b-5876-85f4-8fa07046f484\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"bae94f55-ea05-5329-aa95-044746df54db\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6981518c-cb82-5f76-b9ec-bffb69bc43b8\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"77437067-828d-539f-b2d4-d359e6dc55c0\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"10f74faa-d935-5f15-aed2-5a2d392805ee\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1a87bba4-e779-56ce-8212-11e0b9d5a4a0\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3517db43-60a8-5ba5-a70f-63b0812cfbec\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"45f4f720-d90e-5c81-919b-f9ab10f3b451\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1f03a80b-6a19-5181-b8f6-2cc325b56527\"))\n  (text \"VCC_5V\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"335e44e2-7170-5d06-8626-8833cf77c5a9\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f7098c5f-26dd-5200-a2fa-3fe0a9db185f\"))\n\n)",
+  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
+  "target_mcu": "arduino_uno",
+  "validation": {
+   "errors": [],
+   "passed": true,
+   "warnings": []
+  },
+  "validation_coverage": {
+   "claims": [
+    {
+     "claim": "the idle bus holds V_AB above the receivers' 200 mV threshold with the far end terminated",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7",
+      "D2"
+     ],
+     "detail": "V_AB ∈ [254, 264] mV over every resistor within 1%",
+     "grade": "G1",
+     "id": "rs485.failsafe_bias",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [
+       "RS485_DE_RE"
+      ],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0603FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/receiver_threshold_mv"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "vdiff(rs485_a,rs485_b)"
+      ],
+      "model": "mna_ideal+mcu_pin_state",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "the driver sees no less than the 54 Ω it is specified into",
+     "covers": [
+      "current_limits_ok"
+     ],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "56.3–57.5 Ω",
+     "grade": "G1",
+     "id": "rs485.driver_load",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0603FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/driver_rated_load_ohm"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "rth(rs485_a,rs485_b)"
+      ],
+      "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "R1 stays within its 250 mW rating with the pair driven to the full 5 V",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+     "grade": "G1",
+     "id": "rs485.termination_dissipation",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC1206FR/power_w"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "power(R_R1)"
+      ],
+      "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "the idle rail stays within its 500 mA budget",
+     "covers": [
+      "power_supply_adequate"
+     ],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D2",
+      "D7"
+     ],
+     "detail": "54.6 mA, of which the MCU model is 50 mA",
+     "grade": "G1",
+     "id": "rs485.rail_current",
+     "kind": "analytic",
+     "method": "closed_form",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "ATmega328P-PU/supply_model_ohm",
+       "MAX485ECSA/current_draw_ma",
+       "MAX485ECSA/supply_voltage_max"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "i(V_VCC_5V)"
+      ],
+      "model": "mna_ideal+mcu_as_100R",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+     "covers": [],
+     "critical": false,
+     "defeaters": [
+      "D1",
+      "D2",
+      "D7"
+     ],
+     "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+     "grade": "G1",
+     "id": "proof.rs485.failsafe_bias",
+     "kind": "analytic",
+     "method": "z3_unsat",
+     "scope": {
+      "assumes": [
+       "RS485_DE_RE"
+      ],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0603FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/receiver_threshold_mv"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "vdiff(rs485_a,rs485_b)"
+      ],
+      "model": "netlist_mna+mcu_pin_state",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+     "covers": [],
+     "critical": false,
+     "defeaters": [
+      "D1",
+      "D7"
+     ],
+     "detail": "2 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
+     "grade": "G1",
+     "id": "proof.rs485.driver_load",
+     "kind": "analytic",
+     "method": "z3_unsat",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC1206FR/tolerance",
+       "RC0603FR/tolerance",
+       "RC0402FR/tolerance",
+       "MAX485ECSA/requires_termination_ohm",
+       "MAX485ECSA/driver_rated_load_ohm"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [
+       "rth(rs485_a,rs485_b)"
+      ],
+      "model": "netlist_mna",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every node has at least two connections, counting declared ports",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "no node below two connections",
+     "grade": "G1",
+     "id": "rule.no_floating_nodes",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "every part's rated supply voltage covers the circuit's supply",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "all ratings at or above the supply",
+     "grade": "G1",
+     "id": "rule.voltage_ratings_ok",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "ATmega328P-PU/supply_voltage_max",
+       "MAX485ECSA/supply_voltage_max",
+       "RC1206FR/voltage_max",
+       "RC0603FR/voltage_max",
+       "RC0402FR/voltage_max",
+       "CL05B104KO5NNNC/voltage_max"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every I2C line has a pull-up to a supply rail",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no I2C lines",
+     "grade": null,
+     "id": "rule.i2c_pullups_present",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "the RS-485 A/B pair is terminated with 100–150 ohm",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "present",
+     "grade": "G1",
+     "id": "rule.rs485_termination_present",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "RS-485 A is biased to VCC and B to GND",
+     "covers": [],
+     "critical": true,
+     "defeaters": [],
+     "detail": "present",
+     "grade": "G1",
+     "id": "rule.rs485_bias_resistors",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds"
+    },
+    {
+     "claim": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.pin_assignment_valid",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.peripheral_conflict_free",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "nothing external is wired to a strapping pin",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D7"
+     ],
+     "detail": "every assigned pin passes",
+     "grade": "G1",
+     "id": "rule.strapping_pins_safe",
+     "kind": "analytic",
+     "method": "exact_graph_check",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "board:arduino_uno/D11",
+       "board:arduino_uno/D10",
+       "board:arduino_uno/D2",
+       "board:arduino_uno/console_uart"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "design_graph",
+      "parameters": "nominal"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "every PWM signal uses an Arduino Uno PWM-capable pin",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no PWM signals",
+     "grade": null,
+     "id": "rule.pwm_pin_valid",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule current_limits_ok (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "covered by claim rs485.driver_load",
+     "grade": null,
+     "id": "rule.current_limits_ok",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule power_supply_adequate (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "covered by claim rs485.rail_current",
+     "grade": null,
+     "id": "rule.power_supply_adequate",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule pullup_on_open_drain (no rule-engine implementation)",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "no open-drain line: RS-485 is driven differentially, and the bias network is its own rule (rs485_bias_resistors)",
+     "grade": null,
+     "id": "rule.pullup_on_open_drain",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "not_applicable"
+    },
+    {
+     "claim": "rule operating_temp_range",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope: thermal",
+     "grade": null,
+     "id": "rule.operating_temp_range",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "RF above 100 MHz",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.rf_gt_100mhz",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "EMI / EMC",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.emi_emc",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "thermal behaviour, including operating temperature range",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.thermal",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "manufacturing yield",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.manufacturing_yield",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    },
+    {
+     "claim": "switching converters",
+     "covers": [],
+     "critical": false,
+     "defeaters": [],
+     "detail": "declared out of scope (v2 §3)",
+     "grade": null,
+     "id": "scope.switching_converters",
+     "kind": "analytic",
+     "method": null,
+     "scope": null,
+     "verdict": "out_of_scope"
+    }
+   ],
+   "coverage_le_g2": 1.0,
+   "grade_floor": "G1",
+   "not_assessed": [],
+   "open_defeaters": [
+    "D1",
+    "D2",
+    "D7"
+   ],
+   "out_of_scope": [
+    "rule.operating_temp_range",
+    "scope.rf_gt_100mhz",
+    "scope.emi_emc",
+    "scope.thermal",
+    "scope.manufacturing_yield",
+    "scope.switching_converters"
+   ],
+   "properties": [
+    {
+     "counterexample": null,
+     "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the idle bus voltage V(A) − V(B) never falls below 200 mV.",
+     "grade": "G1",
+     "hash": "1634201c6be04f55e1bfd64970fa4fc8669e904dad47dadbd142516d50da3cf1",
+     "id": "rs485.failsafe_bias",
+     "method": "z3_unsat",
+     "re_derives": "rs485.failsafe_bias",
+     "status": "proven"
+    },
+    {
+     "counterexample": null,
+     "english": "For every R1 from 118.8 Ω to 121.2 Ω (1% resistor); every R2 from 543.51 Ω to 554.49 Ω (1% resistor); every R3 from 543.51 Ω to 554.49 Ω (1% resistor); every far-end terminator from 118.8 Ω to 121.2 Ω (1%, at the other end of the bus), with VCC_5V held at 5 V, the resistance the driver sees across A–B never falls below 54 Ω.",
+     "grade": "G1",
+     "hash": "15ad0f6ba374ec1cce0534eb9ea304e3ca6862f1d64954fc0146c81a3064c515",
+     "id": "rs485.driver_load",
+     "method": "z3_unsat",
+     "re_derives": "rs485.driver_load",
+     "status": "proven"
+    }
+   ],
+   "properties_hash": "71f0e291c6be3d6c8ab97423bc8b2c48413a340895f1e8e43d5bc32efc968dbc",
+   "properties_signed": false,
+   "signed_by": null
+  },
+  "version": 2
+ },
+ "used": {
+  "changes": [
+   "R2: RC0402FR-07549RL → RC0603FR-07549RL",
+   "package 0402 → 0603",
+   "power rating 62.5 → 100 mW",
+   "voltage rating 50 → 75 V"
+  ],
+  "checks": 26,
+  "component_id": "R2",
+  "ops": [
+   {
+    "op": "add",
+    "path": "/constraints/pinned/R2",
+    "value": {
+     "part": "RC0603FR-07549RL"
+    }
+   }
+  ],
+  "package": "0603",
+  "part_number": "RC0603FR-07549RL",
+  "price_asof": null,
+  "price_delta_usd": null,
+  "replaces": "RC0402FR-07549RL",
+  "unit_price_usd": null
+ }
+}

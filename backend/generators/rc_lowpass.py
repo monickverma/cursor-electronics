@@ -76,6 +76,13 @@ from core.ir_schema import (
     SimulationSpec,
     ValidationRule,
 )
+from data.figures import passive
+from data.parts import CAPACITORS, RESISTOR_SERIES
+from generators.common import (
+    PartPin,
+    Unreadable,
+    pinned_part,
+)
 from generators.common import (
     Unreadable as _Unreadable,
     read_number as _read_number,
@@ -124,15 +131,12 @@ C_TOLERANCE = 0.10
 
 # Capacitor catalogue, in preference order. Real 0402 parts; the voltage rating
 # is load-bearing because `envelope()` refuses an intent whose supply exceeds it.
-_CAPACITORS: Tuple[Tuple[float, str, str, float], ...] = (
-    (100e-9, "100nF", "CL05B104KO5NNNC", 16.0),
-    (10e-9, "10nF", "CL05B103KB5NNNC", 50.0),
-    (1e-6, "1uF", "CL05A105KQ5NNNC", 6.3),
-    (1e-9, "1nF", "CL05B102KB5NNNC", 50.0),
-    (22e-9, "22nF", "CL05B223KO5NNNC", 16.0),
-    (220e-9, "220nF", "CL05A224KQ5NNNC", 6.3),
-    (4.7e-9, "4.7nF", "CL05B472KB5NNNC", 50.0),
-    (47e-9, "47nF", "CL05B473KO5NNNC", 16.0),
+#: Preference order is this generator's; the parts and their figures are
+#: `data/parts.py`'s (Stage 6).
+_CATALOGUE_ORDER = ("CL05B104KO5NNNC", "CL05B103KB5NNNC", "CL05A105KQ5NNNC", "CL05B102KB5NNNC",
+                    "CL05B223KO5NNNC", "CL05A224KQ5NNNC", "CL05B472KB5NNNC", "CL05B473KO5NNNC")
+_CAPACITORS: Tuple[Tuple[float, str, str, float], ...] = tuple(
+    (CAPACITORS[pn].farads, CAPACITORS[pn].label, pn, CAPACITORS[pn].voltage_max) for pn in _CATALOGUE_ORDER
 )
 
 
@@ -144,9 +148,14 @@ def cutoff_hz(ohms: float, farads: float) -> float:
 class _Selection:
     """A chosen R/C pair and what it actually achieves."""
 
-    __slots__ = ("ohms", "farads", "c_value", "c_part", "c_vmax", "achieved_hz")
+    __slots__ = ("ohms", "farads", "c_value", "c_part", "c_vmax", "achieved_hz", "r_tol", "c_tol", "r_pin")
 
     def __init__(self, ohms: float, farads: float, c_value: str, c_part: str, c_vmax: float):
+        # Stage 6: each part's own tolerance — the catalogue capacitor's, and
+        # R1's series unless a part is pinned (`_with_pins`).
+        self.r_tol = R_TOLERANCE
+        self.c_tol = CAPACITORS[c_part].tolerance if c_part in CAPACITORS else C_TOLERANCE
+        self.r_pin = None
         self.ohms = ohms
         self.farads = farads
         self.c_value = c_value
@@ -252,17 +261,19 @@ def select_components(
 class _Pins:
     """Resolved `constraints.pinned`, or the reason it cannot be honoured."""
 
-    __slots__ = ("r_ohms", "capacitor", "refusal")
+    __slots__ = ("r_ohms", "capacitor", "refusal", "r_pin")
 
     def __init__(
         self,
         r_ohms: Optional[float] = None,
         capacitor: Optional[_Capacitor] = None,
         refusal: Optional[str] = None,
+        r_pin: Optional[PartPin] = None,
     ) -> None:
         self.r_ohms = r_ohms
         self.capacitor = capacitor
         self.refusal = refusal
+        self.r_pin = r_pin
 
     @property
     def any(self) -> bool:
@@ -295,7 +306,16 @@ def _resolve_pins(intent: IntentLike, supply_v: float) -> _Pins:
         ))
 
     r_ohms: Optional[float] = None
-    if "R1" in pinned:
+    r_pin: Optional[PartPin] = None
+    if "R1" in pinned and isinstance(pinned["R1"], Mapping):
+        try:
+            r_pin = pinned_part(pinned["R1"], "R1")
+        except Unreadable as exc:
+            return _Pins(refusal=str(exc))
+        if r_pin.kind != "resistor":
+            return _Pins(refusal=f"constraints.pinned.R1: {r_pin.part_number} is a {r_pin.kind}; R1 is a resistor")
+        r_ohms = r_pin.value
+    elif "R1" in pinned:
         r_ohms = _pinned_value(pinned["R1"], _parse_ohms)
         if r_ohms is None or not math.isfinite(r_ohms) or r_ohms <= 0:
             return _Pins(refusal=(
@@ -310,7 +330,21 @@ def _resolve_pins(intent: IntentLike, supply_v: float) -> _Pins:
             ))
 
     capacitor: Optional[_Capacitor] = None
-    if "C1" in pinned:
+    if "C1" in pinned and isinstance(pinned["C1"], Mapping):
+        try:
+            c_pin = pinned_part(pinned["C1"], "C1")
+        except Unreadable as exc:
+            return _Pins(refusal=str(exc))
+        if c_pin.kind != "capacitor":
+            return _Pins(refusal=f"constraints.pinned.C1: {c_pin.part_number} is a {c_pin.kind}; C1 is a capacitor")
+        cap = CAPACITORS[c_pin.part_number]
+        capacitor = (cap.farads, cap.label, cap.part_number, cap.voltage_max)
+        if supply_v > capacitor[3]:
+            return _Pins(refusal=(
+                f"constraints.pinned.C1={cap.part_number} is rated {capacitor[3]:g}V, "
+                f"below the supply_v={supply_v:g} it would sit across"
+            ))
+    elif "C1" in pinned:
         farads = _pinned_value(pinned["C1"], _parse_farads)
         if farads is None or not math.isfinite(farads) or farads <= 0:
             return _Pins(refusal=(
@@ -333,7 +367,15 @@ def _resolve_pins(intent: IntentLike, supply_v: float) -> _Pins:
                 f"below the supply_v={supply_v:g} it would sit across"
             ))
 
-    return _Pins(r_ohms=r_ohms, capacitor=capacitor)
+    return _Pins(r_ohms=r_ohms, capacitor=capacitor, r_pin=r_pin)
+
+
+def _with_pins(selection: Optional[_Selection], pins: _Pins) -> Optional[_Selection]:
+    """A pinned R1 part brings its own tolerance."""
+    if selection is not None and pins.r_pin is not None:
+        selection.r_pin = pins.r_pin
+        selection.r_tol = pins.r_pin.tolerance
+    return selection
 
 
 def _pinned_value(raw: object, parse) -> Optional[float]:
@@ -407,8 +449,8 @@ class RCLowPassGenerator:
         if pins.refusal:
             return EnvelopeDecision.refuse(pins.refusal)
 
-        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor,
-                                      source, tolerance_pct)
+        selection = _with_pins(select_components(target, supply_v, pins.r_ohms, pins.capacitor,
+                                                 source, tolerance_pct), pins)
         if selection is None:
             return EnvelopeDecision.refuse(
                 f"no catalogue R/C pair puts the series resistor inside "
@@ -442,10 +484,10 @@ class RCLowPassGenerator:
         """The parts an accepted intent resolves to. Callers check envelope() first."""
         supply_v = _supply_v(intent)
         pins = _resolve_pins(intent, supply_v)
-        selection = select_components(
+        selection = _with_pins(select_components(
             _target_cutoff(intent), supply_v, pins.r_ohms, pins.capacitor,
             _source_impedance(intent), _tolerance_pct(intent),
-        )
+        ), pins)
         if selection is None or pins.refusal:
             raise ValueError("no selection for an intent envelope() refuses")
         return selection
@@ -462,8 +504,8 @@ class RCLowPassGenerator:
         should use. A passive filter draws no supply current.
         """
         supply_v = _supply_v(intent)
-        r_lo = selection.ohms * (1 - R_TOLERANCE)
-        r_hi = selection.ohms * (1 + R_TOLERANCE)
+        r_lo = selection.ohms * (1 - selection.r_tol)
+        r_hi = selection.ohms * (1 + selection.r_tol)
         return (
             PortContract(
                 name="IN",
@@ -569,10 +611,10 @@ class RCLowPassGenerator:
         r = selection.ohms
         c = selection.farads
         r_band = Interval(
-            lo=r * (1 - R_TOLERANCE), hi=r * (1 + R_TOLERANCE), nominal=r, units="ohm"
+            lo=r * (1 - selection.r_tol), hi=r * (1 + selection.r_tol), nominal=r, units="ohm"
         )
         c_band = Interval(
-            lo=c * (1 - C_TOLERANCE), hi=c * (1 + C_TOLERANCE), nominal=c, units="F"
+            lo=c * (1 - selection.c_tol), hi=c * (1 + selection.c_tol), nominal=c, units="F"
         )
         if box:
             r_band = box.get("R", r_band)
@@ -599,14 +641,19 @@ class RCLowPassGenerator:
         shift = source / (r1 + source) * 100.0
         nominal = scope.model_copy(update={"parameters": "nominal"})
         measured = nominal.model_copy(update={"measures": ("cutoff(out)",)})
+        sel = self._selection(intent)
+        # D7: the band reads both parts' tolerances (data/figures.py).
+        placed = {c.id: c.part_number for c in self.generate(intent).components}
+        tolerances = passive(placed["R1"], "tolerance") + passive(placed["C1"], "tolerance")
         return [
             graded("rc.cutoff_nominal",
                    f"f_c at nominal parts is within ±{tolerance:g}% of {target:g} Hz",
                    error <= tolerance, "closed_form", measured,
                    detail=f"{band.nominal:.1f} Hz ({error:.2f}% from target)"),
             graded("rc.cutoff_band",
-                   f"f_c lies in [{band.lo:.1f}, {band.hi:.1f}] Hz for every R within 1% and C within 10%",
-                   True, "monotone_corners", scope,
+                   f"f_c lies in [{band.lo:.1f}, {band.hi:.1f}] Hz for every R within "
+                   f"{sel.r_tol * 100:g}% and C within {sel.c_tol * 100:g}%",
+                   True, "monotone_corners", scope.model_copy(update={"figures": tolerances}),
                    detail="the 10% capacitor dominates; a 2% C0G part would narrow it fivefold"),
             graded("rc.source_loading",
                    f"a {source:g} Ω source lowers f_c by no more than ±{tolerance:g}%",
@@ -645,8 +692,8 @@ class RCLowPassGenerator:
             raise ValueError("generate() requires targets.cutoff_hz — call envelope() first")
         supply_v = _supply_v(intent)
         pins = _resolve_pins(intent, supply_v)
-        selection = select_components(target, supply_v, pins.r_ohms, pins.capacitor,
-                                      _source_impedance(intent), _tolerance_pct(intent))
+        selection = _with_pins(select_components(target, supply_v, pins.r_ohms, pins.capacitor,
+                                                 _source_impedance(intent), _tolerance_pct(intent)), pins)
         if selection is None or pins.refusal:
             raise ValueError("generate() called on an intent envelope() refuses")
 
@@ -654,7 +701,9 @@ class RCLowPassGenerator:
         source_z = _source_impedance(intent)
         loading_pct = (source_z / selection.ohms * 100.0) if selection.ohms else 0.0
 
-        r_part = f"RC0402FR-07{_yageo_code(selection.ohms)}L"
+        r_part = (selection.r_pin.part_number if selection.r_pin is not None
+                  else f"RC0402FR-07{_yageo_code(selection.ohms)}L")
+        c_cat = CAPACITORS[selection.c_part]
         r_reason = (
             f"{selection.ohms:g}Ω, pinned by the requirement (constraints.pinned.R1) — "
             f"the part in hand, assumed from the same 1% series"
@@ -677,10 +726,11 @@ class RCLowPassGenerator:
                     id="R1",
                     type=ComponentType.RESISTOR,
                     part_number=r_part,
-                    manufacturer="Yageo",
-                    package="0402",
+                    manufacturer=selection.r_pin.manufacturer if selection.r_pin is not None else "Yageo",
+                    package=selection.r_pin.package if selection.r_pin is not None else "0402",
                     value=_value_string(selection.ohms),
-                    supply_voltage_max=50.0,
+                    supply_voltage_max=(selection.r_pin.voltage_max if selection.r_pin is not None
+                                        else RESISTOR_SERIES["RC0402FR"].voltage_max),
                     confidence=0.95,
                     justification=(
                         f"{r_reason}. With "
@@ -696,8 +746,8 @@ class RCLowPassGenerator:
                     id="C1",
                     type=ComponentType.CAPACITOR,
                     part_number=selection.c_part,
-                    manufacturer="Samsung",
-                    package="0402",
+                    manufacturer=c_cat.manufacturer,
+                    package=c_cat.package,
                     value=selection.c_value,
                     supply_voltage_max=selection.c_vmax,
                     confidence=0.95,

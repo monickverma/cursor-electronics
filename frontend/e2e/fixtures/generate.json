@@ -10,7 +10,9 @@
    "manufacturer": "Yageo",
    "package": "0402",
    "part_number": "RC0402FR-073K4L",
+   "price_asof": null,
    "price_known": false,
+   "price_note": null,
    "price_source": "unknown",
    "priced_as": null,
    "quantity": 1,
@@ -27,7 +29,9 @@
    "manufacturer": "Samsung",
    "package": "0402",
    "part_number": "CL05B473KO5NNNC",
+   "price_asof": null,
    "price_known": false,
+   "price_note": null,
    "price_source": "unknown",
    "priced_as": null,
    "quantity": 1,
@@ -36,7 +40,7 @@
    "value": "47nF"
   }
  ],
- "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
+ "circuit_id": "a7729ca5-6f1e-5e52-bdf5-b6ebc1378987",
  "explanation": "",
  "firmware": null,
  "firmware_build": {
@@ -50,7 +54,7 @@
  "intent": "RC low-pass filter with 1000 Hz cutoff frequency",
  "ir": {
   "application_class": "hobby_arduino",
-  "circuit_id": "419b1493-ee4b-5dd1-bbd7-70222eab491b",
+  "circuit_id": "a7729ca5-6f1e-5e52-bdf5-b6ebc1378987",
   "components": [
    {
     "confidence": 0.95,
@@ -182,8 +186,13 @@
      "kind": "analytic",
      "method": "closed_form",
      "scope": {
+      "assumes": [],
+      "figures": [],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [
+       "cutoff(out)"
+      ],
       "model": "mna_ideal",
       "parameters": "nominal"
      },
@@ -194,7 +203,8 @@
      "covers": [],
      "critical": true,
      "defeaters": [
-      "D1"
+      "D1",
+      "D7"
      ],
      "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold",
      "grade": "G1",
@@ -202,8 +212,16 @@
      "kind": "analytic",
      "method": "monotone_corners",
      "scope": {
+      "assumes": [],
+      "figures": [
+       "RC0402FR/tolerance",
+       "CL05B473KO5NNNC/tolerance"
+      ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [
+       "cutoff(out)"
+      ],
       "model": "mna_ideal",
       "parameters": "tolerance_box"
      },
@@ -222,8 +240,13 @@
      "kind": "analytic",
      "method": "closed_form",
      "scope": {
+      "assumes": [],
+      "figures": [],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [
+       "cutoff(out)"
+      ],
       "model": "mna_ideal",
       "parameters": "nominal"
      },
@@ -235,7 +258,8 @@
      "critical": false,
      "defeaters": [
       "D1",
-      "D8"
+      "D8",
+      "D7"
      ],
      "detail": "7 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
      "grade": "G1",
@@ -243,8 +267,16 @@
      "kind": "analytic",
      "method": "z3_unsat",
      "scope": {
+      "assumes": [],
+      "figures": [
+       "RC0402FR/tolerance",
+       "CL05B473KO5NNNC/tolerance"
+      ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [
+       "cutoff(out)"
+      ],
       "model": "netlist_mna",
       "parameters": "tolerance_box"
      },
@@ -261,8 +293,11 @@
      "kind": "analytic",
      "method": "exact_graph_check",
      "scope": {
+      "assumes": [],
+      "figures": [],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [],
       "model": "design_graph",
       "parameters": "nominal"
      },
@@ -281,8 +316,14 @@
      "kind": "analytic",
      "method": "exact_graph_check",
      "scope": {
+      "assumes": [],
+      "figures": [
+       "RC0402FR/voltage_max",
+       "CL05B473KO5NNNC/voltage_max"
+      ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
+      "measures": [],
       "model": "design_graph",
       "parameters": "nominal"
      },
@@ -535,7 +576,7 @@
   ],
   "version": 1
  },
- "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"2b3180b6-27f9-5f27-9644-29891ba661d8\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"cc492a19-3af5-5d3b-a21f-353c19044acd\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"58777bec-2024-5b02-bc4f-c4431952436d\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ae99d3e9-6307-5770-adc7-0a1612b72302\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"376b0396-3b93-5aa3-a4e7-c39f628e8329\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"13d9966d-1f34-5676-9e44-b7dabd437778\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"5358ca41-f19e-5ffe-a251-062bd5f7179b\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c88fc178-dfcd-566b-9fd0-14eeb1f6c233\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"89dd41e6-3f5a-5bbf-a6aa-e211fc892372\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"bf8a31bc-9930-53ba-a3fd-6109cd86d08d\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"da7d4068-afba-5d41-b6be-21d30a9289a3\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6dc7c248-4b3d-5ec7-966d-ace66867f754\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"d4d4144b-3522-5050-a9ac-e287cfbb7bf1\"))\n\n)",
+ "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"ae6d639e-ad56-5cbc-bb7e-ff4b4d431005\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"9bcec622-ec61-5255-a101-54b83098504c\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7208c5e1-84e2-5a82-8b66-b12ec0a443a5\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ec4e8c59-8ea2-5211-abe0-b35a9a84bb03\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"1e61f682-319c-5f4f-a794-f4f20e167c45\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"049b5ad7-b7b2-5191-8921-46ca7e0c0a89\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"62043f2a-e9e2-5797-b84b-28c34fe73865\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"875b760b-2f9c-57fd-8f02-c52c9549eb21\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"4ac63b94-4999-50ba-ab09-30483ec8180d\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"9c813699-7b18-5b5c-8e38-2700e44157d3\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e3110cc5-b8ec-5d15-b8e9-106cf03ea3bb\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ae18bb81-70a6-5277-b29b-9042d2e142cb\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"5b775144-fe7d-5eea-8a18-e516f410d9ae\"))\n\n)",
  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
  "target_mcu": null,
  "validation": {
@@ -567,8 +608,13 @@
     "kind": "analytic",
     "method": "closed_form",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "nominal"
     },
@@ -579,7 +625,8 @@
     "covers": [],
     "critical": true,
     "defeaters": [
-     "D1"
+     "D1",
+     "D7"
     ],
     "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold",
     "grade": "G1",
@@ -587,8 +634,16 @@
     "kind": "analytic",
     "method": "monotone_corners",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/tolerance",
+      "CL05B473KO5NNNC/tolerance"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "tolerance_box"
     },
@@ -607,8 +662,13 @@
     "kind": "analytic",
     "method": "closed_form",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "mna_ideal",
      "parameters": "nominal"
     },
@@ -620,7 +680,8 @@
     "critical": false,
     "defeaters": [
      "D1",
-     "D8"
+     "D8",
+     "D7"
     ],
     "detail": "7 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
     "grade": "G1",
@@ -628,8 +689,16 @@
     "kind": "analytic",
     "method": "z3_unsat",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/tolerance",
+      "CL05B473KO5NNNC/tolerance"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [
+      "cutoff(out)"
+     ],
      "model": "netlist_mna",
      "parameters": "tolerance_box"
     },
@@ -646,8 +715,11 @@
     "kind": "analytic",
     "method": "exact_graph_check",
     "scope": {
+     "assumes": [],
+     "figures": [],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [],
      "model": "design_graph",
      "parameters": "nominal"
     },
@@ -666,8 +738,14 @@
     "kind": "analytic",
     "method": "exact_graph_check",
     "scope": {
+     "assumes": [],
+     "figures": [
+      "RC0402FR/voltage_max",
+      "CL05B473KO5NNNC/voltage_max"
+     ],
      "horizon": "steady_state",
      "inputs": "single_stimulus",
+     "measures": [],
      "model": "design_graph",
      "parameters": "nominal"
     },

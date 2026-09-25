@@ -60,6 +60,11 @@ export default function Home() {
     setActiveTab('schematic')
   }, [])
 
+  // A substitute from the BOM tab is a patch: take the new revision, stay on the tab.
+  const handleBomPatched = useCallback((res: PatchResponse) => {
+    setResult(res)
+  }, [])
+
   // Sign-off changes what is claimed, never the design: only the coverage moves.
   const handleCoverage = useCallback((coverage: ValidationCoverage) => {
     setResult(r => (r ? { ...r, validation_coverage: coverage } : r))
@@ -200,7 +205,15 @@ export default function Home() {
                   token={token}
                 />
               )}
-              {activeTab === 'bom'        && <BOMTable rows={(result as GenerateResponse).bom || []} />}
+              {activeTab === 'bom'        && (
+                <BOMTable
+                  rows={(result as GenerateResponse).bom || []}
+                  circuitId={result.circuit_id}
+                  version={(result as PatchResponse).version}
+                  token={token}
+                  onPatched={handleBomPatched}
+                />
+              )}
               {activeTab === 'validation' && (
                 <ValidationReport
                   validation={result.validation}

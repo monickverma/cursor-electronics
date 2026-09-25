@@ -413,6 +413,72 @@ def _with_models(
     return Claim.model_validate(data)
 
 
+# ── D7: the part figures a claim reads ───────────────────────────────────────
+
+_PIN_RULES = (ValidationRule.PIN_ASSIGNMENT_VALID.value, ValidationRule.PERIPHERAL_CONFLICT_FREE.value,
+              ValidationRule.STRAPPING_PINS_SAFE.value)
+
+
+def _with_figures(claim: Claim, figures: Optional[Sequence[str]]) -> Claim:
+    """
+    D7 derived from the figures the claim reads (`data/figures.py`): cited
+    while any is untrusted, dropped once all are. No figures — undeclared, or
+    one without a record — leaves the claim's own D7 citation as it was.
+    """
+    if not figures or claim.scope is None:
+        return claim
+    from data.figures import FIGURES, untrusted
+
+    if any(f not in FIGURES for f in figures):
+        return claim
+    doubtful = bool(untrusted(figures))
+    defeaters = list(claim.defeaters)
+    if doubtful and "D7" not in defeaters:
+        defeaters.append("D7")
+    elif not doubtful:
+        defeaters = [d for d in defeaters if d != "D7"]
+    data = claim.model_dump()
+    data["scope"] = claim.scope.model_copy(update={"figures": tuple(dict.fromkeys(figures))})
+    data["defeaters"] = tuple(defeaters)
+    if data["verdict"] in (Verdict.HOLDS.value, Verdict.HOLDS_DEFEASIBLE.value):
+        open_now = any(REGISTER[d].is_open for d in defeaters)
+        data["verdict"] = (Verdict.HOLDS_DEFEASIBLE if open_now else Verdict.HOLDS).value
+    return Claim.model_validate(data)
+
+
+def _rating_figures(circuit: CircuitIR) -> Optional[Tuple[str, ...]]:
+    """The rating each part's `supply_voltage_max` stands for. None if any has no record."""
+    from data.figures import FIGURES
+    from data.parts import passive_figures
+
+    out = []
+    for comp in circuit.components:
+        if comp.supply_voltage_max is None:
+            continue
+        passive = passive_figures(comp.part_number)
+        figure = f"{passive[0]}/voltage_max" if passive else f"{comp.part_number}/supply_voltage_max"
+        if figure not in FIGURES:
+            return None
+        out.append(figure)
+    return tuple(out) or None
+
+
+def _pin_figures(circuit: CircuitIR) -> Optional[Tuple[str, ...]]:
+    """The board's pin rows the design uses, and its console UART. None if a pin is not in the table."""
+    from validation.pin_rules import assignments_of, design_target
+
+    target = design_target(circuit)
+    if target is None:
+        return None
+    out = []
+    for assignment in assignments_of(circuit):
+        pin = target.pin(assignment.pin)
+        if pin is None:
+            return None
+        out.append(f"board:{target.id}/{pin.name}")
+    return tuple(out) + (f"board:{target.id}/console_uart",)
+
+
 # ── X8: the rule catalogue as claims ─────────────────────────────────────────
 
 _RULE_SENTENCES = {
@@ -437,6 +503,9 @@ def _rule_claims(circuit: CircuitIR, ports: Sequence[str]) -> List[Claim]:
     scope = ClaimScope(parameters="nominal", model="design_graph")
     rows: List[Claim] = []
 
+    rating_figures = _rating_figures(circuit)
+    pin_figures = _pin_figures(circuit)
+
     def row(rule: str, holds: bool, applicable: bool, detail: Optional[str]) -> None:
         method, extra = _IMPLEMENTED[rule]
         if not applicable:
@@ -445,10 +514,10 @@ def _rule_claims(circuit: CircuitIR, ports: Sequence[str]) -> List[Claim]:
                 verdict=Verdict.NOT_APPLICABLE, critical=False, detail=detail,
             ))
             return
-        rows.append(graded(
-            f"rule.{rule}", _RULE_SENTENCES[rule], holds, method, scope,
-            defeaters=extra, detail=detail,
-        ))
+        claim = graded(f"rule.{rule}", _RULE_SENTENCES[rule], holds, method, scope,
+                       defeaters=extra, detail=detail)
+        figures = {"voltage_ratings_ok": rating_figures}.get(rule, pin_figures if rule in _PIN_RULES else None)
+        rows.append(_with_figures(claim, figures) if figures else claim)
 
     # no_floating_nodes — a declared port is connected by definition: it is
     # where the next stage attaches. Without this every RC filter's IN fails.
@@ -650,6 +719,42 @@ def _supersede(physics: List[Claim], proved: Sequence[_Proved], proofs: Sequence
     return out
 
 
+# ── D1: bench evidence ───────────────────────────────────────────────────────
+
+def _with_bench(generator: Any, circuit: CircuitIR, netlist: str, proved: Sequence[_Proved],
+                physics: List[Claim], proofs: List[Claim]) -> Tuple[List[Claim], List[Claim]]:
+    """
+    A proof an agreeing bench record covers — this design, its netlist as
+    measured, no disagreement anywhere in its family — and the Stage 3 claim it
+    re-derives stop citing D1 (`validation/bench.py`). No records, no change.
+    """
+    from validation.bench import evidence_for
+
+    covered = evidence_for(generator.name, circuit.target_mcu, netlist)
+    if not covered:
+        return physics, proofs
+    by_claim: Dict[str, Any] = {}
+    for p in proved:
+        if p.spec.id in covered:
+            by_claim[f"proof.{p.spec.id}"] = covered[p.spec.id]
+            if p.spec.re_derives:
+                by_claim[p.spec.re_derives] = covered[p.spec.id]
+
+    def bench(claim: Claim) -> Claim:
+        finding = by_claim.get(claim.id)
+        if finding is None or "D1" not in claim.defeaters:
+            return claim
+        data = claim.model_dump()
+        data["defeaters"] = tuple(d for d in claim.defeaters if d != "D1")
+        data["detail"] = ((claim.detail + "; ") if claim.detail else "") +             f"bench record {finding.record} agrees: {finding.detail}"
+        if data["verdict"] in (Verdict.HOLDS.value, Verdict.HOLDS_DEFEASIBLE.value):
+            open_now = any(REGISTER[d].is_open for d in data["defeaters"])
+            data["verdict"] = (Verdict.HOLDS_DEFEASIBLE if open_now else Verdict.HOLDS).value
+        return Claim.model_validate(data)
+
+    return [bench(c) for c in physics], [bench(c) for c in proofs]
+
+
 # ── Assessment ───────────────────────────────────────────────────────────────
 
 def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverage:
@@ -685,6 +790,7 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
     # and a proof inherits the assumptions of the claim it re-derives.
     fallback = netlist_models(circuit, netlist)
     assumed = {c.id: c.scope.assumes for c in physics if c.scope is not None}
+    reads = {c.id: c.scope.figures for c in physics if c.scope is not None}
     via_proofs: Dict[str, List[Measure]] = {}
     for p in proved:
         if p.spec.re_derives:
@@ -706,7 +812,9 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
         models, _ = mcu_models_for([(p.spec.quantity, tuple(b.line for b in p.spec.bench))], assumes)
         # D9 is a doubt about predict(); a proof is checked against the netlist
         # generate() emitted, so it does not inherit D9.
-        proofs.append(_proof_claim(p, signed, extra, models, assumes))
+        # A proof reads the parts and the bound of the claim it re-derives.
+        proofs.append(_with_figures(_proof_claim(p, signed, extra, models, assumes),
+                                    reads.get(p.spec.re_derives or "", ())))
     if generator.name not in M1_COVERED:
         extra.append("D9")
     scoped = []
@@ -714,12 +822,14 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
         declared = c.scope.measures if c.scope is not None else ()
         measures = [(q, ()) for q in declared] or via_proofs.get(c.id, [])
         models, derived = mcu_models_for(measures, c.scope.assumes if c.scope is not None else ())
-        scoped.append(_with_models(c, models, extra, derived=derived,
-                                   measures=tuple(dict.fromkeys(q for q, _ in measures))))
+        scoped.append(_with_figures(
+            _with_models(c, models, extra, derived=derived, measures=tuple(dict.fromkeys(q for q, _ in measures))),
+            c.scope.figures if c.scope is not None else ()))
     physics = _supersede(scoped, proved, proofs)
 
     decision = generator.envelope(intent)
     ports = tuple(p.name for p in decision.ports) if decision.accepted else ()
+    physics, proofs = _with_bench(generator, circuit, netlist, proved, physics, proofs)
     rows = physics + proofs + _rule_claims(circuit, ports) + _accounting_rows(
         physics, getattr(generator, "not_applicable_rules", {}) or {}
     )

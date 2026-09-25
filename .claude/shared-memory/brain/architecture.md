@@ -32,6 +32,11 @@ Patch (Stage 2):  IntentIR v(n) ──RFC 6902 ops──▶ IntentIR v(n+1) ─�
 Sign-off (Stage 4): the user signs the hash of the property sentences shown; signed
                   proofs become critical claims; any edit to the requirement drops it
 Board (Stage 5):  constraints.mcu = arduino_uno (default) | esp32_devkitc | blackpill_f411ce
+Parts (Stage 6):  constraints.pinned.<id> = {"part": …} — a substitute is a patch, re-derived and
+                  re-proved against the original's own properties before it is offered
+Defeaters:        D2 derived per claim (symbolic dependence on the MCU models); D7 from the part
+                  figures a claim declares (provenance records, verified by a person); D1 from
+                  agreeing bench records for that design (validation/bench.py)
 ```
 
 **The LLM only ever writes IntentIR — a requirement. A deterministic generator
@@ -71,6 +76,12 @@ backend/
 │   │                              resistance, supply_model_ohm per MCU, MAX485/MAX3485
 │   ├── mcu_targets.py             Stage 5 — boards as data: PlatformIO env, rail, pin table
 │   │                              (capabilities, reserved + why, strapping pins, UARTs)
+│   ├── parts.py                   Stage 6 — passives as data: resistor series and capacitors, their
+│   │                              tolerance, power, voltage and package; one owner for all readers
+│   ├── figures.py                 D7 — a provenance record per figure a claim reads (kind, source,
+│   │                              the agent's reading); trusted only when a person verifies it
+│   ├── figure_verifications.json  those verifications, each bound to its record's hash
+│   ├── bench/                     D1 — bench records (none yet)
 │   └── component_db.json          100-entry component database
 │
 ├── ai/
@@ -110,7 +121,9 @@ backend/
 │   ├── firmware/project.py    Stage 5 — PlatformIO project, pinned, keyed by SHA-256
 │   ├── firmware/compile_gate.py  Stage 5 — `pio run`; passed only on exit 0 + [SUCCESS]
 │   ├── schematic/kicad.py     CircuitIR → .kicad_sch (net labels, no wire routing)
-│   └── bom/compiler.py        CircuitIR → BOM rows (static pricing from constraints)
+│   ├── bom/compiler.py        CircuitIR → BOM rows: a part priced only as itself, price_asof
+│   └── bom/substitution.py    Stage 6 — candidates of the same kind and value, each tried as a
+│                              pinned-part patch; surfaces only if every original check passes
 │
 ├── simulation/
 │   ├── runner.py              NgspiceRunner — async subprocess
@@ -128,6 +141,9 @@ backend/
 │   │                          design, graded G0–G7; grade_floor = worst critical claim
 │   ├── defeaters.py           The defeater register, D1–D9 (D8 eliminated by Stage 4)
 │   ├── pin_rules.py           Stage 5 — pin-mux, peripheral conflict, strapping pins (G1, D7)
+│   ├── figure_audit.py        D7 — moves each figure; a claim that changes must declare it
+│   ├── bench.py               D1 — a record agrees if its reading overlaps the model for the
+│   │                          parts as measured; reaches that design only
 │   ├── envelope_grid.py       CI sweep: predict() vs ngspice over grid(board), seeded-fault arms
 │   └── grid_adapters.py       Per-generator ngspice adapters; board_cases() for CI
 │
@@ -135,6 +151,7 @@ backend/
 │   ├── brackets.py            π, ln, expm1 as exact rational enclosures
 │   ├── netlist.py             SPICE text back into exact elements
 │   ├── mna.py                 sympy nodal analysis: DC, transfer, Thevenin
+│   ├── dependence.py          D2 — the MCU model elements a quantity depends on, exactly
 │   ├── properties.py          PropertySpec → Statement; English by template; hashes
 │   └── prover.py              z3 over tolerance boxes; frozen refine loop; mutation gate
 │
@@ -154,6 +171,7 @@ backend/
 │   │                          POST …/sign-off (Stage 4): sign the shown properties_hash
 │   ├── firmware.py            GET /design/{id}/firmware (100/hour); firmware_view is the
 │   │                          one gate generate and patch use too — source only once built
+│   ├── bom.py                 GET /design/{id}/bom (60/hour) — dated rows, checked substitutes
 │   ├── simulate.py            GET /design/{id}/simulation/{job_id} (100/hour)
 │   │                          POST /design/{id}/simulation/start
 │   └── auth.py                POST /auth/register, /auth/login (OAuth2 form), /auth/me
@@ -181,7 +199,7 @@ frontend/
 │   ├── SimulationResults.tsx  Polls every 3s, clears interval on unmount
 │   ├── FirmwareViewer.tsx     Build status; polls while compiling; source + .ino / ini
 │   │                          download only once compiled (Stage 5)
-│   ├── BOMTable.tsx           Component list, CSV export
+│   ├── BOMTable.tsx           Dated prices, CSV export; checked substitutes and "Use this part" (Stage 6)
 │   ├── ValidationReport.tsx   Error/warning list
 │   ├── ClaimsTable.tsx        Every claim a row, most urgent first (Stage 3)
 │   ├── PropertiesPanel.tsx    The proved sentences and sign-off by hash (Stage 4)

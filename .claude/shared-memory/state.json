@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-24T01:10:40.756327Z",
-  "generated_from_commit": "1126d15",
+  "generated_at": "2026-09-24T20:18:52.678715Z",
+  "generated_from_commit": "94b61c1",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -412,13 +412,55 @@
       "file": "backend/api/routes/firmware.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "proof/dependence": {
+      "status": "verified_done",
+      "file": "backend/proof/dependence.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "data/parts": {
+      "status": "verified_done",
+      "file": "backend/data/parts.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "data/figures": {
+      "status": "verified_done",
+      "file": "backend/data/figures.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/figure_audit": {
+      "status": "verified_done",
+      "file": "backend/validation/figure_audit.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/bom/substitution": {
+      "status": "verified_done",
+      "file": "backend/generators/bom/substitution.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "api/routes/bom": {
+      "status": "verified_done",
+      "file": "backend/api/routes/bom.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "validation/bench": {
+      "status": "verified_done",
+      "file": "backend/validation/bench.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 2001,
+    "passed": 2141,
     "failed": 0,
     "skipped": 30,
-    "total": 2001
+    "total": 2141
   },
   "phase1_criteria": [
     {
@@ -637,13 +679,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "94b61c1 feat(defeaters): D2 derived per claim — D1, D2, D7 decided with TypeSafe",
+    "e803a99 fix(ci): firmware route annotations resolve under the pinned FastAPI 0.115",
+    "3cdc9e9 brain: /update-memory — Stages 3–5 into architecture and timeline; 2001 passing at 1126d15",
     "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1",
-    "bb3eb21 feat(phase2): Stage 5 — multi-MCU firmware: boards as data, pins as claims, compile before display",
-    "1ff0e2a test(frontend): Playwright tests for the claims table, sign-off and waveform viewer",
-    "69f2d66 feat: Task 4.5 exact LED dissipation (0.1.2, G1); annotations drawn in the schematic",
-    "dfba3ed test+fix: verify sign-off on PostgreSQL and the live LLM paths; fix producer and explainer"
+    "bb3eb21 feat(phase2): Stage 5 — multi-MCU firmware: boards as data, pins as claims, compile before display"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    | 39 +++++++++++---\n .claude/shared-memory/plan/current_phase.md |  6 +--\n backend/proof/prover.py                     | 84 +++++++++++++++++++----------\n t",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md | 145 ++++++++++++\n backend/generators/dht22_node.py         |   4 +-\n backend/generators/led_indicator.py      |   7 +-\n backend/generators/netlist/models.py ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

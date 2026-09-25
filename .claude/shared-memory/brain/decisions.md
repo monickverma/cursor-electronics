@@ -1871,3 +1871,180 @@ as it was (0.05 each).
   a product fix is the user's call.
 - **The bench session and the verification pass** happen when the engineer
   chooses; everything built here makes them count once done.
+
+### D7, built — 2026-09-25
+
+- `data/parts.py` owns every passive's figures (resistor series, capacitors);
+  the generators, the prover and `common.py` read them there. All 49 CI grid
+  designs are byte-identical to before.
+- `data/figures.py`: 155 records (69 part figures, 86 board pin rows and
+  three console UARTs), each with kind, source and the agent's reading, and
+  each saying it was written without opening the document. Kinds as decided;
+  the pin output resistances are **typical** (their minimum comes from curves),
+  the run currents behind the MCU supply models and the DHT22 bus figures are
+  **stated assumptions**.
+- `scripts/verify_figures.py` and `data/figure_verifications.json` (empty).
+- Claims declare the figures they read (`ClaimScope.figures`); rule claims
+  derive theirs (each part's voltage rating; the pin rows used and the console
+  UART); a proof reads what the claim it re-derives reads.
+- **Declaring made six under-citations visible**: the RC cutoff band and its
+  proof (both parts' tolerances), the divider's output and supply-current
+  claims (resistor tolerances), and the LED rail current (the MCU supply
+  model) read part figures and did not cite D7. They do now: 76 → 82 critical
+  claims cite D7.
+- **The completeness audit found a latent bug on its first run.** The RS-485
+  generator boxed the 1206 terminator with the 0402 series' tolerance. Both are
+  1% so no number moved, but a substituted terminator would have been judged
+  on the wrong figure. Fixed (`_term_tol`). The audit
+  (`validation/figure_audit.py`) now checks 145 figure × design pairs with no
+  violation; four are skipped because the generator *chooses* with them (the
+  RS-485 threshold sets the bias pair, the termination figure is R1), and the
+  test pins that list.
+
+---
+
+## [2026-09-25] Stage 6 — BOM and substitution: a price is the part's, a substitute goes through the gate
+
+**Decision:** Stage 6 of `PHASE_2_PLAN_v2.md` is built as below. Taken by the
+agent on the instruction "then do stage 6", after D7 (the same session).
+Written before Stage 6's code.
+
+v2's gates: *no substitution surfaces that fails the original's checks*
+(analytic, G1); *every price carries `price_asof`; pricing never gates
+validation* (analytic, G1). The KPI *BOM accuracy within 5% of a manual
+engineer* stays deferred with its trigger: an engineer is available.
+
+**Found before deciding — gate 1 is violated today.** `BOMCompiler` prices a
+part it does not know as any catalogue part of the same value, and copies that
+part's distributor order numbers onto the row. On every RS-485 design, R1 is
+the 1206 terminator (RC1206FR-07120RL, 250 mW, because a driver can put
+208 mW into it); its row is priced as RC0402FR-07120RL and carries that 0402's
+LCSC and Digi-Key numbers. An order placed from the BOM gets a 62.5 mW part
+the design's own dissipation claim refutes: an unchecked substitution,
+surfaced, against a claim the design proves.
+
+1. **A price is the part's, with its date.** Only an exact part-number or LCSC
+   match is priced. An unknown part is unpriced — never priced, and never
+   ordered, as another part. The equivalent-value and part-number-prefix paths
+   go: a same-value part is a *substitute*, and substitutes pass gate 1.
+   Every priced row carries `price_asof` and `price_source`. The static prices
+   entered the repository on 2026-07-25 (`component_db.json`'s first commit);
+   that is the date given, stated as the date recorded — when each was first
+   observed is not known.
+2. **Pricing never gates validation.** Nothing under `validation/`, `proof/` or
+   the generators reads a price (scanned); moving every price changes no claim
+   (tested). Price orders the substitutes and is shown beside them; it never
+   decides one.
+3. **A substitute is a pinned part, re-derived through the gate** — the X2
+   invariant, not an edit to the circuit. `constraints.pinned.<id>` takes
+   `{"part": "<part number>"}` beside the value pins it already takes. The part
+   must be tabulated in `data/parts.py`, so its figures have provenance (D7);
+   otherwise it is refused by name. The generator then uses that part's
+   figures — tolerance, power and voltage rating, package — for that part,
+   everywhere: envelope, `predict()`, claims, properties, netlist, BOM.
+4. **The substitution check** (`generators/bom/substitution.py`). For each
+   resistor and capacitor of a design a generator built, the candidates are
+   the catalogue parts of the same kind and value. Each is tried as a patch to
+   the requirement (`apply_patch` → dispatch → `realize`, the patch route's own
+   path) and **surfaces only if** the envelope accepts it; the design differs
+   from the original in that part and nothing else; every claim that held on
+   the original still holds — proofs included, none failing, none newly not
+   assessed — and the grade floor is no worse. It reports the part, what moved
+   in the claims (R1's rating 62.5 → 100 mW), the price difference when both
+   are priced, and the patch operations that apply it, so accepting one is an
+   ordinary patch: zero model calls, a new version, the design re-derived.
+5. **Scope: resistors and capacitors.** ICs, the MCU and the LED are not
+   substituted — each needs its own models and firmware; the board is already
+   a requirement (`constraints.mcu`).
+6. **Live pricing is not added.** X7 allows it; it is an authenticated,
+   rate-limited external dependency the user has to approve, and the plan says
+   to ask. The price layer names its source per row, so a live source can be
+   added later without touching validation.
+7. **API and UI.** `GET /design/{id}/bom` returns the rows with their dates and
+   each line's checked substitutes; the BOM tab shows them and applies one
+   through the patch route.
+
+### Stage 6, built — 2026-09-25
+
+**Gate 1 — no substitution surfaces that fails the original's checks: met.**
+`generators/bom/substitution.py`. A candidate is tried as a patch to the
+requirement and surfaces only if the envelope accepts it, the netlist is
+byte-identical and no other part's electrical fields moved, nothing fails or
+goes unassessed, every claim that held still holds, the grade floor is no
+worse — and **every property proved for the original, with the original's own
+bounds, is proved again over the substitute's parts**. Both sides are judged
+unsigned: a patch drops a signature by design, and a lost signature must not
+read as a lower floor. `tests/test_substitution.py` re-derives every surfaced
+substitute on all 11 CI designs independently of the check's bookkeeping.
+
+What it catches, by name, on the CI designs:
+- **The RS-485 terminator.** On a 5 V bus only the 1206 takes the 190–232 mW a
+  driver can put across it; the 0402, the 5% 0402, the 0603 and the 0805 are
+  each refused with the milliwatts. On a 3.3 V bus (≈ 83 mW) the 0603 and 0805
+  are legitimate, and surface.
+- **A 5% part where the design proved a band.** A 5% resistor in the divider,
+  or in the RC filter, passes every claim re-derived for it — and fails the
+  original's proved V_out band, or cutoff band, with a certified
+  counterexample. Judged against the original's checks, it does not surface.
+- **A 5% pull-up on the DHT22 surfaces**: that design's checks are limits
+  (rise time, sink current), and it still meets them.
+
+**Gate 2 — every price carries `price_asof`; pricing never gates validation: met.**
+Every priced catalogue entry carries `price_asof: 2026-07-25` and
+`price_source: static`, and every priced BOM row a `price_note` saying it is a
+static price recorded then, first observed on an unknown date, not a quote.
+Moving every price ×1000 changes no claim on any CI design, and an AST scan
+finds no price name in `validation/`, `proof/` or the generators outside
+`bom/` (`tests/test_substitution.py::TestPricing`).
+
+**Found and fixed while building it:**
+- **The BOM's unchecked substitution** (recorded above): only an exact part or
+  LCSC match is priced now. The equivalent-value and prefix paths are gone, and
+  four `tests/test_bom.py` tests that pinned them were rewritten to state the
+  new rule, not deleted.
+- **The RS-485 envelope never checked the terminator's dissipation.** A value
+  pin of 100 Ω on R1 was accepted with its own dissipation claim failing — an
+  accepted design carrying a failing claim, which the 2026-09-23 invariant
+  forbids. The envelope now refuses it by name; the default 120 Ω 1206 always
+  passes, so no existing design changed.
+- **A value-pinned terminator kept the 120 Ω part number** whatever value was
+  pinned. It is now the part number of the value placed.
+- **After any patch, the BOM tab showed "BOM not available"** — patch
+  responses carry no BOM. The tab now reads `GET /design/{id}/bom`.
+
+**Parts as data, and pinned parts.** `constraints.pinned.<id>` takes
+`{"part": "<part number>"}` in all five generators. The part must be in
+`data/parts.py` or it is refused by name (its figures would be unknown), and a
+capacitor in a resistor's slot is refused too. The generator uses the part's
+own tolerance, power and voltage rating and package for that slot, everywhere.
+Unpinned designs are byte-identical: all 49 CI designs, before and after.
+
+**API and UI.** `GET /design/{id}/bom` (`api/routes/bom.py`) returns dated
+rows and each line's checked substitutes, off the event loop. A design built
+by another generator version, or with no stored requirement, gets no
+substitutes and says why. The BOM tab shows the date of every price, the
+substitutes with what each changes and how many checks it passed, the refused
+candidates with their reasons, and "Use this part", which sends the
+substitute's patch through the patch route and stays on the tab. Playwright:
+`frontend/e2e/bom.spec.ts`, each test seen to fail against a broken component;
+the fixtures are re-exported from the real pipeline.
+
+**Not done:** live pricing (the user's call; nothing is wired for it);
+substitutes for ICs, the MCU and the LED (each needs its own models); the 5%
+KPI (deferred, trigger: an engineer is available).
+
+### D1, built — 2026-09-25
+
+`validation/bench.py`, `data/bench/` (empty), `scripts/bench_template.py`,
+`docs/BENCH_D1.md` rewritten for a multimeter and an Arduino Uno.
+
+- A record's prediction is the design's own property quantity, evaluated
+  exactly at the corners of a box where each measured part — and the measured
+  **supply**, since a bench rail is never exactly the requirement's — is
+  pinned to its reading ± accuracy.
+- Agreement is overlap, reach is that design only, a disagreement reopens the
+  family, a record of a changed design is stale — as decided.
+  `tests/test_bench.py` shows each with synthetic records, and fails on any
+  repository record that disagrees or is stale.
+- **Nothing has been measured.** D1 is open on every claim, exactly as
+  before. The RC timing sketch the sheet describes has not been written or run.

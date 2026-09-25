@@ -56,6 +56,14 @@ The MCU draws current, it does not supply voltage. 100Ω gives 50mA at 5V — cl
 > (`VCC_5V` or `VCC_3V3`). The model is named from the netlist as
 > `mcu_as_<R>R`; the Uno's is still `mcu_as_100R`, and D2 covers them all.
 
+> **Amended 2026-09-25 (D2 per claim).** A claim names an MCU model and cites
+> D2 only where the real MCU can reach it: its quantity depends on an MCU model
+> element (decided exactly, `proof/dependence.py`), it measures a node an
+> unmodelled MCU pin sits on (`mcu_pin_load`), or it assumes a node state an
+> MCU pin sets (`mcu_pin_state`). A claim that does not declare what it
+> measures keeps the netlist-wide rule above. `brain/decisions.md`
+> [2026-09-24] D1, D2, D7.
+
 ---
 
 ## Rule: ngspice Batch Output Is Columnar, Not `v(x) = y`

@@ -11,7 +11,7 @@ checks — signs its properties the way `POST /sign-off` does, and runs its
 netlist through ngspice and the Stage 3 waveform shaper. Re-run it when a
 response shape changes; the tests then check the UI against the new shape.
 
-Writes `frontend/e2e/fixtures/{generate,sign_off,simulation,firmware}.json`.
+Writes `frontend/e2e/fixtures/{generate,sign_off,simulation,firmware,bom}.json`.
 Needs ngspice on PATH (as the simulation worker does). `firmware.json` (Stage 5)
 is an ESP32 LED design and the compile gate's answers for it, from
 `firmware_view` itself with its table and broker held in memory.
@@ -134,6 +134,37 @@ def _firmware(registry) -> dict:
     }
 
 
+def _bom(registry) -> dict:
+    """
+    Stage 6: an RS-485 node on the Uno; what GET /design/{id}/bom answers for it
+    (dated rows, checked substitutes, the terminators refused by name); what the
+    patch route answers when the first substitute is used; and the BOM after.
+    """
+    from types import SimpleNamespace
+
+    from api.routes.bom import bom_view
+    from core.intent_patch import PatchOp, apply_patch
+
+    intent = FormProducer(registry).build("modbus_rtu_master", {"mcu": "arduino_uno"})
+    generator = registry.dispatch(intent).generator
+    ir = realize(generator, intent)
+    record = SimpleNamespace(ir_json=ir.model_dump(mode="json"), intent_ir=intent.model_dump(mode="json"))
+    before = bom_view(record)
+    if not before["substitutes"]:
+        raise SystemExit("the RS-485 design offered no substitutes — the fixture would test nothing")
+    used = before["substitutes"][0]
+    patched = apply_patch(intent, [PatchOp(**op) for op in used["ops"]]).intent
+    after_ir = realize(generator, patched)
+    after = bom_view(SimpleNamespace(ir_json=after_ir.model_dump(mode="json"),
+                                     intent_ir=patched.model_dump(mode="json")))
+    generate = _generate_response(ir, {"status": "unavailable", "message": "not built for this fixture"})
+    patch = {**_generate_response(after_ir, {"status": "unavailable", "message": "not built for this fixture"}),
+             "changes": [f"constraints.pinned.{used['component_id']}: (none) → {used['part_number']}"],
+             "note_to_user": "", "predict_delta": [], "citations": [],
+             "generator": after_ir.generator, "generator_changed": None}
+    return {"generate": generate, "bom": before, "used": used, "patch": patch, "bom_after": after}
+
+
 def main() -> None:
     registry = default_registry()
     intent = FormProducer(registry).build("low_pass_filter", {"cutoff_hz": 1000, "supply_v": 5})
@@ -169,10 +200,11 @@ def main() -> None:
     }
 
     firmware = _firmware(registry)
+    bom = _bom(registry)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for name, body in (("generate", generate), ("sign_off", sign_off), ("simulation", simulation),
-                       ("firmware", firmware)):
+                       ("firmware", firmware), ("bom", bom)):
         path = OUT / f"{name}.json"
         path.write_text(json.dumps(body, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
                         encoding="utf-8", newline="\n")

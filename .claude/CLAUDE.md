@@ -29,7 +29,11 @@ cursor-electronics/
 │   ├── data/
 │   │   ├── component_constraints.py  # Python dict — zero LLM tokens
 │   │   ├── mcu_targets.py            # Stage 5 — boards as data: Uno, ESP32-DevKitC, Black Pill
-│   │   └── component_db.json         # 100-entry component database
+│   │   ├── parts.py                  # Stage 6 — passives as data: series, capacitors, one owner
+│   │   ├── figures.py                # D7 — provenance per part figure; trusted only once verified
+│   │   ├── figure_verifications.json # a person's checks, bound to each record's hash
+│   │   ├── bench/                    # D1 — bench records, judged by validation/bench.py
+│   │   └── component_db.json         # 100-entry component database, prices dated
 │   ├── ai/
 │   │   ├── intent_parser.py        # Prompt → DesignSpec (tool_use)
 │   │   ├── intent_producer.py      # Prompt → IntentIR (tool_use; X5 retry rules)
@@ -53,7 +57,8 @@ cursor-electronics/
 │   │   ├── firmware/compile_gate.py # Stage 5 — build it; firmware shown only once it compiles
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
 │   │   ├── schematic/kicad.py      # IR → .kicad_sch (net labels only)
-│   │   └── bom/compiler.py         # IR → BOM (static pricing)
+│   │   ├── bom/compiler.py         # IR → BOM (static pricing; a part priced only as itself, dated)
+│   │   └── bom/substitution.py     # Stage 6 — substitutes re-derived and re-proved through the gate
 │   ├── simulation/
 │   │   ├── runner.py               # ngspice async subprocess
 │   │   ├── parser.py               # Columnar batch output parser
@@ -65,17 +70,20 @@ cursor-electronics/
 │   │   ├── claims.py               # Claim objects + validation_coverage (X6, X8, Stage 4 proofs)
 │   │   ├── defeaters.py            # The defeater register, D1–D9
 │   │   ├── pin_rules.py            # Stage 5 — pin-mux, peripheral conflict, strapping pins
+│   │   ├── figure_audit.py         # D7 — every figure a claim reads is declared, by experiment
+│   │   ├── bench.py                # D1 — bench evidence: agrees, disagrees, stale
 │   │   ├── envelope_grid.py        # CI grid harness + M1 fault injection
 │   │   └── grid_adapters.py        # Per-generator ngspice adapters and probes
 │   ├── proof/                      # Stage 4 — properties proved from the design's netlist
 │   │   ├── brackets.py             # π, ln, expm1 as exact rational enclosures (D8)
 │   │   ├── netlist.py              # The SPICE text back into exact elements
 │   │   ├── mna.py                  # sympy nodal analysis: DC, transfer, Thevenin
+│   │   ├── dependence.py           # D2 — which MCU model elements a quantity depends on, exactly
 │   │   ├── properties.py           # PropertySpec → Statement; English by template; hashes
 │   │   └── prover.py               # z3 over tolerance boxes; frozen refine loop; mutation gate
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
-│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, auth.py
+│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate)
 │   └── middleware/rate_limit.py    # slowapi
@@ -83,7 +91,8 @@ cursor-electronics/
 │   ├── app/page.tsx                # Two-panel layout
 │   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.
 │   └── lib/api.ts                  # Typed API client
-├── scripts/                        # capture_explanation.py, review_panel.py
+├── scripts/                        # capture_explanation.py, review_panel.py, verify_figures.py (D7),
+│                                   # bench_template.py (D1), export_ui_fixtures.py
 ├── tests/                          # pytest, conftest.py, 12 test modules + fixtures/
 └── docker-compose.yml
 ```

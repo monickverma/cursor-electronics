@@ -51,6 +51,9 @@ from core.ir_schema import (
     ValidationRule,
 )
 from data.component_constraints import get_constraints
+from data.figures import of, passive
+from data.parts import RESISTOR_SERIES
+from data.parts import resistor_part as catalogue_resistor_part
 from generators.arduino_parts import (
     BOARDS,
     DEFAULT_RAIL_BUDGET_MA,
@@ -62,6 +65,8 @@ from generators.arduino_parts import (
     read_target,
 )
 from generators.common import (
+    PartFigures,
+    pinned_parts,
     RESISTOR_TOLERANCE,
     RESISTOR_VMAX,
     Unreadable,
@@ -97,8 +102,9 @@ RATED_LOAD_OHM = float(_XCVR["driver_rated_load_ohm"])
 TERMINATION_OHM = float(_XCVR["requires_termination_ohm"])
 FAILSAFE_MARGIN = 1.25
 #: RC1206FR — 1% thick film, 250 mW, 200 V.
-TERMINATOR_PART = "RC1206FR-07120RL"
-TERMINATOR_POWER_W = 0.25
+TERMINATOR_SERIES = RESISTOR_SERIES["RC1206FR"]
+TERMINATOR_PART = catalogue_resistor_part(120.0, TERMINATOR_SERIES.code)
+TERMINATOR_POWER_W = TERMINATOR_SERIES.power_w
 #: What SoftwareSerial on a 16 MHz Uno receives reliably; 115200 does not.
 BAUD_RATES = (1200, 2400, 4800, 9600, 19200, 38400, 57600)
 #: A hardware UART (ESP32, STM32) adds 115200.
@@ -129,11 +135,19 @@ DEFAULT_SLAVES = [
 
 
 class _Spec:
-    __slots__ = ("supply", "far_end", "baud", "budget", "slaves", "poll_ms", "pins", "target")
+    __slots__ = ("supply", "far_end", "baud", "budget", "slaves", "poll_ms", "pins", "target", "figs")
 
     def __init__(self, **kw):
+        # Stage 6: a pinned part's own figures, else the default series'.
+        self.figs = PartFigures()
         for key, value in kw.items():
             setattr(self, key, value)
+
+    def r1_tolerance(self) -> float:
+        return self.figs.tolerance("R1", TERMINATOR_SERIES.tolerance)
+
+    def r1_power_w(self) -> float:
+        return self.figs.power_w("R1", TERMINATOR_SERIES.power_w)
 
 
 def _read(intent: IntentLike) -> _Spec:
@@ -166,8 +180,9 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '120', '560')")
         pins[part] = ohms
+    figs = PartFigures(pinned_parts(intent, PINNABLE, {"R1": "resistor", "R2": "resistor", "R3": "resistor"}))
     return _Spec(supply=supply, far_end=far_end, baud=baud, budget=budget,
-                 slaves=[dict(s) for s in slaves], poll_ms=poll, pins=pins, target=target)
+                 slaves=[dict(s) for s in slaves], poll_ms=poll, pins=pins, target=target, figs=figs)
 
 
 def v_ab_mv(supply: float, r_term: float, r_up: float, r_down: float, r_far: Optional[float]) -> float:
@@ -180,8 +195,15 @@ def bus_load_ohm(r_term: float, r_up: float, r_down: float, r_far: Optional[floa
     return r_eq * (r_up + r_down) / (r_eq + r_up + r_down)
 
 
-def _tol(r: float):
-    return (r * (1 - RESISTOR_TOLERANCE), r * (1 + RESISTOR_TOLERANCE))
+def _tol(r: float, tolerance: float = RESISTOR_TOLERANCE):
+    return (r * (1 - tolerance), r * (1 + tolerance))
+
+
+def _term_tol(spec: "_Spec", r: float):
+    # R1 is the terminator: its own part's tolerance, not the 0402's. Both
+    # are 1% by default; the audit (validation/figure_audit.py) found the 0402
+    # figure standing in, which a substituted terminator would have exposed.
+    return _tol(r, spec.r1_tolerance())
 
 
 def _bands(spec: _Spec, r1: float, r2: float, r3: float):
@@ -194,7 +216,8 @@ def _bands(spec: _Spec, r1: float, r2: float, r3: float):
     def load(t, u, d, f):
         return bus_load_ohm(t, u, d, f)
 
-    boxes = [_tol(r1), _tol(r2), _tol(r3), far_box if far else (None,)]
+    boxes = [_term_tol(spec, r1), _tol(r2, spec.figs.tolerance("R2")), _tol(r3, spec.figs.tolerance("R3")),
+             far_box if far else (None,)]
     return (
         worst_corners(vab, boxes), vab(r1, r2, r3, far),
         worst_corners(load, boxes), load(r1, r2, r3, far),
@@ -273,6 +296,16 @@ class RS485NodeGenerator:
                 f"pinned parts load the driver down to {llo:.1f} Ω, below the {RATED_LOAD_OHM:g} Ω "
                 f"it is specified into"
             )
+        # A driver can hold the pair at its full supply: the terminator must take it.
+        # The default 120 Ω 1206 always does; a pinned value or part may not, and
+        # an accepted design must never carry a failing claim of its own.
+        term_mw = spec.supply ** 2 / _term_tol(spec, chosen[0])[0] * 1000.0
+        if term_mw > spec.r1_power_w() * 1000.0:
+            what = spec.figs.parts["R1"].part_number if "R1" in spec.figs.parts else "the terminator"
+            return EnvelopeDecision.refuse(
+                f"R1={chosen[0]:g}Ω takes up to {term_mw:.0f} mW with the pair driven to "
+                f"{spec.supply:g} V, above the {spec.r1_power_w() * 1000:g} mW rating of {what}"
+            )
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power", voltage_range_v=Interval.at(spec.supply, "V")),
             PortContract(name="RS485_A", direction="bidirectional"),
@@ -299,7 +332,7 @@ class RS485NodeGenerator:
         spec = _read(intent)
         r1, r2, r3 = select(spec)
         (vlo, vhi), vnom, (llo, lhi), lnom = _bands(spec, r1, r2, r3)
-        term_lo, _ = _tol(r1)
+        term_lo, _ = _term_tol(spec, r1)
         rail = self._rail_ma(spec, r1, r2, r3)
         term_worst = spec.supply ** 2 / term_lo * 1000.0
         return Prediction(
@@ -326,29 +359,39 @@ class RS485NodeGenerator:
         vab, load, term, rail = (q["v_ab_idle_mv"], q["bus_load_ohm"],
                                  q["termination_power_mw"], q["supply_current_ma"])
         bus = "with the far end terminated" if spec.far_end else "with this end the only terminator"
+        # D7: what each claim reads (data/figures.py), from the parts placed.
+        placed = {c.id: c.part_number for c in self.generate(intent).components}
+        xcvr, mcu = transceiver(spec.target)[0], spec.target.mcu_part
+        far = of(xcvr, "requires_termination_ohm") if spec.far_end else ()
+        bus_tol = passive(placed["R1"], "tolerance") + passive(placed["R2"], "tolerance") + \
+            passive(placed["R3"], "tolerance") + far
+        rail_reads = of(mcu, "supply_model_ohm") + of(xcvr, "current_draw_ma", "supply_voltage_max")
         return [
             graded("rs485.failsafe_bias",
                    f"the idle bus holds V_AB above the receivers' {THRESHOLD_MV:g} mV threshold {bus}",
                    # Idle means the driver is off: DE/RE low, which an MCU pin sets.
                    vab.lo >= THRESHOLD_MV, "monotone_corners",
-                   scope.model_copy(update={"assumes": ("RS485_DE_RE",)}),
+                   scope.model_copy(update={"assumes": ("RS485_DE_RE",),
+                                            "figures": bus_tol + of(xcvr, "receiver_threshold_mv")}),
                    detail=f"V_AB ∈ [{vab.lo:.0f}, {vab.hi:.0f}] mV over every resistor within 1%",
                    defeaters=("D1", "D7")),
             graded("rs485.driver_load",
                    f"the driver sees no less than the {RATED_LOAD_OHM:g} Ω it is specified into",
-                   load.lo >= RATED_LOAD_OHM, "monotone_corners", scope,
+                   load.lo >= RATED_LOAD_OHM, "monotone_corners",
+                   scope.model_copy(update={"figures": bus_tol + of(xcvr, "driver_rated_load_ohm")}),
                    detail=f"{load.lo:.1f}–{load.hi:.1f} Ω", defeaters=("D1", "D7"),
                    covers=("current_limits_ok",)),
             graded("rs485.termination_dissipation",
-                   f"R1 stays within its {TERMINATOR_POWER_W * 1000:g} mW rating with the pair "
+                   f"R1 stays within its {spec.r1_power_w() * 1000:g} mW rating with the pair "
                    f"driven to the full {spec.supply:g} V",
-                   term.hi <= TERMINATOR_POWER_W * 1000, "monotone_corners",
-                   scope.model_copy(update={"measures": ("power(R_R1)",)}),
+                   term.hi <= spec.r1_power_w() * 1000, "monotone_corners",
+                   scope.model_copy(update={"measures": ("power(R_R1)",),
+                                            "figures": passive(placed["R1"], "tolerance", "power_w")}),
                    detail=f"≤ {term.hi:.0f} mW (an 0402 is rated 62.5 mW)", defeaters=("D1", "D7")),
             graded("rs485.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
                    rail.hi <= spec.budget, "closed_form",
-                   scope.model_copy(update={"parameters": "nominal",
+                   scope.model_copy(update={"parameters": "nominal", "figures": rail_reads,
                                             "measures": (f"i(V_{spec.target.rail_node})",)}),
                    detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
@@ -398,10 +441,11 @@ class RS485NodeGenerator:
                           f"over tolerance {'with' if spec.far_end else 'without'} a far-end terminator")
 
         def bias(part: str, value: float, to: str, line: str) -> Component:
+            number, package, maker = spec.figs.resistor(part, value)
             return Component(
-                id=part, type=ComponentType.RESISTOR, part_number=resistor_part(value),
-                manufacturer="Yageo", package="0402", value=value_string(value),
-                supply_voltage_max=RESISTOR_VMAX, confidence=0.95,
+                id=part, type=ComponentType.RESISTOR, part_number=number,
+                manufacturer=maker, package=package, value=value_string(value),
+                supply_voltage_max=spec.figs.voltage_max(part), confidence=0.95,
                 justification=(
                     f"{value:g}Ω fail-safe bias, {line} to {to}: {bias_note}. Idle V_AB is "
                     f"{vnom:.0f} mV nominal, {vlo:.0f} mV worst case; a larger value would let the "
@@ -431,6 +475,7 @@ class RS485NodeGenerator:
                          f"{de}: high transmits, low listens. The 5 V MAX485 would drive 5 V into the "
                          f"MCU's RX pin.")
         where = "" if target.id == "arduino_uno" else f" on the {target.board}"
+        r1_part, r1_package, r1_maker = spec.figs.resistor("R1", r1, TERMINATOR_SERIES.code)
         return CircuitIR(
             intent=f"Modbus RTU master on RS-485 at {int(spec.baud)} baud, {len(slaves)} slave(s){where}",
             application_class=ApplicationClass.MODBUS_RTU,
@@ -446,8 +491,9 @@ class RS485NodeGenerator:
                     datasheet_notes=list(xcvr["notes"]),
                 ),
                 Component(
-                    id="R1", type=ComponentType.RESISTOR, part_number=TERMINATOR_PART, manufacturer="Yageo",
-                    package="1206", value=value_string(r1), supply_voltage_max=200, confidence=0.97,
+                    id="R1", type=ComponentType.RESISTOR, part_number=r1_part, manufacturer=r1_maker,
+                    package=r1_package, value=value_string(r1),
+                    supply_voltage_max=spec.figs.voltage_max("R1", TERMINATOR_SERIES.voltage_max), confidence=0.97,
                     justification=(
                         f"{r1:g}Ω termination across A/B, matching the cable's 120 Ω impedance so edges "
                         f"do not reflect. 1206, not 0402: a driver can put {spec.supply:g} V across it "

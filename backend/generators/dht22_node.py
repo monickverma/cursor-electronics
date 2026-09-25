@@ -55,16 +55,16 @@ from generators.arduino_parts import (
     power_connections,
     read_target,
 )
+from data.figures import of, passive
 from generators.common import (
-    RESISTOR_TOLERANCE,
-    RESISTOR_VMAX,
+    PartFigures,
     Unreadable,
     e96_values,
     pinned_number,
+    pinned_parts,
     read_number,
     read_pins,
     requirements,
-    resistor_part,
     value_string,
 )
 from generators.netlist.models import load_ohms, mcu_supply_model, mcu_supply_ohms
@@ -117,11 +117,13 @@ PINNABLE = ("R1",)
 
 
 class _Spec:
-    __slots__ = ("supply", "cable", "budget", "pin", "threshold", "pins", "target")
+    __slots__ = ("supply", "cable", "budget", "pin", "threshold", "pins", "target", "figs")
 
-    def __init__(self, supply, cable, budget, pin, threshold, pins, target):
+    def __init__(self, supply, cable, budget, pin, threshold, pins, target, figs=None):
         self.supply, self.cable, self.budget = supply, cable, budget
         self.pin, self.threshold, self.pins, self.target = pin, threshold, pins, target
+        # Stage 6: a pinned part's own figures, else the default 0402 series'.
+        self.figs = figs or PartFigures()
 
 
 def _read(intent: IntentLike) -> _Spec:
@@ -150,7 +152,8 @@ def _read(intent: IntentLike) -> _Spec:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '10k', '4k7')")
         pins[part] = ohms
-    return _Spec(supply, cable, budget, target.pin(pin).name, threshold, pins, target)
+    figs = PartFigures(pinned_parts(intent, PINNABLE, {"R1": "resistor"}))
+    return _Spec(supply, cable, budget, target.pin(pin).name, threshold, pins, target, figs)
 
 
 def bus_capacitance_pf(cable_m: float, which: str) -> float:
@@ -173,8 +176,8 @@ def select_pullup(spec: _Spec) -> Optional[float]:
     c_max = bus_capacitance_pf(spec.cable, "max")
 
     def ok(r: float) -> bool:
-        worst_rise = rise_time_us(r * (1 + RESISTOR_TOLERANCE), c_max)
-        worst_sink = sink_ma(spec.supply, r * (1 - RESISTOR_TOLERANCE))
+        worst_rise = rise_time_us(r * (1 + spec.figs.tolerance("R1")), c_max)
+        worst_sink = sink_ma(spec.supply, r * (1 - spec.figs.tolerance("R1")))
         return worst_rise <= RISE_LIMIT_US and worst_sink <= SINK_LIMIT_MA
 
     if ok(DEFAULT_PULLUP_OHMS):
@@ -225,8 +228,9 @@ class DHT22NodeGenerator:
                 f"no pull-up meets both the {RISE_LIMIT_US:g} µs rise time over "
                 f"{spec.cable:g} m of cable and the {SINK_LIMIT_MA:g} mA sink limit"
             )
-        rise = rise_time_us(r1 * (1 + RESISTOR_TOLERANCE), bus_capacitance_pf(spec.cable, "max"))
-        sink = sink_ma(spec.supply, r1 * (1 - RESISTOR_TOLERANCE))
+        tol = spec.figs.tolerance("R1")
+        rise = rise_time_us(r1 * (1 + tol), bus_capacitance_pf(spec.cable, "max"))
+        sink = sink_ma(spec.supply, r1 * (1 - tol))
         if rise > RISE_LIMIT_US:
             return EnvelopeDecision.refuse(
                 f"pinned R1={r1:g}Ω gives up to {rise:.2f} µs rise time over {spec.cable:g} m, "
@@ -257,8 +261,8 @@ class DHT22NodeGenerator:
             raise ValueError(f"predict() called on a refused intent: {decision.reason}")
         spec = _read(intent)
         r1 = select_pullup(spec)
-        r_band = Interval(lo=r1 * (1 - RESISTOR_TOLERANCE), hi=r1 * (1 + RESISTOR_TOLERANCE),
-                          nominal=r1, units="ohm")
+        tol = spec.figs.tolerance("R1")
+        r_band = Interval(lo=r1 * (1 - tol), hi=r1 * (1 + tol), nominal=r1, units="ohm")
         c_band = Interval(lo=bus_capacitance_pf(spec.cable, "min"), hi=bus_capacitance_pf(spec.cable, "max"),
                           nominal=bus_capacitance_pf(spec.cable, "min") / 2 + bus_capacitance_pf(spec.cable, "max") / 2,
                           units="pF")
@@ -302,6 +306,13 @@ class DHT22NodeGenerator:
         )
         graph = ClaimScope(parameters="nominal", model="design_graph")
         sink, rise, rail = q["pullup_sink_current_ma"], q["rise_time_us"], q["supply_current_ma"]
+        # D7: what each claim reads (data/figures.py), from the parts placed.
+        mcu = spec.target.mcu_part
+        pullup = passive(next(c.part_number for c in design.components if c.id == "R1"), "tolerance")
+        rise_reads = pullup + of(SENSOR_PART, "bus_capacitance_pf_per_m", "input_capacitance_pf",
+                                 "rise_time_limit_us")
+        sink_reads = pullup + of(SENSOR_PART, "open_drain_sink_limit_ma") + of(mcu, "gpio_recommended_current_ma")
+        rail_reads = of(mcu, "supply_model_ohm") + of(SENSOR_PART, "current_draw_ma", "supply_voltage_max")
         return [
             graded("dht.pullup_present",
                    "the DHT22's open-drain DATA line has a pull-up resistor to VCC",
@@ -309,19 +320,20 @@ class DHT22NodeGenerator:
                    covers=("pullup_on_open_drain",)),
             graded("dht.rise_time",
                    f"DATA rises (10–90 %) within {RISE_LIMIT_US:g} µs over {spec.cable:g} m of cable",
-                   rise.hi <= RISE_LIMIT_US, "monotone_corners", scope,
+                   rise.hi <= RISE_LIMIT_US, "monotone_corners", scope.model_copy(update={"figures": rise_reads}),
                    detail=f"{rise.lo:.3g}–{rise.hi:.3g} µs for R1 ±1% and 50–100 pF/m",
                    defeaters=("D1", "D7")),
             graded("dht.sink_current",
                    f"holding DATA low sinks at most {SINK_LIMIT_MA:g} mA through the sensor and "
                    f"{mcu_sink_limit_ma(spec.target):g} mA through the MCU pin",
-                   sink.hi <= min(SINK_LIMIT_MA, mcu_sink_limit_ma(spec.target)), "monotone_corners", scope,
+                   sink.hi <= min(SINK_LIMIT_MA, mcu_sink_limit_ma(spec.target)), "monotone_corners",
+                   scope.model_copy(update={"figures": sink_reads}),
                    detail=f"≤ {sink.hi:.3g} mA", defeaters=("D1", "D7"),
                    covers=("current_limits_ok",)),
             graded("dht.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
                    rail.hi <= spec.budget, "closed_form",
-                   scope.model_copy(update={"parameters": "nominal",
+                   scope.model_copy(update={"parameters": "nominal", "figures": rail_reads,
                                             "measures": (f"i(V_{spec.target.rail_node})",)}),
                    detail=f"{rail.nominal:.4g} mA, of which the MCU model is "
                           f"{mcu_rail_ma(spec.supply, spec.target.mcu_part):.0f} mA",
@@ -385,6 +397,7 @@ class DHT22NodeGenerator:
         where = "" if target.id == "arduino_uno" else f" on the {target.board}"
         board = "Arduino Uno" if target.id == "arduino_uno" else target.board
         rail = target.rail_node
+        r1_part, r1_package, r1_maker = spec.figs.resistor("R1", r1)
         return CircuitIR(
             intent=f"DHT22 temperature/humidity node on {spec.pin}, {spec.cable:g} m sensor cable{where}",
             application_class=ApplicationClass.HOBBY_ARDUINO,
@@ -406,9 +419,9 @@ class DHT22NodeGenerator:
                     datasheet_notes=list(_DHT["notes"]),
                 ),
                 Component(
-                    id="R1", type=ComponentType.RESISTOR, part_number=resistor_part(r1),
-                    manufacturer="Yageo", package="0402", value=value_string(r1),
-                    supply_voltage_max=RESISTOR_VMAX, confidence=0.97,
+                    id="R1", type=ComponentType.RESISTOR, part_number=r1_part,
+                    manufacturer=r1_maker, package=r1_package, value=value_string(r1),
+                    supply_voltage_max=spec.figs.voltage_max("R1"), confidence=0.97,
                     justification=(
                         f"{r_reason}. Rise time ≈ {rise:.2g} µs worst case; halving R1 halves it but "
                         f"doubles the {sink_ma(spec.supply, r1):.2g} mA sunk while DATA is held low."

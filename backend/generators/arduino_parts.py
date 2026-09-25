@@ -20,6 +20,7 @@ from typing import Mapping, Sequence
 from core.ir_schema import Component, ComponentType, Connection
 from data.component_constraints import get_constraints
 from data.mcu_targets import DEFAULT_TARGET, TARGETS, Target, get_target
+from data.parts import CAPACITORS
 from generators.common import Unreadable, requirements
 from generators.netlist.models import mcu_supply_ohms
 
@@ -88,7 +89,8 @@ def mcu(justification: str, target: Target = TARGETS[DEFAULT_TARGET]) -> Compone
 def decoupling(label: str, rail_v: float = 5.0) -> Component:
     return Component(
         id="C1", type=ComponentType.CAPACITOR, part_number=DECOUPLING_PART,
-        manufacturer="Samsung", package="0402", value="100nF", supply_voltage_max=16,
+        manufacturer="Samsung", package="0402", value="100nF",
+        supply_voltage_max=CAPACITORS[DECOUPLING_PART].voltage_max,
         confidence=0.99, lcsc_pn="C1525",
         justification=(
             f"100nF X7R bypass on {label}'s supply pin, placed close to it. It supplies the "
