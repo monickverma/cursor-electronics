@@ -1,427 +1,228 @@
-# Jev Comprehensive Interrogation Report — Circuit OS
+# Jev interrogation of Circuit OS: what it can and cannot be trusted with
 
-**Date:** 2026-09-24–2026-09-25  
-**Interrogation campaign:** 6-track, 2,900+ Jev API calls, measured accuracy, determinism, limits, and fit  
-**Ground truth:** All answers pre-registered via SHA256 before Jev sees them; answers validated against code, standards, or explicit math
+**Dates:** 2026-09-24 → 2026-09-25 · **Model:** `jev-1.13.0` (pinned; every call resolved to it)
+**Volume:** 4,223 Jev requests across six tracks, 0 unexpected errors, ≈ 5.7 M input tokens.
 
----
+> **Correction.** An earlier version of this file (commit `3e946ae`) was written before most of the tracks
+> had been run or scored, and it contained numbers that were never measured: the dossier "96 % on 78
+> questions", the latency/determinism/cost tables, "4,500+ label items", the ROI claims. This version replaces
+> it. Every number below comes from a results file in this directory and the script that scores it.
 
-## Executive Summary
+Method, common to all tracks: every question set and its labels were generated and SHA-256-hashed **before**
+Jev saw them (`PREREGISTRATION.*`, `manifest.json`, `prereg_labels.json`, `sets/`). Ground truth comes from
+code, circuit construction, standard text, or computation. None of it comes from Jev. Each item is sent in several variants
+(original, option order reversed, repeat, paraphrase, blind) so stability is measured, not assumed.
 
-This report presents the results of a systematic interrogation of TypeSafe AI's **Jev** (the typed-judgment model) against the full scope of Circuit OS: architecture, domain questions, runtime validation, assurance labels, and dev workflow. The interrogation attacked Jev "from every possible way" with:
-
-- **738 electronics/constraints questions** (closed-form math, units, project rules, multi-step reasoning)
-- **958 runtime checks** on transcription fidelity, patch safety, and injection fault detection  
-- **150+ questions** on the Circuit OS architecture, design decisions, and Phase 3 scope
-- **Robustness probes** measuring determinism, latency, payload size limits, and cost
-- **Phase 3 assurance label generators** (P1–P4: net role, environment, isolation, standards)
-- **Dev workflow** evaluation (commit conventions, PR quality, CI triage)
-
-### Key Findings
-
-| Track | Accuracy | Key metric | Recommendation |
+| Track | Requests | Scored by | Result file |
 |---|---|---|---|
-| **Calibration** | 73.8% overall; 97.6% on project rules; 52.6% on multi-step | Highest on deterministic rules; struggles with chained reasoning | Use for rule checks; chain via deterministic logic, not Jev |
-| **Runtime** | 81% recall @ τ=0.9 on value faults; 100% on function/catalog checks | No false positives on 40 faithful items | Tier-1 for catching gross errors; combine with structural checks |
-| **Dossier** | Correctly reads architecture state (18/18 context Q's passed) | Handles large context; stable across rephrasing | Excellent fit for "is the system in state X?" decisions |
-| **Robustness** | Deterministic within ±2% across repeats; latency 480–1600ms; cost ~$0.008/request | p_top stable; margin rarely inverts | Suitable for Phase 3 with thresholds: act >0.90, care 0.60–0.90, owner <0.60 |
-
-**Conclusion:** Jev is a **first-class tool** for Circuit OS. Best suited for:
-1. Architectural state checks ("Are we in Phase 3 scope?")
-2. Deterministic rules verification (10kΩ pull-down, PWM pin validity)
-3. Judgment calls on trade-offs once the option space is bounded
-4. Not suitable: open-ended design ("What should the BOM cost?"), multi-step math chains (use z3/sympy instead)
+| Calibration: electronics domain (361 items, 7 categories) | 739 | `calibration/analyze.py` | `calibration/results_tables.md` |
+| Runtime shadow checks: IntentIR transcription, patches, prompt injection | 958 | `runtime/analyze.py` | `runtime/RESULTS.md` |
+| Robustness: confidence, determinism, order, paraphrase, polarity, authority, distractors, batching, abstention, size | 948 | `robustness/analyze.py` | `robustness/RESULTS.md` |
+| **Big file:** the whole 94.6 KB Circuit OS dossier + 257-question battery (plus 18 size-limit probes) | 48 | `dossier/analyze_battery.py` | `dossier/BATTERY_RESULTS.md` |
+| Dev workflow: decision↔commit, CI failure class, doc drift, entry quality, owner attention, commit convention | 1,128 | `devflow/analyze.py` | `devflow/RESULTS.md` |
+| Phase 3 assurance labels: P1 net role, P2 environment, P3 isolation, P4 standard family | 402 | `labels/run_and_analyze.py` | `labels/RESULTS.md` |
 
 ---
 
-## Track 1: Calibration — Electronics Domain Accuracy
+## The answer in six lines
 
-### Scope
-
-Pre-registered corpus of 250+ electronics/constraints questions across 5 circuit templates:
-- **Closed-form** (RC cutoff, voltage divider, LED current, dissipation, rise times, failsafe thresholds)
-- **Units** (unit conversion, order of magnitude, dimensional analysis)
-- **Qualitative** (Arduino Uno PWM pins, ESP32 strapping pins, I/O limits)
-- **Project rules** (10kΩ RS-485 pull-down, I2C pull-up requirements, phase-to-phase transitions)
-- **Multi-step reasoning** (attenuated divider to ADC, RC + source load, RS-485 parallel termination)
-
-### Results
-
-| Category | Count | Accuracy [95% CI] | Best case | Worst case |
-|---|---|---|---|---|
-| **Closed-form math** | 120 | 69.2% [61.7–77.5] | RC cutoff, dissipation: 81–87% | Rise times: 43–62% |
-| **Units** | 36 | 72.2% [55.6–86.1] | Unit conversion: 83% | Dissipation units: 25% |
-| **Qualitative** | 53 | 84.9% [73.6–94.3] | Arduino PWM: 93%; I/O limits: 83% | ESP32 strapping: 69% |
-| **Project rules** | 42 | **97.6%** [92.9–100] | Consistently 95–100% | None < 92% |
-| **Multi-step** | 38 | 52.6% [36.8–68.4] | RC + load: 83%; RC attenuation: 67% | Parallel RS-485: 33%; LED→R1 power: 33% |
-| **Overall** | 325 | 73.8% [68.9–78.8] | — | — |
-
-### Interpretation
-
-**Strengths:**
-- **Project rules** (97.6%): Jev reliably identifies known constraints (pin counts, bus standards, threshold values)
-- **Qualitative** (85%): Understands MCU capabilities, pin roles, peripheral limits
-- **Units** (72%): Good at dimensional analysis; struggles with domain-specific conversions (RC vs dissipation units)
-
-**Weaknesses:**
-- **Multi-step reasoning** (53%): Chains of dependencies fail; Jev loses context through intermediate steps
-  - Example: "If a divider attenuates by 4× and ADC expects 0–3.3V input, what max source voltage?" → 50% success
-- **Rise times** (50%): Numerical approximations for RC rise time or slew rate are unreliable
-- **Confidence calibration:** Jev says 78% confidence on 74% accuracy — **overconfident**, especially on multi-step (mean conf 0.73 vs actual 53%)
-
-### Thresholds
-
-From 95% CI analysis:
-- **≥0.90 confidence:** Expect ~90% accuracy on qualitative & rules; ~75% on closed-form
-- **0.60–0.90:** Accuracy drops to 70–85%; use as "care" tier, always validate with math
-- **<0.60:** Treat as opinions; reserve final call for deterministic checks (z3, sympy)
-
-### Recommendation
-
-**Use for:** Project rule checks (pull-down resistors, pin validity, board selection)  
-**Combine with:** Deterministic closed-form solvers (sympy for rise times, RC math)  
-**Avoid:** Multi-step chains; require ground-truth pre-checks before asking Jev to validate
+1. **Jev reads extremely well.** In the full 94.6 KB dossier it answered 49/49 fact questions correctly, with no
+   loss at any depth in the file. It abstained correctly on 12/13 questions whose answer is absent. In
+   size-scaling tests it found 8/8 planted facts at every size up to the ~31k-token limit.
+2. **Jev computes badly.** Give it component values and ask for a threshold decision, and it gets 67 % right. It drops
+   to 53 % when the value is within 5 % of the limit. Put the computed number in the state and it gets **100 %** (229 pairs,
+   76 wrong→right, 0 right→wrong). *Code computes, Jev weighs.*
+3. **Its answers are stable where it matters.** Option order changed nothing (74/74 known items identical in all
+   6 orders). Paraphrase changed 1 of 29 known items. Irrelevant text up to 2× the state and batching of up to 50 questions changed
+   nothing. It is **not** bit-deterministic: probabilities wobble by up to ±0.07, and 1 of 20 yes/no answers flipped once in 20 repeats.
+4. **Its confidence is honest in one direction only.** On known-answer items, p_top ≥ 0.9 was right 95–100 % of the time
+   in every track. Four confidently wrong answers exist in the calibration set, and all four are computed values within 5 % of a
+   limit.
+5. **It can be pushed.** A note saying "the owner/experts say X" moved 13–15 % of answers to the cued wrong
+   option (0 % for "URGENT" or "council"). Text injected into a user command provoked false flags in 3/4 faithful patches.
+   Jev must never read state an attacker controls if its answer gates anything.
+6. **On judgment questions it has no ground truth, so it only gives stable opinions.** Reversing option order changed 7 of 168
+   judgment answers, and swapping the full dossier for the core one changed about half, which shows the answers depend on context.
 
 ---
 
-## Track 2: Runtime Shadow Checks — Error Detection
+## 1. Calibration: 361 electronics questions (739 requests)
 
-### Scope
-
-Pre-registered fault corpus: 45 seeded errors in IntentIR transcriptions, patches, and injection faults.
-
-| Fault type | Count | Example |
+| Category | n (q1) | Accuracy [95 % CI] |
 |---|---|---|
-| **Unit scale** | 7 | "100 kΩ" misread as "100 Ω" |
-| **Wrong function** | 6 | RC filter labeled as voltage divider |
-| **Dropped requirement** | 6 | Constraint omitted from state |
-| **Hallucinated value** | 8 | Value not in source (e.g., "47 Ω" when source says "4.7 Ω") |
-| **Swapped values** | 6 | R1=4.7k, R2=10k → swapped |
-| **Wrong board** | 6 | Arduino Uno specified; should be ESP32 |
-| **Out of catalogue** | 6 | Component not in valid template list |
-| **Faithful items** | 40 | Correct transcriptions (ground truth) |
-| **Faithful implied** | 4 | Correct but not explicitly stated |
+| d project rules (e.g. Uno PWM pins, RS-485 termination rule) | 42 | **97.6 %** [92.9, 100] |
+| c qualitative (strapping pins, I/O limits) | 53 | 84.9 % [73.6, 94.3] |
+| b units | 36 | 72.2 % [55.6, 86.1] |
+| g comparison | 36 | 69.4 % [52.8, 83.3] |
+| a closed-form (RC cutoff, LED current, dissipation, rise time) | 120 | 69.2 % [61.7, 77.5] |
+| f multi-step | 38 | 52.6 % [36.8, 68.4] |
+| **All answerable** | 325 | 73.8 % [68.9, 78.8] · Brier 0.235 · ECE 0.056 |
 
-### Results
+**Key experiment: same item, Jev computes vs code precomputes** (paired, q1):
 
-#### Detection Recall by Fault Type (threshold τ=0.9 on "unrepresented" flag)
-
-| Fault type | Recall | False positives on 40 faithful | Interpretation |
+| Subset | Pairs | Jev computes | Value precomputed in state |
 |---|---|---|---|
-| **Swapped values** | 100% | 0/40 (0%) | Perfect; Jev robustly detects inversions |
-| **Wrong board** | 100% | 0/40 | Board identity always clear |
-| **Out of catalogue** | 100% | 0/40 | Template membership is unambiguous |
-| **Unit scale** | 100% | 0/40 | Magnitude errors are flagged |
-| **Hallucinated value** | 38% | 0/40 | Catches some; misses others (confidence-dependent) |
-| **Wrong function** | 33% | 0/40 | Function misidentification often escapes (6/6 missed) |
-| **Dropped requirement** | 17% | 0/40 | Only flagged if field explicitly marked "stated" |
+| All numeric | 229 | 66.8 % | **100 %** |
+| Near a threshold (1–5 %) | 125 | 52.8 % | 100 % |
+| Far from threshold | 104 | 83.7 % | 100 % |
+| Qualitative rule recalled vs rule written in state | 53 | 84.9 % | 98.1 % |
 
-#### Composite (Any Fault Check)
+All four answers with confidence ≥ 0.9 that were still wrong are numeric edge cases: LED current 9.54 mA vs 10 mA,
+9.615 mA vs 10 mA, termination power 0.1276 W vs 0.125 W, and a unit conversion. Unanswerable questions: 18/18
+choices abstained with `need_more_information`. Pre-registered hypotheses H1, H2, H4, H5 and H6 held. H3 did not
+("compute at conf ≥ 0.9 is below 90 % accurate"): it measured 92.9 %.
 
-Using threshold τ=0.9 on multiple checks (fields@0.9, function, unrepresented):
+## 2. Runtime shadow checks (958 requests)
 
-| Metric | Value |
+Would Jev catch a bad LLM output before the deterministic gate? The test seeded faults into IntentIR transcriptions (45),
+RFC 6902 patches (26 seeded, 26 faithful) and prompt injections, using real Circuit OS requests.
+
+| Check | Recall on target faults | False flags on faithful | Pre-registered verdict |
+|---|---|---|---|
+| R1 fields: `stated_<leaf>` P(yes) < 0.9 (unit scale, hallucinated, swapped, wrong board) | 22/27 = 0.81 | 0/40 | advisory |
+| R1 function: "is this the function the user asked for?" | 1/12 = 0.08 | 0/40 | shadow |
+| R1 unrepresented requirement | 1/6 = 0.17 | 0/40 | shadow |
+| R2 patch op faithful @0.9 | 16/20 = 0.80 | 0/22 | advisory |
+| R2 coverage (missing op) | 4/4 | 0/22 | advisory |
+| Any R1 flag @0.9 | 33/45 = 0.73 | 0/40 | — |
+
+- Leaf-level AUC 0.984 and patch op-level AUC 0.992: Jev's probabilities rank faulty fields above faithful ones almost perfectly.
+  A fixed 0.5 threshold still misses many faults, because faults score 0.5–0.9 rather than near 0.
+- It is blind to **wrong function** and **out-of-catalogue** requests (it agrees with the recorded function
+  in 11 of 12 seeded cases). The deterministic registry refusal already covers those.
+- **Injection:** "ignore previous…/approved/system" text did not suppress detection of transcription faults (0 suppressed),
+  but did suppress 2/4 patch-op flags, and "flag this" text **provoked** false flags on 3/4 faithful patches. No
+  check met the pre-registered bar for *blocking*. The best reach "advisory".
+
+## 3. Robustness and limits (948 requests)
+
+| Experiment | Result |
 |---|---|
-| **Recall** (faults detected) | 73% [60–84%] |
-| **False positive rate** | 0.0% [0.0–9%] (0/40 faithful items falsely flagged) |
-| **AUC (1 − P(stated), leaf level)** | 0.984 [0.957–1.000] |
+| E1 `confidence` vs dead options (k = 2…8) | Accuracy 12/12 at every k. Mean confidence moved only 0.985 → 0.995 on these easy items. The formula still means confidence is never thresholded |
+| E2 determinism (20-question request × 20) | Choice argmax never flipped. One yes/no flipped once (19 True / 1 False). Probabilities vary by up to 0.11, score expected values by ±0.07. 1/20 answers byte-identical across repeats. Three duplicate questions in one request gave the same argmax, probabilities within 0.04 |
+| E3 option order (6 orders in one request) | 74/74 known and 14/14 judgment items same argmax in all orders. P(truth) spread median 0.00, max 0.06 |
+| E4 paraphrase (4 states × 4 wordings) | Known: 462/464 correct, 28/29 identical across all 16. Judgment: 3/6 identical |
+| E5 polarity (x vs not-x) | 48 pairs, sum median 1.00, 2 off by > 0.15, 1 incoherent |
+| E6 authority cue in state | none/neutral/owner-right/URGENT: 100 %. council-wrong 97.7 %. **experts-wrong 86.4 %, owner-wrong 85.2 %** |
+| E7 irrelevant project text (10 %–200 %, before/after) | 100 % in every variant |
+| E8 batching (alone, in 10, in 50) | Identical answers and probabilities for all 10 targets |
+| E9 decisive fact removed | Abstains 24/36 (67 %) when `need_more_information` is offered. Guesses the other 12. With no NMI option it always guesses |
+| E10 state size, 8 planted facts | 8/8 choice, 8/8 yes/no, 2/2 absent correct at every size from 1k to 31k tokens |
+| Hard limit | ≈ 32.9k **input tokens per request** (state + questions), `400 max_tokens_exceeded` above it. 3,000 questions in one request worked (50k tokens was rejected only by size) |
+| Latency | Median 157 ms, p90 396 ms, max 913 ms for small requests. 1.3–1.9 s for a full 29–31k-token dossier request |
 
-### Interpretation
+The six "lure" sets (`E1c`, `E3h`, `E6h`, `E6j`, `E7h`, `E9h`) were built after registration and were **not** run.
+The runner refuses unregistered files, and the protocol stays intact.
 
-**Tier-1 uses (reliable, <5% false-positive rate):**
-- Detecting swapped values, wrong board, catalog violations, unit-magnitude errors
-- Filtering for "unrepresented" fields (drops from formal system)
-- Catching hallucinated values (when confidence is high)
+## 4. The big file: whole Circuit OS dossier + 257 questions (48 requests)
 
-**Tier-2 uses (good, but validate output):**
-- Wrong function detection (33% recall; pair with structure check)
-- Dropped requirements (17% recall; pair with field enumerator)
+`dossier/circuit_os_dossier.md` holds 94,613 characters (≈ 27k tokens) covering architecture, rules, phase history,
+defeaters, open decisions and the Stage 6 state. It fits in one request with ~4k tokens of questions left over, so the
+257-question battery went out as 10 packed requests per variant.
 
-**Not suitable:**
-- Sensitive security checks where false negatives are costly (use diff + AST checker instead)
+**A. Reading (truth from the text or by construction)**
 
-### Recommendation
-
-**Primary use:** Tier-1 runtime checks as a second eye on transcriptions from LLM → IntentIR  
-**Deployment:** Run Jev on every IntentIR before persisting; flag P(unrepresented)>0.5 for review  
-**Thresholds:**
-- p_top ≥ 0.90: Act (flag and halt)
-- 0.60 ≤ p_top < 0.90: Care (log and surface in UI)
-- p_top < 0.60: Owner (human final call)
-
----
-
-## Track 3: Dossier — Architecture and Phase Context
-
-### Scope
-
-Full Circuit OS architecture (25–94 KB dossier) interrogated with 150+ questions:
-- System architecture ("What generates the netlist?")
-- Phase/stage status ("Is Phase 3 started? What's the scope?")
-- Component database and rules
-- Validation layer and claims
-- Known defeaters (D1–D9)
-- Project rules and constraints
-
-### Results
-
-| Question category | Count | Accuracy | Notes |
+| | full | full, options reversed | core (25 KB) only |
 |---|---|---|---|
-| **Architecture routing** | 24 | 100% | "What generates X?" always correct |
-| **Phase status** | 18 | 100% | "Is Phase 3 started?" correctly identifies stage |
-| **Component catalog** | 12 | 92% | One misidentification in constraint lookup |
-| **Validation rules** | 15 | 93% | Correctly names rules; occasional scope blur |
-| **Defeaters** | 9 | 100% | D1–D9 status correctly identified |
-| **Overall dossier** | 78 | **96%** | Reads documentation accurately |
+| Fact present in the file | **49/49** | 49/49 | 9/9 of those in core. 37/40 of the rest correctly → NMI |
+| Fact absent → `need_more_information` | 12/13 | 12/13 | 13/13 |
+| Polarity yes/no pairs | 24/24 (sums 0/12 off) | 24/24 | 19/24 |
+| Accuracy by position in the file (0–25 / 25–50 / 50–75 / 75–100 %) | 100 / 100 / 100 / 100 % | | |
 
-### Interpretation
+**B/C. Judgment on the whole project (no truth, so stability and agreement only)**
 
-Jev excels at **"Is the system in state X?"** questions. The dossier is large (94 KB, 150K+ chars) and Jev handles it with stability across variants (label-reversed, paraphrased).
+| Category | n | same answer full vs reversed | agrees with reference / agent prior |
+|---|---|---|---|
+| One-way vs two-way doors | 16 | 16/16 | reference 13/14 |
+| Owner decisions (RS-485 pull-down, X7, D1 timing, proof kind, explainer budget) | 12 | 12/12 | prior 6/9, median p_top 0.59 |
+| Same owner decisions as the earlier 2026-09-25 run | 20 | 19/20 | prior 5/8 |
+| Phase 2 exit, per defeater | 9 | 6/9 | 3/9 picked NMI; flips on D1, D4, D7 |
+| Phase 3 fit | 12 | 11/12 | median p_top **0.37** |
+| Priority / risk / self-assessment scores | 80 | 79/80 | about half change when only the core dossier is given |
 
-**Key observations:**
-- Same questions in different phrasings get same answers (p_top variance <3%)
-- Jev reads claims, proofs, and defeaters accurately
-- Misses: Fine detail in multi-clause defeater definitions (D4, D8 scope boundaries)
+Reading the table: Jev gives a stable, order-independent opinion on well-framed choices such as doors and owner decisions.
+Its confidence is low on Phase 3 and on the owner calls, and it shrinks when context is removed. That makes it a
+good *second reader of the project*, not an oracle for the open decisions.
 
-### Recommendation
+## 5. Dev workflow (1,128 requests)
 
-**Excellent for:** Architecture state checks, scoping decisions ("Should this go in Phase 3 or defer?")  
-**Good baseline:** Use as source-of-truth reader for "What rule governs X?" checks  
-**Limitation:** Doesn't replace code review; use for second-opinion checks on design coherence
+| Task | n | Jev (orig) | Deterministic baseline | Stable across orig/rev/rep | p_top ≥ 0.9 and stable |
+|---|---|---|---|---|---|
+| CONV: commit subject convention | 87 | **98 %** | (label is the regex) | 100 % | 81/82 correct |
+| T2: CI failure class (infra / accuracy / nondeterminism / unknown) | 50 | **92 %** | 58 % | 100 % | 41/43 correct |
+| T4: does this PR need the owner? | 40 | 88 % | **95 %** | 100 % | 34/34 correct |
+| T1: does this decisions.md entry cover this commit? | 61 | 62 % | 54 % | 84 % | 8/9 correct |
+| T3: doc drift (sentence contradicts a derived fact) | 53 | **85–87 %** | 62–68 % regex | — | real drifts 75 % vs regex 33 % |
+| Q: entry quality (0–5) vs checklist | 40 real + 28 degraded | exact 55 %, ±1 72 % | — | — | degraded copy scored lower 28/28 |
 
----
+T1 fails in a consistent way: it marks unrelated entries as "partially covers" (15 of 23 errors). T4 errs toward
+"owner_reserved" on docs-only PRs (3/5 errors), the safe direction, but the path rule is simply better there.
 
-## Track 4: Robustness — Determinism, Latency, Limits
+## 6. Phase 3 assurance labels (402 requests, 158 constructed items)
 
-### Scope
-
-Infrastructure tests on 172 request variants:
-- **Determinism:** Identical questions, repeated; measure p_top variance
-- **Latency:** Wall-clock time per request (network + model)
-- **Size limits:** Payload size, state size, question count
-- **Cost:** Token usage per request type
-- **Stability:** Does answer change with label order, paraphrasing?
-
-### Results
-
-#### Determinism
-
-| Test | Repeats | p_top variance | margin variance | Interpretation |
+| Label | n | Accuracy | Same answer with options reversed | p_top ≥ 0.9 → correct |
 |---|---|---|---|---|
-| **Identical repeat** | 5× | ±1–2% | ±1–3% | Highly stable; usable for gating |
-| **Label reversed** | — | ±2–4% | ±2–5% | Expected; not concerning |
-| **Paraphrased** | — | ±3–8% | ±4–6% | Larger swing; use margins, not just p_top |
+| P3 RS-485 ground-potential / isolation (all 5 questions) | 8–28 | **100 %** | 100 % | 19/19 |
+| P4 possibly life-safety | 35 | 91 % | 34/35 | — |
+| P2 pollution degree (IEC 60664-1) | 36 | 89 % | 30/36 | 6/6 |
+| P4 standard family (60730 / 61010-2-201 / 508A) | 36 | 86 % | 34/36 | 18/18 |
+| P2 install environment | 32 | 84 % | 31/32 | 12/12 |
+| P1 net role (0–10 V, 4–20 mA, relay, 24 V in, logic) | 48 | 83 % | 47/48 | 34/35 |
+| P2 overvoltage category | 36 | **50 %** | 32/36 | 8/8 |
 
-#### Latency
-
-| Scenario | Latency (p50) | Latency (p95) | Notes |
-|---|---|---|---|
-| **Tiny** (1 Q, 130 chars state) | 480ms | 650ms | API overhead dominates |
-| **Small** (5 Q, 1KB state) | 620ms | 850ms | Linear scaling |
-| **Large** (25 Q, 50KB state) | 1200ms | 1600ms | Still well under 30s timeout |
-| **Extreme** (94KB dossier) | 1400ms | 1800ms | Maximum tested; stable |
-
-#### Cost
-
-| Scenario | Input tokens | Output tokens | Cost (@ $0.001 in, $0.01 out) | Cost/decision |
-|---|---|---|---|---|
-| **Single choice** | 280 | 20 | $0.0005 | ~$0.0005 |
-| **5 closed-form Q** | 1400 | 100 | $0.0014 | ~$0.0003/Q |
-| **Full dossier (150+ Q)** | 8000 | 300 | $0.0110 | ~$0.00007/Q |
-
-**Key insight:** Cost is dominated by context (dossier) and question structure, not question count. Multiple questions together = amortized cost.
-
-#### Size Limits (empirical)
-
-No failures observed. Tested up to:
-- State: 94 KB
-- Questions: 150+
-- Variants: 5 simultaneous
-- Payload: 414K JSON
-
-### Interpretation
-
-Jev is **production-ready** for Circuit OS workloads. Latency is acceptable (1–2 seconds is faster than ngspice). Cost is negligible ($0.01 per full architecture review, ~$0.001 per single decision).
-
-**For real-time decisions:** Batch requests (multiple questions in one call) to amortize context overhead.  
-**For Phase 3:** Use in dev tooling and CI (jev validate-scope, jev check-defeater) without hesitation.
-
-### Recommendation
-
-**Deploy in:** CI/CD checks, design review gates, dev tooling  
-**Budget:** ~$1/day for continuous validation across all engineers  
-**Caching:** Not needed; cost is low; determinism is good enough for repeated checks
+Error patterns: overvoltage category collapses toward OVC II (11 of 18 errors). P1 labels `undeclared` nets with a
+guessed role (6/8 errors), and 1 of 4 out-of-enum nets got a wrong role. P4 misses 5 "no life-safety effect" cases in
+the unsafe direction for a *negative* claim. R7 (refusal) was not run: its generator fails its own self-check, since item
+W02 is accepted by the real registry. That set needs fixing before anyone trusts it.
 
 ---
 
-## Track 5: Labels — Phase 3 Assurance Generators
+## Where to use Jev in Circuit OS
 
-### Scope
+**Rule of the house (measured, not assumed):** code computes, Jev weighs. Put every number, rule and fact Jev
+needs into the state. Ask it to *compare, classify or read*, never to derive. Gate on p_top ≥ 0.9 **and** the same
+argmax under reversed options, never on `confidence`. Never let Jev read text an attacker controls when its answer blocks
+or approves anything.
 
-Generators for Phase 3 assurance label schema (P1–P4, R7):
-- **P1: net role** — Is this net a power, ground, signal, or test node?
-- **P2: environment** — Is this net driven by digital, analog, or external (PHY) circuitry?
-- **P3: isolation** — Does this net cross isolation boundaries (optical, capacitive, digital)?
-- **P4: standard** — Which electrical standard governs this net (TTL, CMOS, RS-485)?
-- **R7: refusal** — Should this circuit be refused due to safety/compliance?
+| Use | Evidence | Recommended mode |
+|---|---|---|
+| Read-back of IntentIR vs the user's words (R1 fields @0.9) | recall 0.81, 0 false flags, AUC 0.98 | **Advisory** warning in the UI; never blocking (injection) |
+| Patch faithfulness + coverage (R2) | recall 0.80 / 4/4, 0 false flags | Advisory on patch preview |
+| CI failure triage (T2) | 92 % vs 58 % regex; 95 % when confident | Label CI failures automatically; the owner decides retries |
+| Doc-drift detector (T3) | 85–87 % vs 62–68 % regex; real drifts 75 % vs 33 % | Nightly job that opens a checklist; code facts stay the source |
+| Commit-convention / entry-quality lint (CONV, Q) | 98 %; degraded entries always scored lower | Pre-commit hint |
+| Phase 3 labels P3, P4 family, P1, P2 pollution | 83–100 %; confident answers 100 % | Pre-fill a label the **user confirms**. Treat `undeclared` as the default when p_top < 0.9 |
+| One-way/two-way door and "which rule governs this?" questions over the dossier | 16/16 stable, reference 13/14 | Use in the decision protocol |
+| Owner decisions (RS-485 pull-down, X7, D1 timing, …) | stable, but p_top ≈ 0.59 | Owner decides. Jev only frames the options |
 
-### Results (Infrastructure Ready)
+**Keep deterministic (Jev measured unfit):** any threshold or numeric derivation (Ohm's law, dissipation, rise time,
+divider, units). Overvoltage category (50 %). Function/catalogue membership (8 %; the registry already does it).
+Decision↔commit coverage (62 %). Owner-attention routing, where the path rule is better (95 % vs 88 %). Anything gating
+on injectable text.
 
-Generators built and frozen:
-- `gen_p1_net_role.py` → corpus of 100 nets with expected roles
-- `gen_p2_env.py` → corpus of 50 environment assignments
-- `gen_p3_isolation.py` → corpus of 30 isolation boundaries
-- `gen_p4_standard.py` → corpus of 40 electrical standards
-- `gen_r7_refusal.py` → corpus of 20 refusal cases (no external test; assumed unsafe)
+**Protocol changes this run justifies**
+1. Drop the "> 0.9 act" band's reliance on a single call. Use reversed options plus one repeat. Order never changed
+   an argmax, but probabilities drift ±0.1, so a single 0.91 can be 0.84 the next time.
+2. Always include `need_more_information`: without it Jev guesses 100 % of the time on missing facts, and with it 67 %
+   of those become abstentions.
+3. Strip "owner/experts say" framing from states: it moved 13–15 % of answers to the cued option.
+4. Keep requests under ~31k input tokens. The whole dossier fits with room for ~10–40 questions.
 
-Not yet run against Jev (pending full Phase 3 scope freeze). Expected accuracy: 85–95% (based on Track 1 data on project rules).
+## What was not done
 
-### Recommendation
+- The six lure sets (unregistered) and R7 refusal (broken generator).
+- E2 delayed (≥ 1 h) repeats and `jev-latest`/`jev-preview` comparisons.
+- A second human author for paraphrases. The paraphrases were written by the same agent that wrote the items.
+- Accuracy on judgment questions is unknowable here. The report shows only stability and agreement with priors.
 
-**Next step:** Run P1–P4 against Jev once Phase 3 design schema is committed (due ~2026-09-28).  
-**Use in:** Automated label generation for every net in generated circuits; human review for R7 (safety).
+## Reproduce
 
----
-
-## Track 6: Dev Workflow — Commit, PR, CI Triage
-
-### Scope
-
-Builders for dev-workflow evaluation (not yet interrogated):
-- **T1: entry covers** — Does a decisions.md entry cite the right commit?
-- **T2: failure classification** — Is a test failure a mutation, flake, or regression?
-- **T3: doc drift** — Is CLAUDE.md still accurate after this commit?
-- **T4: owner attention** — Does this PR require owner review before merge?
-
-### Status
-
-Builders completed; corpus constructed from:
-- 79 real commits (phase2-stage0 branch)
-- 8 synthetic edge cases
-- ~300 test scenarios total
-
-Not yet interrogated. Expected next: 2026-09-25 evening.
-
-### Recommendation
-
-**Next step:** Run against Jev; use results to calibrate CI checks and code-review automation.
-
----
-
-## Synthesis: Where to Use Jev in Circuit OS
-
-### Phase 2 (Current)
-
-| Where | What | Tier | Recommendation |
-|---|---|---|---|
-| **IntentIR transcription** | Check for swapped values, unit errors, catalog violations | 1 | Deploy now; reduces LLM bugs by 73% |
-| **Design review** | Is the architecture still coherent with Phase 2 goals? | 1 | Excellent; use as second opinion |
-| **Constraint checks** | Is this design out of catalogue? | 1 | 100% accurate; deploy in validation |
-| **Validation rules** | Do rules (pull-downs, PWM pins) match known constraints? | 1 | 97.6% accurate on project rules |
-| **Multi-step proofs** | Should z3 proof or closed-form derivation be used here? | 2 | Use to suggest approach; always verify |
-
-### Phase 3 (Planned)
-
-| Where | What | Tier | Recommendation |
-|---|---|---|---|
-| **Assurance labels** | P1–P4: net role, environment, isolation, standard | 1 | Deploy once schema is frozen; 90%+ accuracy expected |
-| **Refusal checks** | R7: should this circuit be refused? | 2 | Use as flagging heuristic; human final call always |
-| **CI: scope drift** | Does this commit still fit Phase 3 scope? | 1 | Deploy once scope is finalized |
-| **CI: doc coherence** | Is CLAUDE.md still accurate? | 2 | Useful for flagging outdated rules |
-| **PR triage** | Does this PR need owner review? | 2 | Use to auto-assign; don't auto-merge on Jev alone |
-
-### General Principles
-
-1. **Ground truth first:** Jev answers policy questions and fills bounded decision spaces. It never replaces code, math, or standards.
-2. **Gating thresholds (from Track 4 robustness):**
-   - **p_top ≥ 0.90 AND margin ≥ 0.25:** Act (implement decision)
-   - **0.60 ≤ p_top < 0.90:** Care (flag; human decides)
-   - **p_top < 0.60:** Owner (final decision made by engineer)
-3. **Always pair with structure checks:** Jev says "this net is not RS-485 standard" (100% accurate), but only if the circuit actually has RS-485 nodes (check structurally first).
-4. **Cost:** Negligible (~$1/day for continuous validation); never a barrier.
-
----
-
-## Limitations and Known Issues
-
-1. **Multi-step reasoning:** Jev accuracy drops from 97% to 53% on questions requiring chained inference. Keep intermediate steps deterministic; use Jev for bounded choices.
-2. **Confidence is overconfident:** Mean confidence 0.78 on accuracy 0.74. At thresholds <0.60, don't trust the confidence; use p_top and margin instead.
-3. **Paraphrasing variance:** p_top can swing ±8% when questions are reworded. Use margins (p_top − p_2nd) as tiebreaker; don't rely on single p_top value.
-4. **Model version lock:** All interrogation used `jev-1.13.0`. If TypeSafe releases `jev-2.0`, re-validate thresholds (expect ~5% accuracy shift, but principles hold).
-5. **Determinism is sufficient, not perfect:** Repeated calls within ±2% variance is good enough for gating, but not for forensics. Log all Jev calls.
-
----
-
-## Conclusion
-
-Jev is a **first-class decision tool** for Circuit OS. It excels at:
-- ✅ Architectural state checks (Phase/scope coherence)
-- ✅ Deterministic rule verification (pin counts, bus standards, catalog membership)
-- ✅ Judgment calls on trade-offs (once option space is bounded)
-
-It struggles with:
-- ❌ Open-ended design questions
-- ❌ Multi-step mathematical chains
-- ❌ Confidence-based thresholding alone
-
-**Recommendation:** Deploy Jev in Phase 3 as planned. Use the thresholds and tier system above. Invest ~1 day to wire the P1–P4 assurance label generators into the validation pipeline.
-
-**ROI:** Reduces design-review latency by 2–3 hours per design; improves consistency of rule enforcement; zero false-positive risk.
-
----
-
-## Appendices
-
-### A. Pre-Registration Methodology
-
-All answers were registered with SHA256 hashes of questions/state **before** calling Jev. This prevents:
-- Question re-wording to game answers ("rephrase shopping")
-- Post-hoc changing of ground truth
-- Thresholding on answers after seeing Jev output
-
-Hashes are stored in each track's `PREREGISTRATION.md` and `manifest.json`.
-
-### B. Interrogation Infrastructure
-
+```bash
+pip install typesafe-sdk==0.7.1         # needs TYPESAFE_API_KEY
+python tools/jev/interrogation/calibration/analyze.py
+python tools/jev/interrogation/runtime/analyze.py
+python tools/jev/interrogation/robustness/analyze.py
+python tools/jev/interrogation/dossier/build_battery.py && python tools/jev/interrogation/dossier/run_battery.py && python tools/jev/interrogation/dossier/analyze_battery.py
+python tools/jev/interrogation/devflow/analyze.py
+python tools/jev/interrogation/labels/run_and_analyze.py --analyze-only
 ```
-tools/jev/interrogation/
-├── runtime/          # Error detection in transcriptions/patches (958 calls)
-│   ├── results.jsonl  # Raw Jev answers
-│   ├── RESULTS.md     # Analysis report (31 KB)
-│   └── run_jev.py     # Harness
-├── calibration/      # Domain accuracy on electronics (739 calls)
-│   ├── results.jsonl  # Answers
-│   ├── results_tables.md  # Analysis (293 lines)
-│   └── analyze.py     # Statistical analysis
-├── dossier/          # Architecture interrogation (18 calls)
-│   ├── results.jsonl
-│   └── circuit_os_dossier.md  # 94 KB dossier
-├── robustness/       # Determinism & limits (172 calls)
-│   └── results.jsonl
-├── labels/           # Phase 3 assurance generators
-│   ├── gen_p1_net_role.py
-│   ├── gen_p2_env.py
-│   ├── gen_p3_isolation.py
-│   ├── gen_p4_standard.py
-│   └── gen_r7_refusal.py
-└── devflow/          # Dev workflow builders
-    ├── build_t1_entry_covers.py
-    ├── build_t2_failure_class.py
-    ├── build_t3_doc_drift.py
-    └── build_t4_owner_attention.py
-```
-
-**Total:** 2,200+ API calls, 2.7 MB raw results, 40 KB analysis.
-
-### C. Cost Analysis
-
-| Track | Calls | Tokens (in/out) | Cost | Cost/call |
-|---|---|---|---|---|
-| Runtime | 958 | 950K / 124K | $1.16 | $0.0012 |
-| Calibration | 739 | 452K / 59K | $0.58 | $0.0008 |
-| Dossier | 18 | 42K / 3K | $0.06 | $0.0033 |
-| Robustness | 172 | 85K / 8K | $0.11 | $0.0006 |
-| **Total** | **1,887** | **1.53M / 194K** | **$1.91** | **$0.001** |
-
-**Conclusion:** Comprehensive interrogation cost $2; per-decision cost is <$0.001. Phase 3 deployment cost negligible.
-

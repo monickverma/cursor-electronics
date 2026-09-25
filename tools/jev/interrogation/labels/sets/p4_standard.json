@@ -1,0 +1,659 @@
+{
+ "task": "P4 standard-family triage + possibly-life-safety (B14 questions verbatim + polarity Noul)",
+ "questions": {
+  "standard_family_flag": {
+   "type": "choice",
+   "instructions": "Which standard family should a person review for this board?",
+   "criteria": {
+    "ul_60730": "Automatic electrical control for household or similar use.",
+    "ul_61010_2_201": "Programmable controller.",
+    "ul_508a_panel_only": "The board is a component of an industrial control panel.",
+    "none_apparent": "No listed family apparent.",
+    "need_more_information": "Product use is unclear."
+   }
+  },
+  "possibly_life_safety": {
+   "type": "noul",
+   "instructions": "Could this board's failure plausibly affect life safety (gas valves, fire suppression, hood exhaust)?"
+  },
+  "no_life_safety_effect": {
+   "type": "noul",
+   "instructions": "Is this board's failure limited to comfort, convenience, process or property consequences, with no plausible effect on life safety?"
+  }
+ },
+ "truth_rule": "Family from the published scopes (see module docstring and citations). 'contested' items have a family that reasonable reviewers could set differently; they are excluded from family accuracy and kept for life safety. Life-safety truth by the construction rule in the docstring; None = use unknown (scored only for whether the >0.1 review rule fires).",
+ "stricter_option": "possibly_life_safety > 0.1 -> mandatory person review (B14 mapping); also evaluated at 0.5.",
+ "literal_reading_note": "The B14 criterion texts are terse: 'household or similar use' vs the 60730-1 extension to commercial/building-automation controls, and 'Programmable controller' vs the 61010-2-201 scope that includes HMIs, industrial PCs and remote I/O. Items S03, S05, S07 (commercial) and S10-S12 (I/O, HMI, IPC) test whether Jev reads the label names literally.",
+ "citations": [
+  {
+   "id": "DLS_60730",
+   "title": "D.L.S. Electronic Systems, EN IEC 60730-1 Automatic electrical controls — scope summary",
+   "url": "https://www.dlsemc.com/iec-en-60730-1-automatic-electrical-controls-part-1-general-requirements/",
+   "quote": "EN IEC 60730-1 applies to automatic electrical controls for use in, on, or in association with equipment for household and similar use. The equipment may use electricity, gas, oil, solid fuel ... This standard is applicable to controls for building automation within the scope of ISO 16484. ... also applies to automatic electrical controls for equipment that may be used by the public, such as equipment intended to be used in shops, offices, hospitals, farms and commercial and industrial applications. An example would be controls for commercial catering, heating and air-conditioning equipment."
+  },
+  {
+   "id": "PANASONIC_61010_2_201",
+   "title": "Panasonic Industrial Devices, Implementation of the New IEC 61010-2-201 Standard For The PLC Market (May 2016)",
+   "url": "https://na.industrial.panasonic.com/blog/implementation-new-iec-61010-2-201-standard-plc-market",
+   "quote": "IEC 61010-2-201 is a specific standard under IEC 61010 that specifically addresses safety requirements and related verification tests for PLCs as well as a variety of other types of industrial control equipment. The control equipment covered under the scope of this standard include: Programmable controllers (PLCs and programmable automation controllers, PACs) ... Industrial computers, as well as programming and debugging tools (PADTs) ... Human-machine interfaces (HMIs)"
+  },
+  {
+   "id": "UL_61010_2_201_SEARCH",
+   "title": "UL Solutions whitepaper 'Programmable Logic Controllers and IEC 61010-2-201' (via search summary; direct fetch blocked)",
+   "url": "https://code-authorities.ul.com/wp-content/uploads/sites/40/2015/09/IEC-61010-2-201_2005_V1.pdf",
+   "quote": "control equipment ... include programmable controllers (PLCs and PACs), components of distributed control systems (DCSs), components of remote input/output (I/O) systems, industrial computers ... HMIs ... These products have as their intended use the command and control of machines, automated manufacturing and industrial processes."
+  },
+  {
+   "id": "ULSE_508A",
+   "title": "UL Standards & Engagement, UL 508A Industrial Control Panels — Scope",
+   "url": "https://www.shopulstandards.com/ProductDetail.aspx?productId=UL508A",
+   "quote": "1.1 These requirements cover industrial control panels intended for general industrial use, operating from a voltage of 1000 volts or less. ... 1.2 ... industrial control panels primarily intended for flame safety supervision of combustible fuel type equipment ... 1.3 This equipment consists of assemblies of two or more power circuit components ... or control circuit components ... mounted on, or contained within, an enclosure, or are mounted on a sub-panel. ... 1.11 Assemblies of electrical control units ... for fire-protective signaling systems are covered by ... UL 864. ... 1.13 Equipment intended to supply automatic illumination, power, or both, to critical areas and equipment essential to safety of human life is covered by ... UL 924."
+  },
+  {
+   "id": "PRODUCT_MASTER",
+   "title": "Circuit OS PRODUCT_MASTER.md (snapshot e803a99), Tier 3 and Phase 3",
+   "url": "file:p2/PRODUCT_MASTER.md:174-190,346-359",
+   "quote": "Commercial Kitchen Hood Controllers: ... dry contact inputs from Ansul fire suppression system, relay outputs for gas valve shutoff and equipment lockout ... The system flags UL 508A requirements and life-safety design rules."
+  },
+  {
+   "id": "TEMPLATE_B14",
+   "title": "tools/jev/templates/phase3_labels.questions.json (B14 draft questions)",
+   "url": "file:tools/jev/templates/phase3_labels.questions.json",
+   "quote": "net_role / env_label / isolation_needed / standard_family_flag / possibly_life_safety definitions"
+  }
+ ],
+ "variants": {
+  "repeat_subset": [
+   "P4-S03",
+   "P4-S08",
+   "P4-S11",
+   "P4-S12",
+   "P4-S20",
+   "P4-S24",
+   "P4-S29",
+   "P4-S36",
+   "P4-S37",
+   "P4-S38"
+  ],
+  "paraphrase_subset": [
+   "P4-S01",
+   "P4-S03",
+   "P4-S04",
+   "P4-S09",
+   "P4-S11",
+   "P4-S17",
+   "P4-S22",
+   "P4-S25",
+   "P4-S30",
+   "P4-S32",
+   "P4-S37",
+   "P4-S40"
+  ],
+  "blind_subset": [
+   "P4-S08",
+   "P4-S34",
+   "P4-S40"
+  ]
+ },
+ "items": [
+  {
+   "id": "P4-S01",
+   "state": {
+    "product_description": "A wall thermostat for a home heat pump. It senses room temperature and switches the heat pump's 24 VAC heating and cooling call relays."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Household automatic control (60730).",
+   "paraphrase_state": {
+    "product_description": "Home heat-pump thermostat on the wall: measures the room and closes the 24 VAC heat or cool call relay."
+   }
+  },
+  {
+   "id": "P4-S02",
+   "state": {
+    "product_description": "The control board inside a household refrigerator that runs the compressor and the defrost heater from the cabinet temperature."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Household appliance control (60730)."
+  },
+  {
+   "id": "P4-S03",
+   "state": {
+    "product_description": "A demand-controlled ventilation controller for an office building's air handler: it reads CO2 and sets the supply-fan speed, and it is part of the building automation system."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Building-automation control within ISO 16484 (60730-1 scope).",
+   "paraphrase_state": {
+    "product_description": "In an office building's building-automation system, this board adjusts the air handler's supply fan from a CO2 reading (demand-controlled ventilation)."
+   }
+  },
+  {
+   "id": "P4-S04",
+   "state": {
+    "product_description": "A boiler controller that sequences a gas burner: ignition, flame supervision through a flame rod, and opening the main gas valve."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "Control for gas-fired household/similar equipment (60730); gas valve and flame supervision -> life safety.",
+   "paraphrase_state": {
+    "product_description": "Gas boiler burner sequencer: lights the burner, supervises the flame with a flame rod, and opens the main gas valve."
+   }
+  },
+  {
+   "id": "P4-S05",
+   "state": {
+    "product_description": "A humidistat that switches the humidifiers in a commercial greenhouse."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Automatic control for similar/commercial use (60730)."
+  },
+  {
+   "id": "P4-S06",
+   "state": {
+    "product_description": "An electronic timer that switches a household water heater's element on a schedule."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Household automatic control (60730)."
+  },
+  {
+   "id": "P4-S07",
+   "state": {
+    "product_description": "A supermarket refrigerated display-case controller that runs the case's expansion valve and defrost cycles and reports alarms to the store system."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Commercial refrigeration control (60730-1 extended scope)."
+  },
+  {
+   "id": "P4-S08",
+   "state": {
+    "product_description": "The ignition and valve controller of a household gas fireplace, which opens the gas valve after proving the pilot flame."
+   },
+   "truth": {
+    "standard_family_flag": "ul_60730",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "Household gas-appliance control (60730); gas valve -> life safety."
+  },
+  {
+   "id": "P4-S09",
+   "state": {
+    "product_description": "A programmable logic controller CPU module that runs ladder logic for a packaging machine and drives its I/O modules."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "PLC (61010-2-201).",
+   "paraphrase_state": {
+    "product_description": "Packaging machine PLC: the CPU module that executes ladder logic and commands the machine's I/O modules."
+   }
+  },
+  {
+   "id": "P4-S10",
+   "state": {
+    "product_description": "A DIN-rail remote I/O module with 16 x 24 V digital inputs for a bottling line's sensors, reporting to a PLC over Modbus RTU."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Remote I/O component (61010-2-201)."
+  },
+  {
+   "id": "P4-S11",
+   "state": {
+    "product_description": "An HMI touch panel mounted on an injection-molding machine, where operators set process parameters."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "HMI for machine control (61010-2-201).",
+   "paraphrase_state": {
+    "product_description": "Operator touch screen (HMI) fixed to an injection-molding machine for entering process settings."
+   }
+  },
+  {
+   "id": "P4-S12",
+   "state": {
+    "product_description": "An industrial PC that supervises a CNC cell and sends part programs to the machine controllers."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Industrial computer for machine control (61010-2-201)."
+  },
+  {
+   "id": "P4-S13",
+   "state": {
+    "product_description": "A programmable automation controller for a paper mill's winder line."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "PAC (61010-2-201)."
+  },
+  {
+   "id": "P4-S14",
+   "state": {
+    "product_description": "An analog I/O module with 4-20 mA inputs and outputs that plugs into a PLC backplane, for process control in a food factory."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "PLC I/O module (61010-2-201)."
+  },
+  {
+   "id": "P4-S15",
+   "state": {
+    "product_description": "A distributed-control-system controller node that runs a brewery's fermentation temperature loops."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "DCS component (61010-2-201)."
+  },
+  {
+   "id": "P4-S16",
+   "state": {
+    "product_description": "A stand-alone programmable controller board for automating a bottle-labeling machine; the customer programs it in structured text."
+   },
+   "truth": {
+    "standard_family_flag": "ul_61010_2_201",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Programmable controller for a machine (61010-2-201)."
+  },
+  {
+   "id": "P4-S17",
+   "state": {
+    "product_description": "A relay interface board that will be mounted on the back-plate of a conveyor line's industrial control panel, alongside the main breaker, motor starters and terminal blocks, built by a panel shop."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Component of an industrial control panel assembly (508A 1.3).",
+   "paraphrase_state": {
+    "product_description": "Panel-shop build for a conveyor line: this relay interface board goes on the control panel's back-plate next to the breaker, starters and terminal blocks."
+   }
+  },
+  {
+   "id": "P4-S18",
+   "state": {
+    "product_description": "A terminal-block breakout board for a pump-station control panel that an integrator assembles with contactors and overload relays inside a steel enclosure."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Component of an industrial control panel (508A 1.3)."
+  },
+  {
+   "id": "P4-S19",
+   "state": {
+    "product_description": "A power-monitoring board installed inside a factory's industrial control panel next to the PLC and the drives; it is one component of the panel assembly."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Component of an industrial control panel (508A)."
+  },
+  {
+   "id": "P4-S20",
+   "state": {
+    "product_description": "An opto-isolated I/O board mounted on the sub-panel of a packaging line's control panel; the panel builder will label the finished panel to UL 508A."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Component on a sub-panel (508A 1.3); names the standard."
+  },
+  {
+   "id": "P4-S21",
+   "state": {
+    "product_description": "An alarm-indicator board mounted in the door of a compressor-room industrial control panel and wired to the panel's control relays."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Component of an industrial control panel (508A)."
+  },
+  {
+   "id": "P4-S22",
+   "state": {
+    "product_description": "A board mounted inside a burner-management panel (an industrial control panel for flame-safety supervision of a boiler) that relays the flame-scanner signal."
+   },
+   "truth": {
+    "standard_family_flag": "ul_508a_panel_only",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "508A 1.2 covers panels for flame safety supervision; flame supervision -> life safety.",
+   "paraphrase_state": {
+    "product_description": "Inside a boiler's burner-management (flame-safety) control panel, this board passes the flame scanner's signal on."
+   }
+  },
+  {
+   "id": "P4-S23",
+   "state": {
+    "product_description": "A USB-powered desk lamp with touch dimming."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Not an automatic control, PLC or panel."
+  },
+  {
+   "id": "P4-S24",
+   "state": {
+    "product_description": "A battery-powered LED blinker kit for students learning to solder."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Educational kit; none of the three."
+  },
+  {
+   "id": "P4-S25",
+   "state": {
+    "product_description": "The input front-end board of a bench oscilloscope for an electronics lab."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Laboratory measurement equipment (IEC 61010-1 family, not -2-201).",
+   "paraphrase_state": {
+    "product_description": "Front-end board of a lab bench oscilloscope."
+   }
+  },
+  {
+   "id": "P4-S26",
+   "state": {
+    "product_description": "The amplifier board of a Bluetooth speaker."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Audio/IT equipment (not listed)."
+  },
+  {
+   "id": "P4-S27",
+   "state": {
+    "product_description": "The main board of a home Wi-Fi router."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "IT equipment (not listed)."
+  },
+  {
+   "id": "P4-S28",
+   "state": {
+    "product_description": "A portable GPS bike computer."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": false,
+    "no_life_safety_effect": true
+   },
+   "family_contested": false,
+   "derivation": "Consumer electronics (not listed)."
+  },
+  {
+   "id": "P4-S29",
+   "state": {
+    "product_description": "The control board of a hospital infusion pump."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "Medical electrical equipment (not listed); loss of dosing control -> life safety."
+  },
+  {
+   "id": "P4-S30",
+   "state": {
+    "product_description": "The controller of an emergency exit sign and emergency lighting unit that switches to battery when mains fails."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "Emergency lighting (UL 924, excluded from 508A by 1.13) -> life safety.",
+   "paraphrase_state": {
+    "product_description": "Emergency exit sign / emergency light controller that transfers to battery on mains failure."
+   }
+  },
+  {
+   "id": "P4-S31",
+   "state": {
+    "product_description": "The main board of a building's fire-alarm control unit."
+   },
+   "truth": {
+    "standard_family_flag": "none_apparent",
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": false,
+   "derivation": "Fire-alarm control unit (UL 864, excluded from 508A by 1.11) -> life safety."
+  },
+  {
+   "id": "P4-S32",
+   "state": {
+    "product_description": "An ESP32 board with four relays. The customer calls it a 'general controller' and has not said what it will switch."
+   },
+   "truth": {
+    "standard_family_flag": "need_more_information",
+    "possibly_life_safety": null,
+    "no_life_safety_effect": null
+   },
+   "family_contested": false,
+   "derivation": "Use unknown.",
+   "paraphrase_state": {
+    "product_description": "Four-relay ESP32 'general controller'; what it switches is not known."
+   }
+  },
+  {
+   "id": "P4-S33",
+   "state": {
+    "product_description": "A board that reads temperatures and switches a 230 V output. The application has not been described."
+   },
+   "truth": {
+    "standard_family_flag": "need_more_information",
+    "possibly_life_safety": null,
+    "no_life_safety_effect": null
+   },
+   "family_contested": false,
+   "derivation": "Use unknown."
+  },
+  {
+   "id": "P4-S34",
+   "state": {
+    "product_description": "The customer wants 'a control board for our system'. No other details yet."
+   },
+   "truth": {
+    "standard_family_flag": "need_more_information",
+    "possibly_life_safety": null,
+    "no_life_safety_effect": null
+   },
+   "family_contested": false,
+   "derivation": "Use unknown."
+  },
+  {
+   "id": "P4-S35",
+   "state": {
+    "product_description": "A relay board 'for automation' that the customer says could end up in homes or in factories."
+   },
+   "truth": {
+    "standard_family_flag": "need_more_information",
+    "possibly_life_safety": null,
+    "no_life_safety_effect": null
+   },
+   "family_contested": false,
+   "derivation": "Use unknown."
+  },
+  {
+   "id": "P4-S36",
+   "state": {
+    "product_description": "A 24 V I/O board whose end product has not been decided."
+   },
+   "truth": {
+    "standard_family_flag": "need_more_information",
+    "possibly_life_safety": null,
+    "no_life_safety_effect": null
+   },
+   "family_contested": false,
+   "derivation": "Use unknown."
+  },
+  {
+   "id": "P4-S37",
+   "state": {
+    "product_description": "A commercial kitchen hood controller: it runs the exhaust fan while cooking, interlocks the gas valve for the appliances under the hood, and shuts the gas off when the fire-suppression system trips."
+   },
+   "truth": {
+    "standard_family_flag": null,
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": true,
+   "derivation": "Family contested (60730 catering control vs 508A panel); gas valve, suppression and hood exhaust -> life safety.",
+   "paraphrase_state": {
+    "product_description": "Kitchen hood controller for a restaurant: exhaust fan during cooking, gas-valve interlock for the cooking appliances, gas cut-off when the suppression system fires."
+   }
+  },
+  {
+   "id": "P4-S38",
+   "state": {
+    "product_description": "A controller that closes the gas shut-off valve for a restaurant's cooking line when the hood's fire-suppression system discharges."
+   },
+   "truth": {
+    "standard_family_flag": null,
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": true,
+   "derivation": "Family contested; gas valve + suppression -> life safety."
+  },
+  {
+   "id": "P4-S39",
+   "state": {
+    "product_description": "A smoke-damper controller for a building's smoke-control system."
+   },
+   "truth": {
+    "standard_family_flag": null,
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": true,
+   "derivation": "Family contested (smoke control equipment); life safety."
+  },
+  {
+   "id": "P4-S40",
+   "state": {
+    "product_description": "A parking-garage ventilation controller that starts the exhaust fans when carbon monoxide exceeds a threshold."
+   },
+   "truth": {
+    "standard_family_flag": null,
+    "possibly_life_safety": true,
+    "no_life_safety_effect": false
+   },
+   "family_contested": true,
+   "derivation": "Family contested; toxic-gas ventilation -> life safety.",
+   "paraphrase_state": {
+    "product_description": "Garage ventilation: when CO passes a set level, this board starts the exhaust fans."
+   }
+  }
+ ],
+ "set_id": "p4_standard",
+ "created_utc": "2026-09-25T06:37:28+00:00",
+ "pinned_model": "jev-1.13.0"
+}

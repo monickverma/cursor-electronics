@@ -1,0 +1,1198 @@
+{
+ "task": "P3 isolation need: stated GPD vs RS-485 -7..+12 V common-mode range (computed), plus undeclared GPD",
+ "questions_note": "Declared items ask isolation_label + gpd_exceeds/gpd_within (polarity pair); undeclared items ask isolation_label + the B14 isolation_needed Noul (verbatim) + stays_within (polarity pair).",
+ "question_sets": {
+  "declared": {
+   "isolation_label": {
+    "type": "choice",
+    "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+    "criteria": {
+     "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+     "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+     "undeclared": "The description does not state the ground-potential difference."
+    }
+   },
+   "gpd_exceeds": {
+    "type": "noul",
+    "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+   },
+   "gpd_within": {
+    "type": "noul",
+    "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+   }
+  },
+  "undeclared": {
+   "isolation_label": {
+    "type": "choice",
+    "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+    "criteria": {
+     "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+     "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+     "undeclared": "The description does not state the ground-potential difference."
+    }
+   },
+   "isolation_needed": {
+    "type": "noul",
+    "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+   },
+   "stays_within": {
+    "type": "noul",
+    "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+   }
+  }
+ },
+ "truth_rule": "|GPD| <= 6.5 V -> within_range; |GPD| >= 10 V -> exceeds_range (both the per-line model and the V_CM-average model agree there); 8-9 V gray (excluded from primary accuracy). GPD not stated -> undeclared. isolation_needed (B14) truth = plausibility by construction: separate buildings/transformers/earths or heavy PE current -> True; one supply, one ground, short cable -> False.",
+ "stricter_option": "Design is isolated unless the governing label is a stable, confirmed within_range. Policies evaluated offline: (a) Jev-only: isolate iff argmax != within_range; (b) Jev + gate: drop isolation only if argmax == within_range with p_top >= 0.9 in every variant; (c) deterministic: compute from a declared GPD, isolate when undeclared. Unsafe = not isolated when truth is exceeds_range or undeclared.",
+ "citations": [
+  {
+   "id": "TI_SLLA070",
+   "title": "Texas Instruments, RS-422 and RS-485 Standards Overview and System Configurations (SLLA070D, rev. May 2010)",
+   "url": "https://www.ti.com/lit/pdf/slla070",
+   "quote": "RS-485-compliant drivers and receivers are specified for operation with a common-mode range of -7 V to 12 V. ... when the ground potential between the remote grounds is stretched to its maximum limit of ±7 V. If driver 2 is connected to the ground that is 7 V lower than the ground for driver 1, a potential close to +12 V can exist on the output of driver 2 (assuming VCC = 5 V). ... The approach to tolerate ground potential differences up to several kilovolts across a robust RS-485 data link and over long distance is the galvanic isolation"
+  },
+  {
+   "id": "TI_SLLA370",
+   "title": "Texas Instruments, How To Simplify Isolated 24V PLC Digital Input Module Designs (SLLA370D, rev. Jun 2025)",
+   "url": "https://www.ti.com/lit/pdf/slla370",
+   "quote": "Digital Input (DI) modules are used in Programmable Logic Controllers (PLCs) and Motor Drives to receive 24V digital inputs from field sensors and switches. Isolation is used to manage ground potential differences."
+  },
+  {
+   "id": "TEMPLATE_B14",
+   "title": "tools/jev/templates/phase3_labels.questions.json (B14 draft questions)",
+   "url": "file:tools/jev/templates/phase3_labels.questions.json",
+   "quote": "net_role / env_label / isolation_needed / standard_family_flag / possibly_life_safety definitions"
+  },
+  {
+   "id": "JEV_JAGGEDNESS",
+   "title": "TypeSafe docs, Jev 1.13 jaggedness (reviewed 2026-09-17)",
+   "url": "https://docs.typesafe.ai/model-jaggedness/jev-1.13.md",
+   "quote": "It struggles with tasks that require numeric precision. ... Jev is not a calculator."
+  }
+ ],
+ "variants": {
+  "repeat_subset": [
+   "P3-D06",
+   "P3-D11",
+   "P3-D14",
+   "P3-D18",
+   "P3-G01",
+   "P3-N01",
+   "P3-N04",
+   "P3-N06"
+  ],
+  "paraphrase_subset": [
+   "P3-D02",
+   "P3-D05",
+   "P3-D09",
+   "P3-D11",
+   "P3-D14",
+   "P3-D17",
+   "P3-D20",
+   "P3-N01",
+   "P3-N06",
+   "P3-N08"
+  ],
+  "blind_subset": [
+   "P3-D07",
+   "P3-N07",
+   "P3-N08"
+  ]
+ },
+ "items": [
+  {
+   "id": "P3-D01",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and one slave in two cabinets 30 m apart on the same floor. Measured worst-case ground difference between the cabinets, including switching transients: 0.5 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 0.5,
+   "derivation": "|GPD| = 0.5 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D02",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "Gateway and sensor node on 3.3 V transceivers, 80 m apart in one warehouse. The ground of either node can sit up to 1 V above or below the other's."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 1.0,
+   "derivation": "|GPD| = 1 V. Receiver inputs span GPD + [0, 3.3] V relative to the receiver ground, both directions: inside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "Transceivers run at 3.3 V. The gateway and the sensor node are 80 m apart in a warehouse, and their grounds differ by no more than 1 V in either direction."
+   }
+  },
+  {
+   "id": "P3-D03",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Three nodes along a 120 m run inside one factory hall. Commissioning measured at most 1.5 V between any two node grounds, transients included."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 1.5,
+   "derivation": "|GPD| = 1.5 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D04",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master PLC and a VFD's Modbus port, 40 m apart; the installer logged a 2 V worst-case ground offset between them."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 2.0,
+   "derivation": "|GPD| = 2 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D05",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "Two 3.3 V nodes on different floors of an office building. Worst-case ground-potential difference: 3 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 3.0,
+   "derivation": "|GPD| = 3 V. Receiver inputs span GPD + [0, 3.3] V relative to the receiver ground, both directions: inside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "Office building, two 3.3 V nodes on different floors; the largest ground-potential difference between them is 3 V."
+   }
+  },
+  {
+   "id": "P3-D06",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A rooftop unit controller and the BMS master, 150 m of cable. The contractor's survey found up to 4 V between the two grounds during compressor starts."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 4.0,
+   "derivation": "|GPD| = 4 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D07",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and slave in adjacent buildings sharing one earthing system; worst-case difference between node grounds measured at 5 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 5.0,
+   "derivation": "|GPD| = 5 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D08",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "A 3.3 V sensor node and the gateway, 200 m apart. Worst-case ground difference: 5.5 V, either polarity."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 5.5,
+   "derivation": "|GPD| = 5.5 V. Receiver inputs span GPD + [0, 3.3] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D09",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Two nodes in separate panels fed from different distribution boards in one plant. The ground of one can sit up to 6 V above or below the other's."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 6.0,
+   "derivation": "|GPD| = 6 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "One plant, two panels, two distribution boards: either node's ground may be as much as 6 V above or below the other's."
+   }
+  },
+  {
+   "id": "P3-D10",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Pump controller and plant master, 250 m apart. Worst-case measured ground-potential difference, including motor-start transients: 6.5 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "within_range",
+    "gpd_exceeds": false,
+    "gpd_within": true
+   },
+   "gpd_v": 6.5,
+   "derivation": "|GPD| = 6.5 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: inside -7..+12 V"
+  },
+  {
+   "id": "P3-D11",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and slave in two buildings 300 m apart. Worst-case ground-potential difference between them: 10 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 10.0,
+   "derivation": "|GPD| = 10 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Buildings 300 m apart, one master and one slave; the ground-potential difference can reach 10 V."
+   }
+  },
+  {
+   "id": "P3-D12",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "A 3.3 V node on a remote tank and the master in the control room. The remote ground can sit up to 12 V above or below the master's."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 12.0,
+   "derivation": "|GPD| = 12 V. Receiver inputs span GPD + [0, 3.3] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D13",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Nodes in two separate buildings on different service transformers; the survey recorded 15 V between the node grounds during a fault test."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 15.0,
+   "derivation": "|GPD| = 15 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D14",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and a slave on a motor skid 150 m away. Ground-potential difference during motor starts: up to 20 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 20.0,
+   "derivation": "|GPD| = 20 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A slave sits on a motor skid 150 m from the master; when the motors start, the two grounds can differ by as much as 20 V."
+   }
+  },
+  {
+   "id": "P3-D15",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A node on a crane and the master on the ground floor. Worst-case ground difference: 24 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 24.0,
+   "derivation": "|GPD| = 24 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D16",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 3.3,
+    "install": "Two 3.3 V nodes in buildings 500 m apart. Measured worst-case GPD: 30 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 30.0,
+   "derivation": "|GPD| = 30 V. Receiver inputs span GPD + [0, 3.3] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D17",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master in the main building, slave in a pump house fed from its own transformer. Worst-case GPD: 48 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 48.0,
+   "derivation": "|GPD| = 48 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "The slave's pump house has its own transformer; between it and the master's building the ground difference can reach 48 V."
+   }
+  },
+  {
+   "id": "P3-D18",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A wind-turbine base node and the site master, 400 m apart. The GPD can reach 60 V during switching."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 60.0,
+   "derivation": "|GPD| = 60 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D19",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Two nodes on separate utility services; a ground fault can raise one ground by up to 120 V relative to the other."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 120.0,
+   "derivation": "|GPD| = 120 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V"
+  },
+  {
+   "id": "P3-D20",
+   "kind": "declared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A substation node and the plant master. Under fault conditions the node ground can rise up to 400 V relative to the master."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": "exceeds_range",
+    "gpd_exceeds": true,
+    "gpd_within": false
+   },
+   "gpd_v": 400.0,
+   "derivation": "|GPD| = 400 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: outside -7..+12 V",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "During a fault, the substation node's ground may rise as much as 400 V above the plant master's."
+   }
+  },
+  {
+   "id": "P3-G01",
+   "kind": "gray",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and slave in two cabinets on separate supplies; worst-case GPD measured at 8 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": null,
+    "gpd_exceeds": null,
+    "gpd_within": null
+   },
+   "gpd_v": 8.0,
+   "derivation": "|GPD| = 8 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: gray zone (per-line model exceeds, V_CM model within)"
+  },
+  {
+   "id": "P3-G02",
+   "kind": "gray",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Two nodes 350 m apart in different buildings; worst-case GPD 9 V."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "gpd_exceeds": {
+     "type": "noul",
+     "instructions": "Can the stated worst-case ground-potential difference push the voltage at a receiver's A or B input outside the RS-485 -7 V to +12 V common-mode range?"
+    },
+    "gpd_within": {
+     "type": "noul",
+     "instructions": "Does the stated worst-case ground-potential difference keep the voltage at every receiver's A and B inputs inside the RS-485 -7 V to +12 V common-mode range?"
+    }
+   },
+   "truth": {
+    "isolation_label": null,
+    "gpd_exceeds": null,
+    "gpd_within": null
+   },
+   "gpd_v": 9.0,
+   "derivation": "|GPD| = 9 V. Receiver inputs span GPD + [0, 5] V relative to the receiver ground, both directions: gray zone (per-line model exceeds, V_CM model within)"
+  },
+  {
+   "id": "P3-N01",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master in the plant office building, slave in a pump house 600 m away across the yard. Each building has its own service transformer. Nobody has measured the ground difference."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": true,
+    "stays_within": false
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): separate buildings/transformers/earths or heavy PE currents -> could exceed",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Pump house 600 m from the plant office across a yard, two separate service transformers, no measurement of the difference between the two grounds."
+   }
+  },
+  {
+   "id": "P3-N02",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "An RS-485 link between two buildings on a campus. The cable runs outdoors on poles and each building has its own earthing. The ground difference is unknown."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": true,
+    "stays_within": false
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): separate buildings/transformers/earths or heavy PE currents -> could exceed"
+  },
+  {
+   "id": "P3-N03",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A node at the base of a wind-turbine tower and the master in the site control building 400 m away. Ground difference not stated."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": true,
+    "stays_within": false
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): separate buildings/transformers/earths or heavy PE currents -> could exceed"
+  },
+  {
+   "id": "P3-N04",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master in a factory control room; a slave on a VFD-driven motor skid 150 m away, where heavy motor currents flow in the shared protective earth. GPD not measured."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": true,
+    "stays_within": false
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): separate buildings/transformers/earths or heavy PE currents -> could exceed"
+  },
+  {
+   "id": "P3-N05",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Master and three slaves are all inside one control panel, powered from a single 24 VDC supply with one common ground; the bus is 3 m long. No GPD figure is given."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": false,
+    "stays_within": true
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): single supply and single ground, short cable -> no GPD source"
+  },
+  {
+   "id": "P3-N06",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Two boards stacked in one enclosure share the same 5 V regulator and ground plane; the RS-485 cable between them is 20 cm. No GPD figure is given."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": false,
+    "stays_within": true
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): single supply and single ground, short cable -> no GPD source",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Same enclosure, same 5 V regulator, same ground plane; 20 cm of RS-485 cable; nothing is said about ground difference."
+   }
+  },
+  {
+   "id": "P3-N07",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "A sensor node and its gateway sit on the same bench, both powered from the same USB hub; the cable is 2 m. No GPD figure is given."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": false,
+    "stays_within": true
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): single supply and single ground, short cable -> no GPD source"
+  },
+  {
+   "id": "P3-N08",
+   "kind": "undeclared",
+   "state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "Four DIN-rail modules side by side on one rail in one cabinet, all fed by one 24 V supply and sharing its 0 V; the bus is a 1 m jumper chain. No GPD figure is given."
+   },
+   "questions": {
+    "isolation_label": {
+     "type": "choice",
+     "instructions": "Given what the description says about the ground-potential difference (GPD) between the RS-485 nodes, which applies?",
+     "criteria": {
+      "within_range": "The stated worst-case GPD keeps every receiver's A and B inputs within the RS-485 -7 V to +12 V common-mode range.",
+      "exceeds_range": "The stated worst-case GPD can push a receiver's A or B input outside the -7 V to +12 V range.",
+      "undeclared": "The description does not state the ground-potential difference."
+     }
+    },
+    "isolation_needed": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, could it exceed the RS-485 -7 V to +12 V common-mode range in this install?"
+    },
+    "stays_within": {
+     "type": "noul",
+     "instructions": "With ground-potential difference undeclared, will it stay within the RS-485 -7 V to +12 V common-mode range in this install?"
+    }
+   },
+   "truth": {
+    "isolation_label": "undeclared",
+    "isolation_needed": false,
+    "stays_within": true
+   },
+   "derivation": "GPD not stated -> 'undeclared'. Plausibility label for the B14 Noul from TI SLLA070 (long-distance links between separately earthed sites need isolation; GPD up to kilovolts) and TI SLLA370 (isolation manages ground-potential differences): single supply and single ground, short cable -> no GPD source",
+   "paraphrase_state": {
+    "bus": "RS-485 half-duplex Modbus RTU, non-isolated transceivers",
+    "transceiver_supply_v": 5.0,
+    "install": "One cabinet, one DIN rail, one 24 V supply whose 0 V all four modules share, 1 m of jumpers; the ground difference is not mentioned."
+   }
+  }
+ ],
+ "set_id": "p3_isolation",
+ "created_utc": "2026-09-25T06:37:28+00:00",
+ "pinned_model": "jev-1.13.0"
+}

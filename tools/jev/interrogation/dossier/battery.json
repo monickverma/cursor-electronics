@@ -1,0 +1,5763 @@
+{
+ "built": "2026-09-24",
+ "model": "jev-1.13.0",
+ "dossier_sha256": "3ad3e66906bd1fdc7fd79fe0944dcc44ef4d3ad81741bb90a291377f6a8fc37e",
+ "core_sha256": "1e170d6103417cdf875a8e2ac2d6d03bc7aea4b5a4f4c5e72cbd12e42a4ed399",
+ "n_questions": 257,
+ "questions": [
+  {
+   "key": "n01_licence",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Under which licence is Circuit OS released?",
+    "criteria": {
+     "MIT": "The MIT licence.",
+     "Apache-2.0": "The Apache 2.0 licence.",
+     "AGPL-3.0": "The GNU AGPL 3.0.",
+     "GPL-2.0": "The GNU GPL 2.0.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "AGPL-3.0",
+   "gt_derivation": "dossier text S04: 'AGPL-3.0'",
+   "section": "S04",
+   "anchor": "AGPL-3.0",
+   "anchor_hits": [
+    {
+     "offset": 7233,
+     "rel": 0.0764,
+     "section": "S04"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n02_credits",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which LLM access route had its credits exhausted on 2026-09-23?",
+    "criteria": {
+     "OpenRouter": "OpenRouter.",
+     "Anthropic_direct": "The Anthropic API called directly.",
+     "Azure_OpenAI": "Azure OpenAI.",
+     "vLLM_on_ROCm": "A self-hosted vLLM server on AMD ROCm.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "OpenRouter",
+   "gt_derivation": "dossier text S04: 'AI via OpenRouter (credits exhausted 2026-09-23)'",
+   "section": "S04",
+   "anchor": "AI via OpenRouter (credits exhausted 2026-09-23)",
+   "anchor_hits": [
+    {
+     "offset": 7157,
+     "rel": 0.0756,
+     "section": "S04"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n03_trust_top",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which source ranks highest in the project's trust hierarchy?",
+    "criteria": {
+     "tests_and_simulation": "Test results and simulation outputs.",
+     "source_code_ast": "Source code via AST scan.",
+     "derived_yaml_json": "progress.yaml and state.json.",
+     "brain_markdown": "The brain/*.md files.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "tests_and_simulation",
+   "gt_derivation": "dossier text S03: 'highest first: test results + simulation outputs'",
+   "section": "S03",
+   "anchor": "highest first: test results + simulation outputs",
+   "anchor_hits": [
+    {
+     "offset": 6192,
+     "rel": 0.0654,
+     "section": "S03"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n04_explainer_text",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Per the rules, what must the explainer's free-text handling find?",
+    "criteria": {
+     "first_text_block": "The first text block of the response.",
+     "last_tool_use_block": "The last tool_use block.",
+     "thinking_block": "The model's thinking block.",
+     "json_schema": "A JSON schema object.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "first_text_block",
+   "gt_derivation": "dossier text S02: 'Explainer free-text must find first text block'",
+   "section": "S02",
+   "anchor": "Explainer free-text must find first text block",
+   "anchor_hits": [
+    {
+     "offset": 4354,
+     "rel": 0.046,
+     "section": "S02"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n05_version_conflict",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What HTTP status does a patch version conflict return?",
+    "criteria": {
+     "409": "HTTP 409.",
+     "422": "HTTP 422.",
+     "503": "HTTP 503.",
+     "429": "HTTP 429.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "409",
+   "gt_derivation": "dossier text S02: '409 version_conflict'",
+   "section": "S02",
+   "anchor": "409 version_conflict",
+   "anchor_hits": [
+    {
+     "offset": 4817,
+     "rel": 0.0509,
+     "section": "S02"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n06_platformio",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which PlatformIO version does the stack use?",
+    "criteria": {
+     "6.2.0": "PlatformIO 6.2.0.",
+     "5.3.0": "PlatformIO 5.3.0.",
+     "7.1.3": "PlatformIO 7.1.3.",
+     "20.0.0": "PlatformIO 20.0.0.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "6.2.0",
+   "gt_derivation": "dossier text S04: 'PlatformIO 6.2.0'",
+   "section": "S04",
+   "anchor": "PlatformIO 6.2.0",
+   "anchor_hits": [
+    {
+     "offset": 7081,
+     "rel": 0.0748,
+     "section": "S04"
+    },
+    {
+     "offset": 83377,
+     "rel": 0.8812,
+     "section": "S28"
+    }
+   ],
+   "multi": true,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n07_flag_route",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which route sits behind an experimental flag?",
+    "criteria": {
+     "/pcb/compile": "POST /pcb/compile.",
+     "/design/generate": "POST /design/generate.",
+     "/design/{id}/sign-off": "POST /design/{id}/sign-off.",
+     "/auth/login": "POST /auth/login.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "/pcb/compile",
+   "gt_derivation": "dossier text S05: '/pcb/compile (experimental flag)'",
+   "section": "S05",
+   "anchor": "/pcb/compile (experimental flag)",
+   "anchor_hits": [
+    {
+     "offset": 10120,
+     "rel": 0.107,
+     "section": "S05"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n08_dht22_function",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What FUNCTION name does the dht22_node generator declare?",
+    "criteria": {
+     "temperature_humidity_sensor": "temperature_humidity_sensor",
+     "dht22_reader": "dht22_reader",
+     "environment_sensor": "environment_sensor",
+     "humidity_node": "humidity_node",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "temperature_humidity_sensor",
+   "gt_derivation": "dossier text S07: '| temperature_humidity_sensor |'",
+   "section": "S07",
+   "anchor": "| temperature_humidity_sensor |",
+   "anchor_hits": [
+    {
+     "offset": 13035,
+     "rel": 0.1378,
+     "section": "S07"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n09_softwareserial",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "On the Uno, which pins does the RS-485 firmware drive through SoftwareSerial?",
+    "criteria": {
+     "D10_D11": "D10 and D11.",
+     "D0_D1": "D0 and D1 (the hardware UART).",
+     "D2_D3": "D2 and D3.",
+     "D5_D6": "D5 and D6.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "D10_D11",
+   "gt_derivation": "dossier text S07: 'SoftwareSerial on D10/D11'",
+   "section": "S07",
+   "anchor": "SoftwareSerial on D10/D11",
+   "anchor_hits": [
+    {
+     "offset": 13878,
+     "rel": 0.1467,
+     "section": "S07"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n10_revision_schema",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which IntentIR SCHEMA_VERSION added the `revision` field?",
+    "criteria": {
+     "2.0.0": "2.0.0",
+     "2.1.0": "2.1.0",
+     "2.2.0": "2.2.0",
+     "3.0.0": "3.0.0",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "2.1.0",
+   "gt_derivation": "dossier text S08: '2.1.0 (Stage 2) added `revision`'",
+   "section": "S08",
+   "anchor": "2.1.0 (Stage 2) added `revision`",
+   "anchor_hits": [
+    {
+     "offset": 15151,
+     "rel": 0.1601,
+     "section": "S08"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n11_circuit_id",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How is a design's circuit_id derived?",
+    "criteria": {
+     "uuid5_of_intent_id": "uuid5 of the intent's intent_id.",
+     "random_uuid4": "A fresh random uuid4.",
+     "hash_of_requirements": "A hash of the requirements.",
+     "generator_name_version": "The generator's name@version.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "uuid5_of_intent_id",
+   "gt_derivation": "dossier text S08: '`uuid5(namespace, intent_id)`'",
+   "section": "S08",
+   "anchor": "`uuid5(namespace, intent_id)`",
+   "anchor_hits": [
+    {
+     "offset": 16618,
+     "rel": 0.1756,
+     "section": "S08"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n12_bmc_grade",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which grade does the method `bounded_model_check` map to?",
+    "criteria": {
+     "G1": "G1",
+     "G3": "G3",
+     "G4": "G4",
+     "G6": "G6",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "G4",
+   "gt_derivation": "dossier text S09: '\"bounded_model_check\": \"G4\"'",
+   "section": "S09",
+   "anchor": "\"bounded_model_check\": \"G4\"",
+   "anchor_hits": [
+    {
+     "offset": 21049,
+     "rel": 0.2225,
+     "section": "S09"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n13_out_of_scope",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which of these is on the declared out-of-scope list printed on every design?",
+    "criteria": {
+     "manufacturing_yield": "Manufacturing yield.",
+     "rs485_termination": "RS-485 termination.",
+     "pin_assignment": "Pin assignment validity.",
+     "i2c_pullups": "I2C pull-ups.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "manufacturing_yield",
+   "gt_derivation": "dossier text S09: '(\"manufacturing_yield\", \"manufacturing yield\")'",
+   "section": "S09",
+   "anchor": "(\"manufacturing_yield\", \"manufacturing yield\")",
+   "anchor_hits": [
+    {
+     "offset": 21395,
+     "rel": 0.2261,
+     "section": "S09"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n14_d6_status",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What status does defeater D6 have in the register?",
+    "criteria": {
+     "open": "open",
+     "deferred": "deferred",
+     "eliminated": "eliminated",
+     "not_yet_applicable": "not_yet_applicable",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "not_yet_applicable",
+   "gt_derivation": "dossier text S10: '| not_yet_applicable |'",
+   "section": "S10",
+   "anchor": "| not_yet_applicable |",
+   "anchor_hits": [
+    {
+     "offset": 23540,
+     "rel": 0.2488,
+     "section": "S10"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n15_d4_eliminator",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What eliminates defeater D4 according to the register?",
+    "criteria": {
+     "measured_authoring_cost": "Measured authoring cost per generator.",
+     "bench_measurement": "A bench measurement agreeing within tolerance.",
+     "criterion_12_review": "Criterion 12's review.",
+     "user_sign_off": "A person signing the properties.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "measured_authoring_cost",
+   "gt_derivation": "dossier text S10: 'measured authoring cost per generator (Stage 3 onward)'",
+   "section": "S10",
+   "anchor": "measured authoring cost per generator (Stage 3 onward)",
+   "anchor_hits": [
+    {
+     "offset": 23098,
+     "rel": 0.2441,
+     "section": "S10"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n16_pi_digits",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "To how many digits was the π bracket checked in the Stage 4 gates?",
+    "criteria": {
+     "15": "15 digits.",
+     "40": "40 digits.",
+     "80": "80 digits.",
+     "1000": "1000 digits.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "80",
+   "gt_derivation": "dossier text S11: 'the bracket checked against π at 80 digits'",
+   "section": "S11",
+   "anchor": "the bracket checked against π at 80 digits",
+   "anchor_hits": [
+    {
+     "offset": 27041,
+     "rel": 0.2858,
+     "section": "S11"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n17_stm32_part",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which exact STM32 part is on the chosen STM32 target board?",
+    "criteria": {
+     "STM32F411CEU6": "STM32F411CEU6",
+     "STM32F103C8T6": "STM32F103C8T6",
+     "STM32F401RE": "STM32F401RE",
+     "STM32F407VG": "STM32F407VG",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "STM32F411CEU6",
+   "gt_derivation": "dossier text S12: 'WeAct Black Pill (STM32F411CEU6)'",
+   "section": "S12",
+   "anchor": "WeAct Black Pill (STM32F411CEU6)",
+   "anchor_hits": [
+    {
+     "offset": 28097,
+     "rel": 0.297,
+     "section": "S12"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n18_figure_audit_found",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What defect did the D7 figure audit find?",
+    "criteria": {
+     "rs485_terminator_tolerance": "The RS-485 1206 terminator was boxed with 0402 tolerance.",
+     "led_vf_scale": "The LED forward voltage was off by a factor of ten.",
+     "dht22_pullup_missing": "The DHT22 pull-up was missing.",
+     "esp32_strap_pin": "An ESP32 strapping pin was used.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "rs485_terminator_tolerance",
+   "gt_derivation": "dossier text S13: 'found RS-485 1206 terminator boxed with 0402 tolerance'",
+   "section": "S13",
+   "anchor": "found RS-485 1206 terminator boxed with 0402 tolerance",
+   "anchor_hits": [
+    {
+     "offset": 30251,
+     "rel": 0.3197,
+     "section": "S13"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n19_crit4_value",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which wrong value demonstrated Phase 1 criterion 4 (simulation fails on wrong values)?",
+    "criteria": {
+     "1nF_capacitor": "A 1 nF capacitor.",
+     "1M_resistor": "A 1 MΩ resistor.",
+     "reversed_led": "A reversed LED.",
+     "12V_supply": "A 12 V supply.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "1nF_capacitor",
+   "gt_derivation": "dossier text S14: '1nF capacitor → FAIL grade'",
+   "section": "S14",
+   "anchor": "1nF capacitor → FAIL grade",
+   "anchor_hits": [
+    {
+     "offset": 32656,
+     "rel": 0.3452,
+     "section": "S14"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n20_injected_error",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "When a deliberate 5% error was injected into resistor emission, how many of the 34 accuracy tests failed?",
+    "criteria": {
+     "0": "0 of 34.",
+     "5": "5 of 34.",
+     "13": "13 of 34.",
+     "34": "34 of 34.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "13",
+   "gt_derivation": "dossier text S14: 'fails 13 of the 34 tests'",
+   "section": "S14",
+   "anchor": "fails 13 of the 34 tests",
+   "anchor_hits": [
+    {
+     "offset": 34032,
+     "rel": 0.3597,
+     "section": "S14"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n21_abstention",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What false-acceptance result did the Stage 1 abstention corpus report?",
+    "criteria": {
+     "0_of_200": "0 of 200.",
+     "1_of_200": "1 of 200.",
+     "13_of_34": "13 of 34.",
+     "56_of_56": "56 of 56.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "0_of_200",
+   "gt_derivation": "dossier text S15: '0/200 false accept'",
+   "section": "S15",
+   "anchor": "0/200 false accept",
+   "anchor_hits": [
+    {
+     "offset": 35003,
+     "rel": 0.37,
+     "section": "S15"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n22_deferred_gate",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which Stage 2 acceptance gate was deferred with a trigger?",
+    "criteria": {
+     "use_a_ds18b20": "\"Use a DS18B20 instead\" end to end.",
+     "determinism": "Byte-identical determinism.",
+     "idempotence": "Empty-patch idempotence.",
+     "orphaned_annotations": "Orphaned annotations surfaced.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "use_a_ds18b20",
+   "gt_derivation": "dossier text S15: '\"Use a DS18B20 instead\" end to end'",
+   "section": "S15",
+   "anchor": "\"Use a DS18B20 instead\" end to end",
+   "anchor_hits": [
+    {
+     "offset": 35996,
+     "rel": 0.3805,
+     "section": "S15"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n23_p5_worst",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the Stage 0 grid gate, what was the worst deviation for seeded fault P5?",
+    "criteria": {
+     "0.0000%": "0.0000%",
+     "2%": "2%",
+     "4.8403%": "4.8403%",
+     "15%": "15%",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "4.8403%",
+   "gt_derivation": "dossier text S15: 'worst 4.8403%'",
+   "section": "S15",
+   "anchor": "worst 4.8403%",
+   "anchor_hits": [
+    {
+     "offset": 35469,
+     "rel": 0.3749,
+     "section": "S15"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n24_waveform_lib",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which library does PRODUCT_MASTER name for the Phase 2 simulation waveform viewer?",
+    "criteria": {
+     "Plotly.js": "Plotly.js",
+     "D3.js": "D3.js",
+     "Chart.js": "Chart.js",
+     "Recharts": "Recharts",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "Plotly.js",
+   "gt_derivation": "dossier text S16: 'Simulation waveform viewer (Plotly.js)'",
+   "section": "S16",
+   "anchor": "Simulation waveform viewer (Plotly.js)",
+   "anchor_hits": [
+    {
+     "offset": 37807,
+     "rel": 0.3996,
+     "section": "S16"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n25_iot_kpi",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What is PRODUCT_MASTER's Phase 2 KPI for average IoT node design time?",
+    "criteria": {
+     "15_minutes": "Under 15 minutes.",
+     "30_minutes": "Under 30 minutes.",
+     "45_minutes": "Under 45 minutes.",
+     "one_business_day": "Within one business day.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "45_minutes",
+   "gt_derivation": "dossier text S16: 'Average IoT node design under 45 minutes'",
+   "section": "S16",
+   "anchor": "Average IoT node design under 45 minutes",
+   "anchor_hits": [
+    {
+     "offset": 37907,
+     "rel": 0.4007,
+     "section": "S16"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n26_team_price",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What does the Team tier cost?",
+    "criteria": {
+     "29_per_month": "$29/month.",
+     "49_per_month": "$49/month.",
+     "99_per_seat_month": "$99/seat/month.",
+     "custom": "Custom pricing.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "99_per_seat_month",
+   "gt_derivation": "dossier text S17: '**Team — $99/seat/month:**'",
+   "section": "S17",
+   "anchor": "**Team — $99/seat/month:**",
+   "anchor_hits": [
+    {
+     "offset": 41752,
+     "rel": 0.4413,
+     "section": "S17"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n27_co2_sensor",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which CO2 sensors does the DCV board description name?",
+    "criteria": {
+     "SCD30_SCD41_or_Telaire_6004": "SCD30/SCD41 over I2C, or Telaire 6004 analog.",
+     "MH-Z19": "MH-Z19.",
+     "CCS811": "CCS811.",
+     "SGP30": "SGP30.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "SCD30_SCD41_or_Telaire_6004",
+   "gt_derivation": "dossier text S17: 'SCD30/SCD41 over I2C, or Telaire 6004 analog'",
+   "section": "S17",
+   "anchor": "SCD30/SCD41 over I2C, or Telaire 6004 analog",
+   "anchor_hits": [
+    {
+     "offset": 39569,
+     "rel": 0.4182,
+     "section": "S17"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n28_audit_standards",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which standards is the Phase 3 audit trail described as ready for?",
+    "criteria": {
+     "ISO_13485_26262": "ISO 13485/26262.",
+     "ISO_9001": "ISO 9001.",
+     "IEC_61508": "IEC 61508.",
+     "UL_508A": "UL 508A.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "ISO_13485_26262",
+   "gt_derivation": "dossier text S17: 'Audit trail (ISO 13485/26262 ready)'",
+   "section": "S17",
+   "anchor": "Audit trail (ISO 13485/26262 ready)",
+   "anchor_hits": [
+    {
+     "offset": 40857,
+     "rel": 0.4318,
+     "section": "S17"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n29_rs485_spacing",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In PCB_STRATEGY's RS-485 example, what minimum distance from the switching regulator is stated?",
+    "criteria": {
+     "2mm": "2 mm.",
+     "5mm": "5 mm.",
+     "8mm": "8 mm.",
+     "20mm": "20 mm.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "8mm",
+   "gt_derivation": "dossier text S18: '8mm from the switching regulator'",
+   "section": "S18",
+   "anchor": "8mm from the switching regulator",
+   "anchor_hits": [
+    {
+     "offset": 42323,
+     "rel": 0.4473,
+     "section": "S18"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n30_cad_step",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which step of the CAD staircase does PCB_STRATEGY say is the one to build?",
+    "criteria": {
+     "viewer": "Step 1, the viewer.",
+     "annotated_viewer": "Step 2, the annotated viewer.",
+     "constrained_editor": "Step 3, the constrained editor.",
+     "general_cad": "Step 4, general CAD.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "annotated_viewer",
+   "gt_derivation": "dossier text S18: '**Step 2 is the one to build, and it is uniquely yours.**'",
+   "section": "S18",
+   "anchor": "**Step 2 is the one to build, and it is uniquely yours.**",
+   "anchor_hits": [
+    {
+     "offset": 43754,
+     "rel": 0.4625,
+     "section": "S18"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n31_layout_best",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the competitor table, which tool is marked best in class at PCB layout?",
+    "criteria": {
+     "Quilter": "Quilter.",
+     "Flux.ai": "Flux.ai.",
+     "Celus.io": "Celus.io.",
+     "Circuit_OS": "Circuit OS itself.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "Quilter",
+   "gt_derivation": "dossier text S19: '✅ best in class'",
+   "section": "S19",
+   "anchor": "✅ best in class",
+   "anchor_hits": [
+    {
+     "offset": 46591,
+     "rel": 0.4924,
+     "section": "S19"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": true
+  },
+  {
+   "key": "n32_flaky_commit",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "At which commit did a regen report 409 passing and 1 failing with no code change?",
+    "criteria": {
+     "f5fbd3d": "f5fbd3d",
+     "2edfbc8": "2edfbc8",
+     "e803a99": "e803a99",
+     "94b61c1": "94b61c1",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "f5fbd3d",
+   "gt_derivation": "dossier text S20: 'regen at `f5fbd3d` reported 409 / 1 failing'",
+   "section": "S20",
+   "anchor": "regen at `f5fbd3d` reported 409 / 1 failing",
+   "anchor_hits": [
+    {
+     "offset": 48368,
+     "rel": 0.5112,
+     "section": "S20"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n33_idle_current",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What idle current does the proposed DE/RE pull-down add on the Uno when DE/RE is driven high?",
+    "criteria": {
+     "0.33_mA": "0.33 mA.",
+     "0.5_mA": "0.5 mA.",
+     "5_mA": "5 mA.",
+     "50_mA": "50 mA.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "0.5_mA",
+   "gt_derivation": "dossier text S21: '= 0.5 mA on Uno'",
+   "section": "S21",
+   "anchor": "= 0.5 mA on Uno",
+   "anchor_hits": [
+    {
+     "offset": 50032,
+     "rel": 0.5288,
+     "section": "S21"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n34_esp32_strap",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which of these is listed as an ESP32 strapping pin?",
+    "criteria": {
+     "GPIO12": "GPIO12.",
+     "GPIO4": "GPIO4.",
+     "GPIO21": "GPIO21.",
+     "GPIO33": "GPIO33.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "GPIO12",
+   "gt_derivation": "dossier text S21: 'ESP32 straps are GPIO0, 2, 5, 12, 15'",
+   "section": "S21",
+   "anchor": "ESP32 straps are GPIO0, 2, 5, 12, 15",
+   "anchor_hits": [
+    {
+     "offset": 50438,
+     "rel": 0.5331,
+     "section": "S21"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n35_brain_commits",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How many of the last 40 commits on phase2-stage0 used the `brain:` prefix?",
+    "criteria": {
+     "2": "2.",
+     "7": "7.",
+     "8": "8.",
+     "40": "40.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "7",
+   "gt_derivation": "dossier text S21: '`brain:` (7)'",
+   "section": "S21",
+   "anchor": "`brain:` (7)",
+   "anchor_hits": [
+    {
+     "offset": 63757,
+     "rel": 0.6739,
+     "section": "S21"
+    }
+   ],
+   "multi": false,
+   "in_core": true,
+   "world_knowledge": false
+  },
+  {
+   "key": "n36_better_manners",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "According to the decision log, what is 'a deletion with better manners'?",
+    "criteria": {
+     "deferral_without_trigger": "A deferral without a trigger.",
+     "substitute_criterion": "A criterion met by substitute.",
+     "unregistered_module": "An unregistered module.",
+     "silent_amendment": "A silent amendment.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "deferral_without_trigger",
+   "gt_derivation": "dossier text S22: 'A deferral without a trigger is a deletion with better manners.'",
+   "section": "S22",
+   "anchor": "A deferral without a trigger is a deletion with better manners.",
+   "anchor_hits": [
+    {
+     "offset": 67030,
+     "rel": 0.7085,
+     "section": "S22"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n37_deleted_module",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which module was deleted to remove the LLM → CircuitIR path?",
+    "criteria": {
+     "ai/circuit_reasoner.py": "ai/circuit_reasoner.py",
+     "ai/intent_parser.py": "ai/intent_parser.py",
+     "ai/explainer.py": "ai/explainer.py",
+     "generators/realize.py": "generators/realize.py",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "ai/circuit_reasoner.py",
+   "gt_derivation": "dossier text S24: '`backend/ai/circuit_reasoner.py` is deleted'",
+   "section": "S24",
+   "anchor": "`backend/ai/circuit_reasoner.py` is deleted",
+   "anchor_hits": [
+    {
+     "offset": 70312,
+     "rel": 0.7432,
+     "section": "S24"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n38_pi_defeater",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What was EVIDENCE_CLASSES Table C's π defeater renumbered to in the register?",
+    "criteria": {
+     "D4": "D4",
+     "D6": "D6",
+     "D8": "D8",
+     "D9": "D9",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "D8",
+   "gt_derivation": "dossier text S25: 'bracket it\") becomes **D8**'",
+   "section": "S25",
+   "anchor": "bracket it\") becomes **D8**",
+   "anchor_hits": [
+    {
+     "offset": 73694,
+     "rel": 0.7789,
+     "section": "S25"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n39_rc_prob",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What probability did TypeSafe give `swamp_with_larger_r1` in the 2026-09-23 RC decision?",
+    "criteria": {
+     "0.58": "0.58",
+     "0.83": "0.83",
+     "0.87": "0.87",
+     "0.13": "0.13",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "0.87",
+   "gt_derivation": "dossier text S26: '**swamp_with_larger_r1 0.87**'",
+   "section": "S26",
+   "anchor": "**swamp_with_larger_r1 0.87**",
+   "anchor_hits": [
+    {
+     "offset": 76045,
+     "rel": 0.8037,
+     "section": "S26"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n40_rc_band",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What is the proven band for the RC low-pass cutoff in the D1 bench sheet?",
+    "criteria": {
+     "896Hz_1.12kHz": "896 Hz – 1.12 kHz.",
+     "850_1150Hz": "850 – 1150 Hz.",
+     "990Hz_1.01kHz": "990 Hz – 1.01 kHz.",
+     "3.28_3.34V": "3.28 – 3.34 V.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "896Hz_1.12kHz",
+   "gt_derivation": "dossier text S27: 'Proven band: **896 Hz – 1.12 kHz**'",
+   "section": "S27",
+   "anchor": "Proven band: **896 Hz – 1.12 kHz**",
+   "anchor_hits": [
+    {
+     "offset": 80234,
+     "rel": 0.848,
+     "section": "S27"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n41_generator_50ohm",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the bench procedure, by how much does a signal generator's 50 Ω output move f_c?",
+    "criteria": {
+     "0.2%": "0.2%",
+     "1.4%": "1.4%",
+     "5%": "5%",
+     "15%": "15%",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "1.4%",
+   "gt_derivation": "dossier text S27: '50 Ω output moves f_c by 1.4%'",
+   "section": "S27",
+   "anchor": "50 Ω output moves f_c by 1.4%",
+   "anchor_hits": [
+    {
+     "offset": 80147,
+     "rel": 0.8471,
+     "section": "S27"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n42_finding_scanner",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which finding number in the earlier report is the One-Rule scanner hole?",
+    "criteria": {
+     "1": "Finding 1.",
+     "5": "Finding 5.",
+     "8": "Finding 8.",
+     "12": "Finding 12.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "1",
+   "gt_derivation": "dossier text S28: '| 1 | **One-Rule scanner hole**'",
+   "section": "S28",
+   "anchor": "| 1 | **One-Rule scanner hole**",
+   "anchor_hits": [
+    {
+     "offset": 81702,
+     "rel": 0.8635,
+     "section": "S28"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n43_unregistered_count",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How many backend files does finding 6 list as absent from MODULES?",
+    "criteria": {
+     "2": "2.",
+     "7": "7.",
+     "8": "8.",
+     "26": "26.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "7",
+   "gt_derivation": "dossier text S28: '7 backend files absent from `MODULES`'",
+   "section": "S28",
+   "anchor": "7 backend files absent from `MODULES`",
+   "anchor_hits": [
+    {
+     "offset": 83533,
+     "rel": 0.8829,
+     "section": "S28"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n44_highest_runtime",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which proposed runtime use does the earlier report mark as highest value?",
+    "criteria": {
+     "R1_transcription_fidelity": "R1, transcription fidelity.",
+     "R2_patch_op_faithfulness": "R2, patch-op faithfulness.",
+     "R7_refusal_backlog": "R7, refusal backlog labelling.",
+     "R11_substitute_ordering": "R11, substitute ordering.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "R1_transcription_fidelity",
+   "gt_derivation": "dossier text S29: 'R1 **Transcription fidelity** (highest value)'",
+   "section": "S29",
+   "anchor": "R1 **Transcription fidelity** (highest value)",
+   "anchor_hits": [
+    {
+     "offset": 87738,
+     "rel": 0.9273,
+     "section": "S29"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n45_waiver_label",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the DRC waiver triage use (P6), which label forces review at any probability?",
+    "criteria": {
+     "safety_relevant": "safety_relevant",
+     "needs_review": "needs_review",
+     "cosmetic": "cosmetic",
+     "reject": "reject",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "safety_relevant",
+   "gt_derivation": "dossier text S29: '`safety_relevant` forces review at any probability'",
+   "section": "S29",
+   "anchor": "`safety_relevant` forces review at any probability",
+   "anchor_hits": [
+    {
+     "offset": 89963,
+     "rel": 0.9509,
+     "section": "S29"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n46_first_run_rs485",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the first live Jev run, which label did Jev return for the RS-485 DE/RE pull-down?",
+    "criteria": {
+     "add_as_default_now": "add_as_default_now",
+     "add_as_opt_in_constraint": "add_as_opt_in_constraint",
+     "defer_with_trigger": "defer_with_trigger",
+     "do_not_add": "do_not_add",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "add_as_opt_in_constraint",
+   "gt_derivation": "dossier text S30: '| RS-485 DE/RE pull-down | `add_as_opt_in_constraint` |'",
+   "section": "S30",
+   "anchor": "| RS-485 DE/RE pull-down | `add_as_opt_in_constraint` |",
+   "anchor_hits": [
+    {
+     "offset": 92069,
+     "rel": 0.9731,
+     "section": "S30"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n47_ops_burden",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What ops_burden score did the first live run report for X7?",
+    "criteria": {
+     "0.50_of_3": "0.50 out of 3.",
+     "1.50_of_3": "1.50 out of 3.",
+     "2.97_of_3": "2.97 out of 3.",
+     "3.00_of_3": "3.00 out of 3.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "2.97_of_3",
+   "gt_derivation": "dossier text S30: '`ops_burden` 2.97/3'",
+   "section": "S30",
+   "anchor": "`ops_burden` 2.97/3",
+   "anchor_hits": [
+    {
+     "offset": 93238,
+     "rel": 0.9855,
+     "section": "S30"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "n48_rc_formula",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which formula does the dossier give for the RC low-pass cutoff frequency?",
+    "criteria": {
+     "1/(2πRC)": "f_c = 1 / (2π·R·C)",
+     "1/(RC)": "f_c = 1 / (R·C)",
+     "2πRC": "f_c = 2π·R·C",
+     "R/(2πC)": "f_c = R / (2π·C)",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "1/(2πRC)",
+   "gt_derivation": "dossier text S31: 'f_c = 1 / (2π × R × C)'",
+   "section": "S31",
+   "anchor": "f_c = 1 / (2π × R × C)",
+   "anchor_hits": [
+    {
+     "offset": 93888,
+     "rel": 0.9923,
+     "section": "S31"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": true
+  },
+  {
+   "key": "n49_divider_ref",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "present",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In the Phase 1 voltage-divider reference, what is V_out?",
+    "criteria": {
+     "3.30_V": "3.30 V.",
+     "5.00_V": "5.00 V.",
+     "5.07_V": "About 5.07 V.",
+     "6.00_V": "6.00 V.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "5.07_V",
+   "gt_derivation": "dossier text S31: 'V_out ≈ 5.07V'",
+   "section": "S31",
+   "anchor": "V_out ≈ 5.07V",
+   "anchor_hits": [
+    {
+     "offset": 94145,
+     "rel": 0.9951,
+     "section": "S31"
+    }
+   ],
+   "multi": false,
+   "in_core": false,
+   "world_knowledge": false
+  },
+  {
+   "key": "a01_cost_ceiling",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What per-generation cost ceiling has the owner set for explanations?",
+    "criteria": {
+     "under_0.05": "Under $0.05.",
+     "0.05_to_0.20": "$0.05 to $0.20.",
+     "over_0.20": "Over $0.20.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: the dossier says the owner has not stated a cost ceiling",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a02_vendor",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which live-pricing vendor has the owner chosen?",
+    "criteria": {
+     "Digikey": "Digikey.",
+     "LCSC": "LCSC.",
+     "Mouser": "Mouser.",
+     "Octopart": "Octopart.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: the dossier says no vendor has been chosen",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a03_bench_cutoff",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What -3 dB cutoff was measured on the bench for the 1 kHz RC design?",
+    "criteria": {
+     "950Hz": "About 950 Hz.",
+     "1.00kHz": "About 1.00 kHz.",
+     "1.05kHz": "About 1.05 kHz.",
+     "1.12kHz": "About 1.12 kHz.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: no bench measurement exists (D1 open; no oscilloscope)",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a04_flaky_assertion",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which assertion fails when the flaky accuracy test fails?",
+    "criteria": {
+     "cutoff_frequency": "A cutoff-frequency comparison.",
+     "divider_voltage": "A divider output voltage.",
+     "led_current": "An LED current.",
+     "ac_parse": "The AC magnitude parser.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: the dossier says the flake was never diagnosed",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a05_v2_exit",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What does PHASE_2_PLAN_v2 list as the Phase 2 exit criteria?",
+    "criteria": {
+     "d1_closed": "D1 closed by a bench session.",
+     "stages_0_6_done": "Stages 0–6 done.",
+     "three_paying_pilots": "Three paying pilot teams.",
+     "criterion_12_met": "Criterion 12 met.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: PHASE_2_PLAN_v2 is not in the repository or the dossier",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a06_hvac_answer",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What did the HVAC controls people say when asked whether they want finished boards or designs?",
+    "criteria": {
+     "finished_boards": "They want finished boards.",
+     "designs": "They want designs.",
+     "mixed": "Opinions were mixed.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: no such conversation is recorded",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a07_baud",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What Modbus RTU baud rate does the rs485_node firmware use?",
+    "criteria": {
+     "9600": "9600 baud.",
+     "19200": "19200 baud.",
+     "38400": "38400 baud.",
+     "115200": "115200 baud.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: the baud rate is not in the dossier",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a08_d1_date",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "On what date will the owner run the D1 bench session?",
+    "criteria": {
+     "this_week": "This week.",
+     "before_phase2_exit": "Before Phase 2 exit.",
+     "after_phase3_start": "After Phase 3 starts.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: not scheduled; the owner decides",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a09_terminator_price",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What static price does the BOM give for the RS-485 1206 120 Ω terminator?",
+    "criteria": {
+     "0.01_usd": "About $0.01.",
+     "0.10_usd": "About $0.10.",
+     "0.50_usd": "About $0.50.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: prices are not in the dossier",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a10_reviewer",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which external engineer reviewed a generated explanation for criterion 12?",
+    "criteria": {
+     "final_year_ee_student": "A final-year EE student.",
+     "faculty_member": "A faculty member.",
+     "forum_reviewer": "A reviewer from an electronics forum.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: no external engineer has read an explanation (criterion 12 unmet, D3 deferred)",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a11_thinking_off_cost",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What does one explanation cost with thinking disabled?",
+    "criteria": {
+     "0.02_usd": "About $0.02.",
+     "0.05_usd": "About $0.05.",
+     "0.10_usd": "About $0.10.",
+     "0.20_usd": "About $0.20.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: the thinking-disabled fix is untried",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a12_freerouting_version",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which freerouting version will Phase 3 pin?",
+    "criteria": {
+     "1.9": "1.9.x",
+     "2.0": "2.0.x",
+     "2.1": "2.1.x",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: no freerouting version is named in the dossier",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a13_authoring_cost",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What is the measured authoring cost per generator (the evidence D4 asks for)?",
+    "criteria": {
+     "under_1_day": "Under one day.",
+     "1_to_3_days": "One to three days.",
+     "about_1_week": "About one week.",
+     "over_2_weeks": "Over two weeks.",
+     "need_more_information": "Choose when the state does not contain the answer."
+    }
+   },
+   "gt": "need_more_information",
+   "gt_derivation": "by construction: not measured; D4 open",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a14_noul_cost_ceiling",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent_noul",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Is the owner's per-generation cost ceiling for explanations above $0.10?"
+   },
+   "gt": "0.25<=p<=0.75",
+   "gt_derivation": "by construction: the ceiling has not been stated",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a15_noul_hvac_boards",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent_noul",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Will the first HVAC controls customer want finished boards rather than designs?"
+   },
+   "gt": "0.25<=p<=0.75",
+   "gt_derivation": "by construction: PCB_STRATEGY §9.3 is an untested hypothesis",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "a16_noul_flake_seed",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "absent_noul",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Was the flaky accuracy test's failure caused by a seed-dependent parameter sweep?"
+   },
+   "gt": "0.25<=p<=0.75",
+   "gt_derivation": "by construction: the flake was never diagnosed",
+   "section": null,
+   "in_core": false
+  },
+  {
+   "key": "p01_firmware_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p01_firmware",
+   "q": {
+    "type": "noul",
+    "instructions": "Is firmware shown to the user only after it has passed a PlatformIO compile?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S02: 'Firmware shown only after PlatformIO compile'",
+   "section": "S02",
+   "anchor": "Firmware shown only after PlatformIO compile",
+   "anchor_hits": [
+    {
+     "offset": 5190,
+     "rel": 0.0549,
+     "section": "S02"
+    }
+   ],
+   "multi": false,
+   "in_core": true
+  },
+  {
+   "key": "p01_firmware_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p01_firmware",
+   "q": {
+    "type": "noul",
+    "instructions": "Is firmware shown to the user before it has passed a PlatformIO compile?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S02: 'Firmware shown only after PlatformIO compile'",
+   "section": "S02",
+   "anchor": "Firmware shown only after PlatformIO compile",
+   "anchor_hits": [
+    {
+     "offset": 5190,
+     "rel": 0.0549,
+     "section": "S02"
+    }
+   ],
+   "multi": false,
+   "in_core": true
+  },
+  {
+   "key": "p02_flashed_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p02_flashed",
+   "q": {
+    "type": "noul",
+    "instructions": "Has any board been flashed with generated firmware yet?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S20: 'No board flashed'",
+   "section": "S20",
+   "anchor": "No board flashed",
+   "anchor_hits": [
+    {
+     "offset": 48004,
+     "rel": 0.5074,
+     "section": "S20"
+    }
+   ],
+   "multi": false,
+   "in_core": true
+  },
+  {
+   "key": "p02_flashed_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p02_flashed",
+   "q": {
+    "type": "noul",
+    "instructions": "Is it recorded that no board has been flashed yet?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S20: 'No board flashed'",
+   "section": "S20",
+   "anchor": "No board flashed",
+   "anchor_hits": [
+    {
+     "offset": 48004,
+     "rel": 0.5074,
+     "section": "S20"
+    }
+   ],
+   "multi": false,
+   "in_core": true
+  },
+  {
+   "key": "p03_grade_method_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p03_grade_method",
+   "q": {
+    "type": "noul",
+    "instructions": "Is a claim's grade derived from its method through one table?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S09: 'through one table, never typed per claim'",
+   "section": "S09",
+   "anchor": "through one table, never typed per claim",
+   "anchor_hits": [
+    {
+     "offset": 19697,
+     "rel": 0.2082,
+     "section": "S09"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p03_grade_method_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p03_grade_method",
+   "q": {
+    "type": "noul",
+    "instructions": "Is a claim's grade typed by hand for each claim?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S09: 'through one table, never typed per claim'",
+   "section": "S09",
+   "anchor": "through one table, never typed per claim",
+   "anchor_hits": [
+    {
+     "offset": 19697,
+     "rel": 0.2082,
+     "section": "S09"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p04_d2_close_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p04_d2_close",
+   "q": {
+    "type": "noul",
+    "instructions": "Is anything in Phase 2 scheduled to close defeater D2?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S10: 'nothing in Phase 2 is scheduled to close it'",
+   "section": "S10",
+   "anchor": "nothing in Phase 2 is scheduled to close it",
+   "anchor_hits": [
+    {
+     "offset": 22772,
+     "rel": 0.2407,
+     "section": "S10"
+    },
+    {
+     "offset": 49925,
+     "rel": 0.5277,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p04_d2_close_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p04_d2_close",
+   "q": {
+    "type": "noul",
+    "instructions": "Is it recorded that nothing in Phase 2 is scheduled to close defeater D2?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S10: 'nothing in Phase 2 is scheduled to close it'",
+   "section": "S10",
+   "anchor": "nothing in Phase 2 is scheduled to close it",
+   "anchor_hits": [
+    {
+     "offset": 22772,
+     "rel": 0.2407,
+     "section": "S10"
+    },
+    {
+     "offset": 49925,
+     "rel": 0.5277,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p05_pricing_gate_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p05_pricing_gate",
+   "q": {
+    "type": "noul",
+    "instructions": "In Stage 6, is pricing allowed to gate validation?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S13: 'pricing never gates validation'",
+   "section": "S13",
+   "anchor": "pricing never gates validation",
+   "anchor_hits": [
+    {
+     "offset": 30452,
+     "rel": 0.3219,
+     "section": "S13"
+    },
+    {
+     "offset": 31323,
+     "rel": 0.3311,
+     "section": "S13"
+    },
+    {
+     "offset": 51830,
+     "rel": 0.5478,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p05_pricing_gate_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p05_pricing_gate",
+   "q": {
+    "type": "noul",
+    "instructions": "Is it a Stage 6 gate that pricing never gates validation?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S13: 'pricing never gates validation'",
+   "section": "S13",
+   "anchor": "pricing never gates validation",
+   "anchor_hits": [
+    {
+     "offset": 30452,
+     "rel": 0.3219,
+     "section": "S13"
+    },
+    {
+     "offset": 31323,
+     "rel": 0.3311,
+     "section": "S13"
+    },
+    {
+     "offset": 51830,
+     "rel": 0.5478,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p06_crit12_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p06_crit12",
+   "q": {
+    "type": "noul",
+    "instructions": "Is Phase 1 criterion 12 (an external engineer reads an explanation cold) met?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S14: '**⏳ NOT MET**'",
+   "section": "S14",
+   "anchor": "**⏳ NOT MET**",
+   "anchor_hits": [
+    {
+     "offset": 33409,
+     "rel": 0.3531,
+     "section": "S14"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p06_crit12_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p06_crit12",
+   "q": {
+    "type": "noul",
+    "instructions": "Is Phase 1 criterion 12 (an external engineer reads an explanation cold) unmet?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S14: '**⏳ NOT MET**'",
+   "section": "S14",
+   "anchor": "**⏳ NOT MET**",
+   "anchor_hits": [
+    {
+     "offset": 33409,
+     "rel": 0.3531,
+     "section": "S14"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p07_gerber_phase3_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p07_gerber_phase3",
+   "q": {
+    "type": "noul",
+    "instructions": "Is Gerber export listed among PRODUCT_MASTER's Phase 3 deliverables?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S17: '- Gerber export + JLCPCB/PCBWay API integration'",
+   "section": "S17",
+   "anchor": "- Gerber export + JLCPCB/PCBWay API integration",
+   "anchor_hits": [
+    {
+     "offset": 41277,
+     "rel": 0.4363,
+     "section": "S17"
+    },
+    {
+     "offset": 61540,
+     "rel": 0.6504,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p07_gerber_phase3_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p07_gerber_phase3",
+   "q": {
+    "type": "noul",
+    "instructions": "Is Gerber export absent from PRODUCT_MASTER's Phase 3 deliverables list?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S17: '- Gerber export + JLCPCB/PCBWay API integration'",
+   "section": "S17",
+   "anchor": "- Gerber export + JLCPCB/PCBWay API integration",
+   "anchor_hits": [
+    {
+     "offset": 41277,
+     "rel": 0.4363,
+     "section": "S17"
+    },
+    {
+     "offset": 61540,
+     "rel": 0.6504,
+     "section": "S21"
+    }
+   ],
+   "multi": true,
+   "in_core": true
+  },
+  {
+   "key": "p08_router_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p08_router",
+   "q": {
+    "type": "noul",
+    "instructions": "Does PCB_STRATEGY recommend that Circuit OS build its own router rather than consume one?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S18: 'The router is a commodity you should'",
+   "section": "S18",
+   "anchor": "The router is a commodity you should",
+   "anchor_hits": [
+    {
+     "offset": 42537,
+     "rel": 0.4496,
+     "section": "S18"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p08_router_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p08_router",
+   "q": {
+    "type": "noul",
+    "instructions": "Does PCB_STRATEGY recommend that Circuit OS consume a router rather than build its own?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S18: 'The router is a commodity you should'",
+   "section": "S18",
+   "anchor": "The router is a commodity you should",
+   "anchor_hits": [
+    {
+     "offset": 42537,
+     "rel": 0.4496,
+     "section": "S18"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p09_led_decider_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p09_led_decider",
+   "q": {
+    "type": "noul",
+    "instructions": "Was the 2026-09-23 LED option decided by the agent rather than by a person?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S26: 'so the agent\\ndecided, taking the reversible option'",
+   "section": "S26",
+   "anchor": "so the agent\ndecided, taking the reversible option",
+   "anchor_hits": [
+    {
+     "offset": 77509,
+     "rel": 0.8192,
+     "section": "S26"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p09_led_decider_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p09_led_decider",
+   "q": {
+    "type": "noul",
+    "instructions": "Was the 2026-09-23 LED option decided by a person rather than by the agent?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S26: 'so the agent\\ndecided, taking the reversible option'",
+   "section": "S26",
+   "anchor": "so the agent\ndecided, taking the reversible option",
+   "anchor_hits": [
+    {
+     "offset": 77509,
+     "rel": 0.8192,
+     "section": "S26"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p10_protocol_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p10_protocol",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the earlier research report recommend keeping the >0.9 / 0.5–0.9 / <0.5 protocol as written?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S28: 'Do not keep the current >0.9 / 0.5–0.9 / <0.5 protocol as written.'",
+   "section": "S28",
+   "anchor": "Do not keep the current >0.9 / 0.5–0.9 / <0.5 protocol as written.",
+   "anchor_hits": [
+    {
+     "offset": 81086,
+     "rel": 0.857,
+     "section": "S28"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p10_protocol_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p10_protocol",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the earlier research report recommend replacing the >0.9 / 0.5–0.9 / <0.5 protocol?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S28: 'Do not keep the current >0.9 / 0.5–0.9 / <0.5 protocol as written.'",
+   "section": "S28",
+   "anchor": "Do not keep the current >0.9 / 0.5–0.9 / <0.5 protocol as written.",
+   "anchor_hits": [
+    {
+     "offset": 81086,
+     "rel": 0.857,
+     "section": "S28"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p11_blind_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p11_blind",
+   "q": {
+    "type": "noul",
+    "instructions": "In the first live Jev run, did every blind control fall to need_more_information?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S30: 'Every blind control fell to `need_more_information`'",
+   "section": "S30",
+   "anchor": "Every blind control fell to `need_more_information`",
+   "anchor_hits": [
+    {
+     "offset": 91803,
+     "rel": 0.9703,
+     "section": "S30"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p11_blind_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p11_blind",
+   "q": {
+    "type": "noul",
+    "instructions": "In the first live Jev run, did at least one blind control pick a substantive option instead of need_more_information?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S30: 'Every blind control fell to `need_more_information`'",
+   "section": "S30",
+   "anchor": "Every blind control fell to `need_more_information`",
+   "anchor_hits": [
+    {
+     "offset": 91803,
+     "rel": 0.9703,
+     "section": "S30"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p12_kind_code_pos",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p12_kind_code",
+   "q": {
+    "type": "noul",
+    "instructions": "Is `kind` currently `analytic` for exact closed-form and proved claims in the code?"
+   },
+   "gt": true,
+   "gt_derivation": "dossier text S25: '**`kind` for exact closed-form claims is `analytic`.**'",
+   "section": "S25",
+   "anchor": "**`kind` for exact closed-form claims is `analytic`.**",
+   "anchor_hits": [
+    {
+     "offset": 74258,
+     "rel": 0.7849,
+     "section": "S25"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "p12_kind_code_neg",
+   "chunk": "A",
+   "category": "needle",
+   "sub": "polarity",
+   "type": "noul",
+   "pair": "p12_kind_code",
+   "q": {
+    "type": "noul",
+    "instructions": "Is `kind` currently `empirical` for exact closed-form and proved claims in the code?"
+   },
+   "gt": false,
+   "gt_derivation": "dossier text S25: '**`kind` for exact closed-form claims is `analytic`.**'",
+   "section": "S25",
+   "anchor": "**`kind` for exact closed-form claims is `analytic`.**",
+   "anchor_hits": [
+    {
+     "offset": 74258,
+     "rel": 0.7849,
+     "section": "S25"
+    }
+   ],
+   "multi": false,
+   "in_core": false
+  },
+  {
+   "key": "prior__rs485__pulldown_option",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which option should Circuit OS take for a DE/RE pull-down on the rs485_node generator?",
+    "criteria": {
+     "add_as_default_now": "Choose when the reboot-contention risk is material for most users and the cost of invalidating signed RS-485 designs is acceptable. Every new design gets R4; version bump.",
+     "add_as_opt_in_constraint": "Choose when the benefit is real for some users but existing designs must stay byte-identical. constraints.de_re_pulldown defaults false; no signature impact.",
+     "defer_with_trigger": "Choose when the risk only matters on multi-drop or flashed hardware not yet in use. Record trigger: first multi-drop bus or first flashed RS-485 board.",
+     "do_not_add": "Choose when the state shows no material risk and the added part only costs.",
+     "need_more_information": "Choose when a missing fact (pin status, transceiver reset behaviour) would change the answer."
+    }
+   },
+   "source_request": "rs485_de_re_pulldown.json",
+   "governing": true,
+   "prior": "add_as_opt_in_constraint",
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__rs485__reboot_contention_material",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "For a single-master Modbus RTU node on a bench or small bus, is a driver briefly enabled during MCU reset a material risk to other nodes' communication?",
+    "criteria": {
+     "true": "Material: plausible corrupted frames or bus lock on reboot.",
+     "false": "Negligible for this use."
+    }
+   },
+   "source_request": "rs485_de_re_pulldown.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__rs485__reboot_contention_material__not",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "For a single-master Modbus RTU node on a bench or small bus, is a driver briefly enabled during MCU reset negligible for other nodes' communication?"
+   },
+   "source_request": "rs485_de_re_pulldown.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__rs485__d2_drop_is_sound",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Given the state, would adding the pull-down remove the reason D2 (simplified MCU model) is cited on the fail-safe claim, rather than just moving it to another claim?"
+   },
+   "source_request": "rs485_de_re_pulldown.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__rs485__blast_radius",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How far does the recommended change reach?",
+    "criteria": [
+     "No existing design changes",
+     "Only new designs change",
+     "Existing unsigned designs re-realise differently",
+     "Signed designs are invalidated (409)"
+    ]
+   },
+   "source_request": "rs485_de_re_pulldown.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__x7__x7_option",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What should happen with live component pricing (X7)?",
+    "criteria": {
+     "approve_now_behind_flag": "Choose when vendor terms are known and a live fetch writing a price_asof cache row, never read by validation, is worth its ops cost now.",
+     "approve_after_static_stage6_exit": "Choose when live pricing has value but Stage 6 should first close on static pricing.",
+     "defer_to_phase3": "Choose when no Phase 2 gate needs it and the ops burden outweighs the value until customers exist.",
+     "reject_keep_static": "Choose when static dated pricing meets every foreseeable need.",
+     "need_more_information": "Choose when vendor terms, costs or rate limits are unknown."
+    }
+   },
+   "source_request": "x7_live_pricing.json",
+   "governing": true,
+   "prior": "defer_to_phase3",
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__x7__stage6_gate_needs_live",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does any stated Stage 6 gate require a live price rather than a dated static one?"
+   },
+   "source_request": "x7_live_pricing.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__x7__vendor_terms_known",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state contain the vendor's caching/display terms and rate limit?"
+   },
+   "source_request": "x7_live_pricing.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__x7__ops_burden",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "Operational burden of the live option",
+    "criteria": [
+     "No new secret or dependency",
+     "New secret only",
+     "New secret and rate limit",
+     "Secret, rate limit, cache invalidation and ToS review"
+    ]
+   },
+   "source_request": "x7_live_pricing.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "one_way"
+  },
+  {
+   "key": "prior__d1__d1_when",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "When should the D1 bench session happen?",
+    "criteria": {
+     "build_evidence_records_then_bench_when_scope_available": "Choose when records are needed first and the RC cutoff needs a scope.",
+     "partial_session_now_without_scope": "Choose when meter+supply DC checks on divider/LED are worth doing now and the RC cutoff can wait.",
+     "bench_before_phase2_exit": "Choose when the exit criteria require hardware evidence.",
+     "defer_with_trigger_lab_access": "Choose when nothing scheduled depends on it before lab access.",
+     "need_more_information": "Choose when exit criteria or equipment availability are unknown."
+    }
+   },
+   "source_request": "d1_bench_timing.json",
+   "governing": true,
+   "prior": "build_evidence_records_then_bench_when_scope_available",
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__kind__kind_option",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which kind label should exact proofs carry?",
+    "criteria": {
+     "keep_analytic_and_amend_v2_wording": "Choose when analytic is right and precedence must be respected by amending v2.",
+     "switch_to_v2_empirical": "Choose when v2's label is deliberate and governs.",
+     "split_by_object": "Choose when z3/closed-form statements over the model are analytic but tool-run observations (grid gate, compile gate) are empirical.",
+     "need_more_information": "Choose when v2's intent cannot be read from the pasted text."
+    }
+   },
+   "source_request": "proof_kind_label.json",
+   "governing": true,
+   "prior": "keep_analytic_and_amend_v2_wording",
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__kind__v2_label_is_deliberate",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Is v2's empirical tag for z3-proved claims a considered classification rather than a drafting slip?"
+   },
+   "source_request": "proof_kind_label.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__kind__precedence_forces_v2",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "May a lower-precedence document's definition override v2's field value without amending v2?"
+   },
+   "source_request": "proof_kind_label.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__kind__external_reader_misreads_analytic",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would an external engineer read 'analytic' as 'validated on hardware'?"
+   },
+   "source_request": "proof_kind_label.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__explainer__first_step",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What is the next step for the explainer's cost and latency?",
+    "criteria": {
+     "experiment_thinking_disabled_when_credits": "Choose when the cheapest untried fix should be measured first.",
+     "move_explanation_off_request_path": "Choose when latency, not cost, is the binding problem; run it async like simulation.",
+     "derived_default_llm_opt_in": "Choose when the zero-call explanation is good enough as default.",
+     "raise_ceiling_to_16384": "Choose when truncation, not latency, is the binding problem and cost is within ceiling.",
+     "cheaper_faster_model_for_explainer": "Choose when a different model is likely to meet both targets.",
+     "need_more_information": "Choose when the owner's cost ceiling is missing."
+    }
+   },
+   "source_request": "explainer_budget.json",
+   "governing": true,
+   "prior": "move_explanation_off_request_path",
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__explainer__raising_ceiling_alone_meets_target",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would raising max_tokens alone bring generation under 15 s?"
+   },
+   "source_request": "explainer_budget.json",
+   "governing": false,
+   "prior": null,
+   "owner_owned": true,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__stage6__kpi_5pct_disposition",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "What should happen to the deferred 5%-of-engineer KPI?",
+    "criteria": {
+     "must_meet_before_stage6_done": "Choose when Stage 6's value claim depends on it.",
+     "defer_with_named_trigger": "Choose when it can be measured later with a named trigger.",
+     "amend_plan_to_drop": "Choose when it no longer measures anything the product needs.",
+     "need_more_information": "Choose when the KPI's definition is unclear."
+    }
+   },
+   "source_request": "stage6_finish.json",
+   "governing": true,
+   "prior": "defer_with_named_trigger",
+   "owner_owned": false,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__stage6__stage6_finish_before_phase3",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should unfinished Stage 6 work relate to Phase 3 start?",
+    "criteria": {
+     "finish_now": "Choose when Phase 3 depends on the BOM route or substitution.",
+     "finish_in_parallel": "Choose when Phase 3 constraint-layer work is independent of Stage 6.",
+     "defer_to_phase3": "Choose when remaining items are UI-only and Phase 3 will revisit them.",
+     "need_more_information": "Choose when the dependency is unclear."
+    }
+   },
+   "source_request": "stage6_finish.json",
+   "governing": true,
+   "prior": "finish_now",
+   "owner_owned": false,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__flake__flake_policy",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should the intermittent accuracy test failure be handled?",
+    "criteria": {
+     "diagnose_now_with_N_repeat_runs_seed_logged": "Choose when repeat runs to measure (not to turn green) can locate nondeterminism.",
+     "mark_xfail_strict_with_issue": "Choose when a known cause exists and must be tracked without masking.",
+     "leave_carried": "Choose when the failure is rare and diagnosis costs more than it reveals now.",
+     "need_more_information": "Choose when the failing assertion and seed are unknown."
+    }
+   },
+   "source_request": "accuracy_flake_policy.json",
+   "governing": true,
+   "prior": "diagnose_now_with_N_repeat_runs_seed_logged",
+   "owner_owned": false,
+   "door": "two_way"
+  },
+  {
+   "key": "prior__bump__bump_policy",
+   "chunk": "B",
+   "category": "owner_decision_prior_run",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Outputs are byte-identical but some generators now accept pinned-part inputs they used to refuse. What versioning policy applies?",
+    "criteria": {
+     "minor_bump_generators_whose_envelope_widened": "Choose when a widened accepted set is a behaviour change users should see in name@version.",
+     "patch_bump_all_touched": "Choose when any touched generator should signal a change even if behaviour is identical.",
+     "no_bump_outputs_identical": "Choose when identical outputs mean no version meaning changed; a later bump stays possible.",
+     "need_more_information": "Choose when the envelope diff is incomplete."
+    }
+   },
+   "source_request": "pin_support_version_policy.json",
+   "governing": true,
+   "prior": null,
+   "owner_owned": false,
+   "door": "one_way"
+  },
+  {
+   "key": "od_d7_when",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "When should the D7 datasheet verification pass (a person opening each datasheet behind the 155 figure records) happen?",
+    "criteria": {
+     "before_stage6_commit": "Choose when Stage 6 substitution relies on unverified figures and should wait for them.",
+     "interleave_one_family_per_session": "Choose when the work is best spread across sessions, one part family at a time.",
+     "after_stage6": "Choose when Stage 6 does not depend on verification and the pass can follow it.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "interleave_one_family_per_session"
+  },
+  {
+   "key": "od_d7_order",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "In what order should the D7 verification pass take the figure records?",
+    "criteria": {
+     "critical_claim_tiers_first": "Choose when figures that gate a critical claim should go first, stated assumptions and typical values before guaranteed ones, then the smallest audit margin.",
+     "by_part_family": "Choose when grouping by part family (resistors, capacitors, MCUs, transceivers) matters most.",
+     "by_generator": "Choose when finishing one generator's figures at a time matters most.",
+     "by_record_id": "Choose when order does not matter and records can go in ID order.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "critical_claim_tiers_first"
+  },
+  {
+   "key": "od_phase3_order",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which Phase 3 programme should start first?",
+    "criteria": {
+     "constraints_first": "Choose when the constraint layer + freerouting needs no customers and is the stated moat.",
+     "industrial_first": "Choose when customer evidence makes a specific industrial generator class urgent.",
+     "parallel": "Choose when one engineer can sustain both without either stalling.",
+     "need_more_information": "Choose when customer evidence (PCB_STRATEGY §9.3) is missing and would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "constraints_first"
+  },
+  {
+   "key": "od_gerber_resolution",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should the contradiction between the Phase 3 KPI (prompt-to-ordered-PCB within one business day) and Gerber/fab APIs being Phase 4 be resolved?",
+    "criteria": {
+     "move_minimal_gerber_into_phase3": "Choose when ordering a PCB in Phase 3 needs Gerber export, so a minimal version moves forward.",
+     "restate_kpi_as_routed_kicad_board_handed_to_fab_by_user": "Choose when the KPI should be reworded so the user exports and orders from a routed KiCad board.",
+     "keep_roadmap_as_written": "Choose when the contradiction does not matter enough to change either document.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "restate_kpi_as_routed_kicad_board_handed_to_fab_by_user"
+  },
+  {
+   "key": "od_gerber_kpi_reachable",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "As the Phase 3 KPI is now worded, is it reachable in Phase 3 without Gerber export?"
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "od_phase2_governing_list",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which deliverable list should govern whether Phase 2 is finished?",
+    "criteria": {
+     "product_master_phase2_list": "Choose when PRODUCT_MASTER's Phase 2 deliverables (free-form, live pricing, RAG, version history UI, waveform viewer, substitution) must all be delivered.",
+     "as_built_stages_0_to_6_under_v2": "Choose when PHASE_2_PLAN_v2's Stages 0–6 govern, as its higher precedence says.",
+     "write_new_exit_gate_merging_both": "Choose when neither list alone is right and a written exit gate must be drafted first.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "as_built_stages_0_to_6_under_v2"
+  },
+  {
+   "key": "od_standard_family",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "For a Phase 3 DCV controller board, which standard family should a person review first?",
+    "criteria": {
+     "ul_60730": "Automatic electrical controls for household and similar use (UL 60730-1).",
+     "ul_61010_2_201": "Programmable controllers (UL 61010-1 / 61010-2-201).",
+     "ul_508a_panel_only": "UL 508A, because the board is a component of an industrial control panel.",
+     "none_apparent": "No listed family applies.",
+     "need_more_information": "Choose when the product's use and installation are unclear."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "ul_60730"
+  },
+  {
+   "key": "od_hood_life_safety",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Could a failure of the commercial kitchen hood controller board plausibly affect life safety?"
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "od_crit12_timing",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "When should the criterion-12 external cold read be run?",
+    "criteria": {
+     "now_before_any_phase3_outreach": "Choose when Phase 3 brings prospects soon, so the review should happen before any outreach.",
+     "wait_for_trigger_first_external_user": "Choose when the recorded trigger (before the first external user sees an explanation) is enough on its own.",
+     "after_first_enterprise_contract": "Choose when the review matters only once a contract exists.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "now_before_any_phase3_outreach"
+  },
+  {
+   "key": "od_prospect_sees_explanation",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Will a prospect see a generated explanation within the first Phase 3 milestone?"
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "od_raw_prompt_storage",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Should Circuit OS store raw prompt text so that a transcription-fidelity check (R1) can run on live traffic?",
+    "criteria": {
+     "store_with_retention_limit": "Choose when live-traffic checking is worth storing prompts for all users with a retention limit.",
+     "store_only_for_opt_in_users": "Choose when prompts should be stored only for users who opt in.",
+     "keep_hash_only_use_seeded_corpus": "Choose when only the hash is kept and R1 is evaluated on a seeded prompt corpus instead.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "keep_hash_only_use_seeded_corpus"
+  },
+  {
+   "key": "od_commit_convention",
+   "chunk": "B",
+   "category": "owner_decision",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which commit-message convention should the project enforce?",
+    "criteria": {
+     "conventional_everywhere": "Choose when every commit uses conventional-commit prefixes (feat, fix, test, …).",
+     "session_prefix_for_worker_commits": "Choose when worker sessions commit as 'session: <description>' as AGENTS.md says.",
+     "conventional_for_code_brain_for_memory": "Choose when code commits are conventional and memory commits use 'brain:'.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "conventional_for_code_brain_for_memory"
+  },
+  {
+   "key": "exit_D1",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D1 (predict() is validated against mathematics and ngspice, not hardware) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D2",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D2 (the MCU is represented by simplified electrical models, not the device) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D3",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D3 (no external engineer has read a generated explanation cold) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D4",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D4 (coverage growth cost may outrun one engineer) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D5",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D5 (an LLM may write the IntentIR, so the specification is untrusted) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D6",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D6 (block proofs may not compose into board claims) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": "already_closed_or_not_applicable",
+   "ref_derivation": "register status not_yet_applicable (S10)",
+   "prior": "already_closed_or_not_applicable"
+  },
+  {
+   "key": "exit_D7",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D7 (datasheet parameters feeding predict() and the rule tables are unverified) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_D8",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D8 (pi is irrational, so a z3 encoding of f_c must bracket it) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": "already_closed_or_not_applicable",
+   "ref_derivation": "register status eliminated (S10)",
+   "prior": "already_closed_or_not_applicable"
+  },
+  {
+   "key": "exit_D9",
+   "chunk": "B",
+   "category": "phase2_exit_defeater",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "How should defeater D9 (a generator bug makes predict() confidently wrong and nothing catches it) stand when Phase 2 exits?",
+    "criteria": {
+     "acceptable_open_with_trigger": "Choose when Phase 2 can exit with it still open, provided its trigger is recorded.",
+     "must_close_before_exit": "Choose when Phase 2 should not exit while it is open.",
+     "already_closed_or_not_applicable": "Choose when the register shows it eliminated or not yet applicable.",
+     "need_more_information": "Choose when the exit criteria needed to judge this are not in the state."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "acceptable_open_with_trigger"
+  },
+  {
+   "key": "exit_stage0",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 0 (instrumentation, harness, contract) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage1",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 1 (IntentIR, registry, form, hard abstention) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage2",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 2 (patch model v2) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage3",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 3 (generator library, claims, grade floor) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage4",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 4 (proof compiler and sign-off) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage5",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 5 (multi-MCU firmware) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "exit_stage6",
+   "chunk": "B",
+   "category": "phase2_exit_stage",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How ready is Phase 2 Stage 6 (BOM and substitution) for Phase 2 exit?",
+    "criteria": [
+     "Not started",
+     "In progress: gates not yet met or the work is uncommitted",
+     "Gates met, with items recorded as not done",
+     "Done: gates met and nothing material outstanding"
+    ]
+   },
+   "ref": 1,
+   "ref_derivation": "HANDOFF §8: Stage 6 in progress, uncommitted (S13)",
+   "prior": null
+  },
+  {
+   "key": "door_rs485_pulldown_default",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Adding the 10 kΩ DE/RE pull-down to every new rs485_node design, with a version bump.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "version bump makes signed RS-485 designs return 409 (S21 D-1)",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "door_rs485_pulldown_opt_in",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Adding the DE/RE pull-down as an opt-in constraint that defaults to false.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "existing designs byte-identical; no signature impact (S21 D-1)",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_bump_versions_stage6",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Bumping generator VERSION strings after the Stage 6 pin-support change.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "signed designs return 409; un-bumping after signatures is not possible (S21 D-7)",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "door_no_bump_stage6",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Leaving generator VERSION strings unchanged after the Stage 6 pin-support change.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "a later bump stays possible (S21 D-7)",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_kind_to_empirical",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Changing `kind` on exact proofs from analytic to empirical.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "kind is not in the sign-off hash; flip back (S21 D-5); contestable because it changes serialized CircuitIR",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_live_pricing_flag",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Enabling live pricing behind a flag.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": null,
+   "ref_derivation": "contestable: flag can be turned off, but adds a vendor secret/ToS dependency",
+   "prior": null
+  },
+  {
+   "key": "door_explanation_async",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Moving the LLM explanation off the request path, run asynchronously like simulation.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": null,
+   "ref_derivation": "contestable: reversible in code, but changes the API response flow",
+   "prior": null
+  },
+  {
+   "key": "door_raise_max_tokens",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Raising the explainer's max_tokens from 8192 to 16384.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "a setting that can be lowered again (S21 D-6)",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_store_raw_prompts",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Starting to store raw user prompt text.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "stored data about users; what was collected cannot be un-collected",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "door_xfail_flaky",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Marking the flaky accuracy test xfail(strict) with a tracked issue.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "remove the marker (S21 D-9)",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_change_circuit_id_namespace",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Changing CIRCUIT_ID_NAMESPACE, from which every circuit_id derives.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "changes every design's circuit_id and orphans stored records (realize.py; S08 item 3)",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "door_freerouting_not_astar",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Choosing to integrate freerouting in Phase 3 instead of extending the custom A* router.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "a plan choice; nothing signed or stored changes",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_regenerate_bench_d1",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Regenerating the BENCH_D1 sheet with current generator versions.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "a document; regenerate again",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_register_stage6_modules",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Registering the Stage 6 modules in regen_state.py and progress_gen.py.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "two_way_door",
+   "ref_derivation": "tracker registration can be edited",
+   "prior": "two_way_door"
+  },
+  {
+   "key": "door_assert_ul508a_compliance",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: Asserting UL 508A compliance for generated Phase 3 boards.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "safety and liability claim (S21 D-13)",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "door_sign_property_set",
+   "chunk": "B",
+   "category": "door",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Is this pending change a one-way or a two-way door? Change: A user signing a design's property set.",
+    "criteria": {
+     "one_way_door": "Choose when the change alters signed or stored data, hashes, the public API, a generator's accepted set, fab cost or safety, so undoing it is costly or impossible.",
+     "two_way_door": "Choose when the change can be undone cheaply and nothing signed, stored, public or safety-related is affected.",
+     "need_more_information": "Choose when the state lacks what is needed to tell."
+    }
+   },
+   "ref": "one_way_door",
+   "ref_derivation": "signed data is frozen; edits drop the signature (S11)",
+   "prior": "one_way_door"
+  },
+  {
+   "key": "p3_first_class",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which industrial class should be the first Phase 3 generator?",
+    "criteria": {
+     "rs485_io_opto": "RS-485 industrial I/O with optoisolation.",
+     "dcv": "The DCV board.",
+     "hood": "The commercial kitchen hood controller.",
+     "refrigeration": "Advanced refrigeration control.",
+     "plc_style": "A PLC-style control board.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "rs485_io_opto"
+  },
+  {
+   "key": "p3_fit_dcv",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How well does this class fit as the first Phase 3 generator? Class: Demand-controlled ventilation (DCV) board.",
+    "criteria": [
+     "Needs machinery Circuit OS lacks (transients, switching)",
+     "Mostly new proofs and rules",
+     "Reuses some proofs and rules",
+     "Reuses most proofs, rules and the RS-485 library"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "p3_needs_switching_dcv",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would generating this class require a switching converter or transient simulation, which Phase 2 does not have? Class: Demand-controlled ventilation (DCV) board."
+   },
+   "ref": true,
+   "ref_derivation": "DCV needs a 24VAC-to-3.3V supply (S17; S28 finding 14)"
+  },
+  {
+   "key": "p3_fit_hood",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How well does this class fit as the first Phase 3 generator? Class: Commercial kitchen hood controller.",
+    "criteria": [
+     "Needs machinery Circuit OS lacks (transients, switching)",
+     "Mostly new proofs and rules",
+     "Reuses some proofs and rules",
+     "Reuses most proofs, rules and the RS-485 library"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "p3_needs_switching_hood",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would generating this class require a switching converter or transient simulation, which Phase 2 does not have? Class: Commercial kitchen hood controller."
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "p3_fit_refrigeration",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How well does this class fit as the first Phase 3 generator? Class: Advanced refrigeration control.",
+    "criteria": [
+     "Needs machinery Circuit OS lacks (transients, switching)",
+     "Mostly new proofs and rules",
+     "Reuses some proofs and rules",
+     "Reuses most proofs, rules and the RS-485 library"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "p3_needs_switching_refrigeration",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would generating this class require a switching converter or transient simulation, which Phase 2 does not have? Class: Advanced refrigeration control."
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "p3_fit_rs485_io_opto",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How well does this class fit as the first Phase 3 generator? Class: RS-485 industrial I/O with optoisolation.",
+    "criteria": [
+     "Needs machinery Circuit OS lacks (transients, switching)",
+     "Mostly new proofs and rules",
+     "Reuses some proofs and rules",
+     "Reuses most proofs, rules and the RS-485 library"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "p3_needs_switching_rs485_io_opto",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would generating this class require a switching converter or transient simulation, which Phase 2 does not have? Class: RS-485 industrial I/O with optoisolation."
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "p3_fit_plc_style",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How well does this class fit as the first Phase 3 generator? Class: PLC-style control board (24 VDC inputs, relay outputs, 4–20 mA, Modbus slave).",
+    "criteria": [
+     "Needs machinery Circuit OS lacks (transients, switching)",
+     "Mostly new proofs and rules",
+     "Reuses some proofs and rules",
+     "Reuses most proofs, rules and the RS-485 library"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "p3_needs_switching_plc_style",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Would generating this class require a switching converter or transient simulation, which Phase 2 does not have? Class: PLC-style control board (24 VDC inputs, relay outputs, 4–20 mA, Modbus slave)."
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "p3_constraints_need_customers",
+   "chunk": "B",
+   "category": "phase3",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does building the constraint layer with freerouting integration require customer evidence first?"
+   },
+   "ref": false,
+   "ref_derivation": "S21 D-10: programme (A) 'needs no customers'"
+  },
+  {
+   "key": "pm_crit12_before_prospects",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Should the criterion-12 external cold read happen before any demo to a prospect?"
+   },
+   "ref": null,
+   "ref_derivation": null
+  },
+  {
+   "key": "pm_h1_evidence_recorded",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state record any test or evidence that settles this PCB_STRATEGY §9 risk: layout quality is the actual buying trigger, so constraints are a consolation prize?"
+   },
+   "ref": false,
+   "ref_derivation": "no test or evidence for any §9 hypothesis is recorded in the dossier (S18)"
+  },
+  {
+   "key": "pm_h1_impact",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "If this PCB_STRATEGY §9 risk turned out true, how much would it change Circuit OS's Phase 3 plan? Risk: layout quality is the actual buying trigger, so constraints are a consolation prize.",
+    "criteria": [
+     "No change",
+     "A minor adjustment",
+     "Reorders Phase 3 priorities",
+     "Invalidates the constraint-layer bet"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "pm_h2_evidence_recorded",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state record any test or evidence that settles this PCB_STRATEGY §9 risk: Quilter or Flux ships intent-aware constraints and the moat closes?"
+   },
+   "ref": false,
+   "ref_derivation": "no test or evidence for any §9 hypothesis is recorded in the dossier (S18)"
+  },
+  {
+   "key": "pm_h2_impact",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "If this PCB_STRATEGY §9 risk turned out true, how much would it change Circuit OS's Phase 3 plan? Risk: Quilter or Flux ships intent-aware constraints and the moat closes.",
+    "criteria": [
+     "No change",
+     "A minor adjustment",
+     "Reorders Phase 3 priorities",
+     "Invalidates the constraint-layer bet"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "pm_h3_evidence_recorded",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state record any test or evidence that settles this PCB_STRATEGY §9 risk: HVAC customers want finished boards, not designs?"
+   },
+   "ref": false,
+   "ref_derivation": "no test or evidence for any §9 hypothesis is recorded in the dossier (S18)"
+  },
+  {
+   "key": "pm_h3_impact",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "If this PCB_STRATEGY §9 risk turned out true, how much would it change Circuit OS's Phase 3 plan? Risk: HVAC customers want finished boards, not designs.",
+    "criteria": [
+     "No change",
+     "A minor adjustment",
+     "Reorders Phase 3 priorities",
+     "Invalidates the constraint-layer bet"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "pm_h4_evidence_recorded",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state record any test or evidence that settles this PCB_STRATEGY §9 risk: the constraint layer is harder than it looks and the constraints come out vague?"
+   },
+   "ref": false,
+   "ref_derivation": "no test or evidence for any §9 hypothesis is recorded in the dossier (S18)"
+  },
+  {
+   "key": "pm_h4_impact",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "If this PCB_STRATEGY §9 risk turned out true, how much would it change Circuit OS's Phase 3 plan? Risk: the constraint layer is harder than it looks and the constraints come out vague.",
+    "criteria": [
+     "No change",
+     "A minor adjustment",
+     "Reorders Phase 3 priorities",
+     "Invalidates the constraint-layer bet"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "pm_h5_evidence_recorded",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "noul",
+   "q": {
+    "type": "noul",
+    "instructions": "Does the state record any test or evidence that settles this PCB_STRATEGY §9 risk: semantic placement rules do not generalise past the five templates?"
+   },
+   "ref": false,
+   "ref_derivation": "no test or evidence for any §9 hypothesis is recorded in the dossier (S18)"
+  },
+  {
+   "key": "pm_h5_impact",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "If this PCB_STRATEGY §9 risk turned out true, how much would it change Circuit OS's Phase 3 plan? Risk: semantic placement rules do not generalise past the five templates.",
+    "criteria": [
+     "No change",
+     "A minor adjustment",
+     "Reorders Phase 3 priorities",
+     "Invalidates the constraint-layer bet"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "pm_audience_first",
+   "chunk": "B",
+   "category": "product_market",
+   "type": "choice",
+   "q": {
+    "type": "choice",
+    "instructions": "Which audience should Phase 3 work serve first?",
+    "criteria": {
+     "hobbyists": "Hobbyists.",
+     "pcb_designers": "Professional PCB designers.",
+     "hvac_controls": "HVAC and controls companies.",
+     "need_more_information": "Choose when a fact missing from the state would change the answer."
+    }
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": "hvac_controls"
+  },
+  {
+   "key": "risk_intent_producer",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the LLM producer (prompt -> IntentIR, one tool_use call) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_form_producer",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the form producer (form -> IntentIR, zero calls) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_intent_patcher",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the LLM patcher (command -> RFC 6902 ops over IntentIR) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_registry_dispatch",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does registry dispatch by envelope() carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_realize_stamping",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does realize(): generate, stamp circuit_id/version/generator, locality, predict() delta carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_rc_lowpass",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the rc_lowpass generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_voltage_divider",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the voltage_divider generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_led_indicator",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the led_indicator generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_dht22_node",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the dht22_node generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_rs485_node",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the rs485_node generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_spice_ngspice",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the SPICE netlist generator with ngspice via Celery and the grader carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_firmware_compile_gate",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does firmware generation with the PlatformIO compile gate carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_kicad_schematic",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the KiCad schematic generator carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_bom_substitution",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the BOM compiler and Stage 6 substitution carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_llm_explainer",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the LLM explainer carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_derived_explainer",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the derived (zero-call) explainer carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_claims_coverage",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does claims and validation_coverage (grades, verdicts, grade_floor) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_proof_compiler",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the proof compiler (sympy + z3, sign-off, frozen refine loop) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_pin_rules",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the pin rules (pin-mux, peripheral conflict, strapping pins) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_defeater_register",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the defeater register D1–D9 carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_auth_persistence",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does auth (JWT), rate limiting and PostgreSQL persistence carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_pcb_engine",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the experimental PCB engine (custom A* router) carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "risk_ci_pipeline",
+   "chunk": "C",
+   "category": "risk",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "How much risk does the CI pipeline carry for Circuit OS right now?",
+    "criteria": [
+     "Negligible: well tested and nothing open",
+     "Low",
+     "Moderate",
+     "High",
+     "Critical: an open doubt could mislead users or block the roadmap"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_finish_commit_stage6",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Finish, register and commit the Stage 6 BOM + substitution work.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_ci_on_phase2_branch",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Make CI run on the phase2-stage0 branch with PlatformIO.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_scanner_new_clients",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Close the One-Rule scanner hole for new model clients (e.g. a TypeSafe client).",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_register_modules",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Register the unregistered backend modules in the trackers.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_regenerate_bench_d1",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Regenerate the stale BENCH_D1 sheet.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_d1_evidence_records",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Build the D1 evidence-record code.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_d7_verification_pass",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Run the D7 datasheet verification pass.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_crit12_cold_read",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Run the criterion-12 external cold read.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_rs485_pulldown",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Add the RS-485 DE/RE pull-down.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_live_pricing",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Enable live component pricing (X7).",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_explanation_async",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Move the LLM explanation off the request path.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_diagnose_flaky",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Diagnose the flaky accuracy test with seed-logged repeat runs.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_judgment_record",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Build a Judgment record and jev_judgment table for Jev outputs.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_r1_shadow",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Run a transcription-fidelity check (R1) in shadow mode.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_r2_shadow",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Run a patch-op faithfulness check (R2) in shadow mode.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_constraint_rule_table",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Build the ConstraintRule table and the L1–L4 layout defeaters.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_freerouting",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Integrate freerouting.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_first_industrial_generator",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Author the first industrial generator.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_gerber_kpi",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Resolve the Gerber / Phase 3 KPI contradiction.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_phase2_exit_gate",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Write a Phase 2 exit gate.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_g0_proof_checker",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Build a G0 proof checker (independent certificate check).",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_transient_sim",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Add transient simulation.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_flash_a_board",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Flash a board and run the generated firmware.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "prio_design_route_coverage",
+   "chunk": "C",
+   "category": "priority",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": "What priority should this candidate next move have? Move: Raise test coverage of the design route.",
+    "criteria": [
+     "Do not do",
+     "Later (Phase 3 or beyond)",
+     "Soon (after the current work)",
+     "Next (this month)",
+     "Now (before anything else)"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": null
+  },
+  {
+   "key": "self_R1",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R1 — Transcription fidelity: per requested value, is it stated in the user's prompt, and which catalogue function does the prompt ask for; stable low probability returns a confirm question instead of accepting.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_R2",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R2 — Patch-op faithfulness: do the cited command words ask for this operation; doubt refuses the patch and keeps v(n).",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_R3",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R3 — X5 retry-added fields: is a value added by the retry stated in the prompt; low probability marks the field underdetermined.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_R4",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R4 — Sign-off doubt hints: highlight requirement fields for the user to check before signing; negative-only, never a 'Jev agrees' badge.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_R5",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R5 — Catalogue-function disagreement: log when the function the prompt asks for differs from the LLM's IntentIR function.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 3
+  },
+  {
+   "key": "self_R6",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R6 — Extra underdetermined questions: may add a question about a required field, never remove one.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_R7",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R7 — Refusal backlog labelling: label refused requests with owner-defined Phase 3 categories to order the backlog.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 3
+  },
+  {
+   "key": "self_R8",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R8 — D7 figure triage: score datasheet figures to break ties in the verification queue order.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_R9",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R9 — D3 explanation pre-screen: rubric score of generated explanations as a regression metric; never counts for criterion 12.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_R10",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R10 — D9 mutation-target ideas: which component fault would the 2% grid gate be least sensitive to, to become a seeded-fault test.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 0
+  },
+  {
+   "key": "self_R11",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "R11 — Substitute ordering: sort already-surfaced substitute parts by the user's stated preference; never surfaces or filters.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P1",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P1 — net_role: label the role of a generic net in new industrial generators (0–10 V output, 4–20 mA loop, relay coil, 24 V input); the generator's declared role wins.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P2",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P2 — env_label: label pollution degree, overvoltage category and indoor vs field-wired from the user's description; the stricter label is used until the user confirms.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P3",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P3 — isolation_needed: judge whether ground-potential difference could exceed the RS-485 common-mode range; short of a stable confirmed 'no', the isolated design is used.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_P4",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P4 — Standard-family triage: flag which standard family a person should review (60730, 61010-2-201, 508A panel, none) and 'possibly life-safety'; a person decides.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P5",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P5 — component_role: role label for a library part without a declared role; the fallback is flagged.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P6",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P6 — DRC waiver triage: cosmetic, needs_review or safety_relevant to order the review queue; every waiver is signed by a person.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P7",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P7 — Private-library admission triage: accept, needs_datasheet_check or reject, after deterministic checks pass.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_P8",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "P8 — 'Is 4-layer justified?' after 2-layer layouts fail: never auto-upgrades; a person confirms.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_T1",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "T1 — entry_covers_diff: advisory PR comment on whether the new decisions.md entry covers the diff.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_T2",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "T2 — failure_class: classify test tracebacks the deterministic classifier cannot match; a retry only for a stable infra hiccup outside accuracy tests.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 3
+  },
+  {
+   "key": "self_T3",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "T3 — contradicts_derived_fact: flag prose paragraphs that contradict state.json excerpts, as a to-fix list for a human.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_T4",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "T4 — needs_owner_attention: a PR label, never an approval.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_O1",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O1 — RS-485 DE/RE pull-down: a recommendation to the owner, who decides.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O2",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O2 — X7 live pricing: a recommendation to the owner; the default stays static.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O3",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O3 — D1 bench timing: a recommendation to the owner.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O4",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O4 — D7 verification order: deterministic tiers first, Jev only breaks ties.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O5",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O5 — `kind` on exact proofs: a recommendation to the owner.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O6",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O6 — Explainer budget next step: a recommendation to the owner.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O7",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O7 — Stage 6 version bumps, residual case after a deterministic byte-compare.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  },
+  {
+   "key": "self_O8",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O8 — Stage 6 status and 5% KPI disposition: reversible scheduling by the agent with care.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_O9",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O9 — Flaky accuracy test policy: the agent acts with care.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 2
+  },
+  {
+   "key": "self_O10",
+   "chunk": "C",
+   "category": "self_assessment",
+   "type": "score",
+   "q": {
+    "type": "score",
+    "instructions": {
+     "proposed_use": "O10 — Phase 3 scope order: a recommendation to the owner.",
+     "question": "How suitable is Jev (a model that returns calibrated probabilities for typed questions but cannot compute, generate text or verify) for this proposed use in Circuit OS?"
+    },
+    "criteria": [
+     "Unsuitable: needs computation, text generation or a guarantee Jev cannot give",
+     "Marginal: only as an offline hint a person always reviews",
+     "Suitable with guardrails: advisory or shadow, never deciding alone",
+     "Well suited: a narrow typed judgment Jev can make directly"
+    ]
+   },
+   "ref": null,
+   "ref_derivation": null,
+   "prior": 1
+  }
+ ]
+}

@@ -1,0 +1,1409 @@
+{
+ "task": "P1 net_role for generic digital/analog nets (Choice over the B14 enum + undeclared)",
+ "questions": {
+  "net_role": {
+   "type": "choice",
+   "instructions": "What role does net {net} play, given its connections?",
+   "criteria": {
+    "analog_0_10v_out": "Drives a 0-10 V control input.",
+    "loop_4_20ma": "Part of a 4-20 mA current loop.",
+    "relay_coil_drive": "Switches a relay coil.",
+    "field_input_24v": "Receives a 24 V field signal.",
+    "logic_local": "Board-local logic only.",
+    "undeclared": "The connections do not determine the role."
+   }
+  }
+ },
+ "label_space": [
+  "analog_0_10v_out",
+  "loop_4_20ma",
+  "relay_coil_drive",
+  "field_input_24v",
+  "logic_local",
+  "undeclared"
+ ],
+ "truth_rule": "Each net is constructed as the circuit that implements the named role, per the B14 label definitions. 'undeclared' items are built so that the connections do not fix the role (off-board load or level unknown). 'out_of_set' items implement a role the enum lacks; they are scored separately (only 'undeclared' is non-false for them).",
+ "strictness_order": {
+  "logic_local": 1,
+  "analog_0_10v_out": 2,
+  "loop_4_20ma": 2,
+  "relay_coil_drive": 3,
+  "field_input_24v": 3,
+  "undeclared": 3
+ },
+ "strictness_note": "Pre-registered for the stricter-option analysis: field-wired roles need surge/spacing constraints that board-local logic does not; an unknown role is treated as the strictest. An unsafe error is a final label whose strictness is below the truth's.",
+ "citations": [
+  {
+   "id": "TEMPLATE_B14",
+   "title": "tools/jev/templates/phase3_labels.questions.json (B14 draft questions)",
+   "url": "file:tools/jev/templates/phase3_labels.questions.json",
+   "quote": "net_role / env_label / isolation_needed / standard_family_flag / possibly_life_safety definitions"
+  },
+  {
+   "id": "WIKI_CURRENT_LOOP",
+   "title": "Wikipedia, Current loop",
+   "url": "https://en.wikipedia.org/wiki/Current_loop",
+   "quote": "Many instrumentation manufacturers produce 4–20 mA sensors which are \"loop powered\"."
+  },
+  {
+   "id": "TI_SLLA370",
+   "title": "Texas Instruments, How To Simplify Isolated 24V PLC Digital Input Module Designs (SLLA370D, rev. Jun 2025)",
+   "url": "https://www.ti.com/lit/pdf/slla370",
+   "quote": "Digital Input (DI) modules are used in Programmable Logic Controllers (PLCs) and Motor Drives to receive 24V digital inputs from field sensors and switches. Isolation is used to manage ground potential differences."
+  },
+  {
+   "id": "PRODUCT_MASTER",
+   "title": "Circuit OS PRODUCT_MASTER.md (snapshot e803a99), Tier 3 and Phase 3",
+   "url": "file:p2/PRODUCT_MASTER.md:174-190,346-359",
+   "quote": "Commercial Kitchen Hood Controllers: ... dry contact inputs from Ansul fire suppression system, relay outputs for gas valve shutoff and equipment lockout ... The system flags UL 508A requirements and life-safety design rules."
+  }
+ ],
+ "variants": {
+  "repeat_subset": [
+   "P1-A06",
+   "P1-F03",
+   "P1-G02",
+   "P1-G03",
+   "P1-L05",
+   "P1-L06",
+   "P1-L08",
+   "P1-O01",
+   "P1-R02",
+   "P1-R06",
+   "P1-R08",
+   "P1-U02",
+   "P1-U08"
+  ],
+  "paraphrase_subset": [
+   "P1-A02",
+   "P1-A06",
+   "P1-F01",
+   "P1-F05",
+   "P1-G01",
+   "P1-G04",
+   "P1-L02",
+   "P1-L05",
+   "P1-R01",
+   "P1-R04",
+   "P1-U03",
+   "P1-U07"
+  ],
+  "blind_subset": [
+   "P1-A02",
+   "P1-L04",
+   "P1-U06"
+  ]
+ },
+ "items": [
+  {
+   "id": "P1-A01",
+   "state": {
+    "net": "AO1",
+    "pins_on_this_net": [
+     "U4 pin 1 (LM358 op-amp output; U4 supplied from +24 V)",
+     "R21 pin 1 (100 ohm series resistor)",
+     "R22 pin 1 (20 kohm feedback resistor)"
+    ],
+    "one_hop_context": [
+     "R21 pin 2 goes to screw terminal J3 pin 1",
+     "R22 pin 2 goes to U4 inverting input, with R23 (9.9 kohm) from there to GND",
+     "U4 non-inverting input is fed from MCU PWM pin PB6 through a two-pole RC filter"
+    ],
+    "field_wiring": "J3 pin 1 is wired to terminal AI1 of a variable-frequency drive; AI1 is the drive's speed-reference input, 0-10 V, 10 kohm input impedance"
+   },
+   "question_fill": {
+    "net": "AO1"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Op-amp gain 1+20k/9.9k = 3.02 on a 0-3.3 V filtered PWM gives 0-10 V into a VFD 0-10 V input: drives a 0-10 V control input.",
+   "scored": true
+  },
+  {
+   "id": "P1-A02",
+   "state": {
+    "net": "OUT_A",
+    "pins_on_this_net": [
+     "U2 pin 7 (LM2904 op-amp output; U2 supplied from +15 V)",
+     "R8 pin 1 (47 ohm)"
+    ],
+    "one_hop_context": [
+     "R8 pin 2 goes to terminal J1 pin 2, which also has a 12 V TVS diode to GND",
+     "J1 pin 1 is GND",
+     "U2 is configured as a non-inverting amplifier with gain 3.0 (R9 20 kohm, R10 10 kohm)",
+     "U2 input is the 0-3.3 V output of the MCU's DAC"
+    ]
+   },
+   "question_fill": {
+    "net": "OUT_A"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "A 0-3.3 V DAC scaled by 3.0 gives 0-9.9 V at a field terminal with a GND return: an analog 0-10 V output.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "OUT_A",
+    "description": "Net OUT_A: an LM2904 op-amp (U2, on a +15 V rail) wired as a non-inverting stage with gain 3.0 (20 kohm over 10 kohm) takes the MCU DAC's 0-3.3 V and, through a 47 ohm resistor (R8), feeds terminal J1 pin 2. A 12 V TVS clamps that terminal to ground, and J1 pin 1 is ground."
+   }
+  },
+  {
+   "id": "P1-A03",
+   "state": {
+    "net": "DAMPER_CMD",
+    "pins_on_this_net": [
+     "U9 pin VOUT (AD5422 DAC, voltage output configured for the 0 V to 10 V range)",
+     "J5 pin 3"
+    ],
+    "one_hop_context": [
+     "J5 pin 4 is GND"
+    ],
+    "field_wiring": "J5 pin 3 is wired to input Y of a damper actuator (control signal 0-10 V DC)"
+   },
+   "question_fill": {
+    "net": "DAMPER_CMD"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "DAC configured 0-10 V into an actuator's 0-10 V control input.",
+   "scored": true
+  },
+  {
+   "id": "P1-A04",
+   "state": {
+    "net": "N14",
+    "pins_on_this_net": [
+     "U3 output (op-amp supplied from +15 V)",
+     "R30 pin 1 (220 ohm)",
+     "R31 pin 1 (10 kohm feedback)"
+    ],
+    "one_hop_context": [
+     "R30 pin 2 goes to J8 pin 1, labelled SIG; J8 pin 2, labelled COM, is GND",
+     "R31 pin 2 goes to U3 inverting input with R32 (4.99 kohm) to GND (gain 3.0)",
+     "U3 non-inverting input is a 0-3.3 V filtered PWM signal"
+    ]
+   },
+   "question_fill": {
+    "net": "N14"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Gain-3 buffer of a 0-3.3 V signal to a SIG/COM terminal pair: 0-10 V analog output.",
+   "scored": true
+  },
+  {
+   "id": "P1-A05",
+   "state": {
+    "net": "SPEED_REF",
+    "pins_on_this_net": [
+     "Q5 emitter (NPN, collector at +12 V, base driven by op-amp U6 which closes the loop from Q5's emitter)",
+     "J2 pin 4"
+    ],
+    "one_hop_context": [
+     "U6 reference input is 0-3.3 V from the MCU DAC with a loop gain of 3.03",
+     "J2 pin 5 is GND"
+    ],
+    "field_wiring": "J2 pin 4 is wired to the control input of an EC fan motor (0-10 V DC, 100 kohm input)"
+   },
+   "question_fill": {
+    "net": "SPEED_REF"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Closed-loop emitter-follower stage to an EC fan's 0-10 V control input.",
+   "scored": true
+  },
+  {
+   "id": "P1-A06",
+   "state": {
+    "net": "VFD_REF",
+    "pins_on_this_net": [
+     "U11 pin 1 (LT1013 op-amp output; supplied from +24 V)",
+     "R40 pin 1 (100 ohm)"
+    ],
+    "one_hop_context": [
+     "R40 pin 2 goes to terminal J7 pin 1; J7 pin 2 is GND"
+    ],
+    "field_wiring": "J7 is wired to a VFD analog input that has been configured for 'voltage, 0-10 V'"
+   },
+   "question_fill": {
+    "net": "VFD_REF"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Op-amp output on a 24 V rail into a VFD analog input configured 0-10 V.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "VFD_REF",
+    "description": "Net VFD_REF runs from the output of an LT1013 op-amp (U11, powered from +24 V) through a 100 ohm resistor R40 to terminal J7 pin 1 (J7 pin 2 is ground). In the field, J7 connects to a drive whose analog input is set to 'voltage, 0-10 V'."
+   }
+  },
+  {
+   "id": "P1-A07",
+   "state": {
+    "net": "N31",
+    "pins_on_this_net": [
+     "U14 output (OPA192 op-amp on +/-15 V)",
+     "R50 pin 1 (49.9 ohm)",
+     "R51 pin 1 (30 kohm feedback)"
+    ],
+    "one_hop_context": [
+     "R50 pin 2 goes to J12 pin 1; J12 pin 2 is GND",
+     "R51 pin 2 goes to U14 inverting input with R52 (10 kohm) to GND (gain 4.0)",
+     "U14 non-inverting input is a 16-bit DAC output spanning 0-2.5 V"
+    ]
+   },
+   "question_fill": {
+    "net": "N31"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "0-2.5 V DAC times gain 4.0 gives 0-10 V at a field terminal.",
+   "scored": true
+  },
+  {
+   "id": "P1-A08",
+   "state": {
+    "net": "VALVE_Y",
+    "pins_on_this_net": [
+     "Output pin of a PWM-to-voltage converter module (0-10 V output, 5 mA max)",
+     "J4 pin 1"
+    ],
+    "one_hop_context": [
+     "the converter's input is MCU PWM pin D9",
+     "J4 pin 2 is GND"
+    ],
+    "field_wiring": "J4 pin 1 is wired to input 'Y 0(2)-10 V' of a valve actuator"
+   },
+   "question_fill": {
+    "net": "VALVE_Y"
+   },
+   "truth": {
+    "net_role": "analog_0_10v_out"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Converter module rated 0-10 V output into a valve actuator's 0(2)-10 V input.",
+   "scored": true
+  },
+  {
+   "id": "P1-L01",
+   "state": {
+    "net": "AI0",
+    "pins_on_this_net": [
+     "J2 pin 1",
+     "R5 pin 1 (250 ohm 0.1% resistor; R5 pin 2 is GND)",
+     "R6 pin 1 (10 kohm)"
+    ],
+    "one_hop_context": [
+     "R6 pin 2 goes to ADC input A0 with 100 nF to GND",
+     "J2 pin 2 is +24 V"
+    ],
+    "field_wiring": "J2 is wired to a two-wire pressure transmitter, 4-20 mA, loop-powered from J2 pin 2"
+   },
+   "question_fill": {
+    "net": "AI0"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Loop-powered 4-20 mA transmitter returning through a 250 ohm sense resistor (1-5 V at the ADC).",
+   "scored": true
+  },
+  {
+   "id": "P1-L02",
+   "state": {
+    "net": "SENSE1",
+    "pins_on_this_net": [
+     "F3 pin 2 (PTC fuse; F3 pin 1 is terminal J6 pin 2)",
+     "R11 pin 1 (250 ohm 0.1%; R11 pin 2 is GND)",
+     "D4 cathode (TVS; anode to GND)",
+     "R12 pin 1 (22 kohm)"
+    ],
+    "one_hop_context": [
+     "R12 pin 2 goes to MCU ADC input A1",
+     "J6 pin 1 is +24 V"
+    ]
+   },
+   "question_fill": {
+    "net": "SENSE1"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "implicit",
+   "name_hint": "weak",
+   "derivation": "A field terminal adjacent to +24 V returning through a precision 250 ohm resistor to GND: a 4-20 mA receiver.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "SENSE1",
+    "description": "Net SENSE1: terminal J6 pin 2 passes through PTC fuse F3 onto a node that has a 250 ohm 0.1 % resistor (R11) to ground, a TVS diode to ground, and a 22 kohm resistor to ADC pin A1. The neighbouring terminal J6 pin 1 carries +24 V."
+   }
+  },
+  {
+   "id": "P1-L03",
+   "state": {
+    "net": "PT_OUT",
+    "pins_on_this_net": [
+     "U3 pin IOUT (XTR115 4-20 mA current-loop transmitter)",
+     "J3 pin 2"
+    ],
+    "one_hop_context": [
+     "J3 pin 1 is the loop positive",
+     "U3 input is driven by the MCU's DAC"
+    ],
+    "field_wiring": "J3 is wired to a PLC analog input configured for 4-20 mA"
+   },
+   "question_fill": {
+    "net": "PT_OUT"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "XTR115 current output into a PLC's 4-20 mA input.",
+   "scored": true
+  },
+  {
+   "id": "P1-L04",
+   "state": {
+    "net": "N22",
+    "pins_on_this_net": [
+     "R17 pin 2 (100 ohm; R17 pin 1 is terminal J9 pin 2)",
+     "R18 pin 1 (249 ohm 0.1%; R18 pin 2 is AGND)",
+     "R19 pin 1 (10 kohm)"
+    ],
+    "one_hop_context": [
+     "R19 pin 2 goes to ADC input A2 with 100 nF to AGND",
+     "J9 pin 1 is +24 V",
+     "firmware comment beside A2 reads 'expect 1.0-5.0 V'"
+    ]
+   },
+   "question_fill": {
+    "net": "N22"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "249 ohm precision shunt from a field terminal, 1.0-5.0 V expected: 4-20 mA x 249 ohm.",
+   "scored": true
+  },
+  {
+   "id": "P1-L05",
+   "state": {
+    "net": "FLOW_IN",
+    "pins_on_this_net": [
+     "J1 pin 3",
+     "R3 pin 1 (250 ohm; R3 pin 2 is GND)",
+     "U2 pin AIN0 (ADS1115 ADC input)"
+    ],
+    "one_hop_context": [
+     "J1 pin 4 is GND"
+    ],
+    "field_wiring": "J1 pin 3 is wired to the active 4-20 mA current output of a flow meter"
+   },
+   "question_fill": {
+    "net": "FLOW_IN"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Active 4-20 mA output into a 250 ohm sense resistor.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "FLOW_IN",
+    "description": "Net FLOW_IN joins terminal J1 pin 3, the top of R3 (250 ohm, bottom end grounded) and ADC channel AIN0 of an ADS1115. The field cable on J1 pin 3 comes from a flow meter's active 4-20 mA output; J1 pin 4 is ground."
+   }
+  },
+  {
+   "id": "P1-L06",
+   "state": {
+    "net": "LOOP_RTN",
+    "pins_on_this_net": [
+     "J4 pin 4",
+     "R7 pin 1 (250 ohm 0.1%; R7 pin 2 is AGND)",
+     "U1 pin PA1 (MCU ADC input, through 1 kohm)"
+    ],
+    "one_hop_context": [
+     "J4 pin 3 is +24 V loop supply"
+    ],
+    "field_wiring": "J4 pins 3-4 are wired to a two-wire level transmitter (4-20 mA)"
+   },
+   "question_fill": {
+    "net": "LOOP_RTN"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Two-wire level transmitter loop return through 250 ohm.",
+   "scored": true
+  },
+  {
+   "id": "P1-L07",
+   "state": {
+    "net": "CH3",
+    "pins_on_this_net": [
+     "R44 pin 2 (10 ohm; R44 pin 1 is terminal J11 pin 5)",
+     "R45 pin 1 (250 ohm 0.05% shunt; R45 pin 2 is GND)",
+     "U8 pin AIN3 (ADS1115)"
+    ],
+    "one_hop_context": [
+     "J11 pin 6 is labelled 24V_LOOP",
+     "U8 AIN2 is tied to the shunt's GND end (differential measurement)"
+    ]
+   },
+   "question_fill": {
+    "net": "CH3"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Shunt of 250 ohm from a terminal next to a 24V_LOOP pin: current-loop receiver.",
+   "scored": true
+  },
+  {
+   "id": "P1-L08",
+   "state": {
+    "net": "AO_4_20",
+    "pins_on_this_net": [
+     "U12 pin IOUT (AD5420 current-output DAC, 4-20 mA range selected)",
+     "J5 pin 1"
+    ],
+    "one_hop_context": [
+     "J5 pin 2 is the loop return"
+    ],
+    "field_wiring": "J5 is wired to a valve positioner's 4-20 mA input"
+   },
+   "question_fill": {
+    "net": "AO_4_20"
+   },
+   "truth": {
+    "net_role": "loop_4_20ma"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Current-output DAC in the 4-20 mA range driving a positioner's 4-20 mA input.",
+   "scored": true
+  },
+  {
+   "id": "P1-R01",
+   "state": {
+    "net": "K1_COIL_LO",
+    "pins_on_this_net": [
+     "Q2 collector (BC547 NPN; emitter to GND)",
+     "D5 anode (1N4007; D5 cathode to +12 V)",
+     "K1 coil pin 2 (12 V relay coil, 400 ohm)"
+    ],
+    "one_hop_context": [
+     "K1 coil pin 1 is +12 V",
+     "Q2 base is driven from MCU pin D7 through 1 kohm"
+    ]
+   },
+   "question_fill": {
+    "net": "K1_COIL_LO"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "Low-side transistor switch with flyback diode across a relay coil: switches a relay coil.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "K1_COIL_LO",
+    "description": "Net K1_COIL_LO: the collector of an NPN BC547 (Q2, emitter grounded, base driven from MCU D7 via 1 kohm), the anode of a 1N4007 whose cathode sits on +12 V, and pin 2 of relay K1's 400 ohm, 12 V coil (coil pin 1 on +12 V)."
+   }
+  },
+  {
+   "id": "P1-R02",
+   "state": {
+    "net": "N40",
+    "pins_on_this_net": [
+     "Q7 collector (MMBT2222A; emitter to GND)",
+     "D12 anode (1N4148; cathode to +5 V)",
+     "K3 pin 1 (G5LE-1 relay, coil)"
+    ],
+    "one_hop_context": [
+     "K3 pin 2 is +5 V"
+    ]
+   },
+   "question_fill": {
+    "net": "N40"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Transistor collector + reverse diode + relay coil pin.",
+   "scored": true
+  },
+  {
+   "id": "P1-R03",
+   "state": {
+    "net": "K5_A2",
+    "pins_on_this_net": [
+     "U6 pin 14 OUT3 (ULN2003A Darlington sink output)",
+     "K5 coil terminal A2 (24 VDC relay coil)"
+    ],
+    "one_hop_context": [
+     "K5 coil terminal A1 is +24 V",
+     "U6 pin 9 COM (internal clamp diodes) is +24 V",
+     "U6 input 3 is MCU pin PB5"
+    ]
+   },
+   "question_fill": {
+    "net": "K5_A2"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "ULN2003A output with COM clamp to the coil supply, sinking a relay coil.",
+   "scored": true
+  },
+  {
+   "id": "P1-R04",
+   "state": {
+    "net": "DRV_K2",
+    "pins_on_this_net": [
+     "Q4 drain (AO3400 N-MOSFET; source to GND)",
+     "D3 anode (SS14 Schottky; cathode to +24 V)",
+     "K2 coil pin 1 (24 VDC relay coil)"
+    ],
+    "one_hop_context": [
+     "K2 coil pin 2 is +24 V",
+     "Q4 gate is driven from MCU pin PA8 through 100 ohm with 100 kohm to GND"
+    ]
+   },
+   "question_fill": {
+    "net": "DRV_K2"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "MOSFET low-side switch with Schottky flyback across a relay coil.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "DRV_K2",
+    "description": "Net DRV_K2 ties together the drain of an AO3400 MOSFET (source grounded, gate from PA8 via 100 ohm with a 100 kohm pull-down), the anode of an SS14 Schottky returning to +24 V, and one end of relay K2's 24 VDC coil, whose other end is on +24 V."
+   }
+  },
+  {
+   "id": "P1-R05",
+   "state": {
+    "net": "RLY_A",
+    "pins_on_this_net": [
+     "Q9 drain (2N7002; source to GND)",
+     "D8 anode (1N4148; cathode to +12 V)",
+     "K4 coil pin A2 (relay that switches a damper actuator's 24 VAC)"
+    ],
+    "one_hop_context": [
+     "K4 coil pin A1 is +12 V"
+    ]
+   },
+   "question_fill": {
+    "net": "RLY_A"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "2N7002 low-side switch with flyback diode on the coil of the damper relay.",
+   "scored": true
+  },
+  {
+   "id": "P1-R06",
+   "state": {
+    "net": "N55",
+    "pins_on_this_net": [
+     "Q10 collector (BC337; emitter to GND)",
+     "D9 anode (1N4007; cathode to VRELAY)",
+     "J3 pin 2, labelled COIL-"
+    ],
+    "one_hop_context": [
+     "J3 pin 1, labelled COIL+, is VRELAY (+24 V)"
+    ],
+    "field_wiring": "J3 goes to an off-board relay"
+   },
+   "question_fill": {
+    "net": "N55"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Transistor + flyback diode + terminal pair labelled COIL+/COIL-: switches an off-board relay coil.",
+   "scored": true
+  },
+  {
+   "id": "P1-R07",
+   "state": {
+    "net": "K8_DRV",
+    "pins_on_this_net": [
+     "U15 pin OUT2 (TPL7407L low-side driver channel)",
+     "K8 coil pin 1 (12 V relay coil)"
+    ],
+    "one_hop_context": [
+     "K8 coil pin 2 is +12 V",
+     "U15 COM pin is +12 V (internal flyback clamps)"
+    ]
+   },
+   "question_fill": {
+    "net": "K8_DRV"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Low-side driver channel with COM clamp sinking a relay coil.",
+   "scored": true
+  },
+  {
+   "id": "P1-R08",
+   "state": {
+    "net": "N61",
+    "pins_on_this_net": [
+     "Q3 collector (BC337; emitter to GND)",
+     "D7 anode (1N4007; cathode to +12 V)",
+     "K6 pin 1 (coil)",
+     "C20 pin 1 (100 nF snubber; C20 pin 2 is +12 V)"
+    ],
+    "one_hop_context": [
+     "K6 pin 2 is +12 V",
+     "Q3 base from MCU pin PC1 through 2.2 kohm"
+    ]
+   },
+   "question_fill": {
+    "net": "N61"
+   },
+   "truth": {
+    "net_role": "relay_coil_drive"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Transistor, reverse diode and a relay coil pin: relay coil low side.",
+   "scored": true
+  },
+  {
+   "id": "P1-F01",
+   "state": {
+    "net": "DI1",
+    "pins_on_this_net": [
+     "J6 pin 3",
+     "R20 pin 1 (2.2 kohm; R20 pin 2 is U7 pin 1, the PC817 LED anode)"
+    ],
+    "one_hop_context": [
+     "U7 pin 2 (LED cathode) is J6 pin 4, the field 0 V",
+     "U7 output transistor pulls MCU pin PB3 low against a 10 kohm pull-up to +3.3 V"
+    ],
+    "field_wiring": "J6 pin 3 is wired to the output of a 24 VDC PNP proximity sensor"
+   },
+   "question_fill": {
+    "net": "DI1"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "24 VDC sensor into an optocoupler LED through 2.2 kohm: receives a 24 V field signal.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "DI1",
+    "description": "Net DI1: screw terminal J6 pin 3, which the installer wires to a 24 VDC PNP proximity sensor's output, feeds a 2.2 kohm resistor into the LED anode of PC817 U7; the LED cathode returns to field 0 V on J6 pin 4, and U7's transistor pulls MCU pin PB3 low against 10 kohm to 3.3 V."
+   }
+  },
+  {
+   "id": "P1-F02",
+   "state": {
+    "net": "IN_4",
+    "pins_on_this_net": [
+     "J10 pin 4",
+     "R33 pin 1 (3.3 kohm 0.5 W)"
+    ],
+    "one_hop_context": [
+     "R33 pin 2 is the anode of the LED in U12 (TLP291 optocoupler)",
+     "U12 LED cathode goes to J10 pin 9, labelled COM",
+     "a reverse diode is placed across U12's LED",
+     "J10 pin 1 is labelled +24V"
+    ]
+   },
+   "question_fill": {
+    "net": "IN_4"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "implicit",
+   "name_hint": "weak",
+   "derivation": "Terminal through a 3.3 kohm 0.5 W resistor into an opto LED, COM return, +24V terminal alongside: 24 V field input.",
+   "scored": true
+  },
+  {
+   "id": "P1-F03",
+   "state": {
+    "net": "X3",
+    "pins_on_this_net": [
+     "J2 pin 3",
+     "R4 pin 1 (4.7 kohm)"
+    ],
+    "one_hop_context": [
+     "R4 pin 2 goes through a series diode to the anode of optocoupler U2's LED",
+     "U2 LED cathode is J2 pin 10 (field 0 V)",
+     "J2 pin 1 is +24 V, supplied to the field contacts"
+    ],
+    "field_wiring": "J2 pin 3 is wired to a float switch contact fed from J2 pin 1 (+24 VDC)"
+   },
+   "question_fill": {
+    "net": "X3"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "explicit",
+   "name_hint": "none",
+   "derivation": "24 VDC field contact into an opto input.",
+   "scored": true
+  },
+  {
+   "id": "P1-F04",
+   "state": {
+    "net": "START_PB",
+    "pins_on_this_net": [
+     "J8 pin 1",
+     "R26 pin 1 (2.7 kohm; R26 pin 2 is the PC817 U9 LED anode)"
+    ],
+    "one_hop_context": [
+     "U9 LED cathode is the field 0 V terminal J8 pin 2"
+    ],
+    "field_wiring": "J8 pin 1 is wired to a pushbutton that switches +24 VDC from the panel supply"
+   },
+   "question_fill": {
+    "net": "START_PB"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Panel pushbutton switching +24 VDC into an opto LED.",
+   "scored": true
+  },
+  {
+   "id": "P1-F05",
+   "state": {
+    "net": "N70",
+    "pins_on_this_net": [
+     "J5 pin 2",
+     "R60 pin 1 (2.2 kohm; R60 pin 2 is the IN pin of U20, an ISO1211 isolated 24 V digital-input receiver)"
+    ],
+    "one_hop_context": [
+     "U20 field-side ground is J5 pin 1",
+     "U20 SENSE pin has its 562 ohm current-limit resistor"
+    ]
+   },
+   "question_fill": {
+    "net": "N70"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "implicit",
+   "name_hint": "none",
+   "derivation": "Terminal into an ISO1211 (isolated 24 V digital-input receiver) input: 24 V field input.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "N70",
+    "description": "Net N70 connects terminal J5 pin 2 to a 2.2 kohm resistor that enters the IN pin of U20, an ISO1211 isolated 24 V digital-input receiver whose field-side ground is J5 pin 1 (its SENSE pin carries the 562 ohm current-limit resistor)."
+   }
+  },
+  {
+   "id": "P1-F06",
+   "state": {
+    "net": "LIMIT_SW",
+    "pins_on_this_net": [
+     "J7 pin 6",
+     "R14 pin 1 (2.2 kohm; R14 pin 2 is the PC817 U4 LED anode)"
+    ],
+    "one_hop_context": [
+     "U4 LED cathode is J7 pin 7 (field 0 V)"
+    ],
+    "field_wiring": "J7 pin 6 is wired to a limit switch contact powered from the 24 VDC field supply"
+   },
+   "question_fill": {
+    "net": "LIMIT_SW"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Limit switch on 24 VDC into an opto LED.",
+   "scored": true
+  },
+  {
+   "id": "P1-F07",
+   "state": {
+    "net": "FIELD_IN2",
+    "pins_on_this_net": [
+     "J4 pin 2",
+     "D30 cathode (SMBJ33A TVS; anode to field 0 V)",
+     "R70 pin 1 (2.2 kohm; R70 pin 2 is opto U3 LED anode)"
+    ],
+    "one_hop_context": [
+     "J4 pin 1 is 24V+ supplied to sensors",
+     "U3 LED cathode is field 0 V"
+    ]
+   },
+   "question_fill": {
+    "net": "FIELD_IN2"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "implicit",
+   "name_hint": "strong",
+   "derivation": "Terminal next to a 24V+ sensor supply with a 33 V TVS and 2.2 kohm into an opto: 24 V field input.",
+   "scored": true
+  },
+  {
+   "id": "P1-F08",
+   "state": {
+    "net": "DOOR_SW",
+    "pins_on_this_net": [
+     "J3 pin 2",
+     "R9 pin 1 (2.2 kohm; R9 pin 2 is PC817 U5 LED anode)"
+    ],
+    "one_hop_context": [
+     "U5 LED cathode is J3 pin 3 (field 0 V)",
+     "J3 pin 1 is +24 VDC field supply"
+    ],
+    "field_wiring": "J3 pins 1-2 are wired across a dry-contact door switch"
+   },
+   "question_fill": {
+    "net": "DOOR_SW"
+   },
+   "truth": {
+    "net_role": "field_input_24v"
+   },
+   "difficulty": "explicit",
+   "name_hint": "weak",
+   "derivation": "Dry contact switching +24 VDC into an opto LED.",
+   "scored": true
+  },
+  {
+   "id": "P1-G01",
+   "state": {
+    "net": "SDA",
+    "pins_on_this_net": [
+     "U1 pin PB7 (STM32F411 I2C1 SDA)",
+     "U5 pin 5 (24LC256 EEPROM SDA)",
+     "R9 pin 1 (4.7 kohm; R9 pin 2 is +3.3 V)"
+    ]
+   },
+   "question_fill": {
+    "net": "SDA"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "On-board I2C data line between MCU and EEPROM.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "SDA",
+    "description": "Net SDA links the STM32F411's I2C1 data pin PB7 to pin 5 of a 24LC256 EEPROM, with a 4.7 kohm pull-up to 3.3 V."
+   }
+  },
+  {
+   "id": "P1-G02",
+   "state": {
+    "net": "LED_STATUS_DRV",
+    "pins_on_this_net": [
+     "U1 pin PA5 (MCU GPIO)",
+     "R12 pin 1 (330 ohm)"
+    ],
+    "one_hop_context": [
+     "R12 pin 2 goes to the anode of on-board status LED D2; D2 cathode is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "LED_STATUS_DRV"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "MCU GPIO to an on-board LED.",
+   "scored": true
+  },
+  {
+   "id": "P1-G03",
+   "state": {
+    "net": "SPI_SCK",
+    "pins_on_this_net": [
+     "U1 pin PA5 (SPI1 SCK)",
+     "U6 pin 6 (W25Q32 SPI flash CLK)"
+    ]
+   },
+   "question_fill": {
+    "net": "SPI_SCK"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "On-board SPI clock to flash.",
+   "scored": true
+  },
+  {
+   "id": "P1-G04",
+   "state": {
+    "net": "OPTO_OUT1",
+    "pins_on_this_net": [
+     "U7 pin 4 (PC817 phototransistor collector; emitter pin 3 is GND)",
+     "R21 pin 1 (10 kohm; R21 pin 2 is +3.3 V)",
+     "U1 pin PB3 (MCU input)"
+    ]
+   },
+   "question_fill": {
+    "net": "OPTO_OUT1"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "implicit",
+   "name_hint": "weak",
+   "derivation": "Logic side of an optocoupler: collector, pull-up and MCU input, all on board.",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "OPTO_OUT1",
+    "description": "Net OPTO_OUT1: the collector of a PC817's phototransistor (U7 pin 4, emitter grounded) meets a 10 kohm pull-up to 3.3 V and MCU input PB3."
+   }
+  },
+  {
+   "id": "P1-G05",
+   "state": {
+    "net": "NRST",
+    "pins_on_this_net": [
+     "U1 pin NRST",
+     "R2 pin 1 (10 kohm; R2 pin 2 is +3.3 V)",
+     "C3 pin 1 (100 nF; C3 pin 2 is GND)",
+     "SW1 pin 1 (reset button; SW1 pin 2 is GND)"
+    ]
+   },
+   "question_fill": {
+    "net": "NRST"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "On-board reset net.",
+   "scored": true
+  },
+  {
+   "id": "P1-G06",
+   "state": {
+    "net": "UART_TX",
+    "pins_on_this_net": [
+     "U1 pin PA2 (USART2 TX)",
+     "U4 pin 4 (MAX3485 DI, driver input)"
+    ]
+   },
+   "question_fill": {
+    "net": "UART_TX"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "MCU UART to an on-board transceiver's logic input.",
+   "scored": true
+  },
+  {
+   "id": "P1-G07",
+   "state": {
+    "net": "DE_RE",
+    "pins_on_this_net": [
+     "U1 pin PB0 (MCU GPIO)",
+     "U4 pin 3 (MAX3485 DE)",
+     "U4 pin 2 (MAX3485 /RE)"
+    ]
+   },
+   "question_fill": {
+    "net": "DE_RE"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "explicit",
+   "name_hint": "strong",
+   "derivation": "On-board transceiver direction control.",
+   "scored": true
+  },
+  {
+   "id": "P1-G08",
+   "state": {
+    "net": "BTN_SELECT",
+    "pins_on_this_net": [
+     "SW3 pin 1 (tactile switch; SW3 pin 2 is GND)",
+     "R40 pin 1 (10 kohm; R40 pin 2 is +3.3 V)",
+     "C41 pin 1 (100 nF; C41 pin 2 is GND)",
+     "U1 pin PC4 (MCU input)"
+    ]
+   },
+   "question_fill": {
+    "net": "BTN_SELECT"
+   },
+   "truth": {
+    "net_role": "logic_local"
+   },
+   "difficulty": "implicit",
+   "name_hint": "strong",
+   "derivation": "On-board pushbutton with pull-up and debounce.",
+   "scored": true
+  },
+  {
+   "id": "P1-U01",
+   "state": {
+    "net": "N80",
+    "pins_on_this_net": [
+     "U1 pin PA4 (MCU pin with DAC capability)",
+     "J9 pin 2"
+    ],
+    "one_hop_context": [
+     "J9 pin 1 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "N80"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "An MCU pin straight to a connector: level, direction and purpose not determined.",
+   "scored": true
+  },
+  {
+   "id": "P1-U02",
+   "state": {
+    "net": "N81",
+    "pins_on_this_net": [
+     "J12 pin 3",
+     "R70 pin 1 (1 kohm; R70 pin 2 is MCU pin PB12)"
+    ],
+    "one_hop_context": [
+     "J12 pin 4 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "N81"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "Terminal to an MCU pin through 1 kohm: input or output, level unknown.",
+   "scored": true
+  },
+  {
+   "id": "P1-U03",
+   "state": {
+    "net": "N82",
+    "pins_on_this_net": [
+     "Q12 collector (NPN; emitter to GND)",
+     "J14 pin 1"
+    ],
+    "one_hop_context": [
+     "Q12 base from MCU through 1 kohm",
+     "no diode on the board"
+    ]
+   },
+   "question_fill": {
+    "net": "N82"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "Open-collector output to a connector; the off-board load is unknown (could be a lamp, relay, buzzer...).",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "N82",
+    "description": "Net N82: the collector of an NPN transistor Q12 (emitter grounded, base driven from the MCU via 1 kohm) goes straight to connector J14 pin 1. There is no diode on the board."
+   }
+  },
+  {
+   "id": "P1-U04",
+   "state": {
+    "net": "N83",
+    "pins_on_this_net": [
+     "J16 pin 1",
+     "R80 pin 1 (100 kohm; R80 pin 2 is MCU ADC pin PA1)"
+    ],
+    "one_hop_context": [
+     "33 kohm from PA1 to GND",
+     "J16 pin 2 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "N83"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "A divided analog input from a terminal: source unknown (battery monitor, 0-10 V sensor, ...).",
+   "scored": true
+  },
+  {
+   "id": "P1-U05",
+   "state": {
+    "net": "N84",
+    "pins_on_this_net": [
+     "U1 pin PB8 (MCU GPIO)",
+     "R81 pin 1 (470 ohm; R81 pin 2 is J18 pin 3)"
+    ],
+    "one_hop_context": [
+     "J18 pin 1 is +5 V",
+     "J18 pin 2 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "N84"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "A three-pin header with a signal through 470 ohm: purpose unknown.",
+   "scored": true
+  },
+  {
+   "id": "P1-U06",
+   "state": {
+    "net": "N85",
+    "pins_on_this_net": [
+     "J20 pin 1",
+     "J21 pin 1"
+    ],
+    "one_hop_context": [
+     "nothing else on the board connects to this net"
+    ]
+   },
+   "question_fill": {
+    "net": "N85"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "A pass-through between two terminals: role set by the field wiring, which is not described.",
+   "scored": true
+  },
+  {
+   "id": "P1-U07",
+   "state": {
+    "net": "N86",
+    "pins_on_this_net": [
+     "Q20 drain (N-MOSFET; source to GND)",
+     "J22 pin 2"
+    ],
+    "one_hop_context": [
+     "J22 pin 1 is +24 V",
+     "no flyback diode on the board",
+     "Q20 gate from MCU"
+    ]
+   },
+   "question_fill": {
+    "net": "N86"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "A low-side switch for an unspecified off-board 24 V load (lamp, solenoid, relay...).",
+   "scored": true,
+   "paraphrase_state": {
+    "net": "N86",
+    "description": "Net N86 joins the drain of an N-channel MOSFET Q20 (source grounded, gate from the MCU) and pin 2 of connector J22, whose pin 1 carries +24 V. The board has no flyback diode."
+   }
+  },
+  {
+   "id": "P1-U08",
+   "state": {
+    "net": "N87",
+    "pins_on_this_net": [
+     "U1 pin PA8 (MCU timer output)",
+     "R90 pin 1 (10 kohm; R90 pin 2 is J23 pin 1)"
+    ],
+    "one_hop_context": [
+     "J23 pin 2 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "N87"
+   },
+   "truth": {
+    "net_role": "undeclared"
+   },
+   "difficulty": "ambiguous",
+   "name_hint": "none",
+   "derivation": "A timer output through 10 kohm to a connector: purpose unknown.",
+   "scored": true
+  },
+  {
+   "id": "P1-O01",
+   "state": {
+    "net": "RTD_A",
+    "pins_on_this_net": [
+     "J3 pin 1",
+     "U10 pin OUT (REF200 1 mA current source)",
+     "U11 pin AIN0+ (ADS1220 ADC)"
+    ],
+    "one_hop_context": [
+     "J3 pins 1-2 are wired to a PT100 RTD",
+     "J3 pin 2 goes to U11 AIN0- and a reference resistor to GND"
+    ]
+   },
+   "question_fill": {
+    "net": "RTD_A"
+   },
+   "truth": {
+    "net_role": "out_of_set"
+   },
+   "difficulty": "out_of_set",
+   "name_hint": "strong",
+   "derivation": "RTD excitation and sense (not in the label set).",
+   "scored": false
+  },
+  {
+   "id": "P1-O02",
+   "state": {
+    "net": "THERM1",
+    "pins_on_this_net": [
+     "J4 pin 1",
+     "R15 pin 1 (10 kohm; R15 pin 2 is +3.3 V)",
+     "U1 pin PA0 (MCU ADC)"
+    ],
+    "one_hop_context": [
+     "J4 pins 1-2 are wired to a 10 kohm NTC thermistor; J4 pin 2 is GND"
+    ]
+   },
+   "question_fill": {
+    "net": "THERM1"
+   },
+   "truth": {
+    "net_role": "out_of_set"
+   },
+   "difficulty": "out_of_set",
+   "name_hint": "strong",
+   "derivation": "NTC thermistor divider input (not in the label set).",
+   "scored": false
+  },
+  {
+   "id": "P1-O03",
+   "state": {
+    "net": "AI_HUM",
+    "pins_on_this_net": [
+     "J5 pin 1",
+     "R16 pin 1 (100 kohm; R16 pin 2 is MCU ADC pin PA2, with 47 kohm from PA2 to GND)"
+    ],
+    "one_hop_context": [
+     "J5 pin 2 is GND"
+    ],
+    "field_wiring": "J5 is wired to the 0-10 V output of a humidity transmitter"
+   },
+   "question_fill": {
+    "net": "AI_HUM"
+   },
+   "truth": {
+    "net_role": "out_of_set"
+   },
+   "difficulty": "out_of_set",
+   "name_hint": "weak",
+   "derivation": "A 0-10 V *input* (the set only has a 0-10 V output role).",
+   "scored": false
+  },
+  {
+   "id": "P1-O04",
+   "state": {
+    "net": "FAN_PWM",
+    "pins_on_this_net": [
+     "U1 pin PA6 (timer PWM output, 25 kHz)",
+     "Q30 gate (open-drain buffer)",
+     "J6 pin 4 via Q30 drain"
+    ],
+    "one_hop_context": [
+     "J6 pin 1 is GND"
+    ],
+    "field_wiring": "J6 is wired to a 4-wire PC fan's PWM control input"
+   },
+   "question_fill": {
+    "net": "FAN_PWM"
+   },
+   "truth": {
+    "net_role": "out_of_set"
+   },
+   "difficulty": "out_of_set",
+   "name_hint": "strong",
+   "derivation": "PC-fan PWM control (not in the label set).",
+   "scored": false
+  }
+ ],
+ "set_id": "p1_net_role",
+ "created_utc": "2026-09-25T06:37:28+00:00",
+ "pinned_model": "jev-1.13.0"
+}

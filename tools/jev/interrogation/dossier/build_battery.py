@@ -35,13 +35,10 @@ def section_of(offset):
 
 
 def anchors(text):
-    out, start = [], 0
-    while True:
-        i = FULL.find(text, start)
-        if i == -1:
-            return out
-        out.append({"offset": i, "rel": round(i / len(FULL), 4), "section": section_of(i)})
-        start = i + 1
+    import re
+    pat = re.compile(r"\s+".join(re.escape(w) for w in text.split()))
+    return [{"offset": m.start(), "rel": round(m.start() / len(FULL), 4), "section": section_of(m.start())}
+            for m in pat.finditer(FULL)]
 
 
 def needle(key, section, question, options, correct, anchor, wk=False):
@@ -55,7 +52,7 @@ def needle(key, section, question, options, correct, anchor, wk=False):
               "q": {"type": "choice", "instructions": question, "criteria": crit},
               "gt": correct, "gt_derivation": f"dossier text {section}: {anchor!r}",
               "section": section, "anchor": anchor, "anchor_hits": hits, "multi": len(hits) > 1,
-              "in_core": anchor in CORE, "world_knowledge": wk})
+              "in_core": " ".join(anchor.split()) in " ".join(CORE.split()), "world_knowledge": wk})
 
 
 def absent(key, question, options, why):
@@ -80,7 +77,7 @@ def polarity(pid, section, yes_q, no_q, truth_yes, anchor):
                   "pair": pid, "q": {"type": "noul", "instructions": text},
                   "gt": bool(truth), "gt_derivation": f"dossier text {section}: {anchor!r}",
                   "section": section, "anchor": anchor, "anchor_hits": hits, "multi": len(hits) > 1,
-                  "in_core": anchor in CORE})
+                  "in_core": " ".join(anchor.split()) in " ".join(CORE.split())})
 
 
 def choice(key, chunk, category, instructions, criteria, ref=None, ref_derivation=None, prior=None, meta=None):
