@@ -39,9 +39,11 @@ REGISTRY = default_registry()
 REQUIREMENTS = {
     "led_indicator": [{"targets": {"led_current_ma": 10}},
                       {"targets": {"led_current_ma": 5}}],
+    # Cable within 1 m: a 3.3 V board takes the AM2302 manual's limit ([2026-09-30]).
+    # The cable changes the pull-up, not the sketch.
     "temperature_humidity_sensor": [
-        {"constraints": {"cable_length_m": 2}, "preferences": {"alert_threshold_c": 30}},
-        {"constraints": {"cable_length_m": 10}, "preferences": {"alert_threshold_c": 45}}],
+        {"constraints": {"cable_length_m": 0.5}, "preferences": {"alert_threshold_c": 30}},
+        {"constraints": {"cable_length_m": 1}, "preferences": {"alert_threshold_c": 45}}],
     "modbus_rtu_master": [{}, {"constraints": {"baud": 19200}}],
 }
 

@@ -151,18 +151,18 @@ _SCALARS: List[Figure] = [
           "25 Ω typical from the 25 °C output-drive curve (about 26 Ω, Figure 31-355); the 15 Ω minimum "
           "is the project's conservative figure — the curves show about 22 Ω at −40 °C",
           "20 mA — the current at which the datasheet specifies V_OH; 40 mA is the absolute maximum",
-          "100 Ω on 5 V is 50 mA — the whole Uno board's run current (regulator, USB bridge, LEDs), "
-          "not the ATmega328P's own few mA",
+          "100 Ω on 5 V is 50 mA — the whole Uno board's run current (regulator, USB bridge, LEDs), a "
+          "figure of the project's; the ATmega328P's own is about 10 mA at 16 MHz",
           "I/O pin input leakage |I_IL|, |I_IH|: 1 µA maximum at VCC = 5.5 V"),
     *_mcu("ESP32-WROOM-32E", _ESP32,
           "3.6 V maximum of the 3.0–3.6 V recommended operating range",
-          "about 33 Ω at the default drive strength, an estimate: the module gives V_OH ≥ 0.8 × VDD, and "
-          "I_OH = 40 mA typical at V_OH ≥ 2.64 V with the drive strength at its maximum; the default "
-          "strength (2 of 0–3) is ~20 mA, so the agent halves the current at the same V_OH, "
-          "(3.3 − 2.64) / 0.02 = 33 Ω; the minimum and typical are estimates too",
-          "20 mA — the default drive strength's rated source current",
-          "41 Ω on 3.3 V is 80 mA — the module's run current without the radio, rounded up from the "
-          "modem-sleep figures",
+          "about 33 Ω typical at the default drive strength, estimated from typicals: the module gives "
+          "I_OH = 40 mA typical at V_OH ≥ 2.64 V with the drive strength at its maximum (about 16.5 Ω), "
+          "and the default strength is 2 of 0–3 (~20 mA); up to about 66 Ω on the VDD_SDIO pins (20 mA "
+          "typical) or with several pins sourcing; no maximum is published — 10 Ω is the project's low end",
+          "20 mA — the nominal (~20 mA) label of the default drive strength, not a guaranteed current",
+          "41 Ω on 3.3 V is 80 mA — rounded up from the chip's modem-sleep maximum (68 mA at 240 MHz); "
+          "the chip table leaves out the module's flash",
           "input current I_IH, I_IL: 50 nA maximum, specified at 3.3 V and 25 °C only"),
     *_mcu("STM32F411CEU6", _STM32,
           "3.6 V maximum operating supply",
@@ -188,14 +188,16 @@ _SCALARS: List[Figure] = [
     Figure("DHT22/bus_capacitance_pf_per_m", Kind.ASSUMPTION,
            "50–100 pF per metre of sensor cable, ribbon to twisted pair; the manual gives none", None),
     Figure("DHT22/input_capacitance_pf", Kind.ASSUMPTION,
-           "10 pF each for the MCU pin and the sensor's pin — the AM2302 manual and the ATmega328P "
-           "datasheet give none; the ESP32 module gives 2 pF typical, well under it", None),
+           "10 pF each for the MCU pin and the sensor's pin — the ATmega328P's maximum per I/O pin "
+           "(Table 29-14, characterised); the ESP32 module gives 2 pF typical; the AM2302 manual gives "
+           "none for its pin", None),
     Figure("DHT22/rise_time_limit_us", Kind.ASSUMPTION,
            "5 µs — over a 4× margin inside the 22 µs minimum high time of a '0' bit (T_H0 22–30 µs, "
            "26 µs typical)", _DHT),
     Figure("DHT22/open_drain_sink_limit_ma", Kind.ASSUMPTION,
-           "4 mA through the sensor's open-drain output — half the 8 mA typical output current the manual "
-           "gives, for which it gives no maximum; about what open-drain buses (I²C: 3 mA) are designed to",
+           "4 mA through the sensor's data output — half the manual's 8 mA typical output current, and "
+           "under its ±10 mA per-pin absolute maximum (Table 5); about what open-drain buses (I²C: 3 mA) "
+           "are designed to",
            _DHT),
     *_transceiver("MAX485ECSA", _MAX485, "4.75–5.25 V supply"),
     *_transceiver("MAX3485ECSA", _MAX3485, "3.0–3.6 V supply"),
@@ -239,8 +241,11 @@ def _pin_records() -> List[Figure]:
                 parts.append(f"reserved — {pin.reserved}")
             if pin.strapping:
                 parts.append(f"strapping — {pin.strapping}")
-            parts.append(f"weak pull-{pin.reset_pull} from reset until firmware sets the pin" if pin.reset_pull
-                         else "high-impedance, no pull, from reset until firmware sets the pin")
+            if pin.reset_note:
+                parts.append(pin.reset_note)
+            else:
+                parts.append(f"weak pull-{pin.reset_pull} from reset until firmware sets the pin" if pin.reset_pull
+                             else "high-impedance, no pull, from reset until firmware sets the pin")
             out.append(Figure(f"board:{target_id}/{name}", Kind.GUARANTEED, "; ".join(parts),
                               _BOARD_SOURCES.get(target_id)))
         out.append(Figure(f"board:{target_id}/console_uart", Kind.GUARANTEED,

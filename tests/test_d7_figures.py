@@ -77,6 +77,16 @@ class TestRegistry:
             assert "the agent" in record.recorded_by
             assert "figure_evidence.json" in record.recorded_by and "not a person's verification" in record.recorded_by
 
+    def test_what_holds_a_pin_between_reset_and_the_sketch_is_said_where_a_pull_does_not(self):
+        # [2026-09-30]: the recheck found pins that float while reset is held,
+        # and Uno pins a bootloader or the USB bridge drives.
+        assert "floating while reset is held" in F.FIGURES["board:esp32_devkitc/GPIO13"].statement
+        assert "floating while reset is held" in F.FIGURES["board:esp32_devkitc/GPIO14"].statement
+        assert "bootloader" in F.FIGURES["board:arduino_uno/D13"].statement
+        assert "bootloader" in F.FIGURES["board:arduino_uno/D1"].statement
+        assert "USB-serial" in F.FIGURES["board:arduino_uno/D0"].statement
+        assert "not led out" in F.FIGURES["board:esp32_devkitc/GPIO6"].statement
+
     def test_assumptions_and_typicals_are_labelled_as_such(self):
         assert F.FIGURES["DHT22/bus_capacitance_pf_per_m"].kind == F.Kind.ASSUMPTION
         assert F.FIGURES["67-21URC/S530-A3/TR8/ideality"].kind == F.Kind.ASSUMPTION
@@ -223,9 +233,28 @@ class TestVerifyTool:
         assert self._run(path, "--verify", "RC0402FR/power_w").returncode != 0
         assert self._run(path, "--verify", "NOPE/nothing", "--by", "x").returncode != 0
 
-    def test_the_repositorys_store_starts_empty(self):
+    def test_every_verification_in_the_repository_names_a_person_and_how_it_was_made(self):
+        # Once empty; a person's confirmations live here now. What the store may
+        # never hold is an unsigned or unexplained entry — and no test writes it.
         data = json.loads((ROOT / "backend" / "data" / "figure_verifications.json").read_text(encoding="utf-8"))
-        assert data["verifications"] == []
+        for entry in data["verifications"]:
+            assert entry["by"].strip() and entry["figure"] in F.FIGURES and len(entry["record_hash"]) == 64
+            assert entry.get("method", "read the document")
+
+    def test_a_placeholder_is_not_a_name(self, tmp_path):
+        path = tmp_path / "v.json"
+        for placeholder in ("Your Name", "<your name>", "NAME"):
+            assert self._run(path, "--verify", "RC0402FR/power_w", "--by", placeholder).returncode != 0
+            assert self._run(path, "--confirm-agreeing", "--by", placeholder).returncode != 0
+        assert not path.exists()
+
+    def test_review_names_confirmations_the_records_have_since_outgrown(self, tmp_path):
+        path = tmp_path / "v.json"
+        path.write_text(json.dumps({"verifications": [
+            {"figure": "RC0402FR/power_w", "record_hash": "0" * 64, "by": "A. Engineer", "at": "then"}]}),
+            encoding="utf-8")
+        result = self._run(path, "--review")
+        assert "RC0402FR/power_w" in result.stdout and "changed since A. Engineer confirmed it" in result.stdout
 
 
 # ── The agent's evidence ([2026-09-25]) — evidence, never verification ───────

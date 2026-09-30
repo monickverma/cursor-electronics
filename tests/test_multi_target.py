@@ -159,7 +159,7 @@ class TestBadPinsAreRefusedByName:
         ("led_indicator", "esp32_devkitc", {"preferences": {"gpio_pin": "GPIO6"}}, "SPI flash"),
         ("led_indicator", "blackpill_f411ce", {"preferences": {"gpio_pin": "PA13"}}, "SWDIO"),
         ("led_indicator", "blackpill_f411ce", {"preferences": {"gpio_pin": "PB2"}}, "BOOT1"),
-        ("dht22_node", "esp32_devkitc", {"preferences": {"data_pin": "GPIO12"}}, "flash voltage"),
+        ("dht22_node", "esp32_devkitc", {"preferences": {"data_pin": "GPIO12"}}, "flash supply"),
         ("led_indicator", "arduino_uno", {"preferences": {"gpio_pin": "D0"}}, "D0 is reserved"),
     ])
     def test_refused_with_the_pin_and_the_reason(self, name, board, sections, words):
@@ -223,7 +223,7 @@ def test_every_board_grid_is_inside_its_own_envelope():
 
 def test_intent_with_board_round_trips_through_the_form_producer():
     intent = IntentIR(requirements={"function": "temperature_humidity_sensor", "targets": {},
-                                    "constraints": {"cable_length_m": 5, "mcu": "esp32_devkitc"},
+                                    "constraints": {"cable_length_m": 1, "mcu": "esp32_devkitc"},
                                     "preferences": {}},
                       provenance=Provenance(producer=Producer.FORM))
     ir = realize(REGISTRY.dispatch(intent).generator, intent)

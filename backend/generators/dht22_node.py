@@ -10,16 +10,24 @@ one resistor sets the two things the bus depends on, and they pull opposite
 ways:
 
 - **rise time** t_r(10–90 %) = ln 9 · R1 · C_bus. The sensor's short "0" bit is
-  26 µs high; a slow edge eats it. Longer cable, more capacitance, smaller R1.
+  22–30 µs high (T_H0); a slow edge eats it. Longer cable, more capacitance,
+  smaller R1.
 - **sink current** V_CC / R1 through whichever open drain holds the line low
   (the MCU's start pulse, the sensor's reply). Smaller R1, more current.
 
-Selection starts at the datasheet's 10 kΩ and only steps down when the
+Selection starts at the project's 10 kΩ (the AM2302 manual's typical is
+5.1 kΩ, within 1–100 kΩ, and its high level holds only under 25 kΩ) and only
+steps down when the
 worst-case rise time over the declared cable length exceeds its limit; if no
 E96 value satisfies both, the cable is too long and the request is refused by
 name. Both quantities are monotone in R1 (and t_r in C_bus), so their bands
 are exact corners — G1 — over assumptions the component table states once and
 defeater D7 cites.
+
+**0.3.0 ([2026-09-30]).** On a 3.3 V supply the manual allows at most 1 m of
+cable — the line drop starves the sensor — so a supply under 4.75 V takes that
+limit; and a pinned pull-up of 25 kΩ or more is refused, where the manual no
+longer specifies the high level.
 
 Rail current is a claim too, under `mcu_as_100R` (X6, defeater D2): the MCU
 is a 100 Ω load, the sensor its tabulated current, both read from the same
@@ -81,7 +89,7 @@ from generators.protocol import (
 )
 
 NAME = "dht22_node"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 FUNCTION = "temperature_humidity_sensor"
 
 SENSOR_PART = "DHT22"
@@ -112,7 +120,16 @@ def mcu_sink_limit_ma(target) -> float:
     """The board's recommended per-pin current (D7)."""
     return float(get_constraints(target.mcu_part)["gpio_recommended_current_ma"])
 DEFAULT_CABLE_M = 0.3
-MAX_CABLE_M = 20.0   # Aosong's own figure for the longest recommended run
+#: The longest run this system designs for — the project's limit. The AM2302
+#: manual says the bus reaches *more than* 20 m, with a stronger pull-up past
+#: 10–30 m, which the 4 mA sink assumption does not allow.
+MAX_CABLE_M = 20.0
+#: AM2302 manual §5.1 note 2: on a 3.3 V supply the wire "shall not be greater
+#: than 1m". Any supply under a 5 V rail's tolerance floor takes that limit.
+LOW_SUPPLY_V = 4.75
+LOW_SUPPLY_MAX_CABLE_M = 1.0
+#: AM2302 manual Table 2: the high output level is specified for Rp < 25 kΩ.
+MAX_PULLUP_OHMS = 25_000.0
 PINNABLE = ("R1",)
 
 
@@ -219,8 +236,13 @@ class DHT22NodeGenerator:
             )
         if spec.cable > MAX_CABLE_M:
             return EnvelopeDecision.refuse(
-                f"cable_length_m={spec.cable:g} exceeds the {MAX_CABLE_M:g} m the DHT22's "
-                f"single-wire bus is specified for"
+                f"cable_length_m={spec.cable:g} exceeds the {MAX_CABLE_M:g} m this system designs the "
+                f"DHT22's single-wire bus for"
+            )
+        if spec.supply < LOW_SUPPLY_V and spec.cable > LOW_SUPPLY_MAX_CABLE_M:
+            return EnvelopeDecision.refuse(
+                f"cable_length_m={spec.cable:g} on a {spec.supply:g} V supply: the AM2302 manual allows at "
+                f"most {LOW_SUPPLY_MAX_CABLE_M:g} m of cable at 3.3 V — the line drop starves the sensor"
             )
         r1 = select_pullup(spec)
         if r1 is None:
@@ -229,6 +251,11 @@ class DHT22NodeGenerator:
                 f"{spec.cable:g} m of cable and the {SINK_LIMIT_MA:g} mA sink limit"
             )
         tol = spec.figs.tolerance("R1")
+        if r1 * (1 + tol) >= MAX_PULLUP_OHMS:
+            return EnvelopeDecision.refuse(
+                f"pinned R1={r1:g}Ω: the AM2302 manual specifies the data line's high level only for a "
+                f"pull-up under {MAX_PULLUP_OHMS / 1000:g} kΩ"
+            )
         rise = rise_time_us(r1 * (1 + tol), bus_capacitance_pf(spec.cable, "max"))
         sink = sink_ma(spec.supply, r1 * (1 - tol))
         if rise > RISE_LIMIT_US:
@@ -386,7 +413,7 @@ class DHT22NodeGenerator:
         elif r1 == DEFAULT_PULLUP_OHMS:
             r_reason = f"{r1:g}Ω, the Aosong datasheet value, fast enough for {spec.cable:g} m of cable"
         else:
-            r_reason = (f"{r1:g}Ω, below the datasheet's 10 kΩ because {spec.cable:g} m of cable "
+            r_reason = (f"{r1:g}Ω, below the project's default 10 kΩ because {spec.cable:g} m of cable "
                         f"(up to {c_max:.0f} pF) would otherwise slow the edge past {RISE_LIMIT_US:g} µs")
         constraints: Dict[str, object] = {"supply_voltage": spec.supply,
                                           "supply_current_ma": spec.budget,
@@ -454,8 +481,10 @@ class DHT22NodeGenerator:
     # ── CI grid and locality ──────────────────────────────────────────────
 
     def grid(self, board: Optional[str] = None) -> GridSpec:
-        grid_target(board)   # the same cable lengths on every board
-        return GridSpec(axes={"cable_length_m": [0.3, 5.0, 10.0, 15.0]},
+        # A 3.3 V board takes the manual's 1 m limit ([2026-09-30]).
+        lengths = ([0.3, 5.0, 10.0, 15.0] if grid_target(board).logic_v >= LOW_SUPPLY_V
+                   else [0.3, 0.5, 0.75, 1.0])
+        return GridSpec(axes={"cable_length_m": lengths},
                         units={"cable_length_m": "m"},
                         sections={"cable_length_m": "constraints"})
 

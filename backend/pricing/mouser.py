@@ -60,9 +60,16 @@ class MouserUnavailable(Exception):
     """Mouser could not answer. The message is safe to show: no URL, no key."""
 
 
+#: Mouser's spec: each part number 3 to 40 characters. One outside it would
+#: fail the whole request, and with it every part in the BOM.
+PN_LENGTH = (3, 40)
+
+
 def batches(part_numbers: Iterable[str]) -> List[List[str]]:
     """Distinct, queryable part numbers, ten to a request. A '|' would split one in two."""
-    unique = list(dict.fromkeys(p.strip() for p in part_numbers if p and p.strip() and "|" not in p))
+    lo, hi = PN_LENGTH
+    unique = list(dict.fromkeys(p.strip() for p in part_numbers
+                                if p and "|" not in p and lo <= len(p.strip()) <= hi))
     return [unique[i:i + BATCH] for i in range(0, len(unique), BATCH)]
 
 

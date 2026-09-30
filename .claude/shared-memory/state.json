@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-25T11:30:21.642683Z",
-  "generated_from_commit": "f817d2c",
+  "generated_at": "2026-09-30T22:35:41.172891Z",
+  "generated_from_commit": "7c1b947",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -475,10 +475,10 @@
     }
   },
   "test_summary": {
-    "passed": 2203,
+    "passed": 2216,
     "failed": 0,
     "skipped": 30,
-    "total": 2203
+    "total": 2216
   },
   "phase1_criteria": [
     {
@@ -562,9 +562,7 @@
       "D7": [
         "dht22_node",
         "led_indicator",
-        "rc_lowpass",
-        "rs485_node",
-        "voltage_divider"
+        "rs485_node"
       ]
     },
     "not_assessed": {},
@@ -573,8 +571,7 @@
         "grade_floor": "G1",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1",
-          "D7"
+          "D1"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -594,8 +591,7 @@
         "grade_floor": "G2",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1",
-          "D7"
+          "D1"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -698,13 +694,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "7c1b947 feat: RS-485 DE/RE pull-down, live Mouser pricing, the agent's datasheet pass, bench prep",
     "f817d2c feat(phase2): Stage 6 — BOM and substitution; D7 provenance; D1 bench evidence",
     "94b61c1 feat(defeaters): D2 derived per claim — D1, D2, D7 decided with TypeSafe",
     "e803a99 fix(ci): firmware route annotations resolve under the pinned FastAPI 0.115",
-    "3cdc9e9 brain: /update-memory — Stages 3–5 into architecture and timeline; 2001 passing at 1126d15",
-    "1126d15 fix(prover): guard the series-power \"falls\" lemma — Black Pill 13 mA back to G1"
+    "3cdc9e9 brain: /update-memory — Stages 3–5 into architecture and timeline; 2001 passing at 1126d15"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                           |   17 +-\n .claude/rules/simulation.md                 |    8 +\n .claude/shared-memory/brain/architecture.md |   22 +-\n .claude/shared-memory/brain/decision",
+  "last_diff_stat": ".claude/CLAUDE.md                           |    9 +-\n .claude/rules/code-style.md                 |    3 +\n .claude/rules/frontend/react-style.md       |    2 +-\n .claude/rules/security.md           ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

@@ -1207,3 +1207,38 @@ Test accounts: `test@circuitos.dev` / `TestPass123!`
 ngspice: `C:\msys64\ucrt64\bin\ngspice_con.exe`
 arduino-cli: `C:\Users\KIIT\bin\arduino-cli.exe`
 AI: the model named by `AI_MODEL` in `.env`, via OpenRouter (`ANTHROPIC_BASE_URL=https://openrouter.ai/api`) — read `.env`, not this line
+
+---
+
+# The adversarial recheck of the datasheet pass ✅ DONE 2026-09-30
+
+Decided and recorded in `brain/decisions.md` [2026-09-30] **The adversarial
+recheck of the datasheet pass**. Four independent agents re-read the documents
+against every record and tried to refute it; 11 refutations were confirmed and
+corrected, and the evidence now stands at 101 agree, 1 in part, 60 not checked.
+
+## Changed
+
+- `data/component_constraints.py` — the ESP32 pin resistance {10, 33, 66} Ω.
+- `generators/dht22_node.py` 0.3.0 — 1 m of cable below 4.75 V; a pinned
+  pull-up of 25 kΩ or more refused; the 3.3 V grid sweeps 0.3–1 m.
+- `generators/led_indicator.py` 0.3.0 — no LCSC number (C72038 was a yellow
+  0603); the ESP32 grid tops at 12 mA.
+- `data/mcu_targets.py` — `Pin.reset_note` (GPIO13/14 float in reset; the Uno
+  bootloader drives D1/D13; the USB bridge holds D0); GPIO6–11 not led out.
+- `pricing/mouser.py` — part numbers of 3–40 characters only.
+- `scripts/bench/rc_timer` — four bugs fixed; `docs/BENCH_D1.md` budget text.
+- `scripts/verify_figures.py` — refuses a placeholder `--by`; `--review` lists
+  confirmations the records have since outgrown.
+
+## For the user
+
+- **Your confirmation on 2026-09-25 was recorded as "Your Name"** (the
+  documentation's placeholder), for 80 figures. 37 no longer count — their
+  records were corrected or re-shaped since. `python scripts/verify_figures.py
+  --review`, then `--confirm-agreeing --by "<your name>"`.
+- **Which LED part** — 67-21URC/S530-A3/TR8 does not exist; the figures match
+  17-21SURC/S530-A2/TR8 (0805, discontinued at DigiKey); 67-21SURC/S530-A3/TR8
+  (PLCC-2) is real but gives no V_F minimum.
+- **The MAX485, MAX3485 and STM32F411 datasheets** — the sites refuse scripts
+  and the app's save dialog is yours to click.

@@ -9,14 +9,14 @@ confirm the record's statement and the table's value agree with it.
 
     python scripts/verify_figures.py                     # what is unverified, by part
     python scripts/verify_figures.py --show RC0402FR/power_w
-    python scripts/verify_figures.py --verify RC0402FR/power_w --by "Your Name"
+    python scripts/verify_figures.py --verify RC0402FR/power_w --by "<your name>"
 
 Since [2026-09-25] the agent has checked the records against the documents it
 could obtain and cited each page (`backend/data/figure_evidence.json`). That is
 evidence, not verification. To confirm it:
 
     python scripts/verify_figures.py --review            # every record beside the agent's evidence
-    python scripts/verify_figures.py --confirm-agreeing --by "Your Name"
+    python scripts/verify_figures.py --confirm-agreeing --by "<your name>"
 
 `--confirm-agreeing` records your verification of every figure whose evidence
 agrees and whose record has not changed since it was checked, and says in each
@@ -24,7 +24,11 @@ entry that you confirmed the agent's cited evidence rather than read the page
 yourself. Everything else is listed for you to check with `--verify`.
 
 A verification is bound to the record's hash, which covers the record and the
-table's current value: edit either and the verification no longer counts.
+table's current value: edit either and the verification no longer counts, and
+`--review` lists it as one to confirm again. `--by` must be a person's name: a
+placeholder ("Your Name", "<your name>") is refused ([2026-09-30] — the first
+confirmation in this repository was recorded under the documentation's
+placeholder).
 Verifying a typical or a stated assumption is allowed — it confirms the record
 says what the figure is — but only a guaranteed limit, a standard's figure or
 a policy becomes trusted, so only those let a claim drop D7.
@@ -54,6 +58,30 @@ METHOD_AGENT_EVIDENCE = "confirmed the agent's cited evidence (backend/data/figu
 
 def _store() -> Path:
     return Path(os.environ.get("CIRCUITOS_FIGURE_VERIFICATIONS") or VERIFICATIONS_PATH)
+
+
+#: Names that are the documentation's, not a person's.
+PLACEHOLDERS = {"your name", "<your name>", "name", "<name>", "your-name", "<your-name>"}
+
+
+def _person(by: str, what: str) -> str:
+    name = by.strip()
+    if not name:
+        raise SystemExit(f"--by is required: {what} names the person who did it")
+    if name.lower() in PLACEHOLDERS:
+        raise SystemExit(f"--by {by!r} is the documentation's placeholder, not a name: {what} must name "
+                         f"the person who did it")
+    return name
+
+
+def stale() -> list:
+    """(figure, by, at) for verifications whose record or value has changed since."""
+    path = _store()
+    if not path.exists():
+        return []
+    rows = json.loads(path.read_text(encoding="utf-8")).get("verifications", [])
+    return [(v["figure"], v.get("by", "?"), v.get("at", "?")) for v in rows
+            if v.get("figure") in FIGURES and v.get("record_hash") != record_hash(v["figure"])]
 
 
 def show(figure_id: str) -> str:
@@ -91,8 +119,7 @@ def _entry(figure_id: str, by: str, note: str, method: str) -> dict:
 def verify(figure_id: str, by: str, note: str = "") -> dict:
     if figure_id not in FIGURES:
         raise SystemExit(f"no record {figure_id!r} in backend/data/figures.py")
-    if not by.strip():
-        raise SystemExit("--by is required: a verification names the person who checked the document")
+    by = _person(by, "a verification")
     entry = _entry(figure_id, by, note, METHOD_DOCUMENT)
     _record([entry])
     return entry
@@ -117,8 +144,7 @@ def confirmable(ev: dict) -> tuple:
 
 
 def confirm_agreeing(by: str) -> list:
-    if not by.strip():
-        raise SystemExit("--by is required: a confirmation names the person who reviewed the evidence")
+    by = _person(by, "a confirmation")
     ok, _ = confirmable(evidence())
     entries = [_entry(fid, by, "", METHOD_AGENT_EVIDENCE) for fid in ok]
     if entries:
@@ -146,6 +172,13 @@ def review(show_all: bool = False) -> str:
                   f"  it reads   {item.get('reads') or '—'}"]
         if item.get("note"):
             lines.append(f"  note       {item['note']}")
+        lines.append("")
+    outgrown = stale()
+    if outgrown:
+        lines.append(f"{len(outgrown)} earlier confirmations no longer count — the record or its value changed "
+                     f"since; review them again:")
+        for fid, by, at in outgrown:
+            lines.append(f"  {fid}: changed since {by} confirmed it ({at})")
         lines.append("")
     lines.append(f"{len(ok)} figures would be confirmed by --confirm-agreeing.")
     if not_ok:

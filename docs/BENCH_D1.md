@@ -68,7 +68,7 @@ t2 − t1 = RC · ln((1 − k1) / (1 − k2))
 ```
 
 The sketch is `scripts/bench/rc_timer` (it compiles; it has not yet run on a
-board). Wiring: IN from **D12**; OUT to **D6** (AIN0, the comparator's +
+board; an independent review found and fixed four bugs in it on 2026-09-30). Wiring: IN from **D12**; OUT to **D6** (AIN0, the comparator's +
 input); two dividers from 5 V — about 1/3 on **A0** and 2/3 on **A1** (for
 example 10 kΩ over 4.7 kΩ, and 4.7 kΩ over 10 kΩ) — which the sketch selects
 in turn as the comparator's − input (ACME). It discharges the capacitor for
@@ -88,14 +88,18 @@ from the printed t1, t2). It prints RC and f_c.
 (`tests/test_bench_rc_method.py`):
 
 - Any fixed delay (the port write, the comparator, the capture) cancels.
-- The pin's output resistance (≈ 25 Ω) is in series with R1 and reads as
-  +1.6 % on a 1.59 kΩ R1: record R1 as R1 + 25 Ω, or add 1.6 % to the accuracy.
+- The pin's output resistance is in series with R1: typically ≈ 25 Ω, at most
+  40 Ω by the datasheet's V_OH figure — +1.6 % typical, up to +2.5 % on a
+  1.59 kΩ R1. Record R1 as R1 + 25 Ω and carry the other 15 Ω (1 %) in the
+  accuracy.
 - **The comparator's input offset** — 40 mV maximum at VCC/2 (ATmega328P
   datasheet, Table 30-1) — moves RC by up to **5.2 %** if it differs in sign
-  at the two thresholds, 1.7 % if not. The datasheet does not say which, so
+  at the two thresholds, 1.8 % if not. The datasheet does not say which, so
   record f_c's accuracy as at least ±5.5 % (f_c goes as 1/RC), plus the meter's accuracy on
   k1 and k2. That is well inside the 15 % gate, and tighter than the design's
-  own ±10 % capacitor.
+  own ±10 % capacitor. The 40 mV is specified only at VCC/2; at the thresholds
+  (1.67 V and 3.33 V) the datasheet gives nothing, so this budget is an
+  extrapolation — checked by an independent review, not by the datasheet.
 - Keep both thresholds above 0.5 V: below it the datasheet's offset figure
   is 500 mV.
 

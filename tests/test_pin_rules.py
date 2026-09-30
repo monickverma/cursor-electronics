@@ -53,7 +53,7 @@ def test_a_finding_names_its_pin_and_reason():
     target = get_target("esp32_devkitc")
     (finding,) = check_assignment(target, [Assignment("GPIO12", "bidirectional", "DHT22_DATA")])
     assert finding.rule == "strapping_pins_safe" and finding.pin == "GPIO12"
-    assert "flash voltage" in finding.message
+    assert "flash supply" in finding.message
 
 
 def test_an_unknown_role_is_a_programming_error():

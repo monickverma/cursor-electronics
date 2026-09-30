@@ -45,6 +45,10 @@ class Pin:
     #: high-impedance input. What holds a node while the MCU is not driving it
     #: (`rs485.driver_default_off`, `brain/decisions.md` [2026-09-25]).
     reset_pull: Optional[str] = None
+    #: What holds the pin between reset and the sketch when `reset_pull` alone
+    #: does not say it: a bootloader or a board part driving it, or a pull that
+    #: comes only after reset is released ([2026-09-30]).
+    reset_note: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -83,10 +87,17 @@ def _uno() -> Target:
     for n in range(14):
         pins[f"D{n}"] = Pin(name=f"D{n}", firmware=str(n), pwm=n in (3, 5, 6, 9, 10, 11))
     pins["D0"] = Pin(name="D0", firmware="0", uart=(("USART0", "RX"),),
-                     reserved="the USB serial port's RX — uploads and the console use it")
+                     reserved="the USB serial port's RX — uploads and the console use it",
+                     reset_note="held by the USB-serial chip's TX through 1 kΩ")
     pins["D1"] = Pin(name="D1", firmware="1", uart=(("USART0", "TX"),),
-                     reserved="the USB serial port's TX — uploads and the console use it")
-    pins["D13"] = Pin(name="D13", firmware="13", note="also drives the on-board LED")
+                     reserved="the USB serial port's TX — uploads and the console use it",
+                     reset_note="high-impedance in reset; after an external reset the bootloader's UART "
+                                "drives it before the sketch runs")
+    # Optiboot flashes the LED after an external reset (the button, or the
+    # auto-reset when a serial port opens) — ArduinoCore-avr, [2026-09-30].
+    pins["D13"] = Pin(name="D13", firmware="13", note="also drives the on-board LED",
+                      reset_note="high-impedance in reset; after an external reset the bootloader drives "
+                                 "it, flashing the LED, before the sketch runs")
     for n in range(6):
         pins[f"A{n}"] = Pin(name=f"A{n}", firmware=f"A{n}", adc=True)
     return Target(
@@ -107,11 +118,19 @@ _ESP32_RESET_PULL = {
     **{n: "down" for n in (2, 4, 12, 13)},
 }
 
+#: IO_MUX "At Reset" shows no pull on MTCK/MTMS; the pull comes after reset.
+#: GPIO1 is U0TXD, Function 0, driven by the boot log after reset.
+_ESP32_RESET_NOTES = {
+    13: "floating while reset is held; weak pull-down after reset until firmware sets the pin",
+    14: "floating while reset is held; weak pull-up after reset until firmware sets the pin",
+    1: "weak pull-up in reset; after reset UART0 drives it with the boot log",
+}
+
 _ESP32_STRAPS = {
     0: "boot mode — must be high at reset; low enters the download bootloader",
     2: "boot mode — must be low or floating at reset for serial download",
     5: "SDIO slave timing at reset",
-    12: "MTDI — sets the flash voltage at reset; pulled high selects 1.8 V and the module will not boot",
+    12: "MTDI — selects the flash supply at reset: high powers it from the internal 1.8 V LDO instead of 3.3 V",
     15: "MTDO — at reset, low silences the boot log and changes SDIO timing",
 }
 
@@ -125,7 +144,9 @@ def _esp32() -> Target:
         input_only = n in (34, 35, 36, 39)
         reserved = None
         if 6 <= n <= 11:
-            reserved = "wired to the module's SPI flash"
+            # WROOM-32E datasheet v2.1, Table 3 note 2 ([2026-09-30]).
+            reserved = ("the module's SPI flash inside the WROOM-32E, not led out: the DevKitC header "
+                        "positions for it reach unconnected pads")
         elif n == 1:
             reserved = "UART0 TX — the USB console and uploads"
         elif n == 3:
@@ -140,6 +161,7 @@ def _esp32() -> Target:
             adc=n in adc, reserved=reserved, strapping=_ESP32_STRAPS.get(n),
             note=note,
             reset_pull=_ESP32_RESET_PULL.get(n),
+            reset_note=_ESP32_RESET_NOTES.get(n),
         )
     return Target(
         id="esp32_devkitc", board="ESP32-DevKitC (ESP32-WROOM-32E)", mcu_part="ESP32-WROOM-32E",

@@ -226,7 +226,7 @@ BAD_INPUTS = {
                       ({"preferences": {"gpio_pin": "D20"}}, "has no pin"),
                       ({"preferences": {"colour": "blue"}}, "no tabulated LED")],
     "dht22_node": [({"constraints": {"cable_length_m": "5"}}, "not a number"),
-                   ({"constraints": {"cable_length_m": 25.0}}, "specified for"),
+                   ({"constraints": {"cable_length_m": 25.0}}, "designs the DHT22's single-wire bus for"),
                    ({"constraints": {"cable_length_m": 20.0}}, "no pull-up meets"),
                    ({"constraints": {"supply_v": 3.3}}, "needs 4.5 V"),
                    ({"preferences": {"alert_threshold_c": "hot"}}, "not a temperature")],
@@ -284,6 +284,45 @@ class TestFoundByTheStage34Verification:
         intent = form_intent("rc_lowpass", constraints={"source_impedance_ohm": 300.0})
         claims = {c["id"]: c for c in realize(GENERATORS["rc_lowpass"], intent).validation_coverage["claims"]}
         assert claims["rc.source_loading"]["verdict"] != "fails"
+
+
+class TestFoundByTheDatasheetRecheck:
+    """[2026-09-30]: the AM2302 manual's own limits, the ESP32 pin resistance, the LED's order number."""
+
+    @pytest.mark.parametrize("board", ["esp32_devkitc", "blackpill_f411ce"])
+    def test_a_dht22_on_3v3_takes_at_most_1_m_of_cable(self, board):
+        g = GENERATORS["dht22_node"]
+        refused = g.envelope(form_intent("dht22_node", board=board, constraints={"cable_length_m": 1.5}))
+        assert not refused.accepted and "at most 1 m" in refused.reason, refused.reason
+        assert g.envelope(form_intent("dht22_node", board=board, constraints={"cable_length_m": 1.0})).accepted
+
+    def test_a_dht22_on_5v_keeps_the_longer_runs(self):
+        intent = form_intent("dht22_node", board="arduino_uno", constraints={"cable_length_m": 5.0})
+        assert GENERATORS["dht22_node"].envelope(intent).accepted
+
+    @pytest.mark.parametrize("board", ["esp32_devkitc", "blackpill_f411ce"])
+    def test_the_3v3_grid_stays_inside_the_manual(self, board):
+        assert max(grid_of(GENERATORS["dht22_node"], board).axes["cable_length_m"]) <= 1.0
+
+    def test_a_pinned_pullup_of_25k_or_more_is_refused(self):
+        g = GENERATORS["dht22_node"]
+        refused = g.envelope(form_intent("dht22_node", constraints={"pinned": {"R1": "33k"}}))
+        assert not refused.accepted and "under 25 kΩ" in refused.reason, refused.reason
+        assert g.envelope(form_intent("dht22_node", constraints={"pinned": {"R1": "22k"}})).accepted
+
+    def test_the_esp32_pin_resistance_is_the_corrected_one_and_its_designs_hold(self):
+        from data.component_constraints import get_constraints
+
+        table = get_constraints("ESP32-WROOM-32E")["gpio_output_resistance_ohm"]
+        assert table == {"min": 10.0, "typ": 33.0, "max": 66.0}
+        claims = realize(GENERATORS["led_indicator"], form_intent("led_indicator", board="esp32_devkitc")
+                         ).validation_coverage["claims"]
+        assert all(c["verdict"] != "fails" for c in claims)
+
+    @pytest.mark.parametrize("board", ["arduino_uno", "esp32_devkitc", "blackpill_f411ce"])
+    def test_no_led_design_carries_the_yellow_leds_order_number(self, board):
+        design = realize(GENERATORS["led_indicator"], form_intent("led_indicator", board=board))
+        assert all(c.lcsc_pn != "C72038" for c in design.components)
 
 
 class TestPinsHonoured:

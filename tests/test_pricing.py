@@ -130,7 +130,9 @@ def test_fetch_asks_for_exact_part_numbers_ten_to_a_request():
 
 
 def test_batches_skip_what_cannot_be_asked():
-    assert mouser.batches(["A", "A", " ", "B|C", "D"]) == [["A", "D"]]
+    # A '|' would split a number in two; Mouser takes 3-40 characters, and one
+    # outside that would fail the whole request ([2026-09-30]).
+    assert mouser.batches(["ABC", "ABC", " ", "B|CD", "DEF", "AB", "X" * 41, "Y" * 40]) == [["ABC", "DEF", "Y" * 40]]
 
 
 def test_fetch_prices_a_part_only_as_itself():

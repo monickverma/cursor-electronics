@@ -112,7 +112,7 @@ IR_002 = CircuitIR(
             justification="Standard red LED in 0805 package. Forward voltage 2.0V at 20mA. "
                           "Current limited by R1 (150Ω): I = (5V - 2.0V) / 150Ω = 20mA. "
                           "Reverse breakdown 5V — safe in 5V system.",
-            lcsc_pn="C72038",
+            lcsc_pn=None,   # C72038 is a yellow 0603 LED, not this part ([2026-09-30])
             datasheet_notes=["Forward voltage Vf=2.0V at 20mA", "Max reverse voltage 5V"],
         ),
         Component(

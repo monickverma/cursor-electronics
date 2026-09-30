@@ -1,6 +1,6 @@
 {
  "about": "The agent's check of each figure record against its maker's document, 2026-09-25 (brain/decisions.md [2026-09-25]). Evidence, not verification: an agent's check never makes a figure trusted. scripts/verify_figures.py --review shows it beside each record; --confirm-agreeing records a person's verification of the ones that agree, bound to the same record hash. A record edited since its check has stale evidence and must be checked again.",
- "checked_by": "the agent (an LLM, claude-opus-5-5), 2026-09-25",
+ "checked_by": "the agent (an LLM, claude-opus-5-5), 2026-09-25; rechecked 2026-09-30 by four independent agents told to refute it (workflow d7-adversarial-recheck) — 11 refuted and corrected",
  "verdicts": {
   "agrees": "the document says what the record says (records it contradicted were corrected first)",
   "agrees_in_part": "what the document covers agrees; the rest is in a document that was not read",
@@ -49,6 +49,27 @@
    "revision": "V.14, 2025-11-14",
    "url": "https://yageogroup.com/content/datasheet/asset/file/PYU-RC_GROUP_51_ROHS_L",
    "sha256": "7b6f0ae72708ca4b38126f84b5407a3e970a94cb60bc1a0afdaeb25a23d839bb"
+  },
+  "espressif-devkitc-v4-sch": {
+   "maker": "Espressif",
+   "title": "ESP32-DevKitC V4 schematic",
+   "revision": "downloaded 2026-09-30",
+   "url": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_sch.pdf",
+   "sha256": "ea500de5a3bfa97633f32ddb88fabd2d680637225190ea9c3f81e91b7d8bb7f6"
+  },
+  "arduino-core-avr-pins": {
+   "maker": "Arduino",
+   "title": "ArduinoCore-avr variants/standard/pins_arduino.h (the Uno's pin map)",
+   "revision": "read 2026-09-30 by the recheck",
+   "url": "https://github.com/arduino/ArduinoCore-avr/blob/master/variants/standard/pins_arduino.h",
+   "sha256": null
+  },
+  "arduino-uno-rev3": {
+   "maker": "Arduino",
+   "title": "UNO Rev3 schematic (A000066) and board pages",
+   "revision": "read 2026-09-30 by the recheck",
+   "url": "https://docs.arduino.cc/resources/schematics/A000066-schematics.pdf",
+   "sha256": null
   },
   "everlight-americas-search": {
    "maker": "Everlight Americas",
@@ -123,7 +144,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "no document found: Everlight's catalogue search for 67-21URC lists only 67-21SURC/S530-A2/S610/TR8 and 67-21SURC/S530-A7/TR8, and no distributor lists 67-21URC/S530-A3/TR8 — the part number may not exist as an orderable part; its figures cannot be checked until the part is identified",
+   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
    "record_hash": "3d62f433e64cb17589d08ccbb8ce09fe2d362a0ab32030a7329905571af3a2cf"
   },
   "67-21URC/S530-A3/TR8/ideality": {
@@ -134,7 +155,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "no document found: Everlight's catalogue search for 67-21URC lists only 67-21SURC/S530-A2/S610/TR8 and 67-21SURC/S530-A7/TR8, and no distributor lists 67-21URC/S530-A3/TR8 — the part number may not exist as an orderable part; its figures cannot be checked until the part is identified",
+   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
    "record_hash": "f91ed9cb2edb3d3557bfcc61b078d16bb9605d4a949bd07b943ee03f644d1b65"
   },
   "67-21URC/S530-A3/TR8/max_continuous_current_ma": {
@@ -145,7 +166,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "no document found: Everlight's catalogue search for 67-21URC lists only 67-21SURC/S530-A2/S610/TR8 and 67-21SURC/S530-A7/TR8, and no distributor lists 67-21URC/S530-A3/TR8 — the part number may not exist as an orderable part; its figures cannot be checked until the part is identified",
+   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
    "record_hash": "aa1aad05e0f033eb374f12b71f98f2a578179b0e0117f2f19fb137f1ae55d3f8"
   },
   "67-21URC/S530-A3/TR8/test_current_ma": {
@@ -156,7 +177,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "no document found: Everlight's catalogue search for 67-21URC lists only 67-21SURC/S530-A2/S610/TR8 and 67-21SURC/S530-A7/TR8, and no distributor lists 67-21URC/S530-A3/TR8 — the part number may not exist as an orderable part; its figures cannot be checked until the part is identified",
+   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
    "record_hash": "daa98f965640bb7c47676d037a18128e5f0927cb6c06a78a8b62ab242d90f04e"
   },
   "ATmega328P-PU/gpio_output_resistance_ohm": {
@@ -197,11 +218,11 @@
    "documents": [
     "microchip-DS40002061B"
    ],
-   "pages": "312",
-   "location": "Table 29-8 ATmega328P DC characteristics",
-   "reads": "active 8 MHz, VCC = 5 V: 5.2 mA typical, 9 mA maximum — the chip's own current",
-   "note": "the chip's figure agrees with the record's 'not the ATmega328P's own few mA'; the Uno board's 50 mA is not in this document (it needs the board's documents, or a measurement)",
-   "record_hash": "6f8d4227f0352b89bdb1a7590ab18d690ee7d8d93b2765a8ef4ca40b36e24972"
+   "pages": "312, 502",
+   "location": "Table 29-8 ATmega328P DC characteristics; Figure 31-333 (typical)",
+   "reads": "active 8 MHz, VCC = 5 V: 5.2 mA typical, 9 mA maximum; the 5 V curve gives about 9.6 mA at 16 MHz",
+   "note": "the chip's own current agrees with the record; the Uno board's 50 mA is in no document read — Arduino's UNO R3 datasheet leaves its maximum as 'xx mA' — so it needs a measurement",
+   "record_hash": "b99c60cc0e331f4846437ebdf867cf0318e9f374db636215150c816d6dd6e88f"
   },
   "ATmega328P-PU/supply_voltage_max": {
    "verdict": "agrees",
@@ -419,22 +440,22 @@
     "microchip-DS40002061B",
     "espressif-wroom32e-v2.1"
    ],
-   "pages": "2 (AM2302); 323 (ATmega); 28 (module)",
-   "location": "AM2302 Table 2; ATmega Table 30-1; module Table 15",
-   "reads": "no pin capacitance in the AM2302 manual or the ATmega328P's Table 30-1; the ESP32 module's C_IN is 2 pF typical",
-   "note": "record corrected: it said neither was published for this bus",
-   "record_hash": "bfb27ed1be0fe002dbb469e11312c248f458531cf86b2b612b1c5cfc1d43d088"
+   "pages": "2 (AM2302); 317 (ATmega); 28 (module)",
+   "location": "AM2302 Table 2; ATmega Table 29-14 (two-wire bus); module Table 15",
+   "reads": "ATmega328P C_i 'Capacitance for each I/O Pin' 10 pF maximum (characterised); ESP32 module C_IN 2 pF typical; nothing for the AM2302's pin",
+   "note": "record corrected twice: the recheck found Table 29-14, which the first pass missed",
+   "record_hash": "61acd7e4c5ac30f4b9266db3d929e3834b547a18cd4aec6a9b0c6e4f720cdbb8"
   },
   "DHT22/open_drain_sink_limit_ma": {
    "verdict": "agrees",
    "documents": [
     "aosong-am2302-v1.0"
    ],
-   "pages": "2",
-   "location": "Table 2 Electric Specification",
-   "reads": "output current 'Open' 8 mA typical, no maximum; tri-state 10–20 µA; low-level output voltage 0–300 mV without a stated current",
-   "note": "record corrected: it said the manual gives no output current",
-   "record_hash": "35685825eda378a6377ae32edd1e1452c6ccf67167b609fcad905272ff8ab766"
+   "pages": "2, 4",
+   "location": "Table 2 Electric Specification; Table 5",
+   "reads": "output current 'Open' 8 mA typical; tri-state 10–20 µA; Table 5 absolute maximum: input current for each pin ±10 mA",
+   "note": "record corrected twice: the recheck found Table 5's ±10 mA, which the first pass missed",
+   "record_hash": "7627fb418bdb3c3dd54898c8c5761b024b84536493fc9405934657e6922c0824"
   },
   "DHT22/rise_time_limit_us": {
    "verdict": "agrees",
@@ -476,10 +497,10 @@
     "espressif-esp32-v5.3"
    ],
    "pages": "28–29 (module); 62 (series)",
-   "location": "module Table 15 DC characteristics; series datasheet notes on the pin lists",
-   "reads": "V_OH ≥ 0.8 × VDD; I_OH 40 mA typical at V_OH ≥ 2.64 V with the drive strength at maximum; drive strengths 0: ~5 mA, 1: ~10 mA, 2: ~20 mA, 3: ~40 mA, default 2",
-   "note": "record corrected: the 20 mA at the default strength and the 33 Ω are the agent's estimate from these, not a figure the datasheet pairs; the kind stays typical",
-   "record_hash": "b6e3925912895ea125986de4b1c0acc870914f5276d200da9d5f6e1febaa2dcc"
+   "location": "module Table 15 DC characteristics and its footnote 2; series datasheet notes on the pin lists",
+   "reads": "V_OH ≥ 0.8 × VDD; I_OH typical 40 mA (VDD3P3_CPU/RTC) and 20 mA (VDD_SDIO) at V_OH ≥ 2.64 V with the drive strength at maximum, falling to about 29 mA as more pins source; strengths ~5/~10/~20/~40 mA, default 2",
+   "note": "record and value corrected [2026-09-30]: the recheck refuted {10, 20, 33} — 33 Ω is the typical at the default strength, not a maximum; now {10, 33, 66}, all derived from typicals",
+   "record_hash": "b9e03cafa65da4ffd4700df78f4eb3dc58306f400536d8f4a23e5b2694f4f0e1"
   },
   "ESP32-WROOM-32E/gpio_recommended_current_ma": {
    "verdict": "agrees",
@@ -489,8 +510,8 @@
    "pages": "62",
    "location": "notes on the ESP32 pin lists",
    "reads": "drive strength options ~5 / ~10 / ~20 / ~40 mA; 'The default value is 2' (~20 mA)",
-   "note": "",
-   "record_hash": "d4544b17e7903add3dcfb02786da227128f93c0989f33e3d474a8c84770f6d99"
+   "note": "wording corrected: a nominal drive-strength label, not a rated current; the kind is policy",
+   "record_hash": "111615e8210b24ca8bd0b5be230c35b36872b996de9ea99fd8e3a8f707d37baf"
   },
   "ESP32-WROOM-32E/pin_leakage_ua": {
    "verdict": "agrees",
@@ -509,10 +530,10 @@
     "espressif-esp32-v5.3"
    ],
    "pages": "30",
-   "location": "power consumption by power modes",
+   "location": "power consumption by power modes (the chip's)",
    "reads": "Modem-sleep, CPU powered up: 240 MHz dual-core 30–68 mA; 160 MHz 27–44 mA; 80 MHz 20–31 mA",
-   "note": "80 mA rounds up the 68 mA maximum at 240 MHz, as the record says",
-   "record_hash": "e088f0226a8a8e3234d1d7b39dc4c33dbbfc9920b6ac1857bd2b6c5fae52f0ad"
+   "note": "80 mA rounds up the 68 mA maximum at 240 MHz; the table is the chip's and leaves out the module's flash",
+   "record_hash": "bd1797c79f7e9bcda2fb9479daadb4de34364be73c5dbd3ac59c68b808f602c8"
   },
   "ESP32-WROOM-32E/supply_voltage_max": {
    "verdict": "agrees",
@@ -531,7 +552,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "8c5a5e58c6290ba0f32fa068a73489d6e2a69748d127a4888cf508bf547c3282"
   },
   "MAX3485ECSA/driver_rated_load_ohm": {
@@ -540,7 +561,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "97a6122d2869668f93cc3ee460f1685d5f0fbe23aa97010d84736f40992670a5"
   },
   "MAX3485ECSA/logic_input_current_ua": {
@@ -549,7 +570,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "eda686cafc0d6fae23b414934ff2b2157299f27c2d1e430cd4ed9f2a8cc33f64"
   },
   "MAX3485ECSA/logic_input_vil_v": {
@@ -558,7 +579,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "58e234276abd1571b4591b243ed2e69a11c38e42bea5b661c80c824ed98b5a52"
   },
   "MAX3485ECSA/receiver_threshold_mv": {
@@ -567,7 +588,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "b7b4b833f117df995648fc036e77be4fdf733c7ae4b9d907f86f9a8ea3fd1f57"
   },
   "MAX3485ECSA/requires_termination_ohm": {
@@ -576,7 +597,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "21e01271f369e97e7212af7175cb4034ee7d1e58ccf95b128b6180f1f463b57d"
   },
   "MAX3485ECSA/supply_voltage_max": {
@@ -585,7 +606,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "bdcf1f24e5546e149ec29c36de76bb4bed67f94d0e5d962ccd931903d460685a"
   },
   "MAX3485ECSA/supply_voltage_min": {
@@ -594,7 +615,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "90a1090e2e089e4a9af6c73dc8d2943da8ad406677dfe9201f0de529cffbdc80"
   },
   "MAX485ECSA/current_draw_ma": {
@@ -603,7 +624,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "b15dc2cf6621838b7c0ae9462d20678a3323e9d53f550fefd956d0a2a14b4d1a"
   },
   "MAX485ECSA/driver_rated_load_ohm": {
@@ -612,7 +633,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "d358dc6df2ab9260994e34b05c7b36358f946bdd8d205e27809e8b2799288437"
   },
   "MAX485ECSA/logic_input_current_ua": {
@@ -621,7 +642,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "77538b7b70bdf4941f4b3de4dd8bee0b3c346060e026e5881961ef738d52e2c9"
   },
   "MAX485ECSA/logic_input_vil_v": {
@@ -630,7 +651,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "e504aedbb4008a3fa8de8c5467824c12841a11a2a12c64aba9031ab54391e116"
   },
   "MAX485ECSA/receiver_threshold_mv": {
@@ -639,7 +660,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "2051720d13ad3884c0bd9a563e713af98def0c8428dcefe28c9eba51614e4eb2"
   },
   "MAX485ECSA/requires_termination_ohm": {
@@ -648,7 +669,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read; the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
    "record_hash": "8300dfc5a12ad307c26a5a56b3e08aec50efe559d0d5a4075e04b9ab2c504ebb"
   },
   "MAX485ECSA/supply_voltage_max": {
@@ -657,7 +678,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "627afb873383397d17470290460b0ec5ef13dc194d7baf036c461edfc9a414cc"
   },
   "MAX485ECSA/supply_voltage_min": {
@@ -666,7 +687,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "Analog Devices' site reset a scripted download of the datasheet; the document was not read",
+   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
    "record_hash": "1686f755f5c061b4bf902608ce172afbeb70b458e0bd963a12eeb2d86e2220ce"
   },
   "RC0402FR/power_w": {
@@ -880,234 +901,275 @@
    "record_hash": "623e47dfee808048dad789f29b8fb65637a95d1dcff7b6871829234a9fa7fed6"
   },
   "board:arduino_uno/A0": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A0 is PC0 on the Uno's wiring; on the chip PC0 carries ADC0; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "9a0f753d3092383ffd5962018191e073df3e8831cb6cf2218f0b29ebd2ec7c9b"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A0 is PC0 (ArduinoCore-avr pins_arduino.h); on the chip PC0 carries ADC0; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "60b317e0c582a6ce8a38039b67bbd900853ac1e9c4a5643c92f49132bf0313c3"
   },
   "board:arduino_uno/A1": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A1 is PC1 on the Uno's wiring; on the chip PC1 carries ADC1; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "696dccddf8d2fe4698808f3415aac1cbadc9eaf7ab10609a2441964d6e3b297a"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A1 is PC1 (ArduinoCore-avr pins_arduino.h); on the chip PC1 carries ADC1; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "ddf80f72274dde382a92b67e804f8080ec90c24bb73a1a448b13634f67ade422"
   },
   "board:arduino_uno/A2": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A2 is PC2 on the Uno's wiring; on the chip PC2 carries ADC2; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "ed317f714b34935635439e182015e0724cb64aa7e3ee1d85e221e77f77a4c48a"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A2 is PC2 (ArduinoCore-avr pins_arduino.h); on the chip PC2 carries ADC2; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "f5f0af7fe58baf185c4070a4ebeb00efd6dda8364d3b88b3560dfc8da4fef6e4"
   },
   "board:arduino_uno/A3": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A3 is PC3 on the Uno's wiring; on the chip PC3 carries ADC3; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "b0aa124a387f4e03dda766266112456af99fbb1931ea66ebdb09f18e5a858b6e"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A3 is PC3 (ArduinoCore-avr pins_arduino.h); on the chip PC3 carries ADC3; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "a2b6d92f3f32966fb00d95b966cb52bfab7b181574e283bd116509d5ba36ae84"
   },
   "board:arduino_uno/A4": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A4 is PC4 on the Uno's wiring; on the chip PC4 carries ADC4; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "040149f9c9d1bb7d3b7178e0357764bfa9db6df643961bc943cabc06aa816d37"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A4 is PC4 (ArduinoCore-avr pins_arduino.h); on the chip PC4 carries ADC4; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "4d6e30bcb1d6982b33c4e6f020234e89ba05fa17336aaed2c833daa12242985a"
   },
   "board:arduino_uno/A5": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "A5 is PC5 on the Uno's wiring; on the chip PC5 carries ADC5; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "7ae6ccdfea2fe16a2b7c7b65966f74799bd9e3ab59a8112ee80a58a7bbdcc27d"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "A5 is PC5 (ArduinoCore-avr pins_arduino.h); on the chip PC5 carries ADC5; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "7585ff6392a7e4e8ceaf9a1edf3a9df2b065248802ae01713c8270d768f4aaf0"
   },
   "board:arduino_uno/D0": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D0 is PD0 on the Uno's wiring; on the chip PD0 carries RXD (USART0); every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "54d64bd0491b23b128a4088f46eea643124f0a4be24596f14b88c91c47f7fb24"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D0 is PD0 (ArduinoCore-avr pins_arduino.h); on the chip PD0 carries RXD (USART0); every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0); on the board D0 is held by the ATmega16U2's TX through 1 kΩ (RN4B)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "05dff19e3e9d59db0ef90b1c0c155456c45c591907893b9c89ea7ef4ad3e8d26"
   },
   "board:arduino_uno/D1": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D1 is PD1 on the Uno's wiring; on the chip PD1 carries TXD (USART0); every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "61e93e68f0fa1e342ae847b42090668a07d666f623f3cdc6520b83a640e7f19e"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D1 is PD1 (ArduinoCore-avr pins_arduino.h); on the chip PD1 carries TXD (USART0); every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0); on the board D1 goes through 1 kΩ (RN4A) to the ATmega16U2; after an external reset the bootloader's UART drives it",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "b947b18e0c5f5ce1ac9ae305f92a9be8913c43ef2bd8175f36db20a94ad4eee7"
   },
   "board:arduino_uno/D10": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D10 is PB2 on the Uno's wiring; on the chip PB2 carries OC1B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "b068a0191cc67b01468ab99df63b96e0d96f634f06c32237267bf4f6cb53ccaf"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D10 is PB2 (ArduinoCore-avr pins_arduino.h); on the chip PB2 carries OC1B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "f4c7eacd5e69a14b4ef14c3a73a55c842174e06b5da03dd8cca69ae8a4d1f9eb"
   },
   "board:arduino_uno/D11": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D11 is PB3 on the Uno's wiring; on the chip PB3 carries OC2A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "3d038a74c5a7f690d4441573c717382f448b067c6ee48ca9866021e621f57f0e"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D11 is PB3 (ArduinoCore-avr pins_arduino.h); on the chip PB3 carries OC2A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "24b730ce53974d091e89640dd0ff450ae6be4e2b9c1571b67bd8c9ffe34b2a74"
   },
   "board:arduino_uno/D12": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D12 is PB4 on the Uno's wiring; on the chip PB4 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "4111669615c2b3e0ebc88630fbb15054ce20e6a986e125a1fdee391a76853007"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D12 is PB4 (ArduinoCore-avr pins_arduino.h); on the chip PB4 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "699f7fcd12dace318f2ef54336e625bf76132ba792c1f96cc364a22181da773b"
   },
   "board:arduino_uno/D13": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D13 is PB5 on the Uno's wiring; on the chip PB5 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "7af81e70750767eca3eb0faf5d37eb4d7d498cc05c2ce88165680a83f0da1412"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D13 is PB5 (ArduinoCore-avr pins_arduino.h); on the chip PB5 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0); on the board D13 drives the LED 'L' through an LMV358 follower; after an external reset the bootloader flashes it",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "2076b8c66bcab0ff8400f38069b906082f532b2e7a84b93b7dbc24782ebc5872"
   },
   "board:arduino_uno/D2": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D2 is PD2 on the Uno's wiring; on the chip PD2 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "4d9e81ee392adf2faf5a549594ab8c6977d530f21928fb983a06f7a3ba0abe06"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D2 is PD2 (ArduinoCore-avr pins_arduino.h); on the chip PD2 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "8e3aef972855d271e0e9e18031a7004b8ca87985932dbee6086ec9e8a6ef6f62"
   },
   "board:arduino_uno/D3": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D3 is PD3 on the Uno's wiring; on the chip PD3 carries OC2B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "700b8a8dd90ab371fb4eb07a15366a41b50cff550bf785f9f12b1f90fc9c6299"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D3 is PD3 (ArduinoCore-avr pins_arduino.h); on the chip PD3 carries OC2B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "d269d8fd221f23d66616035f5874581726826699db3fae0df60a37b8a29f6cf2"
   },
   "board:arduino_uno/D4": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D4 is PD4 on the Uno's wiring; on the chip PD4 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "1f693bd310c4b1b227c819e6677eccf5fa95cba085a9d5d52864a81e62f76308"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D4 is PD4 (ArduinoCore-avr pins_arduino.h); on the chip PD4 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "36594be1cc0305ec287a936aad8c90b953e4ac0da5de29c7e90f978f18887576"
   },
   "board:arduino_uno/D5": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D5 is PD5 on the Uno's wiring; on the chip PD5 carries OC0B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "22b56e684ecd20b0ac55a33dd26066b465932fbafe9261919ffcb0ea3b80fc02"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D5 is PD5 (ArduinoCore-avr pins_arduino.h); on the chip PD5 carries OC0B; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "1505edb50a0068c2d2effbfaf0e2b527737d67696cbc6269475af89d83a4c87d"
   },
   "board:arduino_uno/D6": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D6 is PD6 on the Uno's wiring; on the chip PD6 carries OC0A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "adca4f6099cd94d133a4cd04609580b5b6a126caa0a6492ac960e23795fda964"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D6 is PD6 (ArduinoCore-avr pins_arduino.h); on the chip PD6 carries OC0A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "35b4b9da6ce95eedc1b2a57f9ab8ae30478bd834b07dd4a5bc2fba72bc182269"
   },
   "board:arduino_uno/D7": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D7 is PD7 on the Uno's wiring; on the chip PD7 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "032c3dbd636144a0629eb57bb30569c92c9ba5a666b31d5c58319062efe500d9"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D7 is PD7 (ArduinoCore-avr pins_arduino.h); on the chip PD7 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTD/DDRD, p101 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "bf17dd44ad7269f7b80d575bb79085a68a79c09450f44897b06652d1739badc4"
   },
   "board:arduino_uno/D8": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D8 is PB0 on the Uno's wiring; on the chip PB0 carries general I/O only; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "5a1eb33cb87a9260729e754fc781bfdbfe3e5d919704accd7b138f9e211d10b0"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D8 is PB0 (ArduinoCore-avr pins_arduino.h); on the chip PB0 carries no OCnx, RXD/TXD or ADC function; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "4cac3e1192c4d9b403aea7669ab9aedc50296854c5799987b34235d6eee9de21"
   },
   "board:arduino_uno/D9": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-core-avr-pins",
+    "arduino-uno-rev3"
    ],
-   "pages": "12, 85, 101",
-   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4.8–9 PORTD/DDRD",
-   "reads": "D9 is PB1 on the Uno's wiring; on the chip PB1 carries OC1A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTx, DDRx = 0)",
-   "note": "the chip side agrees; the Uno's own wiring — Dn/An to port pins, the USB-serial bridge on D0/D1, the LED on D13 — is its schematic's, which was not read",
-   "record_hash": "9d5397aa2d944ee123dc91a5406e6be840ee473c76495ac7c42ada110e92b96b"
+   "pages": "12, 85, 100–101",
+   "location": "Figure 1-1 pinout; §14.2.1 Configuring the Pin; §14.4 port registers; ArduinoCore-avr pin map; UNO Rev3 schematic",
+   "reads": "D9 is PB1 (ArduinoCore-avr pins_arduino.h); on the chip PB1 carries OC1A; every port pin is tri-stated in reset and comes up an input with its pull-up off (PORTB/DDRB or PORTC/DDRC, p100 = 0)",
+   "note": "rechecked 2026-09-30: Arduino's own sources confirm the mapping",
+   "record_hash": "2c4b262559505427ace251aa6d8921afcdebfb4eb0294eb731db49b5339cb648"
   },
   "board:arduino_uno/console_uart": {
-   "verdict": "agrees_in_part",
+   "verdict": "agrees",
    "documents": [
-    "microchip-DS40002061B"
+    "microchip-DS40002061B",
+    "arduino-uno-rev3"
    ],
-   "pages": "12",
-   "location": "Figure 1-1 pinout",
-   "reads": "USART0 is on PD0 (RXD) and PD1 (TXD)",
-   "note": "that the Uno's USB-serial bridge uses them is the board's schematic's, which was not read",
+   "pages": "12; schematic",
+   "location": "Figure 1-1 pinout; UNO Rev3 schematic and pages",
+   "reads": "USART0 is on PD0 (RXD) and PD1 (TXD); the board wires them through 1 kΩ to the ATmega16U2 USB-serial chip ('Serial: 0 (RX) and 1 (TX)')",
+   "note": "rechecked 2026-09-30",
    "record_hash": "3ae84d50e153881fd1e25853a7c2eaba33961480e86ea7f2c4d2d4a996656316"
   },
   "board:blackpill_f411ce/PA0": {
@@ -1117,7 +1179,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "c57df431d9035c6f9b6ab8803b50c01ae799e96a78c1d6f97081397057502010"
+   "record_hash": "54129d51723f9227f4187eb54ff84b6ae67e144f5e83071703a7af6ee6ab0d0f"
   },
   "board:blackpill_f411ce/PA1": {
    "verdict": "not_checked",
@@ -1126,7 +1188,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "94212e074c687dcfd677dbd188a42fc8e82473cb8a4e3b087bdd23ee3c650898"
+   "record_hash": "c2f0570bef00e142f9012700c128832a35911e58c09e3bac2f916fab6bd521cc"
   },
   "board:blackpill_f411ce/PA10": {
    "verdict": "not_checked",
@@ -1135,7 +1197,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "814436ec6d376ab2d97386acd4cc426cada9af1a464bb6b2a134440070def2e0"
+   "record_hash": "7a28aac758e1eccb7bb6599451d38707494f610d8c2dc30067b2d4244ae210c2"
   },
   "board:blackpill_f411ce/PA11": {
    "verdict": "not_checked",
@@ -1144,7 +1206,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "07713823b35b7ec8f681cd877715a0e5a73827818f7a362209eb8b897cadf50b"
+   "record_hash": "9839930499edb7f63ea0949ba99d5c4db128decc03b2e176fbbfadb0730833ee"
   },
   "board:blackpill_f411ce/PA12": {
    "verdict": "not_checked",
@@ -1153,7 +1215,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "02b5889339c7c338ebee6c65ef342f01e635254d29c7d8814f84ae64e5eb419a"
+   "record_hash": "6b977fbcc42176cc4c922036b553ab6f481930505964ecdf25d103964200dce4"
   },
   "board:blackpill_f411ce/PA13": {
    "verdict": "not_checked",
@@ -1162,7 +1224,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "37d2e5292f69e8ddbf75efc385f34dc60a920670178edaff34bc06c7c00bd0d1"
+   "record_hash": "305b57fdb8632112a7614ad1b5470b1de61aa244baae71eb7538e2cdffa5a7cd"
   },
   "board:blackpill_f411ce/PA14": {
    "verdict": "not_checked",
@@ -1171,7 +1233,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "28caa91a0744b9a572313b4b53a04c7015bc98c7e30476b3cc34c43603af2ad8"
+   "record_hash": "7a0f51f80f8e1afcd6a012bf31a31e380bb31433f669b0a90c8191169078d060"
   },
   "board:blackpill_f411ce/PA15": {
    "verdict": "not_checked",
@@ -1180,7 +1242,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "6fdc33d967236fbe2b9865075248f00d885e250ad75c8b94659ee10e894c0c33"
+   "record_hash": "34cb0991d40af1ad0853d082a6ca6033a916acd6285d1a58c5419f0aebb6a737"
   },
   "board:blackpill_f411ce/PA2": {
    "verdict": "not_checked",
@@ -1189,7 +1251,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "ffa290cf258637c5a707917ecade67de307695b49f295ab86086969e01a88a3f"
+   "record_hash": "57e5b4df700529d1b64f39f3ed677ee62876477045bb06ae8d948a9fdd22260a"
   },
   "board:blackpill_f411ce/PA3": {
    "verdict": "not_checked",
@@ -1198,7 +1260,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "3c344154c1bec732d4517813bd3a553a870717208ecc36a48b937044a627c771"
+   "record_hash": "b9b3be213618351c8bb0d3cad51d053c1414837c0f611d8d083efc0ca2f9c078"
   },
   "board:blackpill_f411ce/PA4": {
    "verdict": "not_checked",
@@ -1207,7 +1269,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "305d06f75b30391d16e07b916ca288b53d088d0c33dfa6acab7621fe9ac5ab90"
+   "record_hash": "dfc7548e7de127d987991f12181ccfa2e480a31192d1f94744780f15222ca228"
   },
   "board:blackpill_f411ce/PA5": {
    "verdict": "not_checked",
@@ -1216,7 +1278,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "a049d076c65d9374d8694276af40f644bbabe932ac7f6f72a643949a1b80b27c"
+   "record_hash": "acbcce2f91dda5a41cc32a90aaeb17098ac99348995836c82a2fcaa8c8bd3093"
   },
   "board:blackpill_f411ce/PA6": {
    "verdict": "not_checked",
@@ -1225,7 +1287,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "5eab3f978c8a56aced223d575ab5d2159e82cb38480c849e324dc54bf0052636"
+   "record_hash": "778b6cd535f064958cbd32313d55c0bda9ccbd4cc52142334df1540d39a94df3"
   },
   "board:blackpill_f411ce/PA7": {
    "verdict": "not_checked",
@@ -1234,7 +1296,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "99519e8617a5fda45212018414993b919c3c38df76067adf2c2ee84085162a99"
+   "record_hash": "29fe8d209f149d94e63b4d08c4d248851beb203dd3b0dee0c3aa231882b9d5cc"
   },
   "board:blackpill_f411ce/PA8": {
    "verdict": "not_checked",
@@ -1243,7 +1305,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "fac92d233bb60f9c457b40c121f1b14d678618c1fc134add240067df6953e5f6"
+   "record_hash": "5011caa0d13f9701b08352f64ac7025c03ecff9957e1f07f01c70075664c652b"
   },
   "board:blackpill_f411ce/PA9": {
    "verdict": "not_checked",
@@ -1252,7 +1314,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "749c76b5e5896912c0d2bb5550a52cd0c314b12012d61acf7e8cb750877ca9e9"
+   "record_hash": "7bfe114d91d20ab2f98066294b010f2ba454d5b0513787cfc5e850cd788712b7"
   },
   "board:blackpill_f411ce/PB0": {
    "verdict": "not_checked",
@@ -1261,7 +1323,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "ee58345d38270b51c0b435b6c4f549c5c61afdd146b73c812ac282b5518d8e28"
+   "record_hash": "f210cfb9aa51098e7c6378801e385d3017714398591533d3a82ae24dd3698d9f"
   },
   "board:blackpill_f411ce/PB1": {
    "verdict": "not_checked",
@@ -1270,7 +1332,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "d3c8527498394259cdc69541c87364d643fab391279563ec92d38d881a371b1b"
+   "record_hash": "5e2ec434b4ade46d40a89075431ef4ec9ed85d444a4614716af11907356dac39"
   },
   "board:blackpill_f411ce/PB10": {
    "verdict": "not_checked",
@@ -1279,7 +1341,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "f497bb2554b72355a9a68b90ba260fd0de7516261c986050c787ad117635cad7"
+   "record_hash": "396f8fd3ee813390c1e6fc1bb42a6f8763f02699ea16178dbdc15c2004b544f2"
   },
   "board:blackpill_f411ce/PB12": {
    "verdict": "not_checked",
@@ -1288,7 +1350,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "dfa3349eb2238f455696da857af4273891f2be393daaa5420e6a9d8cba601684"
+   "record_hash": "1ab8aa9c8f60b362270550936a62ff9ab6ce1a6211d6e986aec3492d8b7e6469"
   },
   "board:blackpill_f411ce/PB13": {
    "verdict": "not_checked",
@@ -1297,7 +1359,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "cf0f94c7e31bb799f4d4dd7767a4846697b75d91025cb5b8acf8926464b64aa3"
+   "record_hash": "77c376cf9c1e3d1969650a88a230a7c03113be2ee050119346e825f64e0aa3eb"
   },
   "board:blackpill_f411ce/PB14": {
    "verdict": "not_checked",
@@ -1306,7 +1368,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "2934ec9ae3b2023bd6423661dc63592cc5b3ed6e4ecdfcb2a7c9023b531b3174"
+   "record_hash": "7f69076b9ff30ec84b8d9a849a17837edede189d0c2fa7ee2b2fbce8e87ac08c"
   },
   "board:blackpill_f411ce/PB15": {
    "verdict": "not_checked",
@@ -1315,7 +1377,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "4274d6194eb07b582061397fb92a15e4096ef9513d63a68b5567cd7a3f28852c"
+   "record_hash": "c96c77c4f8a877dcb08a90c0f908c8d2a06391c913112dda846fd32e706f8d75"
   },
   "board:blackpill_f411ce/PB2": {
    "verdict": "not_checked",
@@ -1324,7 +1386,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "bcae0012802503e9db38e483e173985f0e04f35dbe4c47d63fb98468943789a2"
+   "record_hash": "73afd10245b287b52bfda5f6ae10108c97acfa8d058a3e4c224471d18c03bd56"
   },
   "board:blackpill_f411ce/PB3": {
    "verdict": "not_checked",
@@ -1333,7 +1395,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "44730cfe410d5a027ea39af28092fb2f7075745f8baf325eebe37f29f90a169a"
+   "record_hash": "376a538ef205b3dbc5a9e40a2c6d83138d9c169d4e36b2bec8eaf34c6d358bb3"
   },
   "board:blackpill_f411ce/PB4": {
    "verdict": "not_checked",
@@ -1342,7 +1404,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "18793bb861c2e594e17b2b0e8cf4e511763a552fde78b4032096edec1fd5d1fc"
+   "record_hash": "cc98b37cd5142fe7d1fdebb8298cad52c5fcc1283c38c5dc1bc2b1350b241932"
   },
   "board:blackpill_f411ce/PB5": {
    "verdict": "not_checked",
@@ -1351,7 +1413,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "00f715150179e893ce5250a9045330a4e89941e636a38469ea25410f5cb164d3"
+   "record_hash": "a2419fda19385c03e1ad8ec50ae2c23eabe3290a34127121d9f21ceb761e95f2"
   },
   "board:blackpill_f411ce/PB6": {
    "verdict": "not_checked",
@@ -1360,7 +1422,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "3aebeff1be7787222c1ea9ee907076bb4f740ca2624cdaa7a109786d9daf49c8"
+   "record_hash": "1ba6764f8d89be2c5ba7cd620a4f8ad04b8aeab1febddff6f865d143ba652090"
   },
   "board:blackpill_f411ce/PB7": {
    "verdict": "not_checked",
@@ -1369,7 +1431,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "d642807e01f10e97561cdac0b742d3cfbe978fca9c3413537ec69a7f49e82fc4"
+   "record_hash": "b7c8af629c16cf5572e3b56af8bfdaba0383bbf0a04049e7d94cd0317d5b8517"
   },
   "board:blackpill_f411ce/PB8": {
    "verdict": "not_checked",
@@ -1378,7 +1440,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "a701e5242cbd30d0fd93d6fc4801c6a5dff10218ff0521a6ec8cb9a61a82d415"
+   "record_hash": "e1cb4ad284a3defbfde651fe9d7d2ee34e18964282baeef26dd74640ea0d187b"
   },
   "board:blackpill_f411ce/PB9": {
    "verdict": "not_checked",
@@ -1387,7 +1449,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "ab0e4f6e6ebea9b15e2aff823c5b50cf3ea317e672f708f162a0c9ea3148bded"
+   "record_hash": "d25f8f836cb2f50485e1e48af7c32819d8ed8c7051dd3a8988bc1e1f88af1ea8"
   },
   "board:blackpill_f411ce/PC13": {
    "verdict": "not_checked",
@@ -1396,7 +1458,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "238645cff454196e38d880e2fab825c5f3a24b101e21d587b95da6257ecccf7d"
+   "record_hash": "38305ea5647c560bb0bee17ea4f5c3b2f20380840e3903ed447d3275c660bf2d"
   },
   "board:blackpill_f411ce/PC14": {
    "verdict": "not_checked",
@@ -1405,7 +1467,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "4bc37a9b2a566c58e099a12556853927d804383894b1426dc6e29821613973e9"
+   "record_hash": "1c9fbef7a7e13e534e843a2bd39c1502a4a19d8af32fbbfaebef7156aa20df50"
   },
   "board:blackpill_f411ce/PC15": {
    "verdict": "not_checked",
@@ -1414,7 +1476,7 @@
    "location": "",
    "reads": "",
    "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
-   "record_hash": "193c51b325eca9dc8fd1b4351b505b6660acb4f778003801206b1a078f3c46f1"
+   "record_hash": "6ab2b472062eec540aa02ec6c778b2d5c87c75fd23220f7b96e7639ef18f7705"
   },
   "board:blackpill_f411ce/console_uart": {
    "verdict": "not_checked",
@@ -1430,427 +1492,460 @@
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO0 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH1; at/after reset: weak pull-up; strapping pin: boot mode (GPIO0 = 0 with GPIO2 = 0: download boot; default 1, SPI boot)",
-   "note": "",
-   "record_hash": "b417a881a4251e69271da923b4fe6d04c8bb765f1d8f68ec783a94f0a3ab57a0"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO0 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH1; at and after reset: weak pull-up; strapping pin: boot mode (GPIO0 = 0 with GPIO2 = 0: download boot; default 1, SPI boot)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "2111a9fe0193d6a696360b5827a5b3713f021ab9fd156812a0d85c6560149790"
   },
   "board:esp32_devkitc/GPIO1": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO1 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; U0TXD — the USB-to-UART bridge",
-   "note": "",
-   "record_hash": "0d052913e15ee70f74fa0bf028f7a2cc55701e97ff2a848196d3dc5f8ff2c028"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO1 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; U0TXD — the CP2102N USB-to-UART bridge through a 0 Ω resistor (schematic); after reset U0TXD (Function 0) drives it with the boot log",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "a7e523335bea39400ce3f81053f77ebe2a4733c106059d7785859b20772e48d8"
   },
   "board:esp32_devkitc/GPIO10": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO10 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "2e3ee0d91b02751f1af78cd4f7af4bf56013a6f4a351abeeb64a442f2549ce85"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO10: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "cf1d7eba0891af72255c00b1fe845c34bcfd2f4dbda5d76889dabb7200947706"
   },
   "board:esp32_devkitc/GPIO11": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO11 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "04ad1fbaeed276c5caff1566c895180ba9f593d6b0cdc7dfd3389107f0fcae23"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO11: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "03229741a6cfb3e65729157ba2efb44236e073aca62bd18f979ac5a0d7d8bd12"
   },
   "board:esp32_devkitc/GPIO12": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO12 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH5; at/after reset: weak pull-down; strapping pin: MTDI: VDD_SDIO voltage, 1 selects the internal 1.8 V LDO",
-   "note": "",
-   "record_hash": "ab4eadbe3152b033a6dd592f1787e449f4c6430d80869e2a808af4d2c340e08d"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO12 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH5; at and after reset: weak pull-down; strapping pin: MTDI: VDD_SDIO voltage, 1 selects the internal 1.8 V LDO",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "854a8bda06f1c509ac0529195d99f3a210ac5b98115eef27a8817bbda9dc5de6"
   },
   "board:esp32_devkitc/GPIO13": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO13 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH4; at/after reset: weak pull-down",
-   "note": "",
-   "record_hash": "b3d9107cfda3097ce40cec31791b656304eeb356307268ea8a13ab64c4d0527b"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO13 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH4; no pull while reset is held; weak pull-down after reset",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "f4a4b211d432aedc256bd48ab84396aa45ef4b3938f137d8d3baa8f55ad155f5"
   },
   "board:esp32_devkitc/GPIO14": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO14 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH6; at/after reset: weak pull-up",
-   "note": "",
-   "record_hash": "89640b5e09983a8ec035a2cfc1b28b4df86931890785e4aff2e547592c94f4df"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO14 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH6; no pull while reset is held; weak pull-up after reset",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "de59b2fdb7cd6df9309dca8bbf487ebc5175255dd5a296677cb3f273322eaf26"
   },
   "board:esp32_devkitc/GPIO15": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO15 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH3; at/after reset: weak pull-up; strapping pin: MTDO: U0TXD printing (0 disables it) and SDIO slave timing",
-   "note": "",
-   "record_hash": "54292c8c57942328284374489e086e8e6bad1ff5f0cd1d99fa78719d05e4f68d"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO15 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH3; at and after reset: weak pull-up; strapping pin: MTDO: U0TXD printing (0 disables it) and SDIO slave timing",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "bcd858a71a8c599f91bcd74e9b0cab0dab45937e500e7fcbfb20259e1c12277c"
   },
   "board:esp32_devkitc/GPIO16": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO16 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull; module note: IO16 is the PSRAM's on variants with embedded PSRAM",
-   "note": "",
-   "record_hash": "ff5f467aff8e18697f4a1d0a2dfecc87576e985507f0c7913759756e0342f2dd"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO16 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull; module note: IO16 is the PSRAM's on variants with embedded PSRAM",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "e294ec728d85bf3cff3d8884398931b8c0de357843792030daa2e044e385d53c"
   },
   "board:esp32_devkitc/GPIO17": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO17 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "2adf7b37dba797bd9570dd2b7f4f507a2756f111a15e83a4180cfc29de45dcbb"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO17 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "7ff77a49d1a715172cd00b3e4efd145dcc379ca71e348bddc1fb0e58ad40f030"
   },
   "board:esp32_devkitc/GPIO18": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO18 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "18aca4d9d34b6d44250aca5314f9181882243c23267d0a6405ad6521391b9f9a"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO18 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "3054a5cc9b08825c8f151763495cb64ddb55092b661fd16a2356a4303c83f1c7"
   },
   "board:esp32_devkitc/GPIO19": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO19 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "4876ebd5ce92736977f8e0634902efc35c00cb5b690741952b0c0e4570873dbe"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO19 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "0f6511a49d2f8b4f53c2c150224d6c6f5fd4d4deffb2d9bfb10bf08db4d1508f"
   },
   "board:esp32_devkitc/GPIO2": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO2 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH2; at/after reset: weak pull-down; strapping pin: boot mode (must be 0 for download boot; any value for SPI boot)",
-   "note": "",
-   "record_hash": "cf19736108a5e6957cf26627233e24d84c0b0058cee41969bf38fcbec4146e0e"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO2 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH2; at and after reset: weak pull-down; strapping pin: boot mode (must be 0 for download boot; any value for SPI boot)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "7e976c7c144b5c45c9300448eb88571db16d64a4022d8847e51afa18f31f7a46"
   },
   "board:esp32_devkitc/GPIO21": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO21 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "0a663b22ee253f59a68c347405490fd256e751565410f91ccb757c48290c667c"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO21 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "617de8082a484cc7815e6a3a4d4bf06adba3ba97eb74b38f4766034a9df5fd6b"
   },
   "board:esp32_devkitc/GPIO22": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO22 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "b48c8b08b742006ac26cbcad2a2fde4f43c816ba922717e2993b1fec17b6e36e"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO22 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "cd22087e31d7e2577323aa1beb98c3fb0561bb273acbf7439707e1a37f02e8a2"
   },
   "board:esp32_devkitc/GPIO23": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO23 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: no pull",
-   "note": "",
-   "record_hash": "b2697ada4818007e0f6bed0fdd37417a88e2543af37d483607687894e2b43166"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO23 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "2e4c17d66c692ad7dab1d3b0538cc05f29b2328a93e472dfc6ae05d321f3ba99"
   },
   "board:esp32_devkitc/GPIO25": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO25 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH8; at/after reset: no pull",
-   "note": "",
-   "record_hash": "e825a6bd0f96625c0868699493ae40a960255522ec1cc85e4f73eaca34eec42e"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO25 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH8; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "68af2585ca6a2fd895301685698a40d69340a9a4c32e54bcd550e6af7b086af2"
   },
   "board:esp32_devkitc/GPIO26": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO26 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH9; at/after reset: no pull",
-   "note": "",
-   "record_hash": "85ac7b6fdf45f0fb60bd8fb7484d948f443223b4544401988a540a75f5358d87"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO26 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH9; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "0696b4e0dfeb4354b719eb3c537dd79b0c5bf2119debf7c33a6e2b65323ca709"
   },
   "board:esp32_devkitc/GPIO27": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO27 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH7; at/after reset: no pull",
-   "note": "",
-   "record_hash": "ac3d2d328f3fe10667214c3e7061d2f67028b4b308596ae18b47a26056579b63"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO27 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH7; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "9414bd5dad25290ac0569d8df7ab73fdd93920f6b97921fa110a7cd61fb125bc"
   },
   "board:esp32_devkitc/GPIO3": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO3 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; U0RXD — the USB-to-UART bridge",
-   "note": "",
-   "record_hash": "2a41e4e5247dcc877d05a62591117fe35d1245c7353834cd01adeeada020779e"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO3 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; U0RXD — the CP2102N USB-to-UART bridge through a 0 Ω resistor (schematic)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "5e789437a702adf025c3ad929f566a604786076e984edfa66718fc9a846fe9aa"
   },
   "board:esp32_devkitc/GPIO32": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO32 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC1_CH4; at/after reset: no pull",
-   "note": "",
-   "record_hash": "58860f121d9100d6878449c325359493ae7f37bd5f86be1efad3bf213a914746"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO32 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC1_CH4; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "2d89a3ad133bf07e27629e2ce02b7dc77193d30816b08e9e83b25fbf4670c757"
   },
   "board:esp32_devkitc/GPIO33": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO33 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC1_CH5; at/after reset: no pull",
-   "note": "",
-   "record_hash": "950ccc4f886bf629c5ba556bd82a4c2e264ea0163f099901f899f8aa3899a924"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO33 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC1_CH5; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "ecceb1f26d6613d17905cb739b9e1affa401a5c0574bdb6b59987f46253d2ce1"
   },
   "board:esp32_devkitc/GPIO34": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO34 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH6; at/after reset: no pull",
-   "note": "",
-   "record_hash": "8f0a6597eee813dfe2bebd1da09af6a6117608b0fd74978c05ce0296f286650b"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO34 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH6; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "179e7fc579ffc7452aeb6aa46ca8b05ca639c6e2ab2799ffd24899f1f8b6d107"
   },
   "board:esp32_devkitc/GPIO35": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO35 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH7; at/after reset: no pull",
-   "note": "",
-   "record_hash": "717d9d3547d1f505c1634ed3dac0e26ca6bc8541ddb78c4cf4c20e352c176f1a"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO35 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH7; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "a39fc0601f0fa0f6cb7936fc821e25c79f6808bc7efc2ce369d6b472d570bc47"
   },
   "board:esp32_devkitc/GPIO36": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO36 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH0; at/after reset: no pull",
-   "note": "",
-   "record_hash": "56fb6470ec350d1d958713845054d56b3bea6b9453ed78e7b7ca9a482da041c8"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO36 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH0; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "1c3caa079ed17cd64ccaaf1d688ec2dc74045639dbe282d081f840c7101306e1"
   },
   "board:esp32_devkitc/GPIO39": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO39 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH3; at/after reset: no pull",
-   "note": "",
-   "record_hash": "4724840617e67ccfc726ce7bcdc5d5e7a939bb4d4eff491fae74846e84b37781"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO39 on the DevKitC V4 header; input only, no output driver or pulls; ADC1_CH3; at and after reset: no pull",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "cbc19506b8de61d109a599c916ec0aacb93f4ae40df6f949ed4483c2d0ce5666"
   },
   "board:esp32_devkitc/GPIO4": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO4 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH0; at/after reset: weak pull-down",
-   "note": "",
-   "record_hash": "8538b346cf039a043a3f507fff2f37ba0c1e10a50129d53d52f8dd7c63011ab9"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO4 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; ADC2_CH0; at and after reset: weak pull-down",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "521e3ddc44179fbd770bcc8cb5437a5d4911382f14286c91e3134c29c8aaf906"
   },
   "board:esp32_devkitc/GPIO5": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO5 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; strapping pin: SDIO slave timing, with MTDO",
-   "note": "",
-   "record_hash": "a1356459090cc2575f2750723ad5a5977fd0f224c74fa32f856f367ee98e1378"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO5 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; strapping pin: SDIO slave timing, with MTDO",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "9f5e03dd15f790cddddef68f2110e8a778a199633366b0c1f1e60b6776ba7079"
   },
   "board:esp32_devkitc/GPIO6": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO6 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "2354c1d73504a4a6e524ccf8543f5903da8cbcda246ea4f0bb92bf075aac4a3f"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO6: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "af7dc77ba87179d20ad3d59bee4120742c8ddac70a0706ebaa9a50002717b6d0"
   },
   "board:esp32_devkitc/GPIO7": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO7 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "f98a8a38b939396b0cb304d065300758f655e14ff80e0b96a79a4d306c3f42fc"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO7: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "03732e9f68150b0ebfb0c54d340eb19268e5c8cedfe21867ca547b05c099858e"
   },
   "board:esp32_devkitc/GPIO8": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO8 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "948b214ceed86fde95416062252f2659069ae4dc1481a47024e48c5f7da6b9da"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO8: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "e1683ca903d83a899921de8eb9d02ee49608d4a0317eb60dd0c1901e398c078f"
   },
   "board:esp32_devkitc/GPIO9": {
    "verdict": "agrees",
    "documents": [
     "espressif-esp32-v5.3",
     "espressif-wroom32e-v2.1",
-    "espressif-devkitc-v4"
+    "espressif-devkitc-v4",
+    "espressif-devkitc-v4-sch"
    ],
-   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61 (input-only); module 12; guide header tables",
-   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3",
-   "reads": "GPIO9 on the DevKitC V4 header; output-capable; LED PWM routes to any GPIO; no ADC channel; at/after reset: weak pull-up; connected to the module's SPI flash, not led out; the guide says avoid it",
-   "note": "",
-   "record_hash": "1a65ed8c08a74d2a82bc1682391a7ee774f00ab386a6c7ab75c8962d17a90e1a"
+   "pages": "69 (IO_MUX); 22–25 (strapping); 39 (LED PWM); 61–62 (pin-list notes); module 11–12; guide; schematic",
+   "location": "series datasheet Appendix A.4 IO_MUX, §3 Boot Configurations, §4.8.8; module Table 3 notes; DevKitC V4 header J2/J3 and schematic",
+   "reads": "GPIO9: the DevKitC header has a position for it, but the WROOM-32E does not lead it out; output-capable; LED PWM routes to any GPIO; no ADC channel; at and after reset: weak pull-up; connected to the module's SPI flash (module Table 3 note 2)",
+   "note": "rechecked 2026-09-30",
+   "record_hash": "ed1386eed9c84088c435511788c1d6d68f8538ae3fdf36ff10315c09ef0440db"
   },
   "board:esp32_devkitc/console_uart": {
    "verdict": "agrees",
    "documents": [
+    "espressif-devkitc-v4-sch",
     "espressif-devkitc-v4",
     "espressif-esp32-v5.3"
    ],
-   "pages": "guide; 69",
-   "location": "DevKitC V4 functional description; IO_MUX",
-   "reads": "the USB-to-UART bridge connects to GPIO1 (U0TXD) and GPIO3 (U0RXD)",
-   "note": "",
+   "pages": "schematic; guide; 69",
+   "location": "DevKitC V4 schematic, USB-UART section; IO_MUX",
+   "reads": "the CP2102N bridge's RXD and TXD connect to TXD0 and RXD0 through R17/R18 (0 Ω); TXD0/RXD0 are GPIO1/GPIO3 (U0TXD/U0RXD); DTR/RTS drive EN and IO0 for auto-programming",
+   "note": "the first pass cited the guide, which does not name the wiring; the schematic does",
    "record_hash": "3b94c90008fd0079c7cc9ab4c938d9401f92b75687f1c75227cfd24f0b5690d0"
   }
  }

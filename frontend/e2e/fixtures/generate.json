@@ -44,7 +44,7 @@
    "value": "47nF"
   }
  ],
- "circuit_id": "8bfdf211-1be3-5333-ae82-eded1b87a8fa",
+ "circuit_id": "b6706fef-34d2-58d9-984d-eb6b70fae115",
  "explanation": "",
  "firmware": null,
  "firmware_build": {
@@ -58,7 +58,7 @@
  "intent": "RC low-pass filter with 1000 Hz cutoff frequency",
  "ir": {
   "application_class": "hobby_arduino",
-  "circuit_id": "8bfdf211-1be3-5333-ae82-eded1b87a8fa",
+  "circuit_id": "b6706fef-34d2-58d9-984d-eb6b70fae115",
   "components": [
    {
     "confidence": 0.95,
@@ -207,8 +207,7 @@
      "covers": [],
      "critical": true,
      "defeaters": [
-      "D1",
-      "D7"
+      "D1"
      ],
      "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold",
      "grade": "G1",
@@ -262,8 +261,7 @@
      "critical": false,
      "defeaters": [
       "D1",
-      "D8",
-      "D7"
+      "D8"
      ],
      "detail": "7 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
      "grade": "G1",
@@ -311,9 +309,7 @@
      "claim": "every part's rated supply voltage covers the circuit's supply",
      "covers": [],
      "critical": true,
-     "defeaters": [
-      "D7"
-     ],
+     "defeaters": [],
      "detail": "all ratings at or above the supply",
      "grade": "G1",
      "id": "rule.voltage_ratings_ok",
@@ -331,7 +327,7 @@
       "model": "design_graph",
       "parameters": "nominal"
      },
-     "verdict": "holds_defeasible"
+     "verdict": "holds"
     },
     {
      "claim": "every I2C line has a pull-up to a supply rail",
@@ -546,8 +542,7 @@
    "grade_floor": "G1",
    "not_assessed": [],
    "open_defeaters": [
-    "D1",
-    "D7"
+    "D1"
    ],
    "out_of_scope": [
     "rule.operating_temp_range",
@@ -580,7 +575,7 @@
   ],
   "version": 1
  },
- "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"c6b5555e-476c-5073-9905-2db1641e372d\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"eeadbe32-1bf3-5666-9484-06144095ea19\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"8c57776d-72d4-55af-bd76-9626454e591b\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"75a5dc3c-7dca-5675-a2ff-965dc612ac81\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"374abb10-da3c-58e3-b7ab-75f7f2ebde2f\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"50f58d79-04c9-52be-a1df-00e44824c48a\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2f40631d-7cc5-5fce-a7fa-20462b805161\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6735995f-8593-5ee4-babf-d8895713710c\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"22dc9db0-47d9-5776-afee-e425d338e648\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"ab8f73ba-baa3-57ad-983d-7ff18325fcff\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e370b252-5d56-5447-8e4d-5599352e246f\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c19f8d5c-e22b-527b-a7e2-dc378c28eeca\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6a116b1b-ed18-578c-9c4d-c4ebe15570ae\"))\n\n)",
+ "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"676da3c7-aefa-5ee0-b99c-f65857feff93\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"57cab472-206f-554f-8947-6a8994cb8411\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"aafe9b8d-e7dd-546d-a43e-972931c0a321\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"dfe1eeaa-9097-59c4-9b5e-f93e1d6ae07b\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"f5652b7e-b7f3-549c-88d2-c3c6b693e3dd\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"7b276cb4-0469-5aa0-8b70-e7c3f9af0722\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e476ec95-18ee-57df-9794-f9aa15b5bb5e\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"7df0c6c5-4853-574b-93a3-edc569de47a6\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"a65a1a8f-67dd-59bb-a79b-555daabe5db9\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"48dd0f9a-2f59-5670-b16e-ce49365d2f18\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"9686ed1a-e34f-59ea-ae3f-c4f6fa93ab40\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3d008618-08c9-5d8b-b8fc-0aabfcfd8bae\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"38138edb-580a-534e-a19f-393209f368e1\"))\n\n)",
  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
  "target_mcu": null,
  "validation": {
@@ -629,8 +624,7 @@
     "covers": [],
     "critical": true,
     "defeaters": [
-     "D1",
-     "D7"
+     "D1"
     ],
     "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold",
     "grade": "G1",
@@ -684,8 +678,7 @@
     "critical": false,
     "defeaters": [
      "D1",
-     "D8",
-     "D7"
+     "D8"
     ],
     "detail": "7 obligation(s) UNSAT over the box (awaiting sign-off: shown, not counted)",
     "grade": "G1",
@@ -733,9 +726,7 @@
     "claim": "every part's rated supply voltage covers the circuit's supply",
     "covers": [],
     "critical": true,
-    "defeaters": [
-     "D7"
-    ],
+    "defeaters": [],
     "detail": "all ratings at or above the supply",
     "grade": "G1",
     "id": "rule.voltage_ratings_ok",
@@ -753,7 +744,7 @@
      "model": "design_graph",
      "parameters": "nominal"
     },
-    "verdict": "holds_defeasible"
+    "verdict": "holds"
    },
    {
     "claim": "every I2C line has a pull-up to a supply rail",
@@ -968,8 +959,7 @@
   "grade_floor": "G1",
   "not_assessed": [],
   "open_defeaters": [
-   "D1",
-   "D7"
+   "D1"
   ],
   "out_of_scope": [
    "rule.operating_temp_range",

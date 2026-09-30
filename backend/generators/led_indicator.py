@@ -38,6 +38,11 @@ corners in R_out and V_f; along R1 it has one peak, at R1 = R_out + r_d
 (`r1_power_max_w`). The claim is G1, and the envelope accepts what the old
 bound refused for no reason — 16.3–16.5 mA from a 5.25 V pin, true worst
 62.0 mW in a 62.5 mW part.
+
+**0.3.0 ([2026-09-30]).** The adversarial recheck of the datasheet pass: the
+LED's LCSC number, C72038, was a yellow 0603 part and is removed; the ESP32's
+pin resistance is {10, 33, 66} Ω, not {10, 20, 33} — its typical at the
+default drive strength is about 33 Ω. The LED part itself is the user's call.
 """
 
 from __future__ import annotations
@@ -107,7 +112,7 @@ from generators.protocol import (
 )
 
 NAME = "led_indicator"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 FUNCTION = "led_indicator"
 
 LED_PART = "67-21URC/S530-A3/TR8"
@@ -121,11 +126,13 @@ GPIO_RECOMMENDED_MA = float(get_constraints(MCU_PART)["gpio_recommended_current_
 #: extrapolating R_out to another rail.
 SUPPLY_V = 5.0
 #: CI grid per board, up to near each board's envelope edge: the per-pin limit
-#: over part tolerance refuses 15 mA on the 3.3 V boards (14.5 and 13.5 mA are
-#: the last accepted half-milliamps). The Uno's is Phase 1's grid.
+#: over part tolerance refuses 15 mA on the 3.3 V boards (13.5 mA is the Black
+#: Pill's last accepted half-milliamp). The ESP32's edge moved to 12.5 mA when
+#: its pin resistance was corrected to 10–66 Ω ([2026-09-30]); 12 mA holds across
+#: its supply window. The Uno's is Phase 1's grid.
 GRID_CURRENTS_MA = {
     "arduino_uno": (2.0, 5.0, 10.0, 15.0),
-    "esp32_devkitc": (2.0, 5.0, 10.0, 14.0),
+    "esp32_devkitc": (2.0, 5.0, 10.0, 12.0),
     "blackpill_f411ce": (2.0, 5.0, 10.0, 13.0),
 }
 
@@ -505,7 +512,8 @@ class LedIndicatorGenerator:
                     # No supply rating: the 5 V figure is reverse voltage, and this
                     # circuit never reverse-biases the LED.
                     supply_voltage_max=None, current_draw_ma=round(band.nominal, 3),
-                    confidence=0.9, lcsc_pn="C72038",
+                    # No LCSC number: C72038 was a yellow 0603 part ([2026-09-30]).
+                    confidence=0.9, lcsc_pn=None,
                     justification=(
                         f"Red LED, V_f {vf:.2f} V at {band.nominal:.3g} mA on its fitted diode model "
                         f"(datasheet 1.7–2.4 V at 20 mA). A lower-V_f part in the same spread raises "

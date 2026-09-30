@@ -14,20 +14,24 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "protocol": "single_wire_dht",
         "min_sample_interval_ms": 2000,
         # Bus-timing inputs for the DHT22 generator's rise-time and sink-current
-        # claims (Stage 3). Aosong's datasheet gives the protocol timing (a "0"
-        # bit is 26-28 us high) but not these; they are stated assumptions,
-        # recorded here once and cited through defeater D7.
+        # claims (Stage 3). The AM2302 manual gives the protocol timing (a "0"
+        # bit is 22-30 us high, T_H0) but not these; they are stated
+        # assumptions, recorded here once and cited through defeater D7.
         #  - cable capacitance: 50-100 pF/m covers ribbon to twisted pair
-        #  - input capacitance: ~10 pF each for the MCU pin and the sensor
-        #  - rise time: <= 5 us, a 5x margin inside the 26 us short-bit window
-        #  - sink current: <= 4 mA through the sensor's open-drain output, the
-        #    conservative figure open-drain buses (I2C: 3 mA) are designed to
+        #  - input capacitance: 10 pF each for the MCU pin and the sensor
+        #  - rise time: <= 5 us, over a 4x margin inside the 22 us minimum
+        #  - sink current: <= 4 mA, under the manual's 8 mA typical output
+        #    current and its +/-10 mA per-pin absolute maximum
+        # The pull-up default, 10 kOhm, is the project's: the manual's typical
+        # is 5.1 kOhm within 1-100 kOhm, and its high level holds only under
+        # 25 kOhm. On a 3.3 V supply it allows at most 1 m of cable ([2026-09-30]).
         "bus_capacitance_pf_per_m": {"min": 50.0, "max": 100.0},
         "input_capacitance_pf": 10.0,
         "rise_time_limit_us": 5.0,
         "open_drain_sink_limit_ma": 4.0,
         "notes": [
-            "DATA pin requires 10kΩ pull-up to VCC (3.3V or 5V)",
+            "DATA pin needs a pull-up to VCC: 1-25 kΩ, 5.1 kΩ typical in the maker's manual",
+            "On a 3.3 V supply keep the cable to 1 m or less (the manual's limit)",
             "Cannot be read faster than once every 2 seconds",
             "Provides temperature ±0.5°C and humidity ±2%RH",
             "Open-drain output — will not communicate without pull-up",
@@ -161,11 +165,13 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
         "supply_voltage_min": 3.0,
         "supply_voltage_max": 3.6,
         "max_gpio_current_ma": 40,
-        # Datasheet DC characteristics: V_OH >= 0.8 x VDD (2.64 V) at the pin's
-        # rated source current. At the default drive strength (level 2, the
-        # Arduino core's) that is 20 mA -> at most (3.3 - 2.64) / 0.02 = 33 ohm.
-        # Defeater D7.
-        "gpio_output_resistance_ohm": {"min": 10.0, "typ": 20.0, "max": 33.0},
+        # Module DC characteristics give V_OH >= 0.8 x VDD and I_OH = 40 mA
+        # *typical* at V_OH >= 2.64 V with the drive strength at maximum: about
+        # 16.5 ohm there, about 33 ohm at the default strength (2 of 0-3). The
+        # VDD_SDIO pins (GPIO16/17, 20 mA typ) and several pins sourcing at once
+        # (footnote 2) go to about 66 ohm. Typicals only: 10 ohm is the
+        # project's conservative low end. Corrected [2026-09-30]. Defeater D7.
+        "gpio_output_resistance_ohm": {"min": 10.0, "typ": 33.0, "max": 66.0},
         "gpio_recommended_current_ma": 20,
         # Supply-load model (X6, D2): the run current without radio, as a
         # resistor on the 3.3 V rail: 3.3 V / 80 mA.

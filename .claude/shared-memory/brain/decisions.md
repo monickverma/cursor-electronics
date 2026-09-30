@@ -2238,3 +2238,72 @@ D7 stands exactly where it stood.
 - `docs/bench_templates/`: a pre-filled record for each family, kept in step
   with the generators by a test.
 - **Nothing has been measured.** D1 is open on every claim.
+
+---
+
+## [2026-09-30] The adversarial recheck of the datasheet pass — what it refuted, and what changes
+
+**Decision:** On the instruction "take control over my pc … do all the checking",
+four independent agents re-read the documents against every figure record and
+this week's findings, each told to refute rather than confirm (workflow
+`d7-adversarial-recheck`). The agent spot-checked every refutation it acts on
+below against the document itself. Written before the code.
+
+**The confirmation stays the user's.** Asked to do *all* the checking, the agent
+still did not run `verify_figures.py --confirm-agreeing` in the user's name: D7
+is eliminated only when a person confirms, and a confirmation the agent entered
+would be a false record. It said so.
+
+**What held.** 86 of 107 checks confirmed outright, including every Yageo and
+Samsung value, the ATmega's leakage and 40 Ω bound, the RS-485 pull-down
+arithmetic and practice (TI SLAA722), the MAX485/MAX3485 V_IL 0.8 V and
+I_IN ±2 µA (from older Maxim revisions on mirrors — not the maker's site, so
+they stay unchecked in the evidence), the offset budget (5.23 %), and Mouser's
+request and response shape (its own Swagger spec). Arduino's own sources
+(ArduinoCore-avr `pins_arduino.h`, the UNO Rev3 schematic and pages) confirm the
+Uno's pin mapping, so its 21 pin rows are upgraded; the ESP32-DevKitC V4
+schematic (Espressif) confirms the CP2102N bridge on TXD0/RXD0.
+
+**Records corrected (wording; no value, no design):** the DHT22 pin capacitance
+(the ATmega does give 10 pF, Table 29-14) and sink limit (the manual's Table 5
+gives ±10 mA absolute); the ESP32's GPIO6–11 (not led out of the WROOM-32E at
+all), GPIO12 (the strap selects the flash supply; "will not boot" was the
+agent's), GPIO13/14 (float while reset is held, pull only after), GPIO1 (driven
+by U0TXD after reset); the Uno's D13 and D1 (the bootloader drives them after
+an external reset), D0 (held by the USB bridge through 1 kΩ); the ATmega's own
+run current (about 10 mA at 16 MHz, not "a few"). Evidence strings the checkers
+found loose ("general I/O only", PORTD cited for ports B and C) are fixed.
+
+**Values and behaviour that change:**
+
+1. **The ESP32 pin resistance was wrong** — {10, 20, 33} Ω with the statement
+   calling 33 Ω the typical. From the module's own typicals, the default drive
+   strength is about 33 Ω; the VDD_SDIO pins (GPIO16/17) and several pins
+   sourcing at once (footnote 2) go higher, to about 66 Ω. It becomes
+   {10, 33, 66}: 10 Ω kept as the conservative low end for current limits,
+   66 Ω the highest the documents imply. ESP32 LED designs change.
+2. **The DHT22 on a 3.3 V supply: at most 1 m of cable** (AM2302 manual §5.1
+   note 2). The envelope allowed 20 m on the ESP32 and Black Pill. Any supply
+   below 4.75 V (under a 5 V rail's tolerance) now takes the 1 m limit; the CI
+   grid for 3.3 V boards sweeps 0.3–1 m.
+3. **A pinned DHT22 pull-up above 25 kΩ is refused.** The manual specifies the
+   high level only for Rp < 25 kΩ, and its off-state 10–20 µA through 100 kΩ
+   leaves the idle line near 3 V on a 5 V bus.
+4. **The LED's LCSC number C72038 is removed.** It is a yellow 0603 LED
+   (19-213/Y2C-CQ2R2L/3T(CY)); ordering by it buys the wrong part. The part
+   itself — 67-21URC/S530-A3/TR8 does not exist; its figures match the 0805
+   17-21SURC/S530-A2/TR8 (DigiKey: discontinued), and the real 67-21SURC/S530-A3/TR8
+   is PLCC-2 with no V_F minimum — is the user's choice, put to them.
+5. **Mouser:** part numbers outside 3–40 characters are not sent (Mouser's
+   spec), so one malformed number cannot turn live pricing off for a whole BOM.
+6. **The RC timing sketch had real bugs:** its standard deviation used a 32-bit
+   `double` and cancelled catastrophically (it printed nan); the capture flag
+   was cleared *before* the edge select changed, so a spurious capture could
+   land; a pending overflow was ignored in the timeout. Fixed; the budget text
+   now carries the 40 Ω bound (+2.5 %), 1.8 % same-sign, and says the ±40 mV
+   offset is specified only at VCC/2.
+
+Also: the "20 m" cable limit was described as Aosong's specification — the
+manual says the bus reaches *more than* 20 m; the 10 kΩ pull-up was called "the
+datasheet's" — the manual's typical is 5.1 kΩ. The limits stay (the project's
+own, conservative); the words change.
