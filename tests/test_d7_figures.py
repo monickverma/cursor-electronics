@@ -299,7 +299,7 @@ class TestAgentEvidence:
         rows = F.verifications(str(path))
         assert F.trusted("RC0402FR/power_w", rows), "a confirmed guaranteed limit is trusted"
         assert not F.trusted("ATmega328P-PU/gpio_output_resistance_ohm", rows), "a typical never is"
-        assert not F.trusted("MAX485ECSA/logic_input_vil_v", rows), "an unchecked one is not confirmed"
+        assert not F.trusted("board:blackpill_f411ce/PA0", rows), "an unchecked one is not confirmed"
         again = self._run(path, "--confirm-agreeing", "--by", "A. Engineer")
         assert "recorded 0 verifications" in again.stdout
 
@@ -307,7 +307,7 @@ class TestAgentEvidence:
         result = self._run(tmp_path / "none.json", "--review")
         assert result.returncode == 0, result.stderr
         assert "would be confirmed by --confirm-agreeing" in result.stdout
-        assert "STM32F411CEU6/pin_leakage_ua: not checked" in result.stdout
+        assert "board:blackpill_f411ce/PA0: not checked" in result.stdout
 
 
 # ── Completeness, by experiment ──────────────────────────────────────────────

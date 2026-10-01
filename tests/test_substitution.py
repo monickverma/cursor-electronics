@@ -66,10 +66,15 @@ class TestTheTerminator:
 
 
 class TestTheOriginalsChecks:
-    @pytest.mark.parametrize("name,pid", [("voltage_divider", "R2"), ("rc_lowpass", "R1")])
-    def test_a_looser_part_fails_the_band_the_original_proved(self, name, pid):
+    @pytest.mark.parametrize("name,pid,pins", [
+        ("voltage_divider", "R2", {"R1": {"part": "RC0402FR-0791KL"}, "R2": {"part": "RC0402FR-0710KL"}}),
+        ("rc_lowpass", "R1", {"R1": {"part": "RC0402FR-0716KL"}}),
+    ])
+    def test_a_looser_part_fails_the_band_the_original_proved(self, name, pid, pins):
         # Its own re-derived claims all hold; the original's proven band does not.
-        generator, intent, circuit = _case(name)
+        # The originals are pinned to E24 values: a 5% (J) part is made only in those
+        # ([2026-10-01] #13 — an unmade one is refused before any check).
+        generator, intent, circuit = _case(name, pins=pins)
         placed = next(c for c in circuit.components if c.id == pid).part_number
         result = check(generator, intent, circuit, pid, placed.replace("FR-07", "JR-07"))
         assert isinstance(result, Rejected)

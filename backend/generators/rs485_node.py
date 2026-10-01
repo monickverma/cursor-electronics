@@ -489,7 +489,8 @@ class RS485NodeGenerator:
                    "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and "
                    "DE/RE driven high to transmit",
                    bias_ok and hold.power_mw <= hold.rating_mw, "monotone_corners",
-                   scope.model_copy(update={"figures": passive(placed["R2"], "tolerance", "power_w")
+                   scope.model_copy(update={"measures": ("power(R_R2)", "power(R_R3)", "power(R_R4)"),
+                                            "figures": passive(placed["R2"], "tolerance", "power_w")
                                             + passive(placed["R3"], "tolerance", "power_w")
                                             + passive(placed["R4"], "tolerance", "power_w")}),
                    detail=f"R2 ≤ {bias_mw['R2']:.1f} of {spec.figs.power_w('R2') * 1000:g} mW, "
