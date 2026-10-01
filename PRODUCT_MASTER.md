@@ -508,6 +508,22 @@ LLMs hallucinate. They will invent resistor values that don't exist in standard 
 **Why simulation must be the truth, not the LLM's opinion?**
 A language model has no internal physics engine. Simulation runs actual SPICE equations. When simulation says the output voltage is 4.8V not 5V, that is a physics result, not a prediction. The system trusts simulation, not the LLM, for any numerical claim about circuit behavior.
 
+> **Amendment 2026-09-20 — Phase 2 onwards: closed-form physics is the truth,
+> and simulation is the regression check that guards it.** A generator's
+> `predict()` answers numerical claims at request time; ngspice moves to CI,
+> where it runs the generator's declared envelope grid and `predict()` must
+> agree within 2%.
+>
+> The principle above is unchanged — *not the LLM* is what it was protecting,
+> and closed-form arithmetic is not the LLM. What changes is that a claim is no
+> longer a single nominal run but a statement across the whole tolerance box.
+> Simulation is not removed and it runs more than it did: a grid per generator
+> per build, rather than one point per design.
+>
+> Amendment X1 of `PHASE_2_PLAN_v2.md` §2. Rationale in
+> `.claude/shared-memory/brain/decisions.md` [2026-09-20] — read that before
+> re-litigating this paragraph.
+
 **Why diff-and-patch editing instead of regeneration?**
 Regeneration destroys user customizations. The patch model applies changes surgically, preserves everything not explicitly modified, and maintains a complete change history. This is the behavior engineers expect from a professional tool.
 

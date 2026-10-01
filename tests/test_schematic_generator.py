@@ -166,3 +166,88 @@ def test_quotes_in_intent_are_escaped(gen):
     title = re.search(r'\(title "([^"]*)"\)', out)
     assert title, "title_block did not parse — quote escaping is broken"
     assert '"quoted"' not in title.group(1)
+
+
+# ── Annotations: merged into the drawing, never into the design ──────────────
+
+def _note(id_, kind, anchor_kind, anchor_id="", text="x"):
+    from core.annotations import Annotation
+    return Annotation(id=id_, kind=kind, anchor={"kind": anchor_kind, "id": anchor_id}, text=text)
+
+
+def _anchors(ir):
+    return ir.nodes[0].id, ir.components[0].id
+
+
+@pytest.mark.parametrize("ir", ALL_EXAMPLES, ids=lambda i: i.circuit_id[:8])
+def test_no_annotations_is_byte_identical_to_before(gen, ir):
+    assert gen.generate(ir, []) == gen.generate(ir)
+
+
+def test_every_kind_appears_next_to_its_anchor(gen):
+    node, comp = _anchors(IR_003)
+    out = gen.generate(IR_003, [
+        _note("n", "net_name", "node", node, "FILTERED_OUT"),
+        _note("t", "test_point", "node", node, "TP1"),
+        _note("p", "placement_hint", "component", comp, "near the connector"),
+        _note("c", "comment", "component", comp, "X7R only"),
+        _note("d", "comment", "design", text="bench build, rev A"),
+    ])
+    assert "net name: FILTERED_OUT · test point: TP1" in out
+    assert "placement: near the connector · note: X7R only" in out
+    assert '(text "Annotations"' in out and "note: bench build, rev A" in out
+
+
+def test_a_net_name_never_renames_or_merges_a_net(gen):
+    """A label is connectivity in KiCad; a net name annotation is only text."""
+    node, _ = _anchors(IR_003)
+    other = IR_003.nodes[1].id
+    out = gen.generate(IR_003, [_note("n", "net_name", "node", node, other)])
+    labels = re.findall(r'\(label "([^"]*)"', out)
+    assert labels == [n.id for n in IR_003.nodes]
+    assert labels.count(other) == 1
+
+
+def test_an_orphan_is_shown_not_dropped(gen):
+    out = gen.generate(IR_003, [_note("u", "comment", "component", "U99", "was the old regulator")])
+    assert "ORPHANED note on component U99" in out and "was the old regulator" in out
+
+
+def test_long_text_is_cut_inline_and_kept_whole_in_the_block(gen):
+    _, comp = _anchors(IR_003)
+    text = "keep this part within five millimetres of the connector, on the same side, away from the crystal"
+    out = gen.generate(IR_003, [_note("p", "placement_hint", "component", comp, text)])
+    assert "…" in out
+    block = "".join(re.findall(r'\(text "([^"]*)"', out.split('(text "Annotations"', 1)[1]))
+    assert " ".join(block.split()).endswith(text.split()[-1])
+    assert "crystal" in block
+
+
+def test_user_text_cannot_break_the_file(gen):
+    node, _ = _anchors(IR_003)
+    text = 'a "quote", a back' + chr(92) + 'slash' + chr(10) + 'and a newline'
+    out = gen.generate(IR_003, [_note("c", "comment", "node", node, text)])
+    assert out.count('(') == out.count(')')
+    text = next(t for t in re.findall(r'\(text "([^"]*)"', out) if t.startswith("note:"))
+    assert "\\" not in text and "\n" not in text
+
+
+def test_a_full_notes_block_stays_on_the_sheet_and_says_what_did_not_fit(gen):
+    notes = [_note(f"d{i}", "comment", "design", text=f"design note number {i} " * 6) for i in range(40)]
+    out = gen.generate(IR_002, notes)
+    for x, y in _coords(out):
+        assert 0 <= x <= SHEET_W and 0 <= y <= SHEET_H, (x, y)
+    assert "design note number 0" in out
+    assert re.search(r"\.\.\. and \d+ more rows: the full list is in the design's annotations", out)
+
+
+def test_a_few_notes_fit_without_a_cut(gen):
+    notes = [_note(f"d{i}", "comment", "design", text=f"design note {i}") for i in range(5)]
+    out = gen.generate(IR_002, notes)
+    assert all(f"note: design note {i}" in out for i in range(5)) and "more rows" not in out
+
+
+def test_annotations_are_deterministic(gen):
+    node, comp = _anchors(IR_001)
+    notes = [_note("n", "net_name", "node", node, "A"), _note("p", "placement_hint", "component", comp, "B")]
+    assert gen.generate(IR_001, notes) == gen.generate(IR_001, notes)

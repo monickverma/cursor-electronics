@@ -9,7 +9,7 @@ actually uses:
     response.content[0].input | .text
     response.stop_reason
 
-so intent_parser, circuit_reasoner, patcher and explainer run unchanged against
+so intent_parser, intent_producer, patcher and explainer run unchanged against
 either provider. The One Rule still holds: a forced tool_choice becomes a named
 function call, which vLLM enforces with guided decoding, so the model can only
 emit JSON matching the tool's input_schema — and that JSON still goes through
@@ -26,8 +26,9 @@ from typing import Any, Optional
 import anthropic
 import httpx
 
-# OpenAI finish_reason → Anthropic stop_reason. circuit_reasoner.py relies on
-# "max_tokens" to detect a truncated tool call instead of retrying it.
+# OpenAI finish_reason → Anthropic stop_reason. ai/intent_producer.py relies
+# on "max_tokens" to detect a truncated tool call and report it as a budget
+# problem rather than filing it as a schema failure.
 _STOP_REASONS = {
     "length": "max_tokens",
     "tool_calls": "tool_use",
@@ -91,8 +92,8 @@ def _to_openai_messages(system: Optional[str], messages: list[dict]) -> list[dic
 
     Anthropic packs tool calls and tool results into content blocks; OpenAI
     wants tool calls on the assistant message and each result as its own
-    role="tool" message. The retry loop in circuit_reasoner.py produces exactly
-    that pair, so it has to survive the translation intact.
+    role="tool" message. The semantic retry in ai/intent_producer.py produces
+    exactly that pair, so it has to survive the translation intact.
     """
     out: list[dict] = []
     if system:

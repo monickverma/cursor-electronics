@@ -1,0 +1,59 @@
+{
+ "id": "voltage_divider-2026-09-25",
+ "measured_by": "your name",
+ "date": "2026-09-25",
+ "generator": "voltage_divider",
+ "board": null,
+ "requirements": {
+  "function": "voltage_divider",
+  "targets": {
+   "vout_v": 3.3
+  },
+  "constraints": {
+   "supply_v": 5
+  },
+  "preferences": {}
+ },
+ "netlist_sha256": "a2e061481d18c5441e3add7992258766537206d81063d8bdd8f1c8a79694b902",
+ "parts": {
+  "R1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-073K4L, 3400"
+  },
+  "R2": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-076K65L, 6650"
+  },
+  "VIN": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the supply as measured on the bench, in volts"
+  }
+ },
+ "measures": {
+  "divider.vout": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the voltage at VOUT, in V (v(vout))"
+  },
+  "divider.r1_power": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "R1's dissipation, in W (power(R_R1))"
+  },
+  "divider.r2_power": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "R2's dissipation, in W (power(R_R2))"
+  }
+ },
+ "notes": "Delete every part and measure you did not read; keep only real readings."
+}

@@ -1,7 +1,31 @@
-"""BOM compiler — static pricing from component_db.json (Phase 1).
+"""BOM compiler — static pricing from component_db.json.
 
-No live Digikey/LCSC API calls in Phase 1. That is Phase 2.
-Returns a list of dicts, one per component.
+Deterministic and offline: the compiler never calls a distributor. Live Mouser
+prices, when a key is set, are laid over its rows afterwards by
+`pricing/live.py`, from `GET /design/{id}/bom` only (`brain/decisions.md`
+[2026-09-25]). Returns a list of dicts, one per component; every priced row
+carries `unit_price` and `currency` beside the static `unit_price_usd`.
+
+STAGE 6 — A PRICE IS THE PART'S, WITH ITS DATE
+==============================================
+Until Stage 6 an unknown passive was priced as *any* catalogue part of the
+same value, and that part's distributor order numbers were copied onto the
+row. On every RS-485 design the 1206 terminator (250 mW, because a driver can
+put 208 mW into it) was priced as, and carried the LCSC and Digi-Key numbers
+of, an 0402 rated 62.5 mW: an order placed from the BOM got a part the
+design's own dissipation claim refutes. v2's Stage 6 gate forbids exactly
+that — *no substitution surfaces that fails the original's checks* — so:
+
+  - Only an exact part-number or LCSC match is priced. Anything else is
+    unpriced, and never priced or ordered as another part.
+  - A same-value part is a *substitute*, offered by
+    `generators/bom/substitution.py` only after it passes every check the
+    original passed.
+  - Every priced row carries `price_asof` and `price_note`. The static prices
+    were recorded on 2026-07-25; when each was first observed is unknown.
+  - Pricing never gates validation: nothing that validates reads a price.
+
+The history below explains the earlier $0.00 fix, which still holds.
 
 WHY THIS WAS REWRITTEN
 ======================
@@ -208,28 +232,43 @@ def load_database(path: str = str(_DB_PATH)) -> ComponentDatabase:
 
 # ── Compiler ─────────────────────────────────────────────────────────────────
 
+#: What each `price_source` in component_db.json means, stated once.
+PRICE_SOURCES = {
+    "static": ("static catalogue price, recorded in the repository on {asof}; when it was first "
+               "observed is not recorded — not a distributor quote"),
+}
+
+
+def price_note(entry: Dict[str, Any]) -> str:
+    template = PRICE_SOURCES.get(entry.get("price_source") or "", "price of unrecorded origin, recorded {asof}")
+    return template.format(asof=entry.get("price_asof") or "on an unrecorded date")
+
+
+def price_index(db: Optional["ComponentDatabase"] = None) -> Dict[str, Dict[str, Any]]:
+    """part number → {unit_price_usd, price_asof} for every priced entry. For substitution's price column."""
+    db = db or load_database()
+    return {e["part_number"]: {"unit_price_usd": float(e["unit_price_usd"]), "price_asof": e.get("price_asof")}
+            for e in db._entries if e.get("unit_price_usd") is not None and e.get("part_number")}
+
+
 class BOMCompiler:
     def __init__(self, db: Optional[ComponentDatabase] = None) -> None:
         self._db = db or load_database()
 
     def _lookup(self, comp) -> Tuple[Optional[Dict[str, Any]], str]:
-        """Returns (database entry or None, price_source label)."""
+        """
+        (database entry or None, price_source). The same part or nothing:
+        a prefix or same-value match is a different part (Stage 6).
+        """
         hit = self._db.by_part_number(comp.part_number)
         if hit:
             return hit, "part_number"
 
         hit = self._db.by_lcsc(comp.lcsc_pn)
-        if hit:
+        if hit and str(hit.get("part_number", "")).upper() == str(comp.part_number or "").upper():
             return hit, "lcsc_pn"
-
-        hit = self._db.by_part_number_prefix(comp.part_number, comp.package)
-        if hit:
-            return hit, "part_number_prefix"
-
-        category = comp.type.value if hasattr(comp.type, "value") else str(comp.type)
-        hit = self._db.by_category_value(category, comp.value)
-        if hit:
-            return hit, "equivalent_value"
+        if hit and not comp.part_number:
+            return hit, "lcsc_pn"
 
         return None, "unknown"
 
@@ -246,13 +285,11 @@ class BOMCompiler:
                 # what left the LCSC PN column blank in the UI.
                 lcsc_pn = comp.lcsc_pn or entry.get("lcsc_pn")
                 digikey_pn = comp.digikey_pn or entry.get("digikey_pn")
-                matched_pn = entry.get("part_number")
             else:
                 price = _UNKNOWN_PRICE
                 price_known = False
                 lcsc_pn = comp.lcsc_pn
                 digikey_pn = comp.digikey_pn
-                matched_pn = None
 
             rows.append({
                 "id": comp.id,
@@ -265,12 +302,19 @@ class BOMCompiler:
                 "digikey_pn": digikey_pn,
                 "unit_price_usd": price,
                 "total_price_usd": price,
+                # The price shown, in its own currency: the static catalogue's
+                # USD here; a live quote's when pricing/live.py replaces it.
+                "unit_price": price if price_known else None,
+                "currency": "USD" if price_known else None,
                 # Pricing provenance — lets the UI show "unknown" rather than
                 # presenting an unpriced part as if it were free.
                 "price_known": price_known,
                 "price_source": source,
-                "priced_as": matched_pn if source in ("part_number_prefix",
-                                                      "equivalent_value") else None,
+                # Stage 6: every price carries the date it was recorded.
+                "price_asof": entry.get("price_asof") if price_known and entry is not None else None,
+                "price_note": price_note(entry) if price_known and entry is not None else None,
+                # Kept for older clients; a row is only ever priced as itself.
+                "priced_as": None,
                 "confidence": comp.confidence,
                 "justification": comp.justification,
             })

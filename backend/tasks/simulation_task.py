@@ -17,6 +17,7 @@ def run_simulation(self, circuit_id: str, netlist: str, job_id: str, circuit_typ
     from simulation.runner import NgspiceRunner
     from simulation.parser import SpiceResultParser
     from simulation.monitor import record_simulation
+    from simulation.waveforms import waveforms_from
 
     start_ms = int(time.time() * 1000)
     self.update_state(state="STARTED")
@@ -53,6 +54,8 @@ def run_simulation(self, circuit_id: str, netlist: str, job_id: str, circuit_typ
             "duration_ms": duration_ms,
             "dc_voltages": parsed.dc_voltages,
             "ac_points_count": len(parsed.ac_points),
+            # Stage 3: the points themselves, downsampled, for the viewer.
+            "waveforms": waveforms_from(parsed),
             "stdout": result["stdout"][:4000],
             "stderr": result["stderr"][:2000],
         }

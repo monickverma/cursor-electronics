@@ -70,6 +70,10 @@ class ValidationRule(str, Enum):
     OPERATING_TEMP_RANGE = "operating_temp_range"
     POWER_SUPPLY_ADEQUATE = "power_supply_adequate"
     PULLUP_ON_OPEN_DRAIN = "pullup_on_open_drain"
+    # Stage 5 — checked against the board's pin table (validation/pin_rules.py).
+    PIN_ASSIGNMENT_VALID = "pin_assignment_valid"
+    PERIPHERAL_CONFLICT_FREE = "peripheral_conflict_free"
+    STRAPPING_PINS_SAFE = "strapping_pins_safe"
 
 
 class Component(BaseModel):
@@ -141,6 +145,9 @@ class CircuitIR(BaseModel):
     circuit_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     version: int = 1
     intent: str                                    # Original user prompt
+    # "name@version" of the generator that realised this design (v2 §6).
+    # Stamped by generators/realize.py; None on designs built before Stage 2.
+    generator: Optional[str] = None
     application_class: ApplicationClass
     safety_class: SafetyClass = SafetyClass.GENERAL
     target_mcu: Optional[str] = None              # "arduino_uno", "esp32", "stm32f4"
@@ -159,6 +166,11 @@ class CircuitIR(BaseModel):
     simulation_passed: Optional[bool] = None
     simulation_results: Optional[Dict] = None
     validation_results: Optional[Dict] = None
+    # Stage 3 (v2 §6): claims with kind/grade/scope/defeaters, grade_floor,
+    # open defeaters, not-assessed and out-of-scope rows. Attached by
+    # generators/realize.py; a dict so this schema does not import the
+    # validation layer. None on designs built before Stage 3.
+    validation_coverage: Optional[Dict] = None
 
     @field_validator("components")
     @classmethod

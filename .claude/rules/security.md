@@ -18,6 +18,8 @@ SENTRY_DSN=
 CORS_ORIGINS=http://localhost:3000
 JWT_ALGORITHM=HS256
 JWT_EXPIRE_MINUTES=10080
+MOUSER_API_KEY=            # live BOM prices; empty = static prices only (2026-09-25)
+PRICE_CACHE_HOURS=24
 ```
 
 **Never hardcode any of these.** Never commit `.env`. `.gitignore` already excludes it.
@@ -111,7 +113,15 @@ await save_design(db, ir, str(user.id))
 
 The patch system, simulation polling, and audit trail all depend on persistent storage. An in-memory dict cannot survive a process restart or scale across multiple workers.
 
-## Static BOM Pricing Only in Phase 1
+## BOM Pricing: Static by Default, Mouser Optional
+
+> **Amended 2026-09-25** (`brain/decisions.md` [2026-09-25]). Live Mouser quotes are laid over the
+> BOM by `backend/pricing/` when `MOUSER_API_KEY` is set — in `GET /design/{id}/bom` only, never in
+> generation, patching or validation; exact manufacturer part number only; cached in PostgreSQL
+> (`price_quotes`), never in memory; a failure falls back to the static price and says so. Mouser
+> takes the key in the query string, so `pricing/mouser.py` redacts it from httpx's log lines and
+> never puts it in an error. Tests never reach the network: `conftest.py` blanks the key.
+> The Phase 1 rule below still holds for everything that is not that route.
 
 ```python
 # CORRECT — static dict, zero external dependencies

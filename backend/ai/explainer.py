@@ -43,6 +43,58 @@ They must understand every component choice without asking a follow-up question.
 """
 
 
+#: What "consequential rather than descriptive" is scored on, per
+#: PRODUCT_MASTER.md Part 12. Owned here because it is a property of the
+#: explanation layer, not of any one implementation of it — both
+#: `ai/derived_explainer.py` and `tests/test_explainer.py` read it from here.
+#: It previously existed as two identical copies, which is the stale-copy
+#: failure this project has been bitten by repeatedly.
+CONSEQUENTIAL_MARKERS = [
+    "if ", "would ", "without", "exceed", "fail", "instead of",
+    "otherwise", "breaks", "risk",
+]
+
+#: Output ceiling for one explanation, thinking included. 2048 was sized for a
+#: non-reasoning model; against the configured reasoning model (Stage 3 + 4
+#: verification, live) every call hit it — two in three spent all 2048 tokens
+#: thinking and returned no text, the third returned a report cut off
+#: mid-table. Measured use is ~2–4k thinking plus ~1.5k of report.
+EXPLANATION_MAX_TOKENS = 8192
+
+#: How many distinct markers an explanation must hit to count as consequential.
+CONSEQUENTIAL_MARKER_BAR = 3
+
+
+def consequential_markers(text: str) -> list[str]:
+    """Which markers `text` hits. The scorer both explainers are measured by."""
+    lowered = text.lower()
+    return [m for m in CONSEQUENTIAL_MARKERS if m in lowered]
+
+
+def _first_text(response) -> str:
+    """
+    The first text block, not blindly block zero.
+
+    A reasoning-capable model answers a free-text request with a `ThinkingBlock`
+    at index 0 and the prose after it, so `response.content[0].text` raises
+    `AttributeError: 'ThinkingBlock' object has no attribute 'text'`. Observed
+    2026-09-20 against the configured `AI_MODEL` while running the Task 0.5
+    derivability experiment — every explanation call was failing.
+
+    The tool_use modules are not affected and deliberately left alone: forced
+    `tool_choice` suppresses thinking blocks, so `content[0].input` is correct
+    there. Verified against the live API before narrowing this fix.
+    """
+    for block in response.content:
+        text = getattr(block, "text", None)
+        if text is not None:
+            return text
+    raise ValueError(
+        "model returned no text block — content types were "
+        f"{[getattr(b, 'type', type(b).__name__) for b in response.content]}"
+    )
+
+
 class ExplanationEngine:
     def __init__(self):
         self.client = make_client()
@@ -56,11 +108,18 @@ class ExplanationEngine:
         user_content = self._build_prompt(ir, validation_result, simulation_results)
         response = self.client.messages.create(
             model=ai_model(),
-            max_tokens=2048,
+            max_tokens=EXPLANATION_MAX_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_content}],
         )
-        return response.content[0].text
+        # A report cut off at the ceiling must not be shown as a report: the
+        # consequences it would have warned about may be in the missing part.
+        if getattr(response, "stop_reason", None) == "max_tokens":
+            raise ValueError(
+                f"explanation truncated at the {EXPLANATION_MAX_TOKENS}-token ceiling — raise "
+                f"EXPLANATION_MAX_TOKENS for this model rather than show half a report"
+            )
+        return _first_text(response)
 
     def _build_prompt(
         self,

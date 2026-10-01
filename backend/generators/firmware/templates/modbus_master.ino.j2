@@ -6,16 +6,29 @@
  * Version: {{ ir.version }}
  */
 
+{% if serial.kind == "software" %}
 #include <SoftwareSerial.h>
+{% endif %}
 #include <ModbusMaster.h>
 
-// Arduino Uno RS-485: SoftwareSerial on pins 10 (RX) and 11 (TX)
-#define RS485_RX_PIN     10
-#define RS485_TX_PIN     11
+{% if serial.kind == "software" %}
+// Arduino Uno RS-485: SoftwareSerial on pins {{ serial.rx }} (RX) and {{ serial.tx }} (TX)
+{% else %}
+// {{ serial.board }} RS-485: hardware {{ serial.uart }} on pins {{ serial.rx }} (RX) and {{ serial.tx }} (TX)
+{% endif %}
+#define RS485_RX_PIN     {{ serial.rx }}
+#define RS485_TX_PIN     {{ serial.tx }}
 #define RS485_DE_RE_PIN  {{ de_re_pin }}
 #define MODBUS_BAUD      {{ baud_rate }}
 
+{% if serial.kind == "software" %}
 SoftwareSerial rs485Serial(RS485_RX_PIN, RS485_TX_PIN);
+{% elif serial.kind == "esp32" %}
+HardwareSerial rs485Serial(2);
+{% else %}
+// STM32duino's concrete serial class; the pin map picks the USART from the pins.
+Uart rs485Serial(RS485_RX_PIN, RS485_TX_PIN);
+{% endif %}
 ModbusMaster modbus;
 
 void preTransmission()  { digitalWrite(RS485_DE_RE_PIN, HIGH); }
@@ -39,7 +52,11 @@ const int DEVICE_COUNT = {{ devices | length }};
 
 void setup() {
   Serial.begin(115200);
+{% if serial.kind == "esp32" %}
+  rs485Serial.begin(MODBUS_BAUD, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
+{% else %}
   rs485Serial.begin(MODBUS_BAUD);
+{% endif %}
 
   pinMode(RS485_DE_RE_PIN, OUTPUT);
   digitalWrite(RS485_DE_RE_PIN, LOW);  // Start in receive mode

@@ -1,0 +1,41 @@
+{
+ "id": "rc_lowpass-2026-09-25",
+ "measured_by": "your name",
+ "date": "2026-09-25",
+ "generator": "rc_lowpass",
+ "board": null,
+ "requirements": {
+  "function": "low_pass_filter",
+  "targets": {
+   "cutoff_hz": 1000
+  },
+  "constraints": {
+   "supply_v": 5
+  },
+  "preferences": {}
+ },
+ "netlist_sha256": "be2d22a7e12d91dfd1460aa8abb10424df666edc69615432cc5627d3cb99e020",
+ "parts": {
+  "R1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-073K4L, 3400"
+  },
+  "C1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "CL05B473KO5NNNC, 47nF"
+  }
+ },
+ "measures": {
+  "rc.cutoff": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the −3 dB cutoff frequency at OUT, in Hz (cutoff(out))"
+  }
+ },
+ "notes": "Delete every part and measure you did not read; keep only real readings."
+}

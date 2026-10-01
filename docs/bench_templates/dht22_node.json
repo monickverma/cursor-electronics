@@ -1,0 +1,51 @@
+{
+ "id": "dht22_node-2026-09-25",
+ "measured_by": "your name",
+ "date": "2026-09-25",
+ "generator": "dht22_node",
+ "board": "arduino_uno",
+ "requirements": {
+  "function": "temperature_humidity_sensor",
+  "targets": {},
+  "constraints": {
+   "mcu": "arduino_uno"
+  },
+  "preferences": {}
+ },
+ "netlist_sha256": "db79c3eb7ee48cc1f4e26a54270a89f8dbaa74e96b1e69d76cec535366370264",
+ "parts": {
+  "R1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-0710KL, 10000"
+  },
+  "C1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "CL05B104KO5NNNC, 100nF"
+  },
+  "VCC_5V": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the supply as measured on the bench, in volts"
+  }
+ },
+ "measures": {
+  "dht.rise_time": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "DATA's 10–90 % rise time, in s (rise_time(dht22_data,C_BUS))"
+  },
+  "dht.sink_current": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the current into whatever holds DATA low, in A (i(V_PROBE))"
+  }
+ },
+ "notes": "Delete every part and measure you did not read; keep only real readings."
+}

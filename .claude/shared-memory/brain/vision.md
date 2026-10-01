@@ -50,7 +50,9 @@ It is what an enterprise buyer points to when justifying the seat license.
 
 ---
 
-## Current Phase: Phase 1 — Hardware Copilot (10/12 criteria done)
+## Phase 1 — Hardware Copilot (closed 2026-08-25; the current phase is Phase 2)
+
+> Snapshot kept for the product picture. Criteria status is owned by `state.json`; the current phase and its tasks by `plan/current_phase.md`.
 
 **What Phase 1 delivers:**
 - 5 circuit templates (DHT22, RS-485 Modbus, LED, RC filter, voltage divider)
@@ -60,7 +62,7 @@ It is what an enterprise buyer points to when justifying the seat license.
 - KiCad `.kicad_sch` net-label schematic
 - Static BOM with part numbers
 - Consequential plain-English explanation
-- Diff-and-patch conversational editing (never regenerates from scratch)
+- Diff-and-patch conversational editing (never regenerates from scratch) — *reversed in Phase 2 Stage 2: patches edit the requirement and the design is re-derived through the same gate; `decisions.md` [2026-09-21] X2 + X4*
 - JWT auth + rate limiting + PostgreSQL persistence
 
 **Phase 1 Launch Criteria — 10 of 12 done as of 2026-06-02:**

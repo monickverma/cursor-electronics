@@ -1,0 +1,71 @@
+{
+ "id": "led_indicator-2026-09-25",
+ "measured_by": "your name",
+ "date": "2026-09-25",
+ "generator": "led_indicator",
+ "board": "arduino_uno",
+ "requirements": {
+  "function": "led_indicator",
+  "targets": {
+   "led_current_ma": 10
+  },
+  "constraints": {
+   "mcu": "arduino_uno"
+  },
+  "preferences": {}
+ },
+ "netlist_sha256": "07cf00b220f3904bcb6cdfd635aa4adab6f8538d403a420d63d089e2fe245cae",
+ "parts": {
+  "R1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "RC0402FR-07280RL, 280"
+  },
+  "C1": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "CL05B104KO5NNNC, 100nF"
+  },
+  "VCC_5V": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the supply as measured on the bench, in volts"
+  },
+  "PIN_LED_CTRL": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the supply as measured on the bench, in volts"
+  }
+ },
+ "measures": {
+  "led.current": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the LED current, in A (diode_current(D_LED1))"
+  },
+  "led.gpio_current": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the current U1's pin sources, in A (diode_current(D_LED1))"
+  },
+  "led.led_current": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "the LED current, in A (diode_current(D_LED1))"
+  },
+  "led.r1_power": {
+   "value": null,
+   "accuracy": null,
+   "instrument": "your meter, and its stated accuracy",
+   "note": "R1's dissipation, in W (series_power(R_R1,D_LED1))"
+  }
+ },
+ "notes": "Delete every part and measure you did not read; keep only real readings."
+}

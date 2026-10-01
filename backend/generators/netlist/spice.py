@@ -4,6 +4,13 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from core.ir_schema import CircuitIR, ComponentType, SignalType
+from generators.netlist.models import (
+    mcu_supply_ohms,
+    led_model_name,
+    led_parameters,
+    load_ohms,
+    pin_resistance,
+)
 
 
 _VCC_PIN_NAMES = frozenset({"VCC", "VDD", "AVCC", "3V3", "5V", "PWR", "V+"})
@@ -80,10 +87,35 @@ class SpiceNetlistGenerator:
                 lines.append(f"V_{node.id.upper()} {sn} 0 AC {node.voltage_nominal}")
                 touch(sn)
 
+        # GPIO pins driven high (`mcu_pin_thevenin`, Stage 3). A node an MCU
+        # drives through an *output* connection and that declares a
+        # `voltage_nominal` is the pin's Thevenin source: V behind the pin's
+        # datasheet output resistance. Opt-in: a node without a declared
+        # voltage emits nothing here, exactly as before — IR_002 and every
+        # stored netlist are unchanged.
+        mcus = {c.id: c for c in ir.components if c.type == ComponentType.MICROCONTROLLER}
+        for node in ir.nodes:
+            if node.voltage_nominal is None or node.type in (SignalType.POWER, SignalType.GROUND):
+                continue
+            driver = next(
+                (conn for conn in ir.connections
+                 if conn.node_id == node.id and conn.component_id in mcus
+                 and conn.direction == "output"),
+                None,
+            )
+            if driver is None:
+                continue
+            sn = spice_node(node.id)
+            r_out = pin_resistance(mcus[driver.component_id].part_number)
+            lines.append(f"V_PIN_{node.id.upper()} {sn}_src 0 DC {node.voltage_nominal}")
+            lines.append(f"R_PIN_{node.id.upper()} {sn}_src {sn} {r_out}")
+            touch(sn)
+
         lines.append("")
 
         # Component elements
         has_led = False
+        led_models: Dict[str, str] = {}
         for comp in ir.components:
             pins = pin_map.get(comp.id, {})
             element = self._comp_to_spice(comp, pins, spice_node)
@@ -94,7 +126,12 @@ class SpiceNetlistGenerator:
                 for sn in parts[1:3]:
                     touch(sn)
             if comp.type == ComponentType.LED:
-                has_led = True
+                params = led_parameters(comp.part_number)
+                if params is None:
+                    has_led = True
+                else:
+                    i_s, n = params
+                    led_models[led_model_name(comp.part_number)] = f"(Is={i_s:.6e} N={n:g})"
 
         lines.append("")
 
@@ -136,6 +173,10 @@ class SpiceNetlistGenerator:
         if has_led:
             lines.append("")
             lines.append(".model DLED D (Is=1e-9 n=1.8 Vt=0.02585)")
+        # Tabulated LEDs get a diode fitted to their datasheet forward voltage
+        # (generators/netlist/models.py); predict() solves the same model.
+        for name, params in sorted(led_models.items()):
+            lines.append(f".model {name} D {params}")
 
         lines.append(".end")
         return "\n".join(lines)
@@ -168,7 +209,8 @@ class SpiceNetlistGenerator:
             anode = spice_node(pins.get("ANODE") or next(iter(pins.values())))
             others = [v for k, v in pins.items() if k != "ANODE"]
             cathode = spice_node(others[0]) if others else "0"
-            return f"D_{comp.id} {anode} {cathode} DLED"
+            model = led_model_name(comp.part_number) if led_parameters(comp.part_number) else "DLED"
+            return f"D_{comp.id} {anode} {cathode} {model}"
 
         # Active components (MCU, sensor, transceiver, etc.): resistive load between VCC and GND
         vcc_node = next(
@@ -181,13 +223,11 @@ class SpiceNetlistGenerator:
             return None
 
         if ctype == "microcontroller":
-            # MCU modeled as 100Ω resistive load (5V / 100Ω = 50mA, per CLAUDE.md Rule 3)
-            return f"R_MCU_{comp.id} {vcc_node} {gnd_node} 100"
+            # MCU modelled as a resistive load (CLAUDE.md Rule 3): 100 Ω on the
+            # Uno (5 V / 100 Ω = 50 mA); each part's own run-current model since Stage 5.
+            return f"R_MCU_{comp.id} {vcc_node} {gnd_node} {mcu_supply_ohms(comp.part_number):g}"
 
-        # Sensor, transceiver, relay, etc.: derive load from current_draw_ma if available
-        if comp.current_draw_ma and comp.current_draw_ma > 0:
-            supply_v = comp.supply_voltage_max or 5.0
-            load_r = max(100, int(supply_v / (comp.current_draw_ma / 1000)))
-        else:
-            load_r = 10000
+        # Sensor, transceiver, relay, etc.: derive load from current_draw_ma if
+        # available. The rule lives in models.load_ohms so predict() reads it too.
+        load_r = int(load_ohms(comp.current_draw_ma, comp.supply_voltage_max))
         return f"R_LOAD_{comp.id} {vcc_node} {gnd_node} {load_r}"

@@ -1,0 +1,4 @@
+{
+  "_note": "Written by scripts/verify_figures.py: a person's check of a data/figures.py record against its document, bound to the record's hash. Edit through the script, not by hand. D7: brain/decisions.md [2026-09-24] D1, D2, D7.",
+  "verifications": []
+}

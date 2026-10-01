@@ -1,9 +1,19 @@
 """Benchmark Circuit OS's AI layer against any provider — built for vLLM on AMD GPUs.
 
-Runs a fixed set of prompts through the real pipeline (IntentParser →
-CircuitReasoner with its validate-and-retry loop) and reports, per prompt:
-whether a valid IR came out, how many model calls it took, and wall-clock
-latency. Needs no database, Redis or frontend.
+Runs a fixed set of prompts through the real pipeline (IntentProducer →
+registry dispatch → generator) and reports, per prompt: whether a usable
+design came out, how many model calls it took, and wall-clock latency. Needs
+no database, Redis or frontend.
+
+Rewritten 2026-09-21 for Stage 1. It used to drive `CircuitReasoner`, which
+was the path by which the model wrote a `CircuitIR` and which Task 1.5
+removed. What it measures is now sharper, and closer to what §4.3 actually
+wants to know about the small-model path: the model's job is transcription
+into IntentIR, so a failure here is a transcription failure rather than a
+design failure. A prompt that transcribes correctly and is then **refused**
+by every generator is reported as `REFUSED`, not `FAIL` — that is the
+catalogue being honest, not the model being wrong, and scoring the two the
+same would make an open model look worse the narrower the catalogue got.
 
 Usage (on an AMD Developer Cloud notebook, after `vllm serve ...`):
 
@@ -32,9 +42,9 @@ os.environ.setdefault("SECRET_KEY", "benchmark-only-secret-key-32-characters")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
-from ai.circuit_reasoner import CircuitGenerationError, CircuitReasoner  # noqa: E402
-from ai.intent_parser import IntentParser  # noqa: E402
+from ai.intent_producer import IntentProducer, IntentProductionError  # noqa: E402
 from core.config import settings  # noqa: E402
+from generators.registry import default_registry  # noqa: E402
 
 PROMPTS = [
     "Blink an LED on an Arduino Uno with a current-limiting resistor",
@@ -72,25 +82,37 @@ def _gpu_name() -> str:
 
 def run() -> list[dict]:
     results = []
+    registry = default_registry()
     for prompt in PROMPTS:
-        parser, reasoner = IntentParser(), CircuitReasoner()
-        counter = _CountingClient(parser.client)
-        parser.client = reasoner.client = counter
+        producer = IntentProducer(registry)
+        counter = _CountingClient(producer.client)
+        producer.client = counter
 
         start = time.perf_counter()
-        ok, detail = True, ""
+        status, detail = "PASS", ""
         try:
-            spec = parser.parse(prompt)
-            ir = reasoner.generate(spec)
-            detail = f"{len(ir.components)} components, {len(ir.connections)} connections"
-        except CircuitGenerationError as exc:
-            ok, detail = False, exc.attempt_errors[-1][:120]
+            intent = producer.produce(prompt)
+            if not intent.is_answerable:
+                status = "ASK"
+                detail = "underdetermined: " + ", ".join(intent.open_questions())
+            else:
+                dispatch = registry.dispatch(intent)
+                if not dispatch.accepted:
+                    status = "REFUSED"
+                    detail = dispatch.refusal_summary()[:140]
+                else:
+                    ir = dispatch.generator.generate(intent)
+                    detail = (f"{dispatch.generator.name}: {len(ir.components)} components, "
+                              f"{len(ir.connections)} connections")
+        except IntentProductionError as exc:
+            status, detail = "FAIL", str(exc)[:140]
         except Exception as exc:  # provider errors are results too
-            ok, detail = False, f"{type(exc).__name__}: {str(exc)[:100]}"
+            status, detail = "FAIL", f"{type(exc).__name__}: {str(exc)[:100]}"
         elapsed = time.perf_counter() - start
 
-        results.append({"prompt": prompt, "ok": ok, "calls": counter.calls, "seconds": elapsed, "detail": detail})
-        print(f"[{'PASS' if ok else 'FAIL'}] {elapsed:6.1f}s  calls={counter.calls}  {prompt}")
+        results.append({"prompt": prompt, "status": status, "ok": status == "PASS",
+                        "calls": counter.calls, "seconds": elapsed, "detail": detail})
+        print(f"[{status:>7}] {elapsed:6.1f}s  calls={counter.calls}  {prompt}")
     return results
 
 
@@ -104,9 +126,13 @@ def to_markdown(results: list[dict]) -> str:
         + (f" (`{settings.openai_base_url}`)" if settings.ai_provider == "openai_compat" else ""),
         f"- GPU: {_gpu_name()}",
         f"- Host: {platform.node()} · Python {platform.python_version()}",
-        f"- Valid IR: **{len(passed)}/{len(results)}**",
+        f"- Designs produced: **{len(passed)}/{len(results)}**",
+        f"- Transcription failures: **{sum(1 for r in results if r['status'] == 'FAIL')}"
+        f"/{len(results)}** (the model's own error rate)",
+        f"- Refused by the catalogue: **{sum(1 for r in results if r['status'] == 'REFUSED')}"
+        f"/{len(results)}** (not a model failure)",
         f"- Median latency (passing): **{statistics.median(lat):.1f}s**",
-        f"- Model calls per design (incl. intent parse + retries): "
+        f"- Model calls per design (X5: 1, plus a semantic retry if one fired): "
         f"**{statistics.mean(r['calls'] for r in results):.1f}**",
         "",
         "| Prompt | Result | Calls | Seconds | Detail |",

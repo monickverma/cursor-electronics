@@ -2,6 +2,12 @@
 .env
 _to_delete/
 
+# Runtime log sidecars. These carry prompt hashes, user ids and error strings,
+# they are append-only, and they are per-deployment — none of that belongs in
+# git. Added 2026-09-20 with the §4.5 request log; sim_monitor.jsonl predates
+# it and was untracked only by luck.
+*.jsonl
+
 # Python
 __pycache__/
 *.py[cod]
@@ -39,3 +45,7 @@ Thumbs.db
 
 # Generated app captures — regenerate with scripts/capture_explanation.py
 captures/
+
+# Playwright (frontend/e2e)
+frontend/test-results/
+frontend/playwright-report/
