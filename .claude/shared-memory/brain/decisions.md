@@ -2307,3 +2307,63 @@ Also: the "20 m" cable limit was described as Aosong's specification — the
 manual says the bus reaches *more than* 20 m; the 10 kΩ pull-up was called "the
 datasheet's" — the manual's typical is 5.1 kΩ. The limits stay (the project's
 own, conservative); the words change.
+
+---
+
+## [2026-10-01] The pre-merge review of PR #2 — 25 findings, fixed after the merge
+
+**Decision:** On "look over and merge", four independent reviewers read the four
+commits PR #2 had added since its last review (`94b61c1`, `f817d2c`, `7c1b947`,
+`14d569e`), each told to report only defects it could reproduce. The PR was
+merged (`b85c14b`) before they reported — not by this session — so every
+finding is fixed here, on `phase2-review-fixes`, each with a test that failed
+before its fix. Written before the code.
+
+**The one rated high: a placeholder signature closed D7.** The writer
+(`verify_figures.py`) refuses "Your Name"; the reader (`data/figures.py`) did
+not. The working tree's 80 rows signed "Your Name" made 39 figures trusted and
+dropped D7 from real claims with no named person behind them. The reader now
+ignores a blank or placeholder signature, so those rows count for nothing until
+the user re-confirms under their own name. The rows themselves are the user's
+and are left as they are.
+
+**Fail-open paths closed (a doubt dropped that should have stayed):**
+- `_with_bench` released D1 from a claim when *any* proof re-deriving it was
+  measured; it now needs *all* of them, as `_supersede` already did.
+- A bench record reached every design with the same netlist, including one
+  whose requirements differ in what the netlist does not carry
+  (`far_end_terminated`); it now must match the requirements too.
+- The pin rules read the board's `uart_mode`, which had no figure record:
+  verifying the pin rows would have dropped D7 on a fact nobody recorded. It is
+  a figure now (`board:<id>/uart_mode`).
+- `held_to_rail` treated a pull-*up* as holding an assumed-*low* node. Only a
+  pull to ground counts as holding an assumed state (every assumed state in the
+  library is the low, driver-off one); a pull-up names `mcu_pin_state`.
+- Two RS-485 figures were read and not declared: the far-end terminator's
+  value in the rail current, and its tolerance in the bias bands.
+- A bench record signed with the template's "your name" is refused.
+
+**An accepted design carrying a failing claim, or a part past its rating:**
+- RS-485: R2, R3 and R4 power ratings were never checked (a pinned R4 = 270 Ω
+  takes 93 mW in a 62.5 mW 0402); the envelope now refuses them as it does R1.
+- RC low-pass: a part pin bypassed the 1–100 kΩ series window a value pin is
+  held to.
+- The DHT22, LED and RS-485 envelopes accepted a rail budget their own rail
+  claim then failed (pre-existing).
+
+**Leaks and wrong numbers:**
+- With `SENTRY_DSN` set, Sentry's httpx integration recorded the Mouser key in
+  span data and breadcrumbs (`http.query`). Events are scrubbed before sending.
+- `parse_price` read "0,85 kr." as 85 and "¥1,980" as 1.98. The number is now
+  taken from its digits alone, and a zero-decimal currency reads a lone
+  separator as grouping.
+- The BOM tab kept the previous version's rows, totals and substitutes after a
+  patch whose refetch failed; the Mouser link accepted any host starting
+  "mouser.".
+
+**Robustness and wording:** a singular network raised sympy's `DMError` past
+handlers that expect `ValueError`; a malformed bench file made every
+`realize()` raise; a part number with two unit letters raised instead of being
+refused; a non-canonical or unmade part number was accepted; a refused part
+pin was reported under `constraints.pinned.part`; the divider's `predict()`
+boxed pinned parts at 1 %; claim texts said "1 %" for a 5 % part.
