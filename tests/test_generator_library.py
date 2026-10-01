@@ -219,7 +219,8 @@ BAD_INPUTS = {
     "led_indicator": [({"targets": {"led_current_ma": "10"}}, "not a number"),
                       ({"targets": {"led_current_ma": 30.0}}, "recommended per-pin"),
                       # Stage 3 + 4 verification: 64.7 mW in a 62.5 mW part, accepted by 0.1.0.
-                      ({"targets": {"led_current_ma": 17.0}, "constraints": {"supply_v": 5.25}}, "mW rating"),
+                      # 16 mA since [2026-10-02]: with the 1.6 V V_F minimum, 17 mA trips the pin limit first.
+                      ({"targets": {"led_current_ma": 16.0}, "constraints": {"supply_v": 5.25}}, "mW rating"),
                       ({"constraints": {"supply_v": 3.3}}, "characterised at 5 V"),
                       # Stage 5: refused by the pin rules, which name the reason.
                       ({"preferences": {"gpio_pin": "D0"}}, "D0 is reserved"),

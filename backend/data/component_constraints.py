@@ -346,15 +346,19 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
     # ideality `ideality`, saturation current chosen so V_f(test_current) is the
     # typical forward voltage. The min/max bound the tolerance box. Datasheet-
     # derived: defeater D7.
-    "67-21URC/S530-A3/TR8": {
-        "forward_voltage_v": {"min": 1.7, "typ": 2.0, "max": 2.4},
+    # Würth Elektronik WL-SMCW 0805 red ([2026-10-02], chosen with Jev). The catalogue
+    # had named "67-21URC/S530-A3/TR8", a part number that does not exist.
+    "150080RS75000": {
+        # typ and max are Würth's; the minimum is not published and is assumed 1.6 V,
+        # symmetric about the typical (data/figures.py says so).
+        "forward_voltage_v": {"min": 1.6, "typ": 2.0, "max": 2.4},
         "test_current_ma": 20,
         "ideality": 2.0,
-        "max_continuous_current_ma": 25,
+        "max_continuous_current_ma": 30,
         "reverse_voltage_max": 5.0,
         "notes": [
-            "Red LED, V_f 2.0 V typical (1.7-2.4 V) at 20 mA",
-            "25 mA continuous maximum; 5 V reverse maximum",
+            "Red LED 625 nm, V_f 2.0 V typical, 2.4 V maximum at 20 mA (no minimum published)",
+            "30 mA continuous maximum; 72 mW; reverse current specified at 5 V",
         ],
     },
     "SMBJ5.0A": {

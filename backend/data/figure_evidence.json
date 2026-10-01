@@ -92,6 +92,13 @@
    "url": "https://www.st.com/resource/en/datasheet/stm32f411ce.pdf",
    "sha256": "d1a6c24c17fad99dc1cce858e91475d7c53ab1bc029e1c119bb3e60f0e92a64c"
   },
+  "wurth-150080rs75000-003": {
+   "maker": "Würth Elektronik",
+   "title": "150080RS75000 WL-SMCW SMT Mono-color Chip LED datasheet",
+   "revision": "003.000, 2022-05-20 (downloaded 2026-10-02)",
+   "url": "https://www.we-online.com/components/products/datasheet/150080RS75000.pdf",
+   "sha256": "5f77f3766d54d6529309e13417982705a0cde327c9cbba214539d4e993f76303"
+  },
   "everlight-americas-search": {
    "maker": "Everlight Americas",
    "title": "product search for '67-21URC' (web page)",
@@ -157,49 +164,47 @@
   }
  },
  "figures": {
-  "67-21URC/S530-A3/TR8/forward_voltage_v": {
-   "verdict": "not_checked",
+  "150080RS75000/forward_voltage_v": {
+   "verdict": "agrees_in_part",
    "documents": [
-    "everlight-americas-search"
+    "wurth-150080rs75000-003"
    ],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
-   "record_hash": "3d62f433e64cb17589d08ccbb8ce09fe2d362a0ab32030a7329905571af3a2cf"
+   "pages": "2",
+   "location": "Optical & Electrical Properties",
+   "reads": "V_F at 20 mA: 2.0 V typical, 2.4 V maximum; no minimum given; 'forward voltage tolerance under measurement conditions ±0.1 V'",
+   "note": "the typical and maximum agree; the 1.6 V minimum is the record's own stated assumption, which no document gives",
+   "record_hash": "834e761fad48db4810f6c96f21a273ef00091105de264ef699c9fa21553193f4"
   },
-  "67-21URC/S530-A3/TR8/ideality": {
+  "150080RS75000/ideality": {
    "verdict": "not_checked",
-   "documents": [
-    "everlight-americas-search"
-   ],
+   "documents": [],
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
-   "record_hash": "f91ed9cb2edb3d3557bfcc61b078d16bb9605d4a949bd07b943ee03f644d1b65"
+   "note": "a model parameter, not a datasheet figure: no document publishes it",
+   "record_hash": "c5a488755cf3931124ee5d5c5a9bf1978b12f69508bc88bc446c9cbfe3578b84"
   },
-  "67-21URC/S530-A3/TR8/max_continuous_current_ma": {
-   "verdict": "not_checked",
+  "150080RS75000/max_continuous_current_ma": {
+   "verdict": "agrees",
    "documents": [
-    "everlight-americas-search"
+    "wurth-150080rs75000-003"
    ],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
-   "record_hash": "aa1aad05e0f033eb374f12b71f98f2a578179b0e0117f2f19fb137f1ae55d3f8"
+   "pages": "1",
+   "location": "Absolute Maximum Ratings",
+   "reads": "continuous forward current I_F 30 mA; peak 100 mA at 1/10 duty, 1 kHz; power dissipation 72 mW",
+   "note": "",
+   "record_hash": "087a30d991701cf60fca861b8e666edb51a12ed304dad5a350043be616dcb84e"
   },
-  "67-21URC/S530-A3/TR8/test_current_ma": {
-   "verdict": "not_checked",
+  "150080RS75000/test_current_ma": {
+   "verdict": "agrees",
    "documents": [
-    "everlight-americas-search"
+    "wurth-150080rs75000-003"
    ],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "the part number does not exist: Everlight's search for 67-21URC lists only 67-21SURC parts. The real 67-21SURC/S530-A3/TR8 (PLCC-2; family sheet DSE-0004390) gives V_F 2.0 typ / 2.4 max at 20 mA with no minimum; the catalogue's 1.7/2.0/2.4 V, 20 mA, 25 mA match the 0805 17-21SURC/S530-A2/TR8 (DSE-0008896). Which part the design means is the user's call",
-   "record_hash": "daa98f965640bb7c47676d037a18128e5f0927cb6c06a78a8b62ab242d90f04e"
+   "pages": "2",
+   "location": "Optical & Electrical Properties",
+   "reads": "every optical and electrical property is specified at I_F = 20 mA",
+   "note": "",
+   "record_hash": "27a1beb9a9d74b960adc45c1d519601c495d70432bf6c07de88f811056b02e30"
   },
   "ATmega328P-PU/gpio_output_resistance_ohm": {
    "verdict": "agrees",

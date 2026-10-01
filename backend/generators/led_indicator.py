@@ -112,10 +112,10 @@ from generators.protocol import (
 )
 
 NAME = "led_indicator"
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 FUNCTION = "led_indicator"
 
-LED_PART = "67-21URC/S530-A3/TR8"
+LED_PART = "150080RS75000"
 _LED = get_constraints(LED_PART)
 LED_MAX_MA = float(_LED["max_continuous_current_ma"])
 #: The Uno's figure; other boards read their own through `gpio_limit_ma`.
@@ -515,7 +515,7 @@ class LedIndicatorGenerator:
                     f"at or under {band.hi:.3g} mA over every part tolerance.", target),
                 Component(
                     id="LED1", type=ComponentType.LED, part_number=LED_PART,
-                    manufacturer="Everlight", package="0805",
+                    manufacturer="Würth Elektronik", package="0805",
                     # No supply rating: the 5 V figure is reverse voltage, and this
                     # circuit never reverse-biases the LED.
                     supply_voltage_max=None, current_draw_ma=round(band.nominal, 3),
