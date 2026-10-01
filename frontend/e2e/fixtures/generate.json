@@ -44,7 +44,7 @@
    "value": "47nF"
   }
  ],
- "circuit_id": "4a6c64f1-8bbf-5a34-a960-24128b75b733",
+ "circuit_id": "a43b25ff-3236-5c4c-98c8-85e4e4908cf4",
  "explanation": "",
  "firmware": null,
  "firmware_build": {
@@ -58,7 +58,7 @@
  "intent": "RC low-pass filter with 1000 Hz cutoff frequency",
  "ir": {
   "application_class": "hobby_arduino",
-  "circuit_id": "4a6c64f1-8bbf-5a34-a960-24128b75b733",
+  "circuit_id": "a43b25ff-3236-5c4c-98c8-85e4e4908cf4",
   "components": [
    {
     "confidence": 0.95,
@@ -575,7 +575,7 @@
   ],
   "version": 1
  },
- "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"7a76fc0c-3fc3-5d71-a827-8d2544823b62\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ddf74e35-2e9e-55c7-b552-53e69ba80b21\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7a6f45e8-3089-54bf-8dd6-cd5114ad4451\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1bf29910-c1f6-5562-a466-738e295c4e43\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"61b226a9-6bc9-5551-a2a7-f4e60e81a33f\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"f0f0f11d-6dc1-5d91-93f5-6339671a1f46\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"849a6eef-22e6-5e26-8a6f-4c435b2e263a\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"b3a146d2-a978-516f-af4c-092d5f8689b3\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"7fa1efba-19b4-5614-ac6b-d7f3a952fcfe\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"eb427039-997b-51d0-a56a-4cf163ed1a29\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"1424e1cd-2237-595e-9162-0edd51566e19\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f7ea77d9-0c91-5f02-8108-8d08977e810f\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"8d726302-ea69-50d2-ad8d-6a6da869704e\"))\n\n)",
+ "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"043a517a-ea7c-55db-8c1e-1793a5a827d2\")\n  (paper \"A4\")\n  (title_block (title \"RC low-pass filter with 1000 Hz cutoff frequency\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"IN\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c0e9a581-6b98-5dbf-8058-922d5aee5f89\"))\n  (label \"OUT\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e897c111-0d29-55a3-bd38-03e1bc6e76fc\"))\n  (label \"GND\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ec706cfc-0f85-5740-889d-8d56851233bf\"))\n\n  (global_label \"GND\" (shape power_in) (at 144 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"c0d554dc-1ac5-5474-b76b-ba19722c56bc\"))\n\n  (rectangle (start 20 47) (end 62 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"1ec01f6a-5f6f-5dc4-abd1-6b3f24e96e45\"))\n  (text \"R1: RC0402FR-073K4L\" (at 20 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"42465765-cfbd-561f-8704-ba5cc6e1873a\"))\n  (text \"IN\" (at 22 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"e47dd3bd-69f5-5e24-abeb-56e361766c03\"))\n  (text \"OUT\" (at 22 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1e1f2c78-c38b-54bd-86fb-d855bc5cae79\"))\n  (rectangle (start 105 47) (end 147 67)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"5e8cf781-93ed-51a9-8af3-7652af5dbbc5\"))\n  (text \"C1: CL05B473KO5NNNC\" (at 105 45.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"95ee0bc7-d4a4-5a0f-a161-93778ff8a7e0\"))\n  (text \"OUT\" (at 107 51 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9d6c010c-0122-5e20-841d-ec637bc8e2cd\"))\n  (text \"GND\" (at 107 54.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"4304a695-10c5-59ff-ac28-eb6371176035\"))\n\n)",
  "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
  "target_mcu": null,
  "validation": {
