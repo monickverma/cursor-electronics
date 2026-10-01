@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-10-01T22:25:06.499584Z",
-  "generated_from_commit": "5d750f8",
+  "generated_at": "2026-10-01T23:24:10.030391Z",
+  "generated_from_commit": "fa9de7f",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -699,13 +699,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
+    "fa9de7f feat: the LED is the Würth 150080RS75000; its V_F minimum is a stated 1.6 V",
+    "736ba9c Merge pull request #3 from monickverma/phase2-review-fixes",
+    "3c7fecd chore: regenerate state.json / progress.yaml after the review fixes",
     "5d750f8 test: bring three suites up to date with the review fixes",
-    "ef8f808 fix: the 25 findings of PR #2's pre-merge review; three datasheets read",
-    "0986ee9 docs+test: record the PR #2 pre-merge review; the price cache on a real PostgreSQL",
-    "b85c14b Merge pull request #2: Phase 2 Stages 0–6",
-    "14d569e fix: what an adversarial recheck of the datasheet pass refuted"
+    "ef8f808 fix: the 25 findings of PR #2's pre-merge review; three datasheets read"
   ],
-  "last_diff_stat": "backend/generators/rs485_node.py      |  3 ++-\n frontend/e2e/fixtures/bom.json        | 50 +++++++++++++++++++++++------------\n frontend/e2e/fixtures/firmware.json   | 16 +++++------\n frontend/e2e/fix",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md |  58 +++++++\n backend/core/ir_examples.py              |   8 +-\n backend/data/component_constraints.py    |  14 +-\n backend/data/component_db.json           |",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
