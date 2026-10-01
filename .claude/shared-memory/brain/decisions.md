@@ -2467,3 +2467,27 @@ the more conservative and more reversible choice, and Jev puts a minimum below 1
   because the statement text changed.
 - The four new LED records need the engineer's confirmation: test current, continuous current, V_F
   (typ/max only; the minimum stays assumed) and ideality (never trusted: an assumption).
+
+**Re-checked under the stability-gated protocol, the same day.** The engineer's own research ("Jev decisions
+for Circuit OS Phase 3", in their Downloads, not yet adopted in this log) says not to threshold on
+`confidence`. That number is the top probability rescaled by the option count. Its replacement asks every
+consultation in three variants and reads the top probability, the margin and whether the answer is stable.
+The consultation is now a committed, re-runnable file: `tools/jev/2026-10-02_led_part.{py,json,results.jsonl}`.
+The model is pinned to `jev-1.13.0`, and every attempt is logged with its state hash and request id. The
+agent's own analysis is written in the script and was recorded before the calls. It chose the same two answers.
+
+| Question | Answer in all 3 variants (original, options reversed, neutral state) | min p_top | min margin | max P(none) | Band |
+|---|---|---|---|---|---|
+| `led_part_final` | wurth_150080rs75000 | 0.94 | 0.89 | 0.02 | **act** |
+| `vf_minimum_final` | 1_6_symmetric | 0.81 | 0.63 | 0.05 | **act with care** |
+| `vf_below_1_6_plausible` (Noul) | 0.23 / 0.24 / 0.23 | | | | unsettled; diagnostic only |
+
+Classification:
+- The decision is owner-owned. The engineer delegated it explicitly ("use jev to take the decision";
+  "do what you feel like").
+- It is a two-way door: a catalogue edit, reversed by another.
+- The checks named for "act with care" are the full suite and Playwright in a clean checkout, and the D7
+  closure on the new LED records.
+- **Review trigger:** the first bench V_F reading of the Würth LED, or a Würth V_F bin table. If either puts
+  V_F under 1.6 V, the assumption is wrong and comes down.
+- The decision is recorded as `jev_supported`.
