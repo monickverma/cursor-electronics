@@ -19,7 +19,10 @@ import bom from './fixtures/bom.json'
 const API = 'http://backend.test'
 type Json = Record<string, unknown>
 
-async function mockBackend(page: Page, { live = false } = {}) {
+async function mockBackend(
+  page: Page,
+  { live = false, liveView = bom.bom_live as unknown, failAfterPatch = false } = {},
+) {
   const design = bom.generate as Json
   const patches: unknown[] = []
   const unexpected: string[] = []
@@ -34,7 +37,8 @@ async function mockBackend(page: Page, { live = false } = {}) {
     if (path === '/auth/login') return json(route, { access_token: 'test-token', token_type: 'bearer' })
     if (path === '/design/generate') return json(route, design)
     if (path === `/design/${design.circuit_id}/bom`) {
-      return json(route, live ? bom.bom_live : patches.length ? bom.bom_after : bom.bom)
+      if (failAfterPatch && patches.length) return json(route, { detail: 'substitution check failed' }, 500)
+      return json(route, live ? liveView : patches.length ? bom.bom_after : bom.bom)
     }
     if (path === `/design/${design.circuit_id}/patch` && req.method() === 'POST') {
       patches.push(req.postDataJSON())
@@ -115,4 +119,28 @@ test('a live quote shows its source, currency and time; an unlisted part keeps i
   await expect(total).toContainText('$')
   await expect(page.getByText(/Live Mouser prices on \d+ of \d+ rows/)).toBeVisible()
   expect(unexpected).toEqual([])
+})
+
+// [2026-10-01] #3: a host that merely starts with "mouser." is not Mouser.
+test('a product link to a look-alike host is shown as text, never linked', async ({ page }) => {
+  const view = JSON.parse(JSON.stringify(bom.bom_live)) as { rows: { live?: { product_url?: string } | null }[] }
+  for (const row of view.rows) {
+    if (row.live) row.live.product_url = 'https://www.mouser.com.attacker.net/ProductDetail/x'
+  }
+  await mockBackend(page, { live: true, liveView: view })
+  await openBom(page)
+  const table = page.getByTestId('bom-table')
+  await expect(table.getByRole('row').filter({ hasText: 'CL05B104KO5NNNC' })).toContainText('€0.0085')
+  await expect(table.getByRole('link', { name: 'Mouser' })).toHaveCount(0)
+})
+
+// [2026-10-01] #4: after a substitute is applied, the old version's view is never shown or offered.
+test('when the new version\'s BOM cannot be fetched, the old one is not shown in its place', async ({ page }) => {
+  const { patches } = await mockBackend(page, { failAfterPatch: true })
+  await openBom(page)
+  const use = page.getByRole('button', { name: 'Use this part' })
+  await use.first().click()
+  await expect.poll(() => patches.length).toBe(1)
+  await expect(page.getByText('substitution check failed')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Use this part' })).toHaveCount(0)
 })

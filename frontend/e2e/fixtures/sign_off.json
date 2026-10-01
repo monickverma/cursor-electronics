@@ -1,5 +1,5 @@
 {
- "circuit_id": "b6706fef-34d2-58d9-984d-eb6b70fae115",
+ "circuit_id": "c4d23213-20e4-5703-87dd-331dea3fa537",
  "intent_ir": {},
  "properties_hash": "979c063b769a05afa44bad81a61d63e490c6fe30ab12f8279659a445c2bff566",
  "signed_by": "engineer@example.com",
@@ -35,7 +35,8 @@
     "covers": [],
     "critical": false,
     "defeaters": [
-     "D1"
+     "D1",
+     "D7"
     ],
     "detail": "the 10% capacitor dominates; a 2% C0G part would narrow it fivefold; superseded by proof.rc.cutoff (signed proofs)",
     "grade": "G1",
@@ -89,7 +90,8 @@
     "critical": true,
     "defeaters": [
      "D1",
-     "D8"
+     "D8",
+     "D7"
     ],
     "detail": "7 obligation(s) UNSAT over the box (signed off)",
     "grade": "G1",
@@ -137,7 +139,9 @@
     "claim": "every part's rated supply voltage covers the circuit's supply",
     "covers": [],
     "critical": true,
-    "defeaters": [],
+    "defeaters": [
+     "D7"
+    ],
     "detail": "all ratings at or above the supply",
     "grade": "G1",
     "id": "rule.voltage_ratings_ok",
@@ -155,7 +159,7 @@
      "model": "design_graph",
      "parameters": "nominal"
     },
-    "verdict": "holds"
+    "verdict": "holds_defeasible"
    },
    {
     "claim": "every I2C line has a pull-up to a supply rail",
@@ -370,7 +374,8 @@
   "grade_floor": "G1",
   "not_assessed": [],
   "open_defeaters": [
-   "D1"
+   "D1",
+   "D7"
   ],
   "out_of_scope": [
    "rule.operating_temp_range",

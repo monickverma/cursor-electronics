@@ -1,6 +1,6 @@
 {
  "about": "The agent's check of each figure record against its maker's document, 2026-09-25 (brain/decisions.md [2026-09-25]). Evidence, not verification: an agent's check never makes a figure trusted. scripts/verify_figures.py --review shows it beside each record; --confirm-agreeing records a person's verification of the ones that agree, bound to the same record hash. A record edited since its check has stale evidence and must be checked again.",
- "checked_by": "the agent (an LLM, claude-opus-5-5), 2026-09-25; rechecked 2026-09-30 by four independent agents told to refute it (workflow d7-adversarial-recheck) — 11 refuted and corrected",
+ "checked_by": "the agent (an LLM, claude-opus-5-5), 2026-09-25; rechecked 2026-09-30 by four independent agents told to refute it (workflow d7-adversarial-recheck) — 11 refuted and corrected; the MAX485, MAX3485 and STM32F411 documents read 2026-10-02 — 2 corrected",
  "verdicts": {
   "agrees": "the document says what the record says (records it contradicted were corrected first)",
   "agrees_in_part": "what the document covers agrees; the rest is in a document that was not read",
@@ -70,6 +70,27 @@
    "revision": "read 2026-09-30 by the recheck",
    "url": "https://docs.arduino.cc/resources/schematics/A000066-schematics.pdf",
    "sha256": null
+  },
+  "adi-max481-max1487-rev10": {
+   "maker": "Analog Devices (Maxim)",
+   "title": "MAX481/MAX483/MAX485/MAX487–MAX491/MAX1487 datasheet",
+   "revision": "19-0122; Rev 10; 9/14 (downloaded 2026-10-02 through the user's Chrome)",
+   "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/MAX1487-MAX491.pdf",
+   "sha256": "b7888c0d45b0dc581a11cbc10cc53e2e2563271d5a01baed74dbae2845065d05"
+  },
+  "adi-max3483-max3491-rev2": {
+   "maker": "Analog Devices (Maxim)",
+   "title": "MAX3483/MAX3485/MAX3486/MAX3488/MAX3490/MAX3491 datasheet",
+   "revision": "19-0333; Rev 2; 5/24 (downloaded 2026-10-02 through the user's Chrome)",
+   "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/MAX3483-MAX3491.pdf",
+   "sha256": "e648fd27831d1ba1f5b587708a97b34742783f1b464e410dc895e4393b8054b0"
+  },
+  "st-ds10314-rev8": {
+   "maker": "STMicroelectronics",
+   "title": "STM32F411xC STM32F411xE datasheet",
+   "revision": "DS10314 Rev 8, January 2024 (downloaded 2026-10-02 through the user's Chrome)",
+   "url": "https://www.st.com/resource/en/datasheet/stm32f411ce.pdf",
+   "sha256": "d1a6c24c17fad99dc1cce858e91475d7c53ab1bc029e1c119bb3e60f0e92a64c"
   },
   "everlight-americas-search": {
    "maker": "Everlight Americas",
@@ -547,147 +568,179 @@
    "record_hash": "bef15a011ff8348798f7bdafafe72cb9243c39ca793149b98fd4d56eaffcb2e0"
   },
   "MAX3485ECSA/current_draw_ma": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
-   "record_hash": "8c5a5e58c6290ba0f32fa068a73489d6e2a69748d127a4888cf508bf547c3282"
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, supply current",
+   "reads": "I_CC, no load, DE = 0 V, RE = 0 V: 0.95 mA typical, 1.9 mA maximum (DE = V_CC: 1.1 / 2.2 mA)",
+   "note": "record and value corrected 2026-10-02: the catalogue had the MAX485's 0.3 mA for this part",
+   "record_hash": "a0e9f5dae12216dafd6fda40523948beae0fdb6c2ec3477a404ba021fa81311c"
   },
   "MAX3485ECSA/driver_rated_load_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, V_OD2",
+   "reads": "differential driver output is specified into the RS-485 load, 54 Ω differential (R = 27 Ω per side, Figure 4): 1.5 V minimum",
+   "note": "the record cites TIA/EIA-485-A for how 54 Ω arises (two terminators, 32 unit loads), which was not read; the value is the part's own test load",
    "record_hash": "97a6122d2869668f93cc3ee460f1685d5f0fbe23aa97010d84736f40992670a5"
   },
   "MAX3485ECSA/logic_input_current_ua": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, I_IN1",
+   "reads": "input current, DE, DI, RE: ±2 µA",
+   "note": "",
    "record_hash": "eda686cafc0d6fae23b414934ff2b2157299f27c2d1e430cd4ed9f2a8cc33f64"
   },
   "MAX3485ECSA/logic_input_vil_v": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, V_IL",
+   "reads": "input low voltage, DE, DI, RE: 0.8 V maximum",
+   "note": "",
    "record_hash": "58e234276abd1571b4591b243ed2e69a11c38e42bea5b661c80c824ed98b5a52"
   },
   "MAX3485ECSA/receiver_threshold_mv": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, V_TH",
+   "reads": "receiver differential threshold voltage, −7 V ≤ V_CM ≤ 12 V: −0.2 to 0.2 V",
+   "note": "the record cites TIA/EIA-485-A, which was not read; the part's own guaranteed threshold agrees with it",
    "record_hash": "b7b4b833f117df995648fc036e77be4fdf733c7ae4b9d907f86f9a8ea3fd1f57"
   },
   "MAX3485ECSA/requires_termination_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "14",
+   "location": "Line Length vs. Data Rate; typical network",
+   "reads": "'the line should be terminated at both ends in its characteristic impedance'; the typical half-duplex network shows 120 Ω at each end",
+   "note": "the record cites TIA/EIA-485-A, which was not read; the maker's application text agrees",
    "record_hash": "21e01271f369e97e7212af7175cb4034ee7d1e58ccf95b128b6180f1f463b57d"
   },
   "MAX3485ECSA/supply_voltage_max": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, conditions",
+   "reads": "V_CC = 3.3 V ±0.3 V",
+   "note": "",
    "record_hash": "bdcf1f24e5546e149ec29c36de76bb4bed67f94d0e5d962ccd931903d460685a"
   },
   "MAX3485ECSA/supply_voltage_min": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max3483-max3491-rev2"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, conditions",
+   "reads": "V_CC = 3.3 V ±0.3 V",
+   "note": "",
    "record_hash": "90a1090e2e089e4a9af6c73dc8d2943da8ad406677dfe9201f0de529cffbdc80"
   },
   "MAX485ECSA/current_draw_ma": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
-   "record_hash": "b15dc2cf6621838b7c0ae9462d20678a3323e9d53f550fefd956d0a2a14b4d1a"
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "3",
+   "location": "DC Electrical Characteristics, supply current",
+   "reads": "MAX481/MAX485 no-load I_CC, RE = 0 V or V_CC, DE = 0 V: 300 µA typical, 500 µA maximum (DE = V_CC: 500 / 900 µA)",
+   "note": "",
+   "record_hash": "89492a25b24a3ce1f6fb5fd621583145ba307b524c2988516a7e1968d0e4ac9b"
   },
   "MAX485ECSA/driver_rated_load_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, V_OD2",
+   "reads": "differential driver output is specified into the RS-485 load, 54 Ω differential (R = 27 Ω per side, Figure 4): 1.5 V minimum",
+   "note": "the record cites TIA/EIA-485-A for how 54 Ω arises (two terminators, 32 unit loads), which was not read; the value is the part's own test load",
    "record_hash": "d358dc6df2ab9260994e34b05c7b36358f946bdd8d205e27809e8b2799288437"
   },
   "MAX485ECSA/logic_input_current_ua": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, I_IN1",
+   "reads": "input current, DE, DI, RE: ±2 µA",
+   "note": "",
    "record_hash": "77538b7b70bdf4941f4b3de4dd8bee0b3c346060e026e5881961ef738d52e2c9"
   },
   "MAX485ECSA/logic_input_vil_v": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, V_IL",
+   "reads": "input low voltage, DE, DI, RE: 0.8 V maximum",
+   "note": "",
    "record_hash": "e504aedbb4008a3fa8de8c5467824c12841a11a2a12c64aba9031ab54391e116"
   },
   "MAX485ECSA/receiver_threshold_mv": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, V_TH",
+   "reads": "receiver differential threshold voltage, −7 V ≤ V_CM ≤ 12 V: −0.2 to 0.2 V",
+   "note": "the record cites TIA/EIA-485-A, which was not read; the part's own guaranteed threshold agrees with it",
    "record_hash": "2051720d13ad3884c0bd9a563e713af98def0c8428dcefe28c9eba51614e4eb2"
   },
   "MAX485ECSA/requires_termination_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's); the figure cites TIA/EIA-485-A, which TIA sells and which was not read either",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "13",
+   "location": "Line Length vs. Data Rate; typical network",
+   "reads": "'the line should be terminated at both ends in its characteristic impedance'; the typical half-duplex network shows 120 Ω at each end",
+   "note": "the record cites TIA/EIA-485-A, which was not read; the maker's application text agrees",
    "record_hash": "8300dfc5a12ad307c26a5a56b3e08aec50efe559d0d5a4075e04b9ab2c504ebb"
   },
   "MAX485ECSA/supply_voltage_max": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, conditions",
+   "reads": "V_CC = 5 V ±5%",
+   "note": "",
    "record_hash": "627afb873383397d17470290460b0ec5ef13dc194d7baf036c461edfc9a414cc"
   },
   "MAX485ECSA/supply_voltage_min": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "Analog Devices' site reset a scripted download and the app's save dialog is the user's to click; the maker's document was not read (the recheck found V_IL 0.8 V and I_IN ±2 µA in older Maxim revisions on mirror sites, which are not the maker's)",
+   "verdict": "agrees",
+   "documents": [
+    "adi-max481-max1487-rev10"
+   ],
+   "pages": "2",
+   "location": "DC Electrical Characteristics, conditions",
+   "reads": "V_CC = 5 V ±5%",
+   "note": "",
    "record_hash": "1686f755f5c061b4bf902608ce172afbeb70b458e0bd963a12eeb2d86e2220ce"
   },
   "RC0402FR/power_w": {
@@ -856,48 +909,58 @@
    "record_hash": "ae3015b3409a757ed84ccdcc386fa8857a51ede97f0e79a26c7a67689f13c1f1"
   },
   "STM32F411CEU6/gpio_output_resistance_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "ST's site reset a scripted download of the STM32F411xC/xE datasheet; the document was not read",
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "101",
+   "location": "Output voltage characteristics",
+   "reads": "V_OH ≥ V_DD − 1.3 V at I_IO = 20 mA, 2.7 V ≤ V_DD ≤ 3.6 V (evaluated by characterization, not tested in production)",
+   "note": "1.3 V / 20 mA = 65 Ω is the maximum the record states; its minimum and typical are, as it says, estimates the document does not give",
    "record_hash": "2d62fbd6cf6e711df8335e4f35331b44384ef9490200d6c8e30fddea35cd9381"
   },
   "STM32F411CEU6/gpio_recommended_current_ma": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "ST's site reset a scripted download of the STM32F411xC/xE datasheet; the document was not read",
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "62, 101",
+   "location": "Table 12 Current characteristics; Output voltage characteristics",
+   "reads": "I_IO output current sunk or sourced by any I/O and control pin: ±25 mA absolute maximum; V_OH and V_OL are specified up to 20 mA",
+   "note": "",
    "record_hash": "c094977897741e4d39ca49bb6f3af0bc5903827417513cb66c47358e4c32a9c6"
   },
   "STM32F411CEU6/pin_leakage_ua": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "ST's site reset a scripted download of the STM32F411xC/xE datasheet; the document was not read",
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "98",
+   "location": "I/O static characteristics, I_lkg",
+   "reads": "I/O input leakage current, V_SS ≤ V_IN ≤ V_DD: ±1 µA maximum (FT/TC pins at V_IN = 5 V: 3 µA)",
+   "note": "",
    "record_hash": "780b9d9fea24aa362af1e09a8239737652b3a15bfbc9e06bfe00b6628ae22e82"
   },
   "STM32F411CEU6/supply_model_ohm": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "ST's site reset a scripted download of the STM32F411xC/xE datasheet; the document was not read",
-   "record_hash": "5f2c0bc5b4a87560a1e0b6a4b17a2f904b216dbe60eb406c13bebdc8628b6ff1"
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "72",
+   "location": "Table 23 run mode from flash, ART accelerator enabled except prefetch, V_DD = 3.6 V",
+   "reads": "I_DD at 100 MHz: all peripherals enabled 20.7 mA typical, 24.4 mA maximum (125 °C); all peripherals disabled 11.6 mA typical, 14.8 mA maximum",
+   "note": "record corrected 2026-10-02: it said 25 mA was the run current 'with peripherals off'; it covers the maximum with all peripherals enabled. The value is unchanged",
+   "record_hash": "32080f438dc981c3a1f04ce911358ca478badb5a8ffcc96e203f83e41e8d849f"
   },
   "STM32F411CEU6/supply_voltage_max": {
-   "verdict": "not_checked",
-   "documents": [],
-   "pages": "",
-   "location": "",
-   "reads": "",
-   "note": "ST's site reset a scripted download of the STM32F411xC/xE datasheet; the document was not read",
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "63",
+   "location": "Table 14 General operating conditions",
+   "reads": "V_DD standard operating voltage 1.7 to 3.6 V",
+   "note": "",
    "record_hash": "623e47dfee808048dad789f29b8fb65637a95d1dcff7b6871829234a9fa7fed6"
   },
   "board:arduino_uno/A0": {
@@ -1172,13 +1235,24 @@
    "note": "rechecked 2026-09-30",
    "record_hash": "3ae84d50e153881fd1e25853a7c2eaba33961480e86ea7f2c4d2d4a996656316"
   },
+  "board:arduino_uno/uart_mode": {
+   "verdict": "agrees_in_part",
+   "documents": [
+    "microchip-DS40002061B"
+   ],
+   "pages": "12",
+   "location": "Figure 1-1 pinout",
+   "reads": "every I/O pin carries a pin-change interrupt (PCINT0–23), which a software UART's receive pin needs",
+   "note": "that SoftwareSerial is what serves the UART role is the firmware's choice (firmware/arduino.py); Arduino's SoftwareSerial documentation, which lists the pins it supports per board, was not read",
+   "record_hash": "8b60374963dd585d02f45f07a3c67f5cebf993d3b43848865cb2e210b7bffc49"
+  },
   "board:blackpill_f411ce/PA0": {
    "verdict": "not_checked",
    "documents": [],
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "54129d51723f9227f4187eb54ff84b6ae67e144f5e83071703a7af6ee6ab0d0f"
   },
   "board:blackpill_f411ce/PA1": {
@@ -1187,7 +1261,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "c2f0570bef00e142f9012700c128832a35911e58c09e3bac2f916fab6bd521cc"
   },
   "board:blackpill_f411ce/PA10": {
@@ -1196,7 +1270,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "7a28aac758e1eccb7bb6599451d38707494f610d8c2dc30067b2d4244ae210c2"
   },
   "board:blackpill_f411ce/PA11": {
@@ -1205,7 +1279,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "9839930499edb7f63ea0949ba99d5c4db128decc03b2e176fbbfadb0730833ee"
   },
   "board:blackpill_f411ce/PA12": {
@@ -1214,7 +1288,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "6b977fbcc42176cc4c922036b553ab6f481930505964ecdf25d103964200dce4"
   },
   "board:blackpill_f411ce/PA13": {
@@ -1223,7 +1297,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "305b57fdb8632112a7614ad1b5470b1de61aa244baae71eb7538e2cdffa5a7cd"
   },
   "board:blackpill_f411ce/PA14": {
@@ -1232,7 +1306,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "7a0f51f80f8e1afcd6a012bf31a31e380bb31433f669b0a90c8191169078d060"
   },
   "board:blackpill_f411ce/PA15": {
@@ -1241,7 +1315,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "34cb0991d40af1ad0853d082a6ca6033a916acd6285d1a58c5419f0aebb6a737"
   },
   "board:blackpill_f411ce/PA2": {
@@ -1250,7 +1324,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "57e5b4df700529d1b64f39f3ed677ee62876477045bb06ae8d948a9fdd22260a"
   },
   "board:blackpill_f411ce/PA3": {
@@ -1259,7 +1333,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "b9b3be213618351c8bb0d3cad51d053c1414837c0f611d8d083efc0ca2f9c078"
   },
   "board:blackpill_f411ce/PA4": {
@@ -1268,7 +1342,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "dfc7548e7de127d987991f12181ccfa2e480a31192d1f94744780f15222ca228"
   },
   "board:blackpill_f411ce/PA5": {
@@ -1277,7 +1351,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "acbcce2f91dda5a41cc32a90aaeb17098ac99348995836c82a2fcaa8c8bd3093"
   },
   "board:blackpill_f411ce/PA6": {
@@ -1286,7 +1360,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "778b6cd535f064958cbd32313d55c0bda9ccbd4cc52142334df1540d39a94df3"
   },
   "board:blackpill_f411ce/PA7": {
@@ -1295,7 +1369,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "29fe8d209f149d94e63b4d08c4d248851beb203dd3b0dee0c3aa231882b9d5cc"
   },
   "board:blackpill_f411ce/PA8": {
@@ -1304,7 +1378,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "5011caa0d13f9701b08352f64ac7025c03ecff9957e1f07f01c70075664c652b"
   },
   "board:blackpill_f411ce/PA9": {
@@ -1313,7 +1387,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "7bfe114d91d20ab2f98066294b010f2ba454d5b0513787cfc5e850cd788712b7"
   },
   "board:blackpill_f411ce/PB0": {
@@ -1322,7 +1396,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "f210cfb9aa51098e7c6378801e385d3017714398591533d3a82ae24dd3698d9f"
   },
   "board:blackpill_f411ce/PB1": {
@@ -1331,7 +1405,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "5e2ec434b4ade46d40a89075431ef4ec9ed85d444a4614716af11907356dac39"
   },
   "board:blackpill_f411ce/PB10": {
@@ -1340,7 +1414,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "396f8fd3ee813390c1e6fc1bb42a6f8763f02699ea16178dbdc15c2004b544f2"
   },
   "board:blackpill_f411ce/PB12": {
@@ -1349,7 +1423,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "1ab8aa9c8f60b362270550936a62ff9ab6ce1a6211d6e986aec3492d8b7e6469"
   },
   "board:blackpill_f411ce/PB13": {
@@ -1358,7 +1432,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "77c376cf9c1e3d1969650a88a230a7c03113be2ee050119346e825f64e0aa3eb"
   },
   "board:blackpill_f411ce/PB14": {
@@ -1367,7 +1441,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "7f69076b9ff30ec84b8d9a849a17837edede189d0c2fa7ee2b2fbce8e87ac08c"
   },
   "board:blackpill_f411ce/PB15": {
@@ -1376,7 +1450,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "c96c77c4f8a877dcb08a90c0f908c8d2a06391c913112dda846fd32e706f8d75"
   },
   "board:blackpill_f411ce/PB2": {
@@ -1385,7 +1459,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "73afd10245b287b52bfda5f6ae10108c97acfa8d058a3e4c224471d18c03bd56"
   },
   "board:blackpill_f411ce/PB3": {
@@ -1394,7 +1468,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "376a538ef205b3dbc5a9e40a2c6d83138d9c169d4e36b2bec8eaf34c6d358bb3"
   },
   "board:blackpill_f411ce/PB4": {
@@ -1403,7 +1477,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "cc98b37cd5142fe7d1fdebb8298cad52c5fcc1283c38c5dc1bc2b1350b241932"
   },
   "board:blackpill_f411ce/PB5": {
@@ -1412,7 +1486,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "a2419fda19385c03e1ad8ec50ae2c23eabe3290a34127121d9f21ceb761e95f2"
   },
   "board:blackpill_f411ce/PB6": {
@@ -1421,7 +1495,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "1ba6764f8d89be2c5ba7cd620a4f8ad04b8aeab1febddff6f865d143ba652090"
   },
   "board:blackpill_f411ce/PB7": {
@@ -1430,7 +1504,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "b7c8af629c16cf5572e3b56af8bfdaba0383bbf0a04049e7d94cd0317d5b8517"
   },
   "board:blackpill_f411ce/PB8": {
@@ -1439,7 +1513,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "e1cb4ad284a3defbfde651fe9d7d2ee34e18964282baeef26dd74640ea0d187b"
   },
   "board:blackpill_f411ce/PB9": {
@@ -1448,7 +1522,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "d25f8f836cb2f50485e1e48af7c32819d8ed8c7051dd3a8988bc1e1f88af1ea8"
   },
   "board:blackpill_f411ce/PC13": {
@@ -1457,7 +1531,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "38305ea5647c560bb0bee17ea4f5c3b2f20380840e3903ed447d3275c660bf2d"
   },
   "board:blackpill_f411ce/PC14": {
@@ -1466,7 +1540,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "1c9fbef7a7e13e534e843a2bd39c1502a4a19d8af32fbbfaebef7156aa20df50"
   },
   "board:blackpill_f411ce/PC15": {
@@ -1475,7 +1549,7 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "6ab2b472062eec540aa02ec6c778b2d5c87c75fd23220f7b96e7639ef18f7705"
   },
   "board:blackpill_f411ce/console_uart": {
@@ -1484,8 +1558,19 @@
    "pages": "",
    "location": "",
    "reads": "",
-   "note": "neither ST's STM32F411xC/xE datasheet (download refused) nor WeAct's board documents were read",
+   "note": "ST's datasheet was read on 2026-10-02 for the chip's figures, but these rows are the board's (on-board button, LED, crystal, USB and SWD) and WeAct's board documents were not read",
    "record_hash": "25d37e2bebe6dddbece5e970b542c9a7cf69fe2b96b5edb37da8ffc3eac6d669"
+  },
+  "board:blackpill_f411ce/uart_mode": {
+   "verdict": "agrees",
+   "documents": [
+    "st-ds10314-rev8"
+   ],
+   "pages": "48",
+   "location": "Table 9 Alternate function mapping",
+   "reads": "USART TX and RX are alternate functions of fixed pins — e.g. USART2_TX on PA2 and USART2_RX on PA3 (AF7)",
+   "note": "that TX and RX must belong to the same USART follows from using one peripheral",
+   "record_hash": "0d10e8da7ba1e06dbc545f1c43256debdcd9a57070db21599194be18c8b92485"
   },
   "board:esp32_devkitc/GPIO0": {
    "verdict": "agrees",
@@ -1947,6 +2032,17 @@
    "reads": "the CP2102N bridge's RXD and TXD connect to TXD0 and RXD0 through R17/R18 (0 Ω); TXD0/RXD0 are GPIO1/GPIO3 (U0TXD/U0RXD); DTR/RTS drive EN and IO0 for auto-programming",
    "note": "the first pass cited the guide, which does not name the wiring; the schematic does",
    "record_hash": "3b94c90008fd0079c7cc9ab4c938d9401f92b75687f1c75227cfd24f0b5690d0"
+  },
+  "board:esp32_devkitc/uart_mode": {
+   "verdict": "agrees",
+   "documents": [
+    "espressif-esp32-v5.3"
+   ],
+   "pages": "37",
+   "location": "UART Controller, Pin Assignment",
+   "reads": "'The pins for UART can be chosen from any GPIOs via the GPIO Matrix'",
+   "note": "input-only GPIO34–39 can be RX but not TX, as the record's output-capable/input-capable split says",
+   "record_hash": "722c0456e15af2b836c1c68b96eb5500c5f91f4e2f73db7f0fe0766c3555c101"
   }
  }
 }

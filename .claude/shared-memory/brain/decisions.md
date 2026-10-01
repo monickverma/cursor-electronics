@@ -2367,3 +2367,45 @@ handlers that expect `ValueError`; a malformed bench file made every
 refused; a non-canonical or unmade part number was accepted; a refused part
 pin was reported under `constraints.pinned.part`; the divider's `predict()`
 boxed pinned parts at 1 %; claim texts said "1 %" for a 5 % part.
+
+**Done, 2026-10-02.** The four fix agents' work was lost before it was merged
+(no worktree or branch survived), so the fixes were redone in this session,
+each with the reviewer's scenario as a test (`tests/test_review_2026_10_01.py`,
+`tests/test_sentry_key.py`, new cases in `tests/test_pricing.py` and
+`frontend/e2e/bom.spec.ts`). Where the code differs from the plan above:
+
+- Route 3 compares the level a resistor holds the node at with the level the
+  claim assumes. An assumption is `NODE` (low) or `NODE=high`; `held_to()`
+  returns each node's pulled levels. A pull-up under an assumed-low node names
+  `mcu_pin_state`.
+- Sentry: the httpx integration is disabled *and* every event, transaction and
+  breadcrumb is scrubbed (`main.sentry_options`, `pricing.mouser.scrub`). The
+  test runs Sentry as the app configures it, in a child process, and fails
+  without the change.
+- A bench file that does not validate is listed by `invalid_records()`, and
+  every family it might belong to gets no bench evidence until it is fixed.
+- `series_makes` (E24 for a 5 % series, E96 or E24 for 1 %) moved from
+  `bom/substitution.py` to `generators/common.py`, which `pinned_part` now
+  uses too.
+- RS-485 gained a claim, `rs485.bias_dissipation` (R2, R3 and R4 against their
+  ratings), so the Stage 6 gate rejects lower-rated substitutes for them.
+
+**The three blocked datasheets, read 2026-10-02.** The user asked for the PC
+to be driven to get them. Claude in Chrome fetched each PDF in a page on the
+maker's own site (the MAX481–MAX1487 Rev 10 and MAX3483–MAX3491 Rev 2 from
+analog.com, DS10314 Rev 8 from st.com) and saved it to the user's Downloads
+folder. They are kept in the session scratchpad and are not committed. Two
+records were corrected:
+- **MAX3485 supply current: 0.3 mA → 0.95 mA typical** (1.9 mA maximum, with
+  the driver off). The catalogue had copied the MAX485's figure. This changes
+  every 3.3 V RS-485 design's rail current.
+- **STM32F411 supply model, wording only:** 132 Ω at 3.3 V is 25 mA. That
+  covers the 24.4 mA maximum at 100 MHz with *all peripherals enabled*; it is
+  not the figure "with peripherals off" (11.6 mA typical). The value is
+  unchanged.
+
+The other 19 MAX485/MAX3485/STM32F411 figures agree with the documents.
+Evidence now stands at 124 agree, 2 agree in part and 39 not checked. The 39
+are the 4 records of the LED part that does not exist and the Black Pill board
+rows, which need WeAct's documents. All of this is evidence only, never
+verification: it still waits on the user's confirmation under their own name.

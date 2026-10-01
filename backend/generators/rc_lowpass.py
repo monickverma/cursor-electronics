@@ -315,6 +315,13 @@ def _resolve_pins(intent: IntentLike, supply_v: float) -> _Pins:
         if r_pin.kind != "resistor":
             return _Pins(refusal=f"constraints.pinned.R1: {r_pin.part_number} is a {r_pin.kind}; R1 is a resistor")
         r_ohms = r_pin.value
+        # A part pin is held to the same series window as a value pin.
+        if not (MIN_SERIES_OHMS <= r_ohms <= MAX_SERIES_OHMS):
+            return _Pins(refusal=(
+                f"constraints.pinned.R1: {r_pin.part_number} is {r_ohms:g}Ω, outside the "
+                f"{MIN_SERIES_OHMS:g}–{MAX_SERIES_OHMS:g}Ω series window this "
+                f"generator will build with"
+            ))
     elif "R1" in pinned:
         r_ohms = _pinned_value(pinned["R1"], _parse_ohms)
         if r_ohms is None or not math.isfinite(r_ohms) or r_ohms <= 0:
@@ -705,6 +712,9 @@ class RCLowPassGenerator:
                   else f"RC0402FR-07{_yageo_code(selection.ohms)}L")
         c_cat = CAPACITORS[selection.c_part]
         r_reason = (
+            f"{selection.ohms:g}Ω, pinned by the requirement (constraints.pinned.R1) — "
+            f"the part in hand, {selection.r_pin.part_number}, ±{selection.r_pin.tolerance * 100:g}%"
+            if selection.r_pin is not None else
             f"{selection.ohms:g}Ω, pinned by the requirement (constraints.pinned.R1) — "
             f"the part in hand, assumed from the same 1% series"
             if pins.r_ohms is not None else

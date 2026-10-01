@@ -71,9 +71,26 @@ function totalsText(totals: CurrencyTotal[]): string {
   return totals.length ? totals.map(t => money(t.amount, t.currency, 2)).join(' + ') : money(0, 'USD', 2)
 }
 
+// Mouser's own storefronts. The host is matched whole, never by prefix:
+// mouser.evil.example and www.mouser.com.attacker.net are not Mouser.
+const MOUSER_DOMAINS = new Set([
+  'mouser.com', 'mouser.co.uk', 'mouser.de', 'mouser.fr', 'mouser.it', 'mouser.es', 'mouser.ch',
+  'mouser.at', 'mouser.be', 'mouser.nl', 'mouser.dk', 'mouser.se', 'mouser.fi', 'mouser.pl',
+  'mouser.cz', 'mouser.ie', 'mouser.pt', 'mouser.in', 'mouser.jp', 'mouser.cn', 'mouser.kr',
+  'mouser.tw', 'mouser.hk', 'mouser.sg', 'mouser.ca', 'mouser.com.au', 'mouser.co.il', 'mouser.com.br',
+])
+
 // Only a Mouser product page is linked; anything else in the field stays text.
 function mouserLink(url: string | null | undefined): string | null {
-  return url && /^https:\/\/(www\.)?mouser\.[a-z.]+\//i.test(url) ? url : null
+  if (!url) return null
+  let u: URL
+  try {
+    u = new URL(url)
+  } catch {
+    return null
+  }
+  const host = u.hostname.toLowerCase().replace(/^www\./, '')
+  return u.protocol === 'https:' && !u.username && !u.password && MOUSER_DOMAINS.has(host) ? url : null
 }
 
 export default function BOMTable({ rows: initialRows, circuitId, version, token, onPatched }: Props) {
@@ -85,6 +102,8 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
   useEffect(() => {
     if (!circuitId || !token) return
     let cancelled = false
+    // The previous version's view is not this version's: never show it, nor offer its substitutes.
+    setView(null)
     setLoading(true)
     setError(null)
     getBom(circuitId, token)
@@ -289,7 +308,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
                         </div>
                         <button
                           onClick={() => apply(s)}
-                          disabled={applying !== null}
+                          disabled={applying !== null || loading}
                           className="text-xs bg-lavender text-dark px-2 py-1 rounded hover:bg-lavender-dim disabled:opacity-50 whitespace-nowrap"
                         >
                           {applying === key ? 'Applying…' : 'Use this part'}

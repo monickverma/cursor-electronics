@@ -34,6 +34,30 @@ E96 = (
     750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976,
 )
 
+#: E24. Yageo's 1% (F) series come in E96 and E24 values; the 5% (J) series in E24 only.
+E24 = (100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270, 300,
+       330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910)
+
+
+def _mantissa(ohms: float) -> Optional[int]:
+    if ohms <= 0:
+        return None
+    m = ohms
+    while m >= 1000:
+        m /= 10
+    while m < 100:
+        m *= 10
+    rounded = round(m)
+    return rounded if abs(m - rounded) < 1e-6 else None
+
+
+def series_makes(code: str, ohms: float) -> bool:
+    """Whether resistor series `code` is made in this value — E24 for a 5% series, E96 or E24 for 1%."""
+    mantissa = _mantissa(ohms)
+    if mantissa is None:
+        return False
+    return mantissa in E24 if RESISTOR_SERIES[code].tolerance > 0.01 else (mantissa in E96 or mantissa in E24)
+
 #: Yageo RC0402FR — 1% thick film, 62.5 mW, 50 V. The resistor every generator
 #: places; its figures are owned by `data/parts.py` (Stage 6) and read here.
 _DEFAULT = RESISTOR_SERIES[DEFAULT_RESISTOR_SERIES]
@@ -193,6 +217,13 @@ def pinned_part(raw: object, pid: str = "part") -> Optional[PartPin]:
     series = resistor_series(number)
     ohms = resistor_value(number)
     if series is not None and ohms:
+        # Only a part that is made: the canonical spelling of a value the series comes in.
+        if number != _catalogue_part(ohms, series.code) or not series_makes(series.code, ohms):
+            raise Unreadable(
+                f"constraints.pinned.{pid}: {number} is not a part {series.code} is made as — the series "
+                f"comes in {'E24' if series.tolerance > 0.01 else 'E96 and E24'} values, written "
+                f"{_catalogue_part(ohms, series.code)} for {ohms:g} ohm"
+            )
         return PartPin(number, "resistor", ohms, series.tolerance, series.power_w, series.voltage_max,
                        series.package, series.manufacturer)
     cap = catalogue_capacitor(number)
@@ -247,10 +278,13 @@ class PartFigures:
         return _catalogue_part(ohms, series), s.package, s.manufacturer
 
 
-def pinned_number(raw: object, parse: Callable[[str], Optional[float]]) -> Optional[float]:
-    """A pin's value as a number, via the netlist's own parser, or a part pin's value. None if unreadable."""
+def pinned_number(raw: object, parse: Callable[[str], Optional[float]], pid: str = "part") -> Optional[float]:
+    """
+    A pin's value as a number, via the netlist's own parser, or a part pin's
+    value. None if unreadable. `pid` is the slot, named in a refusal.
+    """
     if isinstance(raw, Mapping):
-        part = pinned_part(raw)
+        part = pinned_part(raw, pid)
         return part.value if part is not None else None
     if isinstance(raw, bool):
         return None

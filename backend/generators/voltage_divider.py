@@ -130,7 +130,7 @@ def _read(intent: IntentLike) -> _Spec:
     raw_pins = read_pins(intent, PINNABLE)
     pins: Dict[str, float] = {}
     for part, raw in raw_pins.items():
-        ohms = pinned_number(raw, _parse_ohms)
+        ohms = pinned_number(raw, _parse_ohms, part)
         if ohms is None:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '4.7k', '4k7', 4700)")
@@ -349,7 +349,7 @@ class VoltageDividerGenerator:
             raise ValueError(f"predict() called on a refused intent: {decision.reason}")
         spec = _read(intent)
         sel = select(spec)
-        r1, r2 = self._box(sel, box)
+        r1, r2 = self._box(sel, box, spec)
         zo = lambda a, b: a * b / (a + b)  # noqa: E731
         z_lo, z_hi = worst_corners(zo, [(r1.lo, r1.hi), (r2.lo, r2.hi)])
         power = self._power_bounds(spec, sel, box)
@@ -474,6 +474,10 @@ class VoltageDividerGenerator:
         load = "" if spec.load is None else f" into a {spec.load:g}Ω load"
 
         def reason(part: str, ohms: float, role: str) -> str:
+            if part in spec.figs.parts:
+                pin = spec.figs.parts[part]
+                return (f"{ohms:g}Ω, pinned by the requirement (constraints.pinned.{part}) — "
+                        f"the part in hand, {pin.part_number}, ±{pin.tolerance * 100:g}%. {role}")
             if part in spec.pins:
                 return (f"{ohms:g}Ω, pinned by the requirement (constraints.pinned.{part}) — "
                         f"the part in hand, assumed from the same 1% series. {role}")

@@ -177,7 +177,8 @@ class ClaimScope(BaseModel):
     #: claim a proof re-derives takes the proof's quantity.
     measures: Tuple[str, ...] = ()
     #: Nodes whose state the claim takes as given — the RS-485 fail-safe claim
-    #: is evaluated with DE/RE low. An MCU pin driving one of them cites D2.
+    #: is evaluated with DE/RE low. `NODE` means low, `NODE=high` high. An MCU
+    #: pin driving one of them cites D2.
     assumes: Tuple[str, ...] = ()
     #: The part figures the claim reads, by `data/figures.py` id — ratings,
     #: tolerances, forward voltages, thresholds. D7 is derived from them: cited

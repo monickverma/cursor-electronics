@@ -105,13 +105,11 @@ def _mcu(part: str, src: Source, vmax: str, rout: str, rec: str, run: str, leak:
     ]
 
 
-def _transceiver(part: str, src: Source, supply: str) -> List[Figure]:
+def _transceiver(part: str, src: Source, supply: str, icc: str) -> List[Figure]:
     return [
         Figure(f"{part}/supply_voltage_min", Kind.GUARANTEED, supply, src),
         Figure(f"{part}/supply_voltage_max", Kind.GUARANTEED, supply, src),
-        Figure(f"{part}/current_draw_ma", Kind.TYPICAL,
-               "supply current with the driver disabled — 0.3 mA is the datasheet's typical "
-               "no-load figure; the maximum is higher", src),
+        Figure(f"{part}/current_draw_ma", Kind.TYPICAL, icc, src),
         Figure(f"{part}/receiver_threshold_mv", Kind.STANDARD,
                "a receiver must resolve |V_AB| ≥ 200 mV (the part's own guaranteed input threshold "
                "is ±200 mV, matching the standard)", _TIA485),
@@ -169,7 +167,8 @@ _SCALARS: List[Figure] = [
           "at most 65 Ω, derived: V_OH ≥ VDD − 1.3 V at |I_IO| = 20 mA; the minimum and typical are "
           "estimates",
           "20 mA — inside the ±25 mA per-pin absolute maximum, where V_OH is specified",
-          "132 Ω on 3.3 V is 25 mA — the run current at 100 MHz with peripherals off",
+          "132 Ω on 3.3 V is 25 mA — above the 24.4 mA maximum run current at 100 MHz from flash with "
+          "all peripherals enabled (Table 23, V_DD = 3.6 V, 125 °C); 11.6 mA typical with them disabled",
           "input leakage I_lkg of a standard I/O pin: ±1 µA maximum for V_SS ≤ V_IN ≤ V_DD"),
     Figure("67-21URC/S530-A3/TR8/forward_voltage_v", Kind.GUARANTEED,
            "V_F 1.7 V minimum, 2.4 V maximum at I_F = 20 mA; 2.0 V typical", _LED),
@@ -199,8 +198,12 @@ _SCALARS: List[Figure] = [
            "under its ±10 mA per-pin absolute maximum (Table 5); about what open-drain buses (I²C: 3 mA) "
            "are designed to",
            _DHT),
-    *_transceiver("MAX485ECSA", _MAX485, "4.75–5.25 V supply"),
-    *_transceiver("MAX3485ECSA", _MAX3485, "3.0–3.6 V supply"),
+    *_transceiver("MAX485ECSA", _MAX485, "4.75–5.25 V supply",
+                  "no-load supply current with the driver disabled (DE = 0 V): 0.3 mA typical, "
+                  "0.5 mA maximum"),
+    *_transceiver("MAX3485ECSA", _MAX3485, "3.0–3.6 V supply",
+                  "no-load supply current with the driver disabled (DE = 0 V, RE = 0 V): 0.95 mA typical, "
+                  "1.9 mA maximum"),
     *_resistor_series("RC0402FR", "F = ±1%", "62.5 mW (1/16 W)", "50 V"),
     *_resistor_series("RC0402JR", "J = ±5%", "62.5 mW (1/16 W)", "50 V"),
     *_resistor_series("RC0603FR", "F = ±1%", "100 mW (1/10 W)", "75 V"),
@@ -227,6 +230,16 @@ _BOARD_SOURCES = {
 }
 
 
+#: What each `Target.uart_mode` asserts about the board — the pin rules branch on it.
+_UART_MODES = {
+    "software": "UART roles are served by SoftwareSerial: any digital pin can be TX or RX",
+    "matrix": "a hardware UART can be routed to any output-capable GPIO (TX) or input-capable GPIO (RX) "
+              "through the GPIO matrix",
+    "fixed": "a hardware UART is reachable only on the pins listed as its alternate functions, "
+             "and TX and RX must belong to the same peripheral",
+}
+
+
 def _pin_records() -> List[Figure]:
     from data.mcu_targets import TARGETS
 
@@ -250,6 +263,8 @@ def _pin_records() -> List[Figure]:
                               _BOARD_SOURCES.get(target_id)))
         out.append(Figure(f"board:{target_id}/console_uart", Kind.GUARANTEED,
                           f"the USB console occupies {target.console_uart or 'no hardware UART'}",
+                          _BOARD_SOURCES.get(target_id)))
+        out.append(Figure(f"board:{target_id}/uart_mode", Kind.GUARANTEED, _UART_MODES[target.uart_mode],
                           _BOARD_SOURCES.get(target_id)))
     return out
 
@@ -306,12 +321,21 @@ def evidence(path: Optional[str] = None) -> Dict[str, Any]:
 
 VERIFICATIONS_PATH = Path(__file__).parent / "figure_verifications.json"
 
+#: Names that are the documentation's, not a person's. A row signed with one is no
+#: verification: it is never counted, whichever tool wrote it ([2026-10-01] #16).
+PLACEHOLDERS = frozenset({"your name", "<your name>", "name", "<name>", "your-name", "<your-name>"})
+
+
+def names_a_person(by: Any) -> bool:
+    return isinstance(by, str) and bool(by.strip()) and by.strip().lower() not in PLACEHOLDERS
+
 
 @lru_cache(maxsize=8)
 def _load(path: str, mtime: float) -> Tuple[Tuple[str, str, str, str], ...]:
     with open(path, "r", encoding="utf-8") as fh:
         data = json.load(fh)
-    return tuple((v["figure"], v["record_hash"], v["by"], v["at"]) for v in data.get("verifications", []))
+    return tuple((v["figure"], v["record_hash"], v["by"], v["at"]) for v in data.get("verifications", [])
+                 if names_a_person(v.get("by")))
 
 
 def verifications(path: Optional[str] = None) -> Tuple[Tuple[str, str, str, str], ...]:
@@ -327,7 +351,8 @@ def verified(figure_id: str, rows: Optional[Iterable[Tuple[str, str, str, str]]]
     if figure_id not in FIGURES:
         return False
     current = record_hash(figure_id)
-    return any(f == figure_id and h == current for f, h, _, _ in (verifications() if rows is None else rows))
+    return any(f == figure_id and h == current and names_a_person(by)
+               for f, h, by, _ in (verifications() if rows is None else rows))
 
 
 def trusted(figure_id: str, rows: Optional[Iterable[Tuple[str, str, str, str]]] = None,

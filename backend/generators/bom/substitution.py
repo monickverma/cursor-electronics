@@ -35,17 +35,12 @@ from pydantic import BaseModel, ConfigDict
 from core.intent_patch import PatchOp, apply_patch
 from core.ir_schema import CircuitIR, Component, ComponentType
 from data.parts import CAPACITORS, RESISTOR_SERIES, capacitor, resistor_part, resistor_series, resistor_value
-from generators.common import E96
+from generators.common import series_makes as _series_makes
 
 #: The electrical fields of a component; the others (justification, notes,
 #: confidence) are prose about the part and may mention it.
 _ELECTRICAL = ("type", "part_number", "value", "package", "supply_voltage_min", "supply_voltage_max",
                "current_draw_ma")
-
-#: Value series each resistor family is made in. Yageo's 1% (F) series come
-#: in E96 and E24 values; the 5% (J) series in E24 only.
-_E24 = (100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270, 300,
-        330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910)
 
 
 class Substitute(BaseModel):
@@ -73,25 +68,6 @@ class Rejected(BaseModel):
     component_id: str
     part_number: str
     reason: str
-
-
-def _mantissa(ohms: float) -> Optional[int]:
-    if ohms <= 0:
-        return None
-    m = ohms
-    while m >= 1000:
-        m /= 10
-    while m < 100:
-        m *= 10
-    rounded = round(m)
-    return rounded if abs(m - rounded) < 1e-6 else None
-
-
-def _series_makes(code: str, ohms: float) -> bool:
-    mantissa = _mantissa(ohms)
-    if mantissa is None:
-        return False
-    return mantissa in _E24 if RESISTOR_SERIES[code].tolerance > 0.01 else (mantissa in E96 or mantissa in _E24)
 
 
 def candidates(component: Component) -> List[str]:

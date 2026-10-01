@@ -75,9 +75,19 @@ def _fetch(mock, part_numbers):
     ("$0.10", 0.10), ("$1,234.56", 1234.56), ("6,85 €", 6.85), ("0,069 €", 0.069),
     ("1.234,56 €", 1234.56), ("₹8.50", 8.50), ("1'234.50 CHF", 1234.50), ("£0.0412", 0.0412),
     ("1,234,567", 1234567.0), (0.25, 0.25), ("", None), ("Quote", None), (None, None),
+    # [2026-10-01] #2: a symbol's own full stop is not a decimal point, and a
+    # currency with no minor unit groups with a lone separator.
+    ("0,85 kr.", 0.85), ("12,00 kr.", 12.0), ("1.980,00 kr.", 1980.0), ("CHF 12.50", 12.5),
+    ("¥1,980", 1980.0), ("￥1,980", 1980.0), ("₩1,980", 1980.0), ("¥5.6", 5.6),
 ])
 def test_parse_price_reads_every_locale_mouser_answers_in(text, value):
     assert parse_price(text) == value
+
+
+def test_a_zero_decimal_currency_code_reads_a_lone_separator_as_grouping():
+    assert parse_price("1,980", "JPY") == 1980.0 and parse_price("1,980", "USD") == 1.98
+    q = mouser.quote_from("X", [_part("X", breaks=[{"Quantity": 1, "Price": "1,980", "Currency": "JPY"}])], NOW)
+    assert q.breaks[0].unit_price == 1980.0 and q.currency == "JPY"
 
 
 @pytest.mark.parametrize("text, value", [

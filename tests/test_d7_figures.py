@@ -238,7 +238,8 @@ class TestVerifyTool:
         # never hold is an unsigned or unexplained entry — and no test writes it.
         data = json.loads((ROOT / "backend" / "data" / "figure_verifications.json").read_text(encoding="utf-8"))
         for entry in data["verifications"]:
-            assert entry["by"].strip() and entry["figure"] in F.FIGURES and len(entry["record_hash"]) == 64
+            assert F.names_a_person(entry["by"]), f"{entry['figure']}: signed {entry['by']!r}, not by a person"
+            assert entry["figure"] in F.FIGURES and len(entry["record_hash"]) == 64
             assert entry.get("method", "read the document")
 
     def test_a_placeholder_is_not_a_name(self, tmp_path):

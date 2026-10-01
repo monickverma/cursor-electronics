@@ -62,7 +62,7 @@ from core.ir_schema import (
 )
 from data.component_constraints import get_constraints
 from data.figures import of, passive
-from data.parts import RESISTOR_SERIES
+from data.parts import DEFAULT_RESISTOR_SERIES, RESISTOR_SERIES
 from data.parts import resistor_part as catalogue_resistor_part
 from generators.arduino_parts import (
     BOARDS,
@@ -188,7 +188,7 @@ def _read(intent: IntentLike) -> _Spec:
         raise Unreadable(f"preferences.poll_interval_ms={poll!r} must be an integer of at least 100")
     pins: Dict[str, float] = {}
     for part, raw in read_pins(intent, PINNABLE).items():
-        ohms = pinned_number(raw, _parse_ohms)
+        ohms = pinned_number(raw, _parse_ohms, part)
         if ohms is None:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '120', '560')")
@@ -255,6 +255,10 @@ class DeHold:
         self.worst_mv = self.r4_max * (self.leak_ua + 2 * self.input_ua) * 1e-3
         self.drive_ma = spec.supply / self.r4_min * 1000.0
         self.drive_limit_ma = float(mcu_table["gpio_recommended_current_ma"])
+        # While it transmits the pin holds DE/RE at the rail: R4 takes the full supply.
+        self.power_mw = spec.supply ** 2 / self.r4_min * 1000.0
+        self.rating_mw = spec.figs.power_w("R4") * 1000.0
+        self.part = spec.figs.parts["R4"].part_number if "R4" in spec.figs.parts else "an 0402"
 
     def refusal(self) -> Optional[str]:
         if self.pin.reset_pull == "up":
@@ -267,7 +271,15 @@ class DeHold:
         if self.drive_ma > self.drive_limit_ma:
             return (f"R4={self.r4:g}Ω takes {self.drive_ma:.1f} mA from the MCU pin while it transmits, "
                     f"over the {self.drive_limit_ma:g} mA the pin is specified at")
+        if self.power_mw > self.rating_mw:
+            return (f"R4={self.r4:g}Ω dissipates up to {self.power_mw:.0f} mW while DE/RE is driven high to "
+                    f"transmit, above the {self.rating_mw:g} mW rating of {self.part}")
         return None
+
+
+def bias_power_mw(spec: "_Spec", part: str, r: float) -> float:
+    """A bias resistor with the pair driven to the far rail — A low for R2, B high for R3 — takes the full supply."""
+    return spec.supply ** 2 / (r * (1 - spec.figs.tolerance(part))) * 1000.0
 
 
 def de_hold(spec: "_Spec") -> DeHold:
@@ -356,10 +368,25 @@ class RS485NodeGenerator:
                 f"R1={chosen[0]:g}Ω takes up to {term_mw:.0f} mW with the pair driven to "
                 f"{spec.supply:g} V, above the {spec.r1_power_w() * 1000:g} mW rating of {what}"
             )
+        # The same for the bias pair, driven to the opposite rail.
+        for part, r in (("R2", chosen[1]), ("R3", chosen[2])):
+            mw, rating = bias_power_mw(spec, part, r), spec.figs.power_w(part) * 1000.0
+            if mw > rating:
+                what = spec.figs.parts[part].part_number if part in spec.figs.parts else "an 0402"
+                return EnvelopeDecision.refuse(
+                    f"{part}={r:g}Ω takes up to {mw:.0f} mW with the pair driven to {spec.supply:g} V, "
+                    f"above the {rating:g} mW rating of {what}"
+                )
         # The same invariant for R4: its own claim must hold on any design accepted.
         why = de_hold(spec).refusal()
         if why:
             return EnvelopeDecision.refuse(why)
+        rail = self._rail_ma(spec, *chosen)
+        if rail > spec.budget:
+            return EnvelopeDecision.refuse(
+                f"the idle rail draws {rail:.4g} mA, over the {spec.budget:g} mA budget "
+                f"(constraints.supply_current_ma)"
+            )
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power", voltage_range_v=Interval.at(spec.supply, "V")),
             PortContract(name="RS485_A", direction="bidirectional"),
@@ -419,10 +446,19 @@ class RS485NodeGenerator:
         # D7: what each claim reads (data/figures.py), from the parts placed.
         placed = {c.id: c.part_number for c in self.generate(intent).components}
         xcvr, mcu = transceiver(spec.target)[0], spec.target.mcu_part
+        # The far-end terminator: its value, and the default series' tolerance its box is drawn in.
         far = of(xcvr, "requires_termination_ohm") if spec.far_end else ()
+        far_box = of(DEFAULT_RESISTOR_SERIES, "tolerance") if spec.far_end else ()
         bus_tol = passive(placed["R1"], "tolerance") + passive(placed["R2"], "tolerance") + \
-            passive(placed["R3"], "tolerance") + far
-        rail_reads = of(mcu, "supply_model_ohm") + of(xcvr, "current_draw_ma", "supply_voltage_max")
+            passive(placed["R3"], "tolerance") + far + far_box
+        rail_reads = of(mcu, "supply_model_ohm") + of(xcvr, "current_draw_ma", "supply_voltage_max") + far
+        tol = {p: spec.figs.tolerance(p) * 100 for p in ("R2", "R3")}
+        tol["R1"] = spec.r1_tolerance() * 100
+        within = (f"R1 within {tol['R1']:g}%, R2 within {tol['R2']:g}% and R3 within {tol['R3']:g}%"
+                  if len(set(tol.values())) > 1 else f"every resistor within {tol['R1']:g}%")
+        r2, r3 = select(spec)[1:]
+        bias_mw = {p: bias_power_mw(spec, p, r) for p, r in (("R2", r2), ("R3", r3))}
+        bias_ok = all(bias_mw[p] <= spec.figs.power_w(p) * 1000 for p in bias_mw)
         hold, de = de_hold(spec), q["de_idle_mv"]
         hold_reads = (passive(placed["R4"], "tolerance") + of(mcu, "pin_leakage_ua")
                       + of(xcvr, "logic_input_current_ua", "logic_input_vil_v")
@@ -434,7 +470,7 @@ class RS485NodeGenerator:
                    vab.lo >= THRESHOLD_MV, "monotone_corners",
                    scope.model_copy(update={"assumes": ("RS485_DE_RE",),
                                             "figures": bus_tol + of(xcvr, "receiver_threshold_mv")}),
-                   detail=f"V_AB ∈ [{vab.lo:.0f}, {vab.hi:.0f}] mV over every resistor within 1%",
+                   detail=f"V_AB ∈ [{vab.lo:.0f}, {vab.hi:.0f}] mV over {within}",
                    defeaters=("D1", "D7")),
             graded("rs485.driver_load",
                    f"the driver sees no less than the {RATED_LOAD_OHM:g} Ω it is specified into",
@@ -448,7 +484,17 @@ class RS485NodeGenerator:
                    term.hi <= spec.r1_power_w() * 1000, "monotone_corners",
                    scope.model_copy(update={"measures": ("power(R_R1)",),
                                             "figures": passive(placed["R1"], "tolerance", "power_w")}),
-                   detail=f"≤ {term.hi:.0f} mW (an 0402 is rated 62.5 mW)", defeaters=("D1", "D7")),
+                   detail=f"≤ {term.hi:.0f} mW", defeaters=("D1", "D7")),
+            graded("rs485.bias_dissipation",
+                   "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and "
+                   "DE/RE driven high to transmit",
+                   bias_ok and hold.power_mw <= hold.rating_mw, "monotone_corners",
+                   scope.model_copy(update={"figures": passive(placed["R2"], "tolerance", "power_w")
+                                            + passive(placed["R3"], "tolerance", "power_w")
+                                            + passive(placed["R4"], "tolerance", "power_w")}),
+                   detail=f"R2 ≤ {bias_mw['R2']:.1f} of {spec.figs.power_w('R2') * 1000:g} mW, "
+                          f"R3 ≤ {bias_mw['R3']:.1f} of {spec.figs.power_w('R3') * 1000:g} mW, "
+                          f"R4 ≤ {hold.power_mw:.1f} of {hold.rating_mw:g} mW", defeaters=("D1", "D7")),
             graded("rs485.rail_current",
                    f"the idle rail stays within its {spec.budget:g} mA budget",
                    rail.hi <= spec.budget, "closed_form",

@@ -39,6 +39,17 @@ def redact(text: str) -> str:
     return _KEY_IN_TEXT.sub(r"\1REDACTED", text)
 
 
+def scrub(value: Any) -> Any:
+    """`redact` over every string in a nested event — what Sentry is handed ([2026-10-01] #1)."""
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, dict):
+        return {k: scrub(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return type(value)(scrub(v) for v in value)
+    return value
+
+
 class _RedactApiKey(logging.Filter):
     """httpx logs every request's URL at INFO — with the key in it. Not here."""
 
@@ -95,7 +106,7 @@ def quote_from(part_number: str, listings: List[Mapping[str, Any]], fetched_at: 
     chosen = _choose(listings)
     breaks, currency = [], None
     for b in chosen.get("PriceBreaks") or []:
-        price, quantity = parse_price(b.get("Price")), parse_count(b.get("Quantity"))
+        price, quantity = parse_price(b.get("Price"), b.get("Currency")), parse_count(b.get("Quantity"))
         if price is None or not quantity:
             continue
         breaks.append(PriceBreak(quantity=quantity, unit_price=price))

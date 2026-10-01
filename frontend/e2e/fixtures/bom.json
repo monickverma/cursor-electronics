@@ -1,6 +1,6 @@
 {
  "bom": {
-  "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+  "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
   "coverage": {
    "complete": false,
    "priced": 3,
@@ -209,7 +209,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -234,7 +234,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -259,7 +259,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -284,7 +284,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -309,7 +309,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -334,7 +334,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -359,7 +359,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -382,7 +382,7 @@
      "R4: RC0402FR-0710KL → RC0402JR-0710KL",
      "tolerance ±1% → ±5%"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -407,7 +407,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -432,7 +432,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -466,7 +466,7 @@
   "version": 1
  },
  "bom_after": {
-  "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+  "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
   "coverage": {
    "complete": false,
    "priced": 3,
@@ -675,7 +675,7 @@
      "power rating 100 → 62.5 mW",
      "voltage rating 75 → 50 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -700,7 +700,7 @@
      "power rating 100 → 125 mW",
      "voltage rating 75 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -725,7 +725,7 @@
      "power rating 100 → 250 mW",
      "voltage rating 75 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "ops": [
      {
@@ -750,7 +750,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -775,7 +775,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -800,7 +800,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "ops": [
      {
@@ -825,7 +825,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -848,7 +848,7 @@
      "R4: RC0402FR-0710KL → RC0402JR-0710KL",
      "tolerance ±1% → ±5%"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -873,7 +873,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -898,7 +898,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "ops": [
      {
@@ -932,7 +932,7 @@
   "version": 2
  },
  "bom_live": {
-  "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+  "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
   "coverage": {
    "complete": false,
    "priced": 3,
@@ -1175,7 +1175,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "live": null,
     "ops": [
@@ -1201,7 +1201,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "live": null,
     "ops": [
@@ -1227,7 +1227,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R2",
     "live": null,
     "ops": [
@@ -1253,7 +1253,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "live": null,
     "ops": [
@@ -1279,7 +1279,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "live": null,
     "ops": [
@@ -1305,7 +1305,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R3",
     "live": null,
     "ops": [
@@ -1331,7 +1331,7 @@
      "power rating 62.5 → 100 mW",
      "voltage rating 50 → 75 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "live": null,
     "ops": [
@@ -1355,7 +1355,7 @@
      "R4: RC0402FR-0710KL → RC0402JR-0710KL",
      "tolerance ±1% → ±5%"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "live": null,
     "ops": [
@@ -1381,7 +1381,7 @@
      "power rating 62.5 → 125 mW",
      "voltage rating 50 → 150 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "live": null,
     "ops": [
@@ -1407,7 +1407,7 @@
      "power rating 62.5 → 250 mW",
      "voltage rating 50 → 200 V"
     ],
-    "checks": 27,
+    "checks": 28,
     "component_id": "R4",
     "live": null,
     "ops": [
@@ -1600,7 +1600,7 @@
     "value": "100nF"
    }
   ],
-  "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+  "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
   "explanation": "",
   "firmware": null,
   "firmware_build": {
@@ -1610,7 +1610,7 @@
   "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
   "ir": {
    "application_class": "modbus_rtu",
-   "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+   "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
    "components": [
     {
      "confidence": 0.97,
@@ -2056,9 +2056,10 @@
       "covers": [],
       "critical": true,
       "defeaters": [
-       "D1"
+       "D1",
+       "D7"
       ],
-      "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+      "detail": "≤ 210 mW",
       "grade": "G1",
       "id": "rs485.termination_dissipation",
       "kind": "analytic",
@@ -2075,6 +2076,34 @@
         "power(R_R1)"
        ],
        "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and DE/RE driven high to transmit",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7",
+       "D2"
+      ],
+      "detail": "R2 ≤ 46.0 of 62.5 mW, R3 ≤ 46.0 of 62.5 mW, R4 ≤ 2.5 of 62.5 mW",
+      "grade": "G1",
+      "id": "rs485.bias_dissipation",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC0402FR/tolerance",
+        "RC0402FR/power_w"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "mna_ideal+mcu_as_100R",
        "parameters": "tolerance_box"
       },
       "verdict": "holds_defeasible"
@@ -2100,7 +2129,8 @@
        "figures": [
         "ATmega328P-PU/supply_model_ohm",
         "MAX485ECSA/current_draw_ma",
-        "MAX485ECSA/supply_voltage_max"
+        "MAX485ECSA/supply_voltage_max",
+        "MAX485ECSA/requires_termination_ohm"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -2333,7 +2363,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -2361,7 +2392,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -2389,7 +2421,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -2581,7 +2614,7 @@
    ],
    "version": 1
   },
-  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"d28fb5aa-12d1-5459-a274-5e48f5ece4d6\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ffc9ebf7-66fa-53d8-995c-cfdeed9575dd\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"df043478-eb08-588f-8f0a-9892459fc236\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"b2adc651-ef11-589b-acc0-4268d5705f91\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c9809db3-40ab-56a7-b77c-a80dc3a20cb7\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"858608e9-9168-5356-a7e8-f20c85cebd50\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4f7a12e9-8c50-5612-925a-7d2b1d1904d0\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"fdd3aa5d-deec-57fa-a5d4-9dd6cd28ea37\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"2903c818-7f9d-582b-8103-b0c09c1c51b7\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"4f4e5b86-aa5f-5e1f-b9ce-f222161b4ca6\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"25d8fdba-a1f4-5fbf-8c34-017bbfbc409b\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7b6995b9-0040-549a-a48d-eef71051f3dc\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3994da95-7b31-52a5-bf71-c59121e22cb7\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"0043b74c-8bd3-54cf-beb4-de7e11c822e5\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ac567328-546e-5595-b58d-1f6c3af6c19b\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3495a0a2-5027-559a-948e-cbae66e201db\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"a0efc4ad-467a-5bb5-8eaf-a0baf1436e8a\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"02686258-7e30-56c0-a0f4-fd8dbf15fdf1\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ded7408b-98f2-5452-b5d0-eada88d0c805\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6bb3a84e-c8fa-5049-8f3b-d1d2d568d044\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"cc3f0cef-be51-5629-be72-d0b36a2db9f9\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"407d8a44-7988-537a-beb1-da71997b8569\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"72adee85-0777-5174-a74e-a163de6d9678\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"8c0cb585-54dd-51ad-a7be-97dea860db43\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"325ac4c8-a527-5cbc-9e04-8623e7bc9e26\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"bae03ae2-8952-5855-b32e-0a7695f57199\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"49c8d9ff-eb3a-5293-a16f-e84af005a7e7\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ce225cee-7513-547f-9f6f-8d80648ac885\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"8028746a-f95f-5231-93bc-867ba93a7eee\"))\n  (text \"R2: RC0402FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"3777ae3e-62af-5076-b05a-30f834275230\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"b8ed765f-7c4a-5dbf-9a5e-5bca0faa3f7e\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"df2e2256-9630-59a2-99c4-0e7b50c08fda\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"fa4ea27c-ae38-5c89-af94-c76f2b5e7157\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"eeb23cef-5faf-5ff3-912a-d0bc4d9b1a90\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6a247989-2aac-57a2-a853-f10a0bbac595\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"44d3413a-9095-5eb2-84d3-2a22438cfe55\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"9e8d9522-62ab-597d-a275-848d53a2ba3c\"))\n  (text \"R4: RC0402FR-0710KL\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"6cfc889f-6cdb-5ec2-91c2-37c1cf0c8cd0\"))\n  (text \"RS485_DE_RE\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"cd3b5cb5-774f-5a55-a293-d2c560b4df2e\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"001c5e8d-eaba-503a-9f39-16023d0e9781\"))\n  (rectangle (start 20 123) (end 62 143)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"d4b41504-1db7-596e-bcbf-02315a617e29\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 20 121.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"6f4eba79-3b39-502f-b974-aa6570bb3a2b\"))\n  (text \"VCC_5V\" (at 22 127 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f18c49af-c480-5334-85b4-0ebbf16dc75c\"))\n  (text \"GND\" (at 22 130.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"63efeb3d-9373-572b-b816-3feba2438f02\"))\n\n)",
+  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"6e920c74-431b-59e6-a027-02eea584d46d\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v1\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7cec1820-13eb-51e7-b5f4-fb01955ffb52\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"aa4bd1ce-4a8c-53d2-8ce8-d695b90f3b13\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ed92f407-232d-5f02-8d08-87f343314fab\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"235aaefe-1b63-5760-8aca-afec062d0a4c\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c493df71-8888-540b-b298-2f062bc278de\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"cfec6155-fabe-5fdf-bbc4-8c3a574ce117\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2b2e0836-98fb-5e9b-b081-8568342c096d\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"f44ab181-8410-52cd-80c8-61188652e3c7\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"e63e5c51-5296-5fe9-875d-8df130928dd3\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"4e7ccdc0-38c8-5d3b-96a0-a6a1b93fbe01\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e82d0905-03a3-5b1a-83e2-8eada6ec06da\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c857859a-800e-5c53-b643-49def5ed57a4\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"fef43916-909f-56fb-9f34-0d5c7ad6d160\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3ad086b3-492a-56f2-a1aa-c925090683a5\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f145db32-63ca-501a-a236-4bb82d742a12\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"05ce1b69-392c-52a7-8ab7-7abd622080e0\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"67783528-719f-5671-a31e-48065a88f719\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"0376375c-de53-5307-8237-aaa96cc465d0\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"959e245d-a2ec-5d7d-94d6-c42f21db92bd\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"dbf7ffd6-ed8c-553d-8e63-0aae95bb4ade\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1ef3c448-6638-59b1-a529-5660ef4b8b9c\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1394cb3d-3836-5b1e-9446-5c53f6879ab4\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"004201d7-4478-552e-8342-48b986be4ab2\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"e685a659-8594-5ab7-ac28-6f0426509548\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2488f569-13fe-566c-9cc6-ff1c57c6f693\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"de6ca5eb-1c1f-55c1-9af2-608794923a52\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c6cd6f7b-98d0-5d15-9942-31392f0da156\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"8c7a9804-01ad-5f6f-90a7-e71ba1366276\"))\n  (text \"R2: RC0402FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f4b484a8-6f67-5a42-8ecc-798a1c07d983\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"8c057fe0-ca92-508f-92ba-d1f1503b0cbd\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9b0e90f1-3061-5447-8e3c-f1ef79b044ca\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"d11a6362-6085-516c-8aa9-98fedbae11f1\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f51a5c6c-5c65-52af-9985-99387f142957\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9e639fd2-04d4-599c-a81f-da40492c2f21\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"952bff1b-07d7-5d4d-a24d-205324ef32e8\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"697f0bad-af02-5371-a8a2-ff4f45d5a4ab\"))\n  (text \"R4: RC0402FR-0710KL\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"62e9c536-eaa9-54b2-a333-8c1779a13003\"))\n  (text \"RS485_DE_RE\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"d54cd836-9b95-54d6-91eb-85ed8611dbe3\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9a8c15e7-72d6-5782-8436-75408224fb7c\"))\n  (rectangle (start 20 123) (end 62 143)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"49258756-55bf-51ee-bcdb-2d3c4a1935d8\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 20 121.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"5788d2fb-1dec-5d90-ae1e-6d82a7df5d89\"))\n  (text \"VCC_5V\" (at 22 127 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"7591364d-c7f6-5396-87d5-6fc2d8a554db\"))\n  (text \"GND\" (at 22 130.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f437d49b-e904-5e63-b71e-ed9693cfc542\"))\n\n)",
   "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
   "target_mcu": "arduino_uno",
   "validation": {
@@ -2663,9 +2696,10 @@
      "covers": [],
      "critical": true,
      "defeaters": [
-      "D1"
+      "D1",
+      "D7"
      ],
-     "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+     "detail": "≤ 210 mW",
      "grade": "G1",
      "id": "rs485.termination_dissipation",
      "kind": "analytic",
@@ -2682,6 +2716,34 @@
        "power(R_R1)"
       ],
       "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and DE/RE driven high to transmit",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7",
+      "D2"
+     ],
+     "detail": "R2 ≤ 46.0 of 62.5 mW, R3 ≤ 46.0 of 62.5 mW, R4 ≤ 2.5 of 62.5 mW",
+     "grade": "G1",
+     "id": "rs485.bias_dissipation",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC0402FR/tolerance",
+       "RC0402FR/power_w"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "mna_ideal+mcu_as_100R",
       "parameters": "tolerance_box"
      },
      "verdict": "holds_defeasible"
@@ -2707,7 +2769,8 @@
       "figures": [
        "ATmega328P-PU/supply_model_ohm",
        "MAX485ECSA/current_draw_ma",
-       "MAX485ECSA/supply_voltage_max"
+       "MAX485ECSA/supply_voltage_max",
+       "MAX485ECSA/requires_termination_ohm"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -2940,7 +3003,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -2968,7 +3032,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -2996,7 +3061,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -3335,7 +3401,7 @@
   "changes": [
    "constraints.pinned.R2: (none) → RC0603FR-07549RL"
   ],
-  "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+  "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
   "citations": [],
   "explanation": "",
   "firmware": null,
@@ -3348,7 +3414,7 @@
   "intent": "Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)",
   "ir": {
    "application_class": "modbus_rtu",
-   "circuit_id": "cd59be57-f781-5062-b550-1ef8eb38c771",
+   "circuit_id": "bc750857-1629-595a-a505-bc3b6fc3b6b7",
    "components": [
     {
      "confidence": 0.97,
@@ -3796,9 +3862,10 @@
       "covers": [],
       "critical": true,
       "defeaters": [
-       "D1"
+       "D1",
+       "D7"
       ],
-      "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+      "detail": "≤ 210 mW",
       "grade": "G1",
       "id": "rs485.termination_dissipation",
       "kind": "analytic",
@@ -3815,6 +3882,36 @@
         "power(R_R1)"
        ],
        "model": "mna_ideal",
+       "parameters": "tolerance_box"
+      },
+      "verdict": "holds_defeasible"
+     },
+     {
+      "claim": "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and DE/RE driven high to transmit",
+      "covers": [],
+      "critical": true,
+      "defeaters": [
+       "D1",
+       "D7",
+       "D2"
+      ],
+      "detail": "R2 ≤ 46.0 of 100 mW, R3 ≤ 46.0 of 62.5 mW, R4 ≤ 2.5 of 62.5 mW",
+      "grade": "G1",
+      "id": "rs485.bias_dissipation",
+      "kind": "analytic",
+      "method": "monotone_corners",
+      "scope": {
+       "assumes": [],
+       "figures": [
+        "RC0603FR/tolerance",
+        "RC0603FR/power_w",
+        "RC0402FR/tolerance",
+        "RC0402FR/power_w"
+       ],
+       "horizon": "steady_state",
+       "inputs": "single_stimulus",
+       "measures": [],
+       "model": "mna_ideal+mcu_as_100R",
        "parameters": "tolerance_box"
       },
       "verdict": "holds_defeasible"
@@ -3840,7 +3937,8 @@
        "figures": [
         "ATmega328P-PU/supply_model_ohm",
         "MAX485ECSA/current_draw_ma",
-        "MAX485ECSA/supply_voltage_max"
+        "MAX485ECSA/supply_voltage_max",
+        "MAX485ECSA/requires_termination_ohm"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -4076,7 +4174,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -4104,7 +4203,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -4132,7 +4232,8 @@
         "board:arduino_uno/D11",
         "board:arduino_uno/D10",
         "board:arduino_uno/D2",
-        "board:arduino_uno/console_uart"
+        "board:arduino_uno/console_uart",
+        "board:arduino_uno/uart_mode"
        ],
        "horizon": "steady_state",
        "inputs": "single_stimulus",
@@ -4326,7 +4427,7 @@
   },
   "note_to_user": "",
   "predict_delta": [],
-  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"d28fb5aa-12d1-5459-a274-5e48f5ece4d6\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v2\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ffc9ebf7-66fa-53d8-995c-cfdeed9575dd\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"df043478-eb08-588f-8f0a-9892459fc236\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"b2adc651-ef11-589b-acc0-4268d5705f91\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c9809db3-40ab-56a7-b77c-a80dc3a20cb7\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"858608e9-9168-5356-a7e8-f20c85cebd50\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"4f7a12e9-8c50-5612-925a-7d2b1d1904d0\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"fdd3aa5d-deec-57fa-a5d4-9dd6cd28ea37\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"2903c818-7f9d-582b-8103-b0c09c1c51b7\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"4f4e5b86-aa5f-5e1f-b9ce-f222161b4ca6\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"25d8fdba-a1f4-5fbf-8c34-017bbfbc409b\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7b6995b9-0040-549a-a48d-eef71051f3dc\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3994da95-7b31-52a5-bf71-c59121e22cb7\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"0043b74c-8bd3-54cf-beb4-de7e11c822e5\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ac567328-546e-5595-b58d-1f6c3af6c19b\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3495a0a2-5027-559a-948e-cbae66e201db\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"a0efc4ad-467a-5bb5-8eaf-a0baf1436e8a\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"02686258-7e30-56c0-a0f4-fd8dbf15fdf1\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ded7408b-98f2-5452-b5d0-eada88d0c805\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6bb3a84e-c8fa-5049-8f3b-d1d2d568d044\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"cc3f0cef-be51-5629-be72-d0b36a2db9f9\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"407d8a44-7988-537a-beb1-da71997b8569\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"72adee85-0777-5174-a74e-a163de6d9678\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"8c0cb585-54dd-51ad-a7be-97dea860db43\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"325ac4c8-a527-5cbc-9e04-8623e7bc9e26\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"bae03ae2-8952-5855-b32e-0a7695f57199\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"49c8d9ff-eb3a-5293-a16f-e84af005a7e7\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"ce225cee-7513-547f-9f6f-8d80648ac885\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"8028746a-f95f-5231-93bc-867ba93a7eee\"))\n  (text \"R2: RC0603FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"3777ae3e-62af-5076-b05a-30f834275230\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"b8ed765f-7c4a-5dbf-9a5e-5bca0faa3f7e\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"df2e2256-9630-59a2-99c4-0e7b50c08fda\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"fa4ea27c-ae38-5c89-af94-c76f2b5e7157\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"eeb23cef-5faf-5ff3-912a-d0bc4d9b1a90\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"6a247989-2aac-57a2-a853-f10a0bbac595\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"44d3413a-9095-5eb2-84d3-2a22438cfe55\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"9e8d9522-62ab-597d-a275-848d53a2ba3c\"))\n  (text \"R4: RC0402FR-0710KL\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"6cfc889f-6cdb-5ec2-91c2-37c1cf0c8cd0\"))\n  (text \"RS485_DE_RE\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"cd3b5cb5-774f-5a55-a293-d2c560b4df2e\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"001c5e8d-eaba-503a-9f39-16023d0e9781\"))\n  (rectangle (start 20 123) (end 62 143)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"d4b41504-1db7-596e-bcbf-02315a617e29\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 20 121.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"6f4eba79-3b39-502f-b974-aa6570bb3a2b\"))\n  (text \"VCC_5V\" (at 22 127 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f18c49af-c480-5334-85b4-0ebbf16dc75c\"))\n  (text \"GND\" (at 22 130.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"63efeb3d-9373-572b-b816-3feba2438f02\"))\n\n)",
+  "schematic": "(kicad_sch (version 20230121) (generator circuit_os)\n  (uuid \"6e920c74-431b-59e6-a027-02eea584d46d\")\n  (paper \"A4\")\n  (title_block (title \"Modbus RTU master on RS-485 at 9600 baud, 1 slave(s)\") (date \"\") (rev \"v2\"))\n\n  (lib_symbols)\n\n  (label \"VCC_5V\" (at 20 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"7cec1820-13eb-51e7-b5f4-fb01955ffb52\"))\n  (label \"GND\" (at 82 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"aa4bd1ce-4a8c-53d2-8ce8-d695b90f3b13\"))\n  (label \"UART_TX\" (at 144 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"ed92f407-232d-5f02-8d08-87f343314fab\"))\n  (label \"UART_RX\" (at 206 25 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"235aaefe-1b63-5760-8aca-afec062d0a4c\"))\n  (label \"RS485_DE_RE\" (at 20 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"c493df71-8888-540b-b298-2f062bc278de\"))\n  (label \"RS485_A\" (at 82 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"cfec6155-fabe-5fdf-bbc4-8c3a574ce117\"))\n  (label \"RS485_B\" (at 144 33 0) (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2b2e0836-98fb-5e9b-b081-8568342c096d\"))\n\n  (global_label \"VCC\" (shape power_in) (at 20 21 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"f44ab181-8410-52cd-80c8-61188652e3c7\"))\n  (global_label \"GND\" (shape power_in) (at 82 29 0)\n    (fields_autoplaced yes)\n    (effects (font (size 1.27 1.27)) (justify left))\n    (uuid \"e63e5c51-5296-5fe9-875d-8df130928dd3\"))\n\n  (rectangle (start 20 55) (end 62 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"4e7ccdc0-38c8-5d3b-96a0-a6a1b93fbe01\"))\n  (text \"U1: ATmega328P-PU\" (at 20 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"e82d0905-03a3-5b1a-83e2-8eada6ec06da\"))\n  (text \"VCC_5V\" (at 22 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c857859a-800e-5c53-b643-49def5ed57a4\"))\n  (text \"GND\" (at 22 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"fef43916-909f-56fb-9f34-0d5c7ad6d160\"))\n  (text \"UART_TX\" (at 22 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"3ad086b3-492a-56f2-a1aa-c925090683a5\"))\n  (text \"UART_RX\" (at 22 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f145db32-63ca-501a-a236-4bb82d742a12\"))\n  (text \"RS485_DE_RE\" (at 22 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"05ce1b69-392c-52a7-8ab7-7abd622080e0\"))\n  (rectangle (start 105 55) (end 147 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"67783528-719f-5671-a31e-48065a88f719\"))\n  (text \"U2: MAX485ECSA\" (at 105 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"0376375c-de53-5307-8237-aaa96cc465d0\"))\n  (text \"VCC_5V\" (at 107 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"959e245d-a2ec-5d7d-94d6-c42f21db92bd\"))\n  (text \"GND\" (at 107 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"dbf7ffd6-ed8c-553d-8e63-0aae95bb4ade\"))\n  (text \"UART_TX\" (at 107 65.4 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1ef3c448-6638-59b1-a529-5660ef4b8b9c\"))\n  (text \"UART_RX\" (at 107 68.6 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"1394cb3d-3836-5b1e-9446-5c53f6879ab4\"))\n  (text \"RS485_DE_RE\" (at 107 71.8 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"004201d7-4478-552e-8342-48b986be4ab2\"))\n  (rectangle (start 190 55) (end 232 75)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"e685a659-8594-5ab7-ac28-6f0426509548\"))\n  (text \"R1: RC1206FR-07120RL\" (at 190 53.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"2488f569-13fe-566c-9cc6-ff1c57c6f693\"))\n  (text \"RS485_A\" (at 192 59 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"de6ca5eb-1c1f-55c1-9af2-608794923a52\"))\n  (text \"RS485_B\" (at 192 62.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"c6cd6f7b-98d0-5d15-9942-31392f0da156\"))\n  (rectangle (start 20 89) (end 62 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"8c7a9804-01ad-5f6f-90a7-e71ba1366276\"))\n  (text \"R2: RC0603FR-07549RL\" (at 20 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f4b484a8-6f67-5a42-8ecc-798a1c07d983\"))\n  (text \"VCC_5V\" (at 22 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"8c057fe0-ca92-508f-92ba-d1f1503b0cbd\"))\n  (text \"RS485_A\" (at 22 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9b0e90f1-3061-5447-8e3c-f1ef79b044ca\"))\n  (rectangle (start 105 89) (end 147 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"d11a6362-6085-516c-8aa9-98fedbae11f1\"))\n  (text \"R3: RC0402FR-07549RL\" (at 105 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"f51a5c6c-5c65-52af-9985-99387f142957\"))\n  (text \"RS485_B\" (at 107 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9e639fd2-04d4-599c-a81f-da40492c2f21\"))\n  (text \"GND\" (at 107 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"952bff1b-07d7-5d4d-a24d-205324ef32e8\"))\n  (rectangle (start 190 89) (end 232 109)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"697f0bad-af02-5371-a8a2-ff4f45d5a4ab\"))\n  (text \"R4: RC0402FR-0710KL\" (at 190 87.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"62e9c536-eaa9-54b2-a333-8c1779a13003\"))\n  (text \"RS485_DE_RE\" (at 192 93 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"d54cd836-9b95-54d6-91eb-85ed8611dbe3\"))\n  (text \"GND\" (at 192 96.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"9a8c15e7-72d6-5782-8436-75408224fb7c\"))\n  (rectangle (start 20 123) (end 62 143)\n    (stroke (width 0.254) (type default))\n    (fill (type none))\n    (uuid \"49258756-55bf-51ee-bcdb-2d3c4a1935d8\"))\n  (text \"C1: CL05B104KO5NNNC\" (at 20 121.5 0)\n    (effects (font (size 1.27 1.27)) (justify left bottom))\n    (uuid \"5788d2fb-1dec-5d90-ae1e-6d82a7df5d89\"))\n  (text \"VCC_5V\" (at 22 127 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"7591364d-c7f6-5396-87d5-6fc2d8a554db\"))\n  (text \"GND\" (at 22 130.2 0)\n    (effects (font (size 1.0 1.0)) (justify left bottom))\n    (uuid \"f437d49b-e904-5e63-b71e-ed9693cfc542\"))\n\n)",
   "simulation_job_id": "00000000-0000-4000-8000-00000000f1a7",
   "target_mcu": "arduino_uno",
   "validation": {
@@ -4410,9 +4511,10 @@
      "covers": [],
      "critical": true,
      "defeaters": [
-      "D1"
+      "D1",
+      "D7"
      ],
-     "detail": "≤ 210 mW (an 0402 is rated 62.5 mW)",
+     "detail": "≤ 210 mW",
      "grade": "G1",
      "id": "rs485.termination_dissipation",
      "kind": "analytic",
@@ -4429,6 +4531,36 @@
        "power(R_R1)"
       ],
       "model": "mna_ideal",
+      "parameters": "tolerance_box"
+     },
+     "verdict": "holds_defeasible"
+    },
+    {
+     "claim": "R2, R3 and R4 stay within their ratings with the pair driven to the opposite rail and DE/RE driven high to transmit",
+     "covers": [],
+     "critical": true,
+     "defeaters": [
+      "D1",
+      "D7",
+      "D2"
+     ],
+     "detail": "R2 ≤ 46.0 of 100 mW, R3 ≤ 46.0 of 62.5 mW, R4 ≤ 2.5 of 62.5 mW",
+     "grade": "G1",
+     "id": "rs485.bias_dissipation",
+     "kind": "analytic",
+     "method": "monotone_corners",
+     "scope": {
+      "assumes": [],
+      "figures": [
+       "RC0603FR/tolerance",
+       "RC0603FR/power_w",
+       "RC0402FR/tolerance",
+       "RC0402FR/power_w"
+      ],
+      "horizon": "steady_state",
+      "inputs": "single_stimulus",
+      "measures": [],
+      "model": "mna_ideal+mcu_as_100R",
       "parameters": "tolerance_box"
      },
      "verdict": "holds_defeasible"
@@ -4454,7 +4586,8 @@
       "figures": [
        "ATmega328P-PU/supply_model_ohm",
        "MAX485ECSA/current_draw_ma",
-       "MAX485ECSA/supply_voltage_max"
+       "MAX485ECSA/supply_voltage_max",
+       "MAX485ECSA/requires_termination_ohm"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -4690,7 +4823,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -4718,7 +4852,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -4746,7 +4881,8 @@
        "board:arduino_uno/D11",
        "board:arduino_uno/D10",
        "board:arduino_uno/D2",
-       "board:arduino_uno/console_uart"
+       "board:arduino_uno/console_uart",
+       "board:arduino_uno/uart_mode"
       ],
       "horizon": "steady_state",
       "inputs": "single_stimulus",
@@ -4938,7 +5074,7 @@
    "power rating 62.5 → 100 mW",
    "voltage rating 50 → 75 V"
   ],
-  "checks": 27,
+  "checks": 28,
   "component_id": "R2",
   "ops": [
    {
