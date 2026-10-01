@@ -2307,3 +2307,105 @@ Also: the "20 m" cable limit was described as Aosong's specification — the
 manual says the bus reaches *more than* 20 m; the 10 kΩ pull-up was called "the
 datasheet's" — the manual's typical is 5.1 kΩ. The limits stay (the project's
 own, conservative); the words change.
+
+---
+
+## [2026-10-01] The pre-merge review of PR #2 — 25 findings, fixed after the merge
+
+**Decision:** On "look over and merge", four independent reviewers read the four
+commits PR #2 had added since its last review (`94b61c1`, `f817d2c`, `7c1b947`,
+`14d569e`), each told to report only defects it could reproduce. The PR was
+merged (`b85c14b`) before they reported — not by this session — so every
+finding is fixed here, on `phase2-review-fixes`, each with a test that failed
+before its fix. Written before the code.
+
+**The one rated high: a placeholder signature closed D7.** The writer
+(`verify_figures.py`) refuses "Your Name"; the reader (`data/figures.py`) did
+not. The working tree's 80 rows signed "Your Name" made 39 figures trusted and
+dropped D7 from real claims with no named person behind them. The reader now
+ignores a blank or placeholder signature, so those rows count for nothing until
+the user re-confirms under their own name. The rows themselves are the user's
+and are left as they are.
+
+**Fail-open paths closed (a doubt dropped that should have stayed):**
+- `_with_bench` released D1 from a claim when *any* proof re-deriving it was
+  measured; it now needs *all* of them, as `_supersede` already did.
+- A bench record reached every design with the same netlist, including one
+  whose requirements differ in what the netlist does not carry
+  (`far_end_terminated`); it now must match the requirements too.
+- The pin rules read the board's `uart_mode`, which had no figure record:
+  verifying the pin rows would have dropped D7 on a fact nobody recorded. It is
+  a figure now (`board:<id>/uart_mode`).
+- `held_to_rail` treated a pull-*up* as holding an assumed-*low* node. Only a
+  pull to ground counts as holding an assumed state (every assumed state in the
+  library is the low, driver-off one); a pull-up names `mcu_pin_state`.
+- Two RS-485 figures were read and not declared: the far-end terminator's
+  value in the rail current, and its tolerance in the bias bands.
+- A bench record signed with the template's "your name" is refused.
+
+**An accepted design carrying a failing claim, or a part past its rating:**
+- RS-485: R2, R3 and R4 power ratings were never checked (a pinned R4 = 270 Ω
+  takes 93 mW in a 62.5 mW 0402); the envelope now refuses them as it does R1.
+- RC low-pass: a part pin bypassed the 1–100 kΩ series window a value pin is
+  held to.
+- The DHT22, LED and RS-485 envelopes accepted a rail budget their own rail
+  claim then failed (pre-existing).
+
+**Leaks and wrong numbers:**
+- With `SENTRY_DSN` set, Sentry's httpx integration recorded the Mouser key in
+  span data and breadcrumbs (`http.query`). Events are scrubbed before sending.
+- `parse_price` read "0,85 kr." as 85 and "¥1,980" as 1.98. The number is now
+  taken from its digits alone, and a zero-decimal currency reads a lone
+  separator as grouping.
+- The BOM tab kept the previous version's rows, totals and substitutes after a
+  patch whose refetch failed; the Mouser link accepted any host starting
+  "mouser.".
+
+**Robustness and wording:** a singular network raised sympy's `DMError` past
+handlers that expect `ValueError`; a malformed bench file made every
+`realize()` raise; a part number with two unit letters raised instead of being
+refused; a non-canonical or unmade part number was accepted; a refused part
+pin was reported under `constraints.pinned.part`; the divider's `predict()`
+boxed pinned parts at 1 %; claim texts said "1 %" for a 5 % part.
+
+**Done, 2026-10-02.** The four fix agents' work was lost before it was merged
+(no worktree or branch survived), so the fixes were redone in this session,
+each with the reviewer's scenario as a test (`tests/test_review_2026_10_01.py`,
+`tests/test_sentry_key.py`, new cases in `tests/test_pricing.py` and
+`frontend/e2e/bom.spec.ts`). Where the code differs from the plan above:
+
+- Route 3 compares the level a resistor holds the node at with the level the
+  claim assumes. An assumption is `NODE` (low) or `NODE=high`; `held_to()`
+  returns each node's pulled levels. A pull-up under an assumed-low node names
+  `mcu_pin_state`.
+- Sentry: the httpx integration is disabled *and* every event, transaction and
+  breadcrumb is scrubbed (`main.sentry_options`, `pricing.mouser.scrub`). The
+  test runs Sentry as the app configures it, in a child process, and fails
+  without the change.
+- A bench file that does not validate is listed by `invalid_records()`, and
+  every family it might belong to gets no bench evidence until it is fixed.
+- `series_makes` (E24 for a 5 % series, E96 or E24 for 1 %) moved from
+  `bom/substitution.py` to `generators/common.py`, which `pinned_part` now
+  uses too.
+- RS-485 gained a claim, `rs485.bias_dissipation` (R2, R3 and R4 against their
+  ratings), so the Stage 6 gate rejects lower-rated substitutes for them.
+
+**The three blocked datasheets, read 2026-10-02.** The user asked for the PC
+to be driven to get them. Claude in Chrome fetched each PDF in a page on the
+maker's own site (the MAX481–MAX1487 Rev 10 and MAX3483–MAX3491 Rev 2 from
+analog.com, DS10314 Rev 8 from st.com) and saved it to the user's Downloads
+folder. They are kept in the session scratchpad and are not committed. Two
+records were corrected:
+- **MAX3485 supply current: 0.3 mA → 0.95 mA typical** (1.9 mA maximum, with
+  the driver off). The catalogue had copied the MAX485's figure. This changes
+  every 3.3 V RS-485 design's rail current.
+- **STM32F411 supply model, wording only:** 132 Ω at 3.3 V is 25 mA. That
+  covers the 24.4 mA maximum at 100 MHz with *all peripherals enabled*; it is
+  not the figure "with peripherals off" (11.6 mA typical). The value is
+  unchanged.
+
+The other 19 MAX485/MAX3485/STM32F411 figures agree with the documents.
+Evidence now stands at 124 agree, 2 agree in part and 39 not checked. The 39
+are the 4 records of the LED part that does not exist and the Black Pill board
+rows, which need WeAct's documents. All of this is evidence only, never
+verification: it still waits on the user's confirmation under their own name.

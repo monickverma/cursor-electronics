@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-09-30T22:35:41.172891Z",
-  "generated_from_commit": "7c1b947",
+  "generated_at": "2026-10-01T22:25:06.499584Z",
+  "generated_from_commit": "5d750f8",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -475,10 +475,10 @@
     }
   },
   "test_summary": {
-    "passed": 2216,
+    "passed": 2261,
     "failed": 0,
-    "skipped": 30,
-    "total": 2216
+    "skipped": 32,
+    "total": 2261
   },
   "phase1_criteria": [
     {
@@ -562,7 +562,9 @@
       "D7": [
         "dht22_node",
         "led_indicator",
-        "rs485_node"
+        "rc_lowpass",
+        "rs485_node",
+        "voltage_divider"
       ]
     },
     "not_assessed": {},
@@ -571,7 +573,8 @@
         "grade_floor": "G1",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1"
+          "D1",
+          "D7"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -591,7 +594,8 @@
         "grade_floor": "G2",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1"
+          "D1",
+          "D7"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -670,6 +674,7 @@
           "rs485.failsafe_bias",
           "rs485.driver_load",
           "rs485.termination_dissipation",
+          "rs485.bias_dissipation",
           "rs485.rail_current",
           "rs485.driver_default_off",
           "rule.no_floating_nodes",
@@ -694,13 +699,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "7c1b947 feat: RS-485 DE/RE pull-down, live Mouser pricing, the agent's datasheet pass, bench prep",
-    "f817d2c feat(phase2): Stage 6 — BOM and substitution; D7 provenance; D1 bench evidence",
-    "94b61c1 feat(defeaters): D2 derived per claim — D1, D2, D7 decided with TypeSafe",
-    "e803a99 fix(ci): firmware route annotations resolve under the pinned FastAPI 0.115",
-    "3cdc9e9 brain: /update-memory — Stages 3–5 into architecture and timeline; 2001 passing at 1126d15"
+    "5d750f8 test: bring three suites up to date with the review fixes",
+    "ef8f808 fix: the 25 findings of PR #2's pre-merge review; three datasheets read",
+    "0986ee9 docs+test: record the PR #2 pre-merge review; the price cache on a real PostgreSQL",
+    "b85c14b Merge pull request #2: Phase 2 Stages 0–6",
+    "14d569e fix: what an adversarial recheck of the datasheet pass refuted"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                           |    9 +-\n .claude/rules/code-style.md                 |    3 +\n .claude/rules/frontend/react-style.md       |    2 +-\n .claude/rules/security.md           ",
+  "last_diff_stat": "backend/generators/rs485_node.py      |  3 ++-\n frontend/e2e/fixtures/bom.json        | 50 +++++++++++++++++++++++------------\n frontend/e2e/fixtures/firmware.json   | 16 +++++------\n frontend/e2e/fix",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

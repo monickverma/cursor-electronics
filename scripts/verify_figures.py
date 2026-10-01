@@ -48,7 +48,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
 from data.figures import (  # noqa: E402
-    FIGURES, TRUSTABLE, VERIFICATIONS_PATH, evidence, record_hash, trusted, value, verified,
+    FIGURES, PLACEHOLDERS, TRUSTABLE, VERIFICATIONS_PATH, evidence, record_hash, trusted, value, verified,
 )
 
 #: What a verification says about how it was made.
@@ -58,10 +58,6 @@ METHOD_AGENT_EVIDENCE = "confirmed the agent's cited evidence (backend/data/figu
 
 def _store() -> Path:
     return Path(os.environ.get("CIRCUITOS_FIGURE_VERIFICATIONS") or VERIFICATIONS_PATH)
-
-
-#: Names that are the documentation's, not a person's.
-PLACEHOLDERS = {"your name", "<your name>", "name", "<name>", "your-name", "<your-name>"}
 
 
 def _person(by: str, what: str) -> str:

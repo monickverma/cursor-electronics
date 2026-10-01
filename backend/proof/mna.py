@@ -39,11 +39,18 @@ def _domain_solve(G: sympy.Matrix, rhs: sympy.Matrix) -> sympy.Matrix:
     functions in the system's symbols — two orders of magnitude faster when
     the entries carry symbols. Used by `proof/dependence.py`; the prover keeps
     `LUsolve`, so no obligation's expression, and no certificate, moves.
+    A singular system raises `NonInvertibleMatrixError` (a `ValueError`), as
+    `LUsolve` does — not sympy's `DMError`, which callers would not catch.
     """
+    from sympy.matrices.exceptions import NonInvertibleMatrixError
     from sympy.polys.matrices import DomainMatrix
+    from sympy.polys.matrices.exceptions import DMError
 
-    dG, drhs = DomainMatrix.from_Matrix(G).unify(DomainMatrix.from_Matrix(rhs))
-    return dG.to_field().lu_solve(drhs.to_field()).to_Matrix()
+    try:
+        dG, drhs = DomainMatrix.from_Matrix(G).unify(DomainMatrix.from_Matrix(rhs))
+        return dG.to_field().lu_solve(drhs.to_field()).to_Matrix()
+    except DMError as exc:
+        raise NonInvertibleMatrixError(f"{type(exc).__name__}: {exc}") from exc
 
 
 class System:

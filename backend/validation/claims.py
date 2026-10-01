@@ -331,24 +331,39 @@ def _pin_modelled(netlist: str) -> frozenset:
 _NOT_DESIGN_PARTS = ("R_TIE_", "R_PIN_", "R_MCU_", "R_LOAD_")
 
 
-def held_to_rail(circuit: CircuitIR, netlist: str) -> frozenset:
+def held_to(circuit: CircuitIR, netlist: str) -> Dict[str, frozenset]:
     """
-    Nodes (lower case) a resistor of the design ties to ground or a supply
-    rail — a pull-up or pull-down. Such a node keeps its state while the MCU
-    pin on it is high-impedance, so the pin reaches it only through its load.
+    Node (lower case) → the levels a resistor of the design pulls it to:
+    "low" for ground, "high" for a supply rail. A pull-down or pull-up keeps
+    its node at that level while the MCU pin on it is high-impedance.
     """
-    kinds = (SignalType.POWER.value, SignalType.GROUND.value)
-    rails = {"0", "gnd"} | {n.id.lower() for n in circuit.nodes if getattr(n.type, "value", n.type) in kinds}
-    held = set()
+    def kind(n: Any) -> str:
+        return getattr(n.type, "value", n.type)
+    level = {"0": "low", "gnd": "low"}
+    level.update({n.id.lower(): "low" for n in circuit.nodes if kind(n) == SignalType.GROUND.value})
+    level.update({n.id.lower(): "high" for n in circuit.nodes if kind(n) == SignalType.POWER.value})
+    held: Dict[str, set] = {}
     for line in netlist.splitlines():
         fields = line.split()
         name = fields[0].upper() if fields else ""
         if len(fields) < 4 or not name.startswith("R_") or name.startswith(_NOT_DESIGN_PARTS):
             continue
         a, b = fields[1].lower(), fields[2].lower()
-        if (a in rails) != (b in rails):
-            held.add(b if a in rails else a)
-    return frozenset(held)
+        if (a in level) != (b in level):
+            node, rail = (b, a) if a in level else (a, b)
+            held.setdefault(node, set()).add(level[rail])
+    return {n: frozenset(v) for n, v in held.items()}
+
+
+def held_to_rail(circuit: CircuitIR, netlist: str) -> frozenset:
+    """Nodes (lower case) a resistor of the design ties to ground or a supply rail."""
+    return frozenset(held_to(circuit, netlist))
+
+
+def _assumed_level(assumption: str) -> Tuple[str, str]:
+    """`NODE` or `NODE=low` → (node, "low"); `NODE=high` → (node, "high")."""
+    node, _, state = assumption.partition("=")
+    return node.strip().lower(), (state.strip().lower() or "low")
 
 
 Measure = Tuple[str, Tuple[str, ...]]      # (quantity, test-bench lines)
@@ -363,10 +378,12 @@ def derive_mcu_models(
 
     1. the quantity depends on an MCU model element (exact, symbolic);
     2. a measured node carries an MCU signal pin the netlist does not model;
-    3. an assumed node is one an MCU pin is wired to: `mcu_pin_state` if
-       nothing else holds it, `mcu_pin_load` if a resistor of the design holds
-       it to a rail — the pin then reaches it only through its leakage
-       ([2026-09-25], the RS-485 DE/RE pull-down). D2 stays either way.
+    3. an assumed node is one an MCU pin is wired to: `mcu_pin_load` if a
+       resistor of the design holds it at the assumed level and only that one —
+       the pin then reaches it only through its leakage ([2026-09-25], the
+       RS-485 DE/RE pull-down); otherwise `mcu_pin_state`, since the pin must
+       set the state itself (a pull-up under an assumed-low node works against
+       it). An assumption is `NODE` (low) or `NODE=high`. D2 stays either way.
 
     Raises `KeyError` / `ValueError` when a measure names something the
     netlist does not have; `assess` then falls back to the netlist-wide rule.
@@ -392,12 +409,12 @@ def derive_mcu_models(
     signal = mcu_signal_nodes(circuit)
     if measured & (signal - _pin_modelled(netlist)):
         add(MODEL_MCU_PIN_LOAD)
-    assumed = {a.lower() for a in assumes} & signal
+    assumed = {node: state for node, state in map(_assumed_level, assumes) if node in signal}
     if assumed:
-        held = held_to_rail(circuit, netlist)
-        if assumed & held:
+        held = held_to(circuit, netlist)
+        if any(held.get(node) == frozenset({state}) for node, state in assumed.items()):
             add(MODEL_MCU_PIN_LOAD)
-        if assumed - held:
+        if any(held.get(node) != frozenset({state}) for node, state in assumed.items()):
             add(MODEL_MCU_PIN_STATE)
     return tuple(models)
 
@@ -499,19 +516,27 @@ def _rating_figures(circuit: CircuitIR) -> Optional[Tuple[str, ...]]:
 
 
 def _pin_figures(circuit: CircuitIR) -> Optional[Tuple[str, ...]]:
-    """The board's pin rows the design uses, and its console UART. None if a pin is not in the table."""
+    """
+    The board's pin rows the design uses, its console UART, and — when a pin
+    carries a UART role — how the board routes UARTs (`uart_mode`), which the
+    pin rules branch on. None if a pin is not in the table.
+    """
     from validation.pin_rules import assignments_of, design_target
 
     target = design_target(circuit)
     if target is None:
         return None
     out = []
-    for assignment in assignments_of(circuit):
+    assignments = assignments_of(circuit)
+    for assignment in assignments:
         pin = target.pin(assignment.pin)
         if pin is None:
             return None
         out.append(f"board:{target.id}/{pin.name}")
-    return tuple(out) + (f"board:{target.id}/console_uart",)
+    out.append(f"board:{target.id}/console_uart")
+    if any(a.role in ("uart_tx", "uart_rx") for a in assignments):
+        out.append(f"board:{target.id}/uart_mode")
+    return tuple(out)
 
 
 # ── X8: the rule catalogue as claims ─────────────────────────────────────────
@@ -757,23 +782,29 @@ def _supersede(physics: List[Claim], proved: Sequence[_Proved], proofs: Sequence
 # ── D1: bench evidence ───────────────────────────────────────────────────────
 
 def _with_bench(generator: Any, circuit: CircuitIR, netlist: str, proved: Sequence[_Proved],
-                physics: List[Claim], proofs: List[Claim]) -> Tuple[List[Claim], List[Claim]]:
+                physics: List[Claim], proofs: List[Claim], requirements: Any = None) -> Tuple[List[Claim], List[Claim]]:
     """
-    A proof an agreeing bench record covers — this design, its netlist as
-    measured, no disagreement anywhere in its family — and the Stage 3 claim it
-    re-derives stop citing D1 (`validation/bench.py`). No records, no change.
+    A proof an agreeing bench record covers — this design, its netlist and
+    requirements as measured, no disagreement anywhere in its family — stops
+    citing D1 (`validation/bench.py`). The Stage 3 claim it re-derives does too,
+    but only once every proof that re-derives that claim is covered, as in
+    `_supersede`. No records, no change.
     """
     from validation.bench import evidence_for
 
-    covered = evidence_for(generator.name, circuit.target_mcu, netlist)
+    covered = evidence_for(generator.name, circuit.target_mcu, netlist, requirements)
     if not covered:
         return physics, proofs
     by_claim: Dict[str, Any] = {}
+    re_deriving: Dict[str, List[str]] = {}
     for p in proved:
         if p.spec.id in covered:
             by_claim[f"proof.{p.spec.id}"] = covered[p.spec.id]
-            if p.spec.re_derives:
-                by_claim[p.spec.re_derives] = covered[p.spec.id]
+        if p.spec.re_derives:
+            re_deriving.setdefault(p.spec.re_derives, []).append(p.spec.id)
+    for target, ids in re_deriving.items():
+        if all(i in covered for i in ids):
+            by_claim[target] = covered[ids[0]]
 
     def bench(claim: Claim) -> Claim:
         finding = by_claim.get(claim.id)
@@ -864,7 +895,8 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
 
     decision = generator.envelope(intent)
     ports = tuple(p.name for p in decision.ports) if decision.accepted else ()
-    physics, proofs = _with_bench(generator, circuit, netlist, proved, physics, proofs)
+    physics, proofs = _with_bench(generator, circuit, netlist, proved, physics, proofs,
+                                  getattr(intent, "requirements", None))
     rows = physics + proofs + _rule_claims(circuit, ports) + _accounting_rows(
         physics, getattr(generator, "not_applicable_rules", {}) or {}
     )

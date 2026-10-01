@@ -19,8 +19,16 @@ its tolerance box. Evaluated exactly at the box corners — every quantity the
 library proves is monotone in each part over its box, the fact the proofs
 already rest on.
 
-**It reaches that design only** — same generator, board and netlist. A record
-whose design's netlist has since changed is stale: reported, never applied.
+**It reaches that design only** — same generator, board, netlist and
+requirements. The netlist alone is not enough: a requirement can change what a
+property means without changing a single element (RS-485's far-end terminator
+is a bench element, not a part). A record whose design's netlist has since
+changed is stale: reported, never applied.
+
+**A record must name who measured.** A blank name or the template's placeholder
+is refused, as for figure verifications. A file that does not validate is never
+an exception inside realize(): it is reported by `invalid_records()` (CI fails
+on it) and its family gets no bench evidence until it is fixed.
 
 **A disagreement reopens D1 for the whole family** (generator × board) until it
 is explained; CI fails on it (`tests/test_bench.py`).
@@ -38,7 +46,7 @@ from itertools import product
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 RECORDS_DIR = Path(__file__).resolve().parent.parent / "data" / "bench"
 
@@ -70,6 +78,15 @@ class BenchRecord(BaseModel):
     measures: Dict[str, Reading]     # property id → measured quantity, SI units
     notes: str = ""
 
+    @field_validator("measured_by")
+    @classmethod
+    def _names_a_person(cls, v: str) -> str:
+        from data.figures import names_a_person
+
+        if not names_a_person(v):
+            raise ValueError(f"measured_by {v!r} names no person: a bench record says who measured")
+        return v.strip()
+
 
 class Finding(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -86,21 +103,51 @@ def netlist_hash(netlist: str) -> str:
     return hashlib.sha256(netlist.encode("utf-8")).hexdigest()
 
 
-def load_records(directory: Optional[Path] = None) -> Tuple[BenchRecord, ...]:
+class Invalid(BaseModel):
+    """A record file that does not validate — reported, never raised inside realize()."""
+    model_config = ConfigDict(frozen=True)
+
+    file: str
+    generator: Optional[str] = None  # as far as the file says; None if it cannot be read
+    board: Optional[str] = None
+    error: str
+
+
+def _scan(directory: Optional[Path]) -> Tuple[Tuple[BenchRecord, ...], Tuple[Invalid, ...]]:
     directory = Path(directory or os.environ.get("CIRCUITOS_BENCH_DIR") or RECORDS_DIR)
     if not directory.is_dir():
-        return ()
+        return (), ()
     stamp = tuple(sorted((p.name, p.stat().st_mtime) for p in directory.glob("*.json")))
     return _load(str(directory), stamp)
 
 
+def load_records(directory: Optional[Path] = None) -> Tuple[BenchRecord, ...]:
+    """The records that validate. See `invalid_records()` for the ones that do not."""
+    return _scan(directory)[0]
+
+
+def invalid_records(directory: Optional[Path] = None) -> Tuple[Invalid, ...]:
+    return _scan(directory)[1]
+
+
 @lru_cache(maxsize=8)
-def _load(directory: str, stamp: Tuple) -> Tuple[BenchRecord, ...]:
-    out = []
+def _load(directory: str, stamp: Tuple) -> Tuple[Tuple[BenchRecord, ...], Tuple[Invalid, ...]]:
+    good, bad = [], []
     for name, _ in stamp:
-        data = json.loads((Path(directory) / name).read_text(encoding="utf-8"))
-        out.append(BenchRecord.model_validate(data))
-    return tuple(out)
+        data: Any = None
+        try:
+            data = json.loads((Path(directory) / name).read_text(encoding="utf-8"))
+            good.append(BenchRecord.model_validate(data))
+        except (OSError, ValueError, ValidationError) as exc:
+            said = data if isinstance(data, dict) else {}
+            bad.append(Invalid(file=name, error=f"{type(exc).__name__}: {exc}",
+                               generator=said.get("generator") if isinstance(said.get("generator"), str) else None,
+                               board=said.get("board") if isinstance(said.get("board"), str) else None))
+    return tuple(good), tuple(bad)
+
+
+def _canonical(requirements: Any) -> str:
+    return json.dumps(requirements, sort_keys=True, separators=(",", ":"), default=str)
 
 
 # ── The model's interval for the measured parts ─────────────────────────────
@@ -256,19 +303,27 @@ def _findings_of(dumped: Tuple[str, ...]) -> Tuple[Finding, ...]:
     return tuple(f for d in dumped for f in evaluate(BenchRecord.model_validate_json(d)))
 
 
-def evidence_for(generator_name: str, board: Optional[str], netlist: str,
-                 records: Optional[Sequence[BenchRecord]] = None) -> Dict[str, Finding]:
+def evidence_for(generator_name: str, board: Optional[str], netlist: str, requirements: Any = None,
+                 records: Optional[Sequence[BenchRecord]] = None,
+                 invalid: Optional[Sequence[Invalid]] = None) -> Dict[str, Finding]:
     """
-    The properties of *this* design (same generator, board and netlist) that
-    agreeing bench evidence covers — none at all if any record for the family
-    disagrees. Empty without records.
+    The properties of *this* design (same generator, board, netlist and — when
+    given — requirements) that agreeing bench evidence covers. None at all if
+    any record for the family disagrees, or a record file that may belong to
+    the family does not validate. Empty without records.
     """
-    records = tuple(load_records() if records is None else records)
+    if records is None:
+        records, scanned = _scan(None)
+        invalid = scanned if invalid is None else invalid
+    records = tuple(records)
+    if any(i.generator in (None, generator_name) for i in (invalid or ())):
+        return {}
     family = [r for r in records if r.generator == generator_name and r.board == board]
     if not family:
         return {}
     findings = list(_findings(family))
     if any(f.status == "disagrees" for f in findings):
         return {}
-    here = {r.id for r in family if r.netlist_sha256 == netlist_hash(netlist)}
+    here = {r.id for r in family if r.netlist_sha256 == netlist_hash(netlist)
+            and (requirements is None or _canonical(r.requirements) == _canonical(requirements))}
     return {f.property: f for f in findings if f.record in here and f.status == "agrees"}

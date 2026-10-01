@@ -114,12 +114,12 @@ def resistor_value(part_number: str) -> Optional[float]:
     m = _RESISTOR_PART.match(part_number or "")
     if not m:
         return None
-    code = m.group(2)
-    for unit, scale in (("R", 1.0), ("K", 1e3), ("M", 1e6)):
-        if unit in code:
-            whole, _, frac = code.partition(unit)
-            return float(f"{whole or 0}.{frac or 0}") * scale
-    return None
+    # Exactly one unit letter, and a digit somewhere: `1K2K`, `RR`, `1R5K` name no value.
+    code = re.fullmatch(r"(\d*)([RKM])(\d*)", m.group(2))
+    if code is None or not (code.group(1) or code.group(3)):
+        return None
+    whole, unit, frac = code.groups()
+    return float(f"{whole or 0}.{frac or 0}") * {"R": 1.0, "K": 1e3, "M": 1e6}[unit]
 
 
 def passive_figures(part_number: Optional[str]) -> Optional[Tuple[str, float, Optional[float], float]]:

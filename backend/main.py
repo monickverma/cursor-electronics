@@ -23,14 +23,32 @@ async def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONR
     )
 
 
+def sentry_options() -> dict:
+    """
+    Sentry, without the Mouser key. Mouser takes the key in the query string,
+    and Sentry's httpx integration records the query on every outgoing span and
+    breadcrumb — so it is off, and every event, transaction and breadcrumb is
+    scrubbed besides ([2026-10-01] #1).
+    """
+    from sentry_sdk.integrations.httpx import HttpxIntegration
+
+    from pricing.mouser import scrub
+
+    return dict(
+        dsn=settings.sentry_dsn,
+        environment=settings.environment,
+        traces_sample_rate=0.1,
+        disabled_integrations=[HttpxIntegration()],
+        before_send=lambda event, hint: scrub(event),
+        before_send_transaction=lambda event, hint: scrub(event),
+        before_breadcrumb=lambda crumb, hint: scrub(crumb),
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if settings.sentry_dsn:
-        sentry_sdk.init(
-            dsn=settings.sentry_dsn,
-            environment=settings.environment,
-            traces_sample_rate=0.1,
-        )
+        sentry_sdk.init(**sentry_options())
     # schema.sql only runs on an empty volume; columns added since then come
     # from here. Never raises — see db/migrations.py.
     from db.migrations import apply_migrations

@@ -164,7 +164,7 @@ def _read(intent: IntentLike) -> _Spec:
         raise Unreadable(f"preferences.alert_threshold_c={threshold!r} is not a temperature in °C")
     pins: Dict[str, float] = {}
     for part, raw in read_pins(intent, PINNABLE).items():
-        ohms = pinned_number(raw, _parse_ohms)
+        ohms = pinned_number(raw, _parse_ohms, part)
         if ohms is None:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '10k', '4k7')")
@@ -269,6 +269,12 @@ class DHT22NodeGenerator:
                 f"the {SINK_LIMIT_MA:g} mA limit"
             )
         rail = self._rail_ma(spec)
+        # An accepted design never carries a failing claim of its own: the rail claim included.
+        if rail > spec.budget:
+            return EnvelopeDecision.refuse(
+                f"the idle rail draws {rail:.4g} mA, over the {spec.budget:g} mA budget "
+                f"(constraints.supply_current_ma)"
+            )
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power", voltage_range_v=Interval.at(spec.supply, "V"),
                          current_draw_a=Interval.at(rail / 1000, "A")),
@@ -348,7 +354,8 @@ class DHT22NodeGenerator:
             graded("dht.rise_time",
                    f"DATA rises (10–90 %) within {RISE_LIMIT_US:g} µs over {spec.cable:g} m of cable",
                    rise.hi <= RISE_LIMIT_US, "monotone_corners", scope.model_copy(update={"figures": rise_reads}),
-                   detail=f"{rise.lo:.3g}–{rise.hi:.3g} µs for R1 ±1% and 50–100 pF/m",
+                   detail=f"{rise.lo:.3g}–{rise.hi:.3g} µs for R1 ±{spec.figs.tolerance('R1') * 100:g}% "
+                          f"and 50–100 pF/m",
                    defeaters=("D1", "D7")),
             graded("dht.sink_current",
                    f"holding DATA low sinks at most {SINK_LIMIT_MA:g} mA through the sensor and "

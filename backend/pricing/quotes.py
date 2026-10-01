@@ -57,25 +57,41 @@ def key(part_number: str) -> str:
     return part_number.strip().upper()
 
 
-_KEEP = re.compile(r"[^0-9.,\-]")
+#: The number in a price: digits and the separators between them — never the
+#: punctuation of a currency symbol ("kr.", "Fr.") on either side.
+_NUMBER = re.compile(r"\d(?:[\d.,'\s\u00a0\u202f]*\d)?")
+_GROUPING = re.compile(r"['\s\u00a0\u202f]")
+
+#: ISO 4217 currencies with no minor unit, and the symbols that mark them when no
+#: currency code comes with the price.
+ZERO_DECIMAL = frozenset({"JPY", "KRW", "CLP", "ISK", "VND", "PYG", "UGX", "XAF", "XOF", "KMF", "GNF", "RWF"})
+_ZERO_DECIMAL_SYMBOLS = ("¥", "￥", "₩", "₫")
 
 
-def parse_price(text: object) -> Optional[float]:
+def parse_price(text: object, currency: Optional[str] = None) -> Optional[float]:
     """
     A number from a price string as a distributor formats it for the account's
     locale: "$0.10", "$1,234.56", "6,85 €", "0,069 €", "1.234,56 €", "₹8.50",
-    "1'234.50 CHF". None when there is no number in it.
+    "1'234.50 CHF", "0,85 kr.", "¥1,980". None when there is no number in it.
 
     Both separators present: the later one is the decimal point. One kind only:
     a single separator is the decimal point; repeated, it groups thousands.
+    In a currency with no minor unit (`currency`, or a ¥/₩/₫ in the text) a lone
+    separator followed by exactly three digits groups thousands too.
     """
     if isinstance(text, bool) or text is None:
         return None
     if isinstance(text, (int, float)):
         return float(text)
-    s = _KEEP.sub("", str(text))
-    if not s or not any(ch.isdigit() for ch in s):
+    raw = str(text)
+    m = _NUMBER.search(raw)
+    if not m:
         return None
+    s = _GROUPING.sub("", m.group(0))
+    zero_decimal = ((currency or "").strip().upper() in ZERO_DECIMAL
+                    or any(sym in raw for sym in _ZERO_DECIMAL_SYMBOLS))
+    if zero_decimal and re.fullmatch(r"\d{1,3}[.,]\d{3}", s):
+        s = re.sub(r"[.,]", "", s)
     if "," in s and "." in s:
         decimal = "," if s.rfind(",") > s.rfind(".") else "."
         thousands = "." if decimal == "," else ","

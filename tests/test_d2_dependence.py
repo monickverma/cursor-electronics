@@ -236,8 +236,9 @@ class TestTheThreeRoutes:
         # 42 citations before, 9 released: driver load (Stage 3 and proof) and
         # terminator dissipation on RS-485, the pull-up check on DHT22 — all x3.
         # [2026-09-25]: +3 — the DE/RE pull-down claim, on each board.
+        # [2026-10-01]: +3 — rs485.bias_dissipation, whose R4 sits on the pin the MCU drives.
         cited = sum("D2" in r["defeaters"] for n, b in MCU_CASES for r in claims(n, b).values() if r["critical"])
-        assert cited == 36
+        assert cited == 39
 
 
 class _Declares:
@@ -283,12 +284,15 @@ class TestDeclarationsDecide:
 
     def test_an_assumed_node_a_resistor_holds_names_the_pins_load(self):
         # The DHT22 data line has its pull-up: while the pin is not driving,
-        # the resistor holds the node, and the pin reaches it by its load.
+        # the resistor holds the node high, and the pin reaches it by its load.
         node = next(c.node_id for c in IR_001.connections
                     if c.component_id == "U1" and c.node_id.startswith("DHT"))
-        row = _row(_Declares(measures=("v(vcc_5v)",), assumes=(node,)), IR_001)
+        row = _row(_Declares(measures=("v(vcc_5v)",), assumes=(f"{node}=high",)), IR_001)
         assert "mcu_pin_load" in row.scope.model and "mcu_pin_state" not in row.scope.model
         assert "D2" in row.defeaters
+        # [2026-10-01] #7: assumed low, the pull-up works against it — the pin sets the state.
+        row = _row(_Declares(measures=("v(vcc_5v)",), assumes=(node,)), IR_001)
+        assert "mcu_pin_state" in row.scope.model and "mcu_pin_load" not in row.scope.model
 
     def test_an_unreadable_declaration_falls_back_rather_than_releasing(self):
         row = _row(_Declares(measures=("v(nowhere)",)), IR_001)

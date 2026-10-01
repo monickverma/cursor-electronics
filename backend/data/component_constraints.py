@@ -89,7 +89,9 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
     "MAX3485ECSA": {
         "supply_voltage_min": 3.0,
         "supply_voltage_max": 3.6,
-        "current_draw_ma": 0.3,
+        # Typical with the driver off — 0.95 mA, not the MAX485's 0.3 (datasheet, DC
+        # Electrical Characteristics, I_CC; read 2026-10-02).
+        "current_draw_ma": 0.95,
         "de_re_pins_tied": True,
         "requires_termination_ohm": 120,
         "requires_bias": True,

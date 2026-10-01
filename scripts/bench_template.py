@@ -51,7 +51,7 @@ def template(function: str, fields: dict) -> dict:
     reading = {"value": None, "accuracy": None, "instrument": "your meter, and its stated accuracy"}
     return {
         "id": f"{generator.name}-{datetime.date.today().isoformat()}",
-        "measured_by": "your name",
+        "measured_by": None,             # a record says who measured; it fails to load until filled
         "date": datetime.date.today().isoformat(),
         "generator": generator.name,
         "board": circuit.target_mcu,

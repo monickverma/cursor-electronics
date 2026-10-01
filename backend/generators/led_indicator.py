@@ -182,7 +182,7 @@ def _read(intent: IntentLike) -> _Spec:
                          f"catalogue offers {sorted(COLOURS)}")
     pins: Dict[str, float] = {}
     for part, raw in read_pins(intent, PINNABLE).items():
-        ohms = pinned_number(raw, _parse_ohms)
+        ohms = pinned_number(raw, _parse_ohms, part)
         if ohms is None:
             raise Unreadable(f"constraints.pinned.{part}={raw!r} is not a resistance "
                              f"this system can read (e.g. '220', '1k')")
@@ -313,6 +313,12 @@ class LedIndicatorGenerator:
                 f"the {rating * 1000:g} mW rating of {what} — ask for less current"
             )
         rail = mcu_rail_ma(spec.supply, target.mcu_part)
+        # An accepted design never carries a failing claim of its own: the rail claim included.
+        if rail + band.hi > spec.budget:
+            return EnvelopeDecision.refuse(
+                f"the rail could draw up to {rail + band.hi:.4g} mA, over the {spec.budget:g} mA budget "
+                f"(constraints.supply_current_ma)"
+            )
         return EnvelopeDecision.accept((
             PortContract(name="VCC", direction="power",
                          voltage_range_v=Interval.at(spec.supply, "V"),
@@ -421,7 +427,8 @@ class LedIndicatorGenerator:
                    detail=f"{current.nominal:.3g} mA ({err:.1f}% from target)",
                    defeaters=("D1", "D2", "D7")),
             graded("led.current_band",
-                   f"LED current lies in [{current.lo:.3g}, {current.hi:.3g}] mA for every R1 within 1%, "
+                   f"LED current lies in [{current.lo:.3g}, {current.hi:.3g}] mA for every R1 within "
+                   f"{spec.figs.tolerance('R1') * 100:g}%, "
                    f"pin resistance {rout.lo:g}–{rout.hi:g} Ω and forward voltage 1.7–2.4 V",
                    True, "monotone_corners", reads(scope), defeaters=("D1", "D2", "D7")),
             graded("led.gpio_current_limit",
