@@ -21,8 +21,8 @@
 
 | Phase | Name | Timeline | Status |
 |-------|------|----------|--------|
-| 1 | Hardware Copilot | Months 0–3 | 🔄 10/12 criteria done |
-| 2 | Validation Engine | Months 3–8 | ⬜ Not started |
+| 1 | Hardware Copilot | Months 0–3 | ✅ closed 11/12 (criterion 12 deferred with a trigger) |
+| 2 | Validation Engine | Months 3–8 | ✅ complete 2026-10-02 — derived from `PHASE2_GATES` in `regen_state.py` |
 | 3 | Industrial Layer | Months 8–18 | ⬜ Not started |
 | 4 | Enterprise Platform | Months 18–30 | ⬜ Not started |
 | 5 | Advanced Hardware Intelligence | Months 30+ | ⬜ Not started |
@@ -101,7 +101,16 @@
 
 ---
 
-## Phase 2 — Validation Engine (Months 3–8) ⬜
+## Phase 2 — Validation Engine (Months 3–8) ✅
+
+> **Closed 2026-10-02.** The governing list is `PHASE_2_PLAN_v2.md` §5 (Stages 0–6), by the precedence set
+> 2026-09-20 (v2 > PRODUCT_MASTER.md). Its gates are written into `regen_state.py` as `PHASE2_GATES`, and the
+> phase status in `state.json` is derived from them, never set by hand. Two gates are deferred with the
+> triggers v2 and the decision log give them: the DS18B20 swap and the 5%-of-manual-engineer KPI. The
+> deliverables listed below are PRODUCT_MASTER's. Where v2 differs (no free-form generation, no Qdrant, no
+> version-history UI), v2 governs. See `brain/decisions.md` [2026-10-02] "Phase 2 closes".
+> The entry-condition note below is superseded by [2026-08-25]: criterion 12 is bound to the first external
+> user (= defeater D3), not to a phase boundary.
 
 **Entry condition (added 2026-08-22):** criterion 12 — an external engineer
 reads an explanation cold and can say why each component was chosen and what

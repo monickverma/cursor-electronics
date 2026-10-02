@@ -1,4 +1,29 @@
-# Current Phase: Phase 2 — Validation Engine
+# Current Phase: Phase 2 — Validation Engine — ✅ COMPLETE (2026-10-02)
+
+> **Phase 2 is closed.** Every gate of `PHASE_2_PLAN_v2.md` §5 is met, or deferred with a trigger; see
+> `state.json` → `phase2_gates` (derived by `regen_state.py`) and `brain/decisions.md` [2026-10-02]
+> "Phase 2 closes". Phase 3 has **not** been opened: its scope is the owner's to set, and three questions
+> come first (below). The Phase 2 and Phase 1 task records underneath are kept as history.
+
+## Before Phase 3 opens — the owner's calls (none is a Jev question)
+
+1. **Gerber and fab in Phase 3 or 4?** The Phase 3 KPI is "prompt-to-ordered-PCB within one business day",
+   but Gerber, fab APIs and DFM sit in Phase 4 (PRODUCT_MASTER.md). Either move minimal Gerber forward, or
+   restate the KPI as "a routed KiCad board, handed to the fab by the user".
+2. **Which standard family heads the industrial layer?** UL 508A covers the *panel*. Controller boards fall
+   under UL 60730-1 (automatic controls) or UL 61010-1/-2-201 (programmable controllers). Circuit OS should
+   flag candidate families and never assert compliance.
+3. **Criterion 12 / D3 before any prospect.** Phase 3's KPI is the first enterprise contract, which trips
+   criterion 12's trigger. Schedule an external engineer's cold read before the first demo.
+
+Still open from Phase 2, none of them a gate:
+- D1 (no bench measurement). The bench session in `docs/BENCH_D1.md` is ready.
+- D7 on the Black Pill board rows (WeAct documents not read), the ATmega/Uno supply figure, and the LED's
+  assumed V_F minimum.
+- Signing the 12 proven properties lifts the library floor to G1.
+
+---
+
 
 > Worker's instruction sheet. Set by the planner after each session.
 > Last updated: 2026-09-25 (RS-485 DE/RE pull-down; live Mouser pricing; the agent's datasheet pass; bench preparation)

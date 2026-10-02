@@ -148,6 +148,15 @@ MODULES = {
     "pricing/quotes":             {"file": "backend/pricing/quotes.py",             "test": "tests/test_pricing.py",              "phase": 2},
     "pricing/mouser":             {"file": "backend/pricing/mouser.py",             "test": "tests/test_pricing.py",              "phase": 2},
     "pricing/live":               {"file": "backend/pricing/live.py",               "test": ["tests/test_pricing.py", "tests/test_bom_route.py"], "phase": 2},
+    # 2026-10-02: registered — finding 6 of the engineer's "Jev decisions for Circuit OS Phase 3" found them
+    # missing from MODULES, so their tests never counted toward any module.
+    "ai/openai_compat":           {"file": "backend/ai/openai_compat.py",           "test": "tests/test_openai_compat.py",        "phase": 2},
+    "core/ir_examples":           {"file": "backend/core/ir_examples.py",           "test": "tests/test_ir_schema.py",            "phase": 1},
+    "data/component_constraints": {"file": "backend/data/component_constraints.py", "test": "tests/test_d7_figures.py",           "phase": 1},
+    "db/models":                  {"file": "backend/db/models.py",                  "test": "tests/test_migrations.py",           "phase": 1},
+    "main":                       {"file": "backend/main.py",                       "test": ["tests/test_bom_route.py", "tests/test_sentry_key.py"], "phase": 1},
+    "middleware/rate_limit":      {"file": "backend/middleware/rate_limit.py",      "test": "tests/test_bom_route.py",            "phase": 1},
+    "worker":                     {"file": "backend/worker.py",                     "test": "tests/test_firmware_gate.py",        "phase": 2},
 }
 
 PHASE1_CRITERIA = [
@@ -185,6 +194,116 @@ SUBSTITUTE_CRITERIA = {10}
 # The trigger is what stops "deferred" from meaning "dropped". It is recorded in
 # brain/decisions.md, not here — this set only needs to know which index.
 DEFERRED_CRITERIA = {11}
+
+# ── Phase 2 exit gate ────────────────────────────────────────────────────────
+# The gates of PHASE_2_PLAN_v2.md §5, Stages 0–6 — the governing list, by the
+# precedence the owner set on 2026-09-20 (v2 > PRODUCT_MASTER.md). Written into
+# the repo 2026-10-02 because no exit gate existed here (finding 9 of the
+# engineer's "Jev decisions for Circuit OS Phase 3"): "is Phase 2 done?" is
+# derived from these, never asserted in prose.
+#
+# `evidence` is a list of (test file, required): `required` is a substring of a
+# test id that must have PASSED — not merely be present — for gates that need
+# ngspice or PlatformIO, because a file whose tests were all skipped otherwise
+# reads as passing. `deferred` names the decision that records the trigger; a
+# deferred gate does not count as met, and the phase can close with it only
+# because v2 itself defers it.
+PHASE2_GATES = [
+    # Stage 0
+    {"stage": 0, "gate": "Every request produces a complete log row",
+     "evidence": [("tests/test_request_log.py", None)]},
+    {"stage": 0, "gate": "RC low-pass predict() matches ngspice across the declared grid (≤ 2%)",
+     "evidence": [("tests/test_envelope_grid.py", "TestRCEnvelopeGrid::test_clean_grid_passes_within_two_percent")]},
+    {"stage": 0, "gate": "Grid harness fails on a 5% injected error in generate()",
+     "evidence": [("tests/test_envelope_grid.py", "TestFaultInjectionMatrix::test_five_percent_fault_is_detected")]},
+    {"stage": 0, "gate": "envelope() refuses out-of-range intents with a named reason",
+     "evidence": [("tests/test_generator_protocol.py", None), ("tests/test_generator_library.py", "TestRefusedByName")]},
+    {"stage": 0, "gate": "Explanation derivability answered, with evidence ([2026-09-20])",
+     "evidence": [("tests/test_derived_explainer.py", None)]},
+    # Stage 1
+    {"stage": 1, "gate": "No code path lets the LLM write CircuitIR — asserted by test",
+     "evidence": [("tests/test_llm_cannot_write_circuit_ir.py", None)]},
+    {"stage": 1, "gate": "Form produces valid IntentIR for all five generators, 0 API calls",
+     "evidence": [("tests/test_form_producer.py", None)]},
+    {"stage": 1, "gate": "False-acceptance rate on the labelled corpus, reported with the corpus named",
+     "evidence": [("tests/test_abstention_corpus.py", None)]},
+    {"stage": 1, "gate": "underdetermined non-empty → the system asks, never generates",
+     "evidence": [("tests/test_intent_ir.py", None), ("tests/test_intent_producer.py", None)]},
+    # Stage 2
+    {"stage": 2, "gate": "Determinism: same IntentIR + version → byte-identical CircuitIR",
+     "evidence": [("tests/test_realize.py", None)]},
+    {"stage": 2, "gate": "Idempotence: an empty patch → identical output",
+     "evidence": [("tests/test_intent_patch.py", None)]},
+    {"stage": 2, "gate": "Locality: the CircuitIR diff lies inside the declared dependency closure",
+     "evidence": [("tests/test_realize.py", None), ("tests/test_generator_library.py", "TestLocality")]},
+    {"stage": 2, "gate": "Orphaned annotations surfaced, never dropped",
+     "evidence": [("tests/test_annotations.py", None)]},
+    {"stage": 2, "gate": "'Use a DS18B20 instead' end-to-end with a predict()-delta justification",
+     "deferred": "[2026-09-21] Stage 2 verification, item 15 — trigger: a temperature-sensor generator that "
+                 "offers a DS18B20 (no Phase 2 stage builds one)"},
+    # Stage 3
+    {"stage": 3, "gate": "All five generators at the Stage 0 grid gate (≤ 2% against ngspice)",
+     "evidence": [("tests/test_generator_library.py", "TestGridGate")]},
+    {"stage": 3, "gate": "Every design emits claim objects with kind/grade/scope/defeaters",
+     "evidence": [("tests/test_claims.py", None), ("tests/test_generator_library.py", "TestClaimsAtEveryGridPoint")]},
+    {"stage": 3, "gate": "grade_floor derived in regen_state.py and reported at the top",
+     "evidence": [("tests/test_claims.py", None)]},
+    {"stage": 3, "gate": "'Not assessed' and 'out of scope' rendered as visible rows",
+     "evidence": [("tests/test_claims.py", None), ("tests/test_accepted_designs.py", None)]},
+    {"stage": 3, "gate": "Waveform viewer renders AC / transient / DC",
+     "evidence": [("tests/test_waveforms.py", None)]},
+    # Stage 4
+    {"stage": 4, "gate": "Divider and LED claims proven over full tolerance (G1)",
+     "evidence": [("tests/test_proof.py", None)]},
+    {"stage": 4, "gate": "RC cutoff proven over full tolerance, π bracketed (G1)",
+     "evidence": [("tests/test_proof.py", None)]},
+    {"stage": 4, "gate": "Every property back-translated and signed off before it counts",
+     "evidence": [("tests/test_sign_off.py", None)]},
+    {"stage": 4, "gate": "Adversarial weakening: the refine loop cannot change a frozen property",
+     "evidence": [("tests/test_proof.py", None), ("tests/test_sign_off.py", None)]},
+    {"stage": 4, "gate": "Every proven property fails under an injected wrong value",
+     "evidence": [("tests/test_proof.py", None), ("tests/test_proof_oracle.py", None)]},
+    # Stage 5
+    {"stage": 5, "gate": "100% of emitted firmware compiles under PlatformIO before display",
+     "evidence": [("tests/test_firmware_gate.py", "TestEveryVariantCompiles"),
+                  ("tests/test_firmware_gate.py", "TestTheGateNeverShowsUnbuiltSource")]},
+    {"stage": 5, "gate": "Pin-mux, peripheral-conflict and strapping-pin checks on a labelled set",
+     "evidence": [("tests/test_pin_rules.py", None), ("tests/test_multi_target.py", None)]},
+    # Stage 6
+    {"stage": 6, "gate": "No substitution surfaces that fails the original's checks",
+     "evidence": [("tests/test_substitution.py", None)]},
+    {"stage": 6, "gate": "Every price carries price_asof; pricing never gates validation",
+     "evidence": [("tests/test_bom.py", None), ("tests/test_substitution.py", None), ("tests/test_pricing.py", None)]},
+    {"stage": 6, "gate": "5%-of-manual-engineer KPI",
+     "deferred": "PHASE_2_PLAN_v2.md §5 Stage 6 and [2026-09-25] Stage 6 — trigger: an engineer is available"},
+]
+
+
+def _passed(raw_output: str, test_file_rel: str, required: str) -> bool:
+    name = Path(test_file_rel).name
+    return any(name in line and required in line and "PASSED" in line for line in raw_output.splitlines())
+
+
+def check_phase2_gates(test_raw: str):
+    """(rows, status). A gate is met only when every piece of its evidence is."""
+    rows = []
+    for g in PHASE2_GATES:
+        if "deferred" in g:
+            rows.append({**{k: g[k] for k in ("stage", "gate")}, "status": "deferred", "trigger": g["deferred"]})
+            continue
+        problems = []
+        for test_file, required in g["evidence"]:
+            st = single_file_status(test_file, test_raw)
+            if st != "passing":
+                problems.append(f"{Path(test_file).name}: {st}")
+            elif required and not _passed(test_raw, test_file, required):
+                problems.append(f"{Path(test_file).name}::{required}: not run (skipped or missing)")
+        rows.append({"stage": g["stage"], "gate": g["gate"], "status": "met" if not problems else "not_met",
+                     "evidence": [f + (f"::{r}" if r else "") for f, r in g["evidence"]],
+                     **({"problems": problems} if problems else {})})
+    complete = all(r["status"] in ("met", "deferred") for r in rows)
+    return rows, ("complete" if complete else "in_progress")
+
 
 # Which criteria map to which test files (auto-checkable)
 CRITERIA_TEST_MAP = {
@@ -241,6 +360,8 @@ def git_diff_stat():
 # ── Test runner ───────────────────────────────────────────────────────────────
 def run_tests():
     env = {**os.environ, "PYTHONPATH": str(BACKEND)}
+    # 2026-10-02: 900 s → 2400 s. A run alongside Playwright passed 900 s and
+    # was refused as unmeasured; the suite alone takes ~25 min on this machine.
     # 2026-09-20: this was 180s. The suite grew past it — ngspice runs the
     # envelope grid and the accuracy harness — so pytest was killed, the
     # regexes below matched nothing, and zeros were written to state.json:
@@ -249,7 +370,7 @@ def run_tests():
     # because AGENTS.md says to trust it over everything else.
     code, out, err = run(
         ["python", "-m", "pytest", "tests/", "--tb=no", "-v", "--no-header"],
-        env=env, timeout=900,
+        env=env, timeout=2400,
     )
     text = out + err
     passed = int(re.search(r"(\d+) passed", text).group(1)) if re.search(r"(\d+) passed", text) else 0
@@ -506,6 +627,15 @@ def main():
     for status, label in criteria:
         print(f"  {status}  {label}")
 
+    print("\n🚪  Phase 2 exit gate (PHASE_2_PLAN_v2.md §5):")
+    phase2_gates, phase2_status = check_phase2_gates(tests["raw"])
+    for row in phase2_gates:
+        mark = {"met": "✅", "deferred": "⏭", "not_met": "❌"}[row["status"]]
+        print(f"  {mark}  S{row['stage']}  {row['gate']}")
+        for problem in row.get("problems", []):
+            print(f"         {problem}")
+    print(f"  → Phase 2 {phase2_status}")
+
     print("\n📜  Git:")
     commit = git_commit()
     log    = git_log(5)
@@ -541,7 +671,11 @@ def main():
         "phase": {
             "current": 2,
             "name": "Validation Engine",
-            "status": "in_progress",
+            # Derived from PHASE2_GATES, never set by hand.
+            "status": phase2_status,
+            "phase2_gates_met": sum(r["status"] == "met" for r in phase2_gates),
+            "phase2_gates_deferred": sum(r["status"] == "deferred" for r in phase2_gates),
+            "phase2_gates_total": len(phase2_gates),
             "phase1_status": "closed_with_deferral",
             "phase1_criteria_done": criteria_done,
             "phase1_criteria_total": 12,
@@ -554,6 +688,7 @@ def main():
             "skipped": tests["skipped"],
             "total": tests["total"],
         },
+        "phase2_gates": phase2_gates,
         "phase1_criteria": [
             {
                 "status": s,
@@ -638,7 +773,15 @@ def main():
         print("  Floor    : not derived — see the grade-floor probe output above")
     print(f"  Commit   : {commit}")
     print(f"  Tests    : {tests['passed']} passing  /  {tests['failed']} failing  /  {tests['skipped']} skipped")
-    print(f"  Phase    : 2 — Validation Engine")
+    met = sum(r["status"] == "met" for r in phase2_gates)
+    deferred2 = [r for r in phase2_gates if r["status"] == "deferred"]
+    print(f"  Phase    : 2 — Validation Engine — {phase2_status.upper()}: {met}/{len(phase2_gates)} gates met, "
+          f"{len(deferred2)} deferred with a trigger")
+    for r in phase2_gates:
+        if r["status"] == "not_met":
+            print(f"             ❌ S{r['stage']} {r['gate']}")
+    for r in deferred2:
+        print(f"             ⏭ S{r['stage']} {r['gate']} — DEFERRED, not met")
     subs = [c for i, (st, c) in enumerate(criteria)
             if i in SUBSTITUTE_CRITERIA and st.startswith("✅")]
     deferred = [c for i, (st, c) in enumerate(criteria) if i in DEFERRED_CRITERIA]

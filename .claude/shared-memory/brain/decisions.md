@@ -2491,3 +2491,48 @@ Classification:
 - **Review trigger:** the first bench V_F reading of the Würth LED, or a Würth V_F bin table. If either puts
   V_F under 1.6 V, the assumption is wrong and comes down.
 - The decision is recorded as `jev_supported`.
+
+## [2026-10-02] Phase 2 closes — the exit gate written into the repo, and derived
+
+**Decision:** Phase 2, the Validation Engine, is complete. Its exit gate now exists in the repository:
+`PHASE2_GATES` in `tools/regen_state.py` carries the gates of `PHASE_2_PLAN_v2.md` §5, Stages 0–6, each
+mapped to the tests that evidence it. `state.json` → `phase.status` is derived from them and is never set
+by hand. On commit `63e55a6`: **27 of 29 gates met, 2 deferred with a trigger**, 2261 tests passing and 0
+failing. The engineer asked for it ("complete this phase").
+
+**Why v2's list governs.** The engineer's own research (finding 9 of "Jev decisions for Circuit OS Phase
+3") found no written exit gate, and called "which list governs" an owner call. The owner made that call on
+2026-09-20: `PHASE_2_PLAN_v2.md` > `PRODUCT_MASTER.md` > the assurance documents. PRODUCT_MASTER's Phase 2
+deliverables (free-form generation, Qdrant RAG, a version-history UI) were deliberately left out of v2, so
+they are not owed.
+
+**Deferred, not met**, each with the trigger it already had:
+- Stage 2, "Use a DS18B20 instead": [2026-09-21] item 15. Trigger: a temperature-sensor generator that
+  offers it.
+- Stage 6, the 5%-of-manual-engineer KPI: v2 §5 and [2026-09-25]. Trigger: an engineer is available.
+
+Criterion 12 (Phase 1) and defeater D3 stay bound to the first external user ([2026-08-25]). The master
+plan's older note that Phase 2 "does not close" without criterion 12 predates that entry, and now points
+to it.
+
+**How a gate is judged.** Every evidence file must be present and free of failures. Where a gate needs
+ngspice or PlatformIO, a named test must have PASSED, because a file whose tests were all skipped would
+otherwise read as passing. `tests/test_phase2_gates.py` tests exactly that: a skipped compile gate does not
+count, a failing or missing evidence file blocks the phase, and a deferred gate never counts as met.
+
+**CI now proves what it used to skip.** Finding 5 of the same research:
+- CI installs PlatformIO 6.2.0 (cached), so the Stage 5 compile gate runs there as well as locally.
+- `TEST_DATABASE_URL` points at the Postgres service, and the schema is loaded, so the sign-off and
+  price-cache tests run against a real database.
+- `regen_state`'s test budget goes from 900 s to 2400 s: one run alongside Playwright exceeded 900 s and
+  was refused as unmeasured.
+- Finding 6: the seven unregistered backend modules are registered.
+
+**Phase 3 is not opened.** Its scope is the owner's. `plan/current_phase.md` lists the three calls that come
+first:
+- Gerber in Phase 3 or 4 (finding 8).
+- The standard family: UL 60730-1 or 61010 rather than 508A (finding 10).
+- The criterion-12 cold read before any prospect (finding 13).
+
+Still open, and not a gate: D1 (no bench), D7 on the Black Pill board rows and two Uno figures, and the
+LED's assumed V_F minimum. Signing the 12 proven properties lifts the floor to G1.
