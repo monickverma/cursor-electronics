@@ -2536,3 +2536,20 @@ first:
 
 Still open, and not a gate: D1 (no bench), D7 on the Black Pill board rows and two Uno figures, and the
 LED's assumed V_F minimum. Signing the 12 proven properties lifts the floor to G1.
+
+## [2026-10-03] The next phase is Composition, not Phase 3 as written — decided by the owner
+
+**Context.** Phase 2 made five single-circuit generators trustworthy; the system still cannot put two of them on
+one board, so it cannot design anything a person would build. Phase 3 as written (PRODUCT_MASTER: UL families,
+enterprise contracts, ordered PCBs) sells a product that does not yet exist.
+
+**Decision (owner, 2026-10-03).**
+1. The next phase is **Composition**, per `COMPOSITION_PLAN.md`: M1 composer, M2 behaviour rules, M3 load-switch
+   block, M4 board-level checks and the front door. Exit: the room-monitor sentence produces one buildable board.
+2. The buzzer is driven by a **transistor load-switch block** (NPN, base resistor, flyback diode when inductive),
+   proved like the other generators, because the same block later drives relays, motors and pumps. The
+   `tone()`-on-a-pin piezo was rejected as a dead end.
+3. Phase 3 as written is not opened. Its three owner calls (Gerber timing, UL family, criterion 12 before a
+   prospect) wait until people use the tool. The `fieldwork/` steps run alongside and gate nothing.
+
+**What stops.** New assurance machinery beyond what composition needs: defeaters, Jev decisions, the PCB engine.

@@ -1,6 +1,6 @@
 # Composition — from five circuits to real projects
 
-> Proposal, 2026-10-03. Status: **awaiting the owner's yes.**
+> Proposal, 2026-10-03. Status: **approved 2026-10-03; the current phase** (`brain/decisions.md` [2026-10-03]).
 > Target sentence: *"Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED."*
 > Done means: that sentence produces one board with a schematic, firmware that compiles, a BOM and graded
 > claims, and you can build it from the outputs.
@@ -57,7 +57,7 @@ or light sensor, servo, push button. The order comes from what people actually a
   written is refused by name, and that refusal is the backlog.
 - No new defeaters or other assurance machinery beyond what composition itself needs.
 
-## The decision needed from you
+## Decided 2026-10-03: the buzzer drive
 
 **The buzzer drive.** The recommendation is to switch it with a transistor (the M3 load-switch block), because
 that same block then runs relays, motors and pumps. The cheaper alternative is a passive piezo driven straight

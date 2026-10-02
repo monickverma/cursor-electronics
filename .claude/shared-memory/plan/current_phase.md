@@ -1,3 +1,20 @@
+# Current Phase: Composition — several blocks on one board (opened 2026-10-03)
+
+> Plan of record: `COMPOSITION_PLAN.md`. Decided by the owner, `brain/decisions.md` [2026-10-03].
+> Exit: *"Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED"* produces
+> one board with a schematic, firmware that compiles, a BOM and graded claims.
+>
+> | # | Milestone | Status |
+> |---|---|---|
+> | M1 | Composer: blocks on one board, pins allocated, one CircuitIR | ⏳ next |
+> | M2 | Behaviour rules → composite firmware | — |
+> | M3 | Load-switch block (buzzer first) | — |
+> | M4 | Board-level checks + LLM/form front door + UI | — |
+>
+> Phase 3 as written is not opened. Alongside, gating nothing: `fieldwork/`.
+
+---
+
 # Current Phase: Phase 2 — Validation Engine — ✅ COMPLETE (2026-10-02)
 
 > **Phase 2 is closed.** Every gate of `PHASE_2_PLAN_v2.md` §5 is met, or deferred with a trigger; see
