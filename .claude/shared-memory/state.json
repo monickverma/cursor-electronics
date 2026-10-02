@@ -1,14 +1,17 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-10-01T23:24:10.030391Z",
-  "generated_from_commit": "fa9de7f",
+  "generated_at": "2026-10-02T00:40:29.587622Z",
+  "generated_from_commit": "01aa82f",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
     "current": 2,
     "name": "Validation Engine",
-    "status": "in_progress",
+    "status": "complete",
+    "phase2_gates_met": 27,
+    "phase2_gates_deferred": 2,
+    "phase2_gates_total": 29,
     "phase1_status": "closed_with_deferral",
     "phase1_criteria_done": 11,
     "phase1_criteria_total": 12,
@@ -472,14 +475,297 @@
       "file": "backend/pricing/live.py",
       "exists": true,
       "test_status": "passing"
+    },
+    "ai/openai_compat": {
+      "status": "verified_done",
+      "file": "backend/ai/openai_compat.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "core/ir_examples": {
+      "status": "verified_done",
+      "file": "backend/core/ir_examples.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "data/component_constraints": {
+      "status": "verified_done",
+      "file": "backend/data/component_constraints.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "db/models": {
+      "status": "verified_done",
+      "file": "backend/db/models.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "main": {
+      "status": "verified_done",
+      "file": "backend/main.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "middleware/rate_limit": {
+      "status": "verified_done",
+      "file": "backend/middleware/rate_limit.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "worker": {
+      "status": "verified_done",
+      "file": "backend/worker.py",
+      "exists": true,
+      "test_status": "passing"
     }
   },
   "test_summary": {
-    "passed": 2261,
+    "passed": 2273,
     "failed": 0,
     "skipped": 32,
-    "total": 2261
+    "total": 2273
   },
+  "phase2_gates": [
+    {
+      "stage": 0,
+      "gate": "Every request produces a complete log row",
+      "status": "met",
+      "evidence": [
+        "tests/test_request_log.py"
+      ]
+    },
+    {
+      "stage": 0,
+      "gate": "RC low-pass predict() matches ngspice across the declared grid (≤ 2%)",
+      "status": "met",
+      "evidence": [
+        "tests/test_envelope_grid.py::TestRCEnvelopeGrid::test_clean_grid_passes_within_two_percent"
+      ]
+    },
+    {
+      "stage": 0,
+      "gate": "Grid harness fails on a 5% injected error in generate()",
+      "status": "met",
+      "evidence": [
+        "tests/test_envelope_grid.py::TestFaultInjectionMatrix::test_five_percent_fault_is_detected"
+      ]
+    },
+    {
+      "stage": 0,
+      "gate": "envelope() refuses out-of-range intents with a named reason",
+      "status": "met",
+      "evidence": [
+        "tests/test_generator_protocol.py",
+        "tests/test_generator_library.py::TestRefusedByName"
+      ]
+    },
+    {
+      "stage": 0,
+      "gate": "Explanation derivability answered, with evidence ([2026-09-20])",
+      "status": "met",
+      "evidence": [
+        "tests/test_derived_explainer.py"
+      ]
+    },
+    {
+      "stage": 1,
+      "gate": "No code path lets the LLM write CircuitIR — asserted by test",
+      "status": "met",
+      "evidence": [
+        "tests/test_llm_cannot_write_circuit_ir.py"
+      ]
+    },
+    {
+      "stage": 1,
+      "gate": "Form produces valid IntentIR for all five generators, 0 API calls",
+      "status": "met",
+      "evidence": [
+        "tests/test_form_producer.py"
+      ]
+    },
+    {
+      "stage": 1,
+      "gate": "False-acceptance rate on the labelled corpus, reported with the corpus named",
+      "status": "met",
+      "evidence": [
+        "tests/test_abstention_corpus.py"
+      ]
+    },
+    {
+      "stage": 1,
+      "gate": "underdetermined non-empty → the system asks, never generates",
+      "status": "met",
+      "evidence": [
+        "tests/test_intent_ir.py",
+        "tests/test_intent_producer.py"
+      ]
+    },
+    {
+      "stage": 2,
+      "gate": "Determinism: same IntentIR + version → byte-identical CircuitIR",
+      "status": "met",
+      "evidence": [
+        "tests/test_realize.py"
+      ]
+    },
+    {
+      "stage": 2,
+      "gate": "Idempotence: an empty patch → identical output",
+      "status": "met",
+      "evidence": [
+        "tests/test_intent_patch.py"
+      ]
+    },
+    {
+      "stage": 2,
+      "gate": "Locality: the CircuitIR diff lies inside the declared dependency closure",
+      "status": "met",
+      "evidence": [
+        "tests/test_realize.py",
+        "tests/test_generator_library.py::TestLocality"
+      ]
+    },
+    {
+      "stage": 2,
+      "gate": "Orphaned annotations surfaced, never dropped",
+      "status": "met",
+      "evidence": [
+        "tests/test_annotations.py"
+      ]
+    },
+    {
+      "stage": 2,
+      "gate": "'Use a DS18B20 instead' end-to-end with a predict()-delta justification",
+      "status": "deferred",
+      "trigger": "[2026-09-21] Stage 2 verification, item 15 — trigger: a temperature-sensor generator that offers a DS18B20 (no Phase 2 stage builds one)"
+    },
+    {
+      "stage": 3,
+      "gate": "All five generators at the Stage 0 grid gate (≤ 2% against ngspice)",
+      "status": "met",
+      "evidence": [
+        "tests/test_generator_library.py::TestGridGate"
+      ]
+    },
+    {
+      "stage": 3,
+      "gate": "Every design emits claim objects with kind/grade/scope/defeaters",
+      "status": "met",
+      "evidence": [
+        "tests/test_claims.py",
+        "tests/test_generator_library.py::TestClaimsAtEveryGridPoint"
+      ]
+    },
+    {
+      "stage": 3,
+      "gate": "grade_floor derived in regen_state.py and reported at the top",
+      "status": "met",
+      "evidence": [
+        "tests/test_claims.py"
+      ]
+    },
+    {
+      "stage": 3,
+      "gate": "'Not assessed' and 'out of scope' rendered as visible rows",
+      "status": "met",
+      "evidence": [
+        "tests/test_claims.py",
+        "tests/test_accepted_designs.py"
+      ]
+    },
+    {
+      "stage": 3,
+      "gate": "Waveform viewer renders AC / transient / DC",
+      "status": "met",
+      "evidence": [
+        "tests/test_waveforms.py"
+      ]
+    },
+    {
+      "stage": 4,
+      "gate": "Divider and LED claims proven over full tolerance (G1)",
+      "status": "met",
+      "evidence": [
+        "tests/test_proof.py"
+      ]
+    },
+    {
+      "stage": 4,
+      "gate": "RC cutoff proven over full tolerance, π bracketed (G1)",
+      "status": "met",
+      "evidence": [
+        "tests/test_proof.py"
+      ]
+    },
+    {
+      "stage": 4,
+      "gate": "Every property back-translated and signed off before it counts",
+      "status": "met",
+      "evidence": [
+        "tests/test_sign_off.py"
+      ]
+    },
+    {
+      "stage": 4,
+      "gate": "Adversarial weakening: the refine loop cannot change a frozen property",
+      "status": "met",
+      "evidence": [
+        "tests/test_proof.py",
+        "tests/test_sign_off.py"
+      ]
+    },
+    {
+      "stage": 4,
+      "gate": "Every proven property fails under an injected wrong value",
+      "status": "met",
+      "evidence": [
+        "tests/test_proof.py",
+        "tests/test_proof_oracle.py"
+      ]
+    },
+    {
+      "stage": 5,
+      "gate": "100% of emitted firmware compiles under PlatformIO before display",
+      "status": "met",
+      "evidence": [
+        "tests/test_firmware_gate.py::TestEveryVariantCompiles",
+        "tests/test_firmware_gate.py::TestTheGateNeverShowsUnbuiltSource"
+      ]
+    },
+    {
+      "stage": 5,
+      "gate": "Pin-mux, peripheral-conflict and strapping-pin checks on a labelled set",
+      "status": "met",
+      "evidence": [
+        "tests/test_pin_rules.py",
+        "tests/test_multi_target.py"
+      ]
+    },
+    {
+      "stage": 6,
+      "gate": "No substitution surfaces that fails the original's checks",
+      "status": "met",
+      "evidence": [
+        "tests/test_substitution.py"
+      ]
+    },
+    {
+      "stage": 6,
+      "gate": "Every price carries price_asof; pricing never gates validation",
+      "status": "met",
+      "evidence": [
+        "tests/test_bom.py",
+        "tests/test_substitution.py",
+        "tests/test_pricing.py"
+      ]
+    },
+    {
+      "stage": 6,
+      "gate": "5%-of-manual-engineer KPI",
+      "status": "deferred",
+      "trigger": "PHASE_2_PLAN_v2.md §5 Stage 6 and [2026-09-25] Stage 6 — trigger: an engineer is available"
+    }
+  ],
   "phase1_criteria": [
     {
       "status": "✅",
@@ -562,9 +848,7 @@
       "D7": [
         "dht22_node",
         "led_indicator",
-        "rc_lowpass",
-        "rs485_node",
-        "voltage_divider"
+        "rs485_node"
       ]
     },
     "not_assessed": {},
@@ -573,8 +857,7 @@
         "grade_floor": "G1",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1",
-          "D7"
+          "D1"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -594,8 +877,7 @@
         "grade_floor": "G2",
         "coverage_le_g2": 1.0,
         "open_defeaters": [
-          "D1",
-          "D7"
+          "D1"
         ],
         "not_assessed": [],
         "floor_claims": [
@@ -699,13 +981,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "fa9de7f feat: the LED is the Würth 150080RS75000; its V_F minimum is a stated 1.6 V",
-    "736ba9c Merge pull request #3 from monickverma/phase2-review-fixes",
-    "3c7fecd chore: regenerate state.json / progress.yaml after the review fixes",
-    "5d750f8 test: bring three suites up to date with the review fixes",
-    "ef8f808 fix: the 25 findings of PR #2's pre-merge review; three datasheets read"
+    "01aa82f feat: Phase 2 closes — its exit gate written into the repo and derived from the tests",
+    "401a8d7 Merge pull request #4 from monickverma/led-wurth-150080rs75000",
+    "63e55a6 jev: the LED decision re-run under the stability-gated protocol, committed and re-runnable",
+    "eceeec4 data: the engineer's figure confirmations, signed by monick",
+    "3695af2 chore: regenerate state.json / progress.yaml after the LED change"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md |  58 +++++++\n backend/core/ir_examples.py              |   8 +-\n backend/data/component_constraints.py    |  14 +-\n backend/data/component_db.json           |",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    |  45 +++++++++\n .claude/shared-memory/plan/current_phase.md |  27 ++++-\n .claude/shared-memory/plan/master_plan.md   |  15 ++-\n .claude/shared-memory/tools",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
