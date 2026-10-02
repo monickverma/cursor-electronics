@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-10-01T22:35:27.422359Z'
+generated_at: '2026-10-01T23:34:33.234029Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -1850,7 +1850,7 @@ files:
           statement.
         signature: 'prove(statement: Statement, problem: Problem, strategies: Sequence[Strategy])
           -> ProofResult'
-        line: 830
+        line: 839
         test_file: *id010
       FrozenPropertyViolation:
         status: verified_done
@@ -1867,14 +1867,14 @@ files:
           does.
         signature: 'falsify(circuit: CircuitIR, spec: PropertySpec, netlist_text:
           Optional[str]) -> Optional[Mutation]'
-        line: 1000
+        line: 1009
         test_file: *id010
       check:
         status: verified_done
         type: function
         description: (Statement, Problem, ProofResult) for one property of one design.
         signature: 'check(circuit: CircuitIR, spec: PropertySpec, netlist_text: Optional[str])'
-        line: 937
+        line: 946
         test_file: *id010
     module_status: done
   data/mcu_targets:
@@ -2189,14 +2189,14 @@ files:
         description: The figure's current value, from the table that owns it. KeyError
           if there is none.
         signature: 'value(figure_id: str) -> Any'
-        line: 282
+        line: 286
         test_file: tests/test_d7_figures.py
       record_hash:
         status: verified_done
         type: function
         description: Covers the record and the value; an edit voids a verification
         signature: 'record_hash(figure_id: str) -> str'
-        line: 299
+        line: 303
         test_file: tests/test_d7_figures.py
       verified:
         status: verified_done
@@ -2205,7 +2205,7 @@ files:
           checked.
         signature: 'verified(figure_id: str, rows: Optional[Iterable[Tuple[str, str,
           str, str]]]) -> bool'
-        line: 349
+        line: 353
         test_file: tests/test_d7_figures.py
       trusted:
         status: verified_done
@@ -2214,7 +2214,7 @@ files:
           trusted
         signature: 'trusted(figure_id: str, rows: Optional[Iterable[Tuple[str, str,
           str, str]]], _seen: Tuple[str, ...]) -> bool'
-        line: 358
+        line: 362
         test_file: tests/test_d7_figures.py
       untrusted:
         status: verified_done
@@ -2222,7 +2222,7 @@ files:
         description: The figures a claim reads that keep D7 open
         signature: 'untrusted(figures: Iterable[str], rows: Optional[Iterable[Tuple[str,
           str, str, str]]]) -> Tuple[str, ...]'
-        line: 373
+        line: 377
         test_file: tests/test_d7_figures.py
       of:
         status: verified_done
@@ -2230,7 +2230,7 @@ files:
         description: Figure ids `<owner>/<key>`; KeyError for one with no record —
           a claim may not read an unrecorded figure.
         signature: 'of(owner: str) -> Tuple[str, ...]'
-        line: 380
+        line: 384
         test_file: tests/test_d7_figures.py
       passive:
         status: verified_done
@@ -2238,7 +2238,7 @@ files:
         description: 'Figures of a tabulated passive: its resistor series, or the
           capacitor itself.'
         signature: 'passive(part_number: str) -> Tuple[str, ...]'
-        line: 389
+        line: 393
         test_file: tests/test_d7_figures.py
       evidence:
         status: verified_done
@@ -2246,7 +2246,7 @@ files:
         description: The agent's check of each record against its document; {} if
           there is none. Read by
         signature: 'evidence(path: Optional[str]) -> Dict[str, Any]'
-        line: 310
+        line: 314
         test_file: tests/test_d7_figures.py
     module_status: done
   validation/figure_audit:

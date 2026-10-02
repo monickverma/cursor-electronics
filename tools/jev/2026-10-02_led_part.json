@@ -1,0 +1,236 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "project": {
+   "name": "Circuit OS",
+   "what_it_is": "An AI hardware compiler: a plain-English request becomes a schematic, microcontroller firmware, a SPICE simulation and a bill of materials (BOM) for small circuits.",
+   "how_a_design_is_made": "A request becomes a structured requirement (IntentIR), written by a form or by an LLM. A deterministic generator for that circuit type accepts it or refuses it with a named reason, then builds the circuit. Five generators exist: RC low-pass filter, voltage divider, LED indicator, DHT22 temperature sensor node, RS-485 Modbus node. The last three include a microcontroller on one of three boards: Arduino Uno (ATmega328P, 5 V), ESP32-DevKitC (3.3 V), STM32 Black Pill (3.3 V).",
+   "claims_and_grades": "Every design carries claims such as 'the LED current stays between 8.19 and 11.4 mA over every part tolerance'. Each claim has an evidence grade: G1 = decided exactly over the whole tolerance range (by an SMT solver or exact corner evaluation), G2 = a sound but loose bound, up to G7 = merely asserted. Properties are proved from the design's own SPICE netlist and signed off by the user. The whole library reaches G1 once signed. A design's headline grade is its worst critical claim, never an average.",
+   "what_a_defeater_is": "A defeater is a recorded doubt that could make a claim false even though its proof is correct — for example, that the mathematical model does not match real hardware. Rules: a defeater is never folded into the grade (a G1 proof over an unvalidated model is 'G1 carrying a model defeater'); a claim citing an open defeater is reported as 'holds, defeasible', never plain 'holds'; a defeater is eliminated only by the evidence named in its 'eliminated_by' field. Defeaters are cited per claim, derived by code from the design, never typed by hand. Statuses: open, deferred (with a named trigger), eliminated.",
+   "principles_the_project_holds": [
+    "An unchecked rule is never reported as a passed one.",
+    "Each fact has exactly one owner in the code; everywhere else reads it.",
+    "Evidence is derived by code and re-checked by tests, not asserted in prose.",
+    "A defeater register is a mitigation, not a cure: honest reporting matters more than a clean-looking board."
+   ],
+   "team_and_resources": {
+    "people": "One engineer (a student), working with an AI coding agent that writes most of the code.",
+    "lab_equipment": "No oscilloscope or signal generator is available and none is expected (recorded 2026-08-07). Whether the engineer owns a multimeter or an Arduino Uno is not recorded; the project has compiled firmware for all three boards but has never flashed one. A basic multimeter and an Uno clone cost roughly US$15-25 together.",
+    "external_users": "None yet. The product has not launched; no one outside the project has seen a claim.",
+    "who_can_verify_a_datasheet": "Only the engineer. The agent is itself an LLM, so any figure it reads from a datasheet counts as LLM-extracted."
+   },
+   "where_the_project_is": "Phase 2 (the Validation Engine) is complete and merged: all seven stages, 0 to 6, including Stage 6 (BOM and part substitution). The suite has about 2,260 passing tests. Live Mouser pricing is on (the engineer set the API key; Mouser answers from its India store). On 2026-10-02 the engineer confirmed 124 part figures under their own name, from the agent's page-cited datasheet evidence, so defeater D7 now closes on any claim that reads only confirmed guaranteed figures.",
+   "what_d7_is": "Defeater D7: a claim reads a part figure (a rating, tolerance, forward voltage) that no person has confirmed against the maker's document. Only figures of kind 'guaranteed' (or a derived figure whose inputs are all guaranteed) can be trusted after confirmation. A figure of kind 'typical' or 'assumption' never can: a claim that reads one keeps D7 for good, unless a bench measurement (defeater D1's evidence) covers it."
+  },
+  "the_led_generator": {
+   "what_it_builds": "A microcontroller GPIO pin drives a red LED through a series resistor R1. The user asks for an LED current (default 2 mA); the generator picks R1 from the E96 series for that current at typical parts, then proves bounds over every part tolerance.",
+   "how_the_led_is_modelled": "A Shockley diode fitted three times, so that its forward voltage at the 20 mA test current equals the datasheet's minimum, typical and maximum V_F. The fit at the minimum gives the worst-case highest current, which three safety claims read: the MCU pin's source-current limit (20 mA on every board), the LED's own continuous-current rating, and R1's power rating. The fit at the typical picks R1. The fit at the maximum gives the lowest current, which the 'current band' claim reads.",
+   "figures_the_claims_read": [
+    "forward_voltage_v (min, typ, max)",
+    "test_current_ma (20)",
+    "max_continuous_current_ma",
+    "ideality (an assumption, 2.0)"
+   ]
+  },
+  "the_problem": "The catalogue names the LED '67-21URC/S530-A3/TR8' with V_F 1.7 min / 2.0 typ / 2.4 max at 20 mA and a 25 mA continuous rating. That part number does not exist: Everlight's search returns no 67-21URC part, and Mouser returns no listing for it either. The figures match a different Everlight part, the 0805 17-21SURC/S530-A2/TR8. Until this is resolved, the BOM orders a part nobody makes, and the four LED figures cannot be confirmed (they are the only part figures left unconfirmed apart from the Black Pill board rows).",
+  "options": {
+   "everlight_17_21surc_a2": {
+    "part": "Everlight 17-21SURC/S530-A2/TR8, 0805 (2012 metric), red 624 nm",
+    "datasheet": "Everlight DSE-0008896 Rev.5, 2016-12-07 (read): V_F 1.7 min / 2.0 typ / 2.4 max at 20 mA; 25 mA continuous; 60 mA peak; 60 mW; 5 V reverse.",
+    "availability": "Mouser: no listing at all. The sibling 17-21SURC/S530-A3/TR8 is listed by Mouser as 'End of Life', no stock, 9,000 minimum. An earlier check of this part found it discontinued.",
+    "design_effect": "None: every figure is already the catalogue's. All four figures can be confirmed."
+   },
+   "everlight_67_21surc_a3": {
+    "part": "Everlight 67-21SURC/S530-A3/TR8, PLCC-2, red",
+    "datasheet": "Everlight DSE-671-156 (2007, read from a distributor's copy): V_F 2.0 typ / 2.4 max at 20 mA, minimum left blank; 25 mA continuous; 60 mA peak; 60 mW; 5 V reverse.",
+    "availability": "Mouser: listed (638-21SURCS530A3TR8) with no stock, no price and a 3,000-piece minimum.",
+    "design_effect": "Typical and maximum unchanged, so R1 choices are unchanged. The minimum must be assumed: see `vf_minimum`."
+   },
+   "wurth_150080rs75000": {
+    "part": "Würth Elektronik 150080RS75000 (WL-SMCW), 0805, red 625 nm",
+    "datasheet": "Würth datasheet revision 003.000, 2022-05-20 (read, from we-online.com): V_F 2.0 typ / 2.4 max at 20 mA, no minimum, 'forward voltage tolerance under measurement conditions ±0.1 V'; 30 mA continuous; 100 mA peak (1/10 duty); 72 mW.",
+    "availability": "Mouser: 212,999 in stock, minimum 1, ₹18.15 each.",
+    "design_effect": "Typical and maximum identical to the catalogue's, so R1 choices are unchanged. The LED rating rises from 25 to 30 mA (looser). The minimum must be assumed: see `vf_minimum`."
+   },
+   "kingbright_apt2012surck": {
+    "part": "Kingbright APT2012SURCK, 0805, hyper red 630 nm",
+    "datasheet": "Kingbright DSAD0945 Rev V.21A, 2025-03-17 (read): V_F 1.95 typ / 2.5 max at 20 mA, no minimum, '±0.1 V'; 30 mA continuous; 185 mA peak; 75 mW.",
+    "availability": "Mouser: 124,605 in stock, minimum 1, ₹19.11 each.",
+    "design_effect": "Typical moves 2.0 → 1.95 V and maximum 2.4 → 2.5 V, so some R1 choices and every LED band change and their signed proofs must be re-signed. The minimum must be assumed."
+   },
+   "also_stocked_not_read": "Lite-On LTST-C171KRKT (0805, 296,886 in stock, ₹15.29) and LTST-C170KRKT; their datasheet could not be fetched (certificate error); distributors list V_F 2.0 typ / 2.4 max with no minimum."
+  },
+  "vf_minimum": {
+   "the_fact": "Of the five red LED datasheets read, only the discontinued Everlight 0805 states a minimum V_F (1.7 V). Würth, Kingbright and Everlight's PLCC-2 leave it blank, and the Lite-On listings do too. Choosing any part except the discontinued one means the minimum is a stated assumption, of kind 'assumption': the three safety claims that read it keep D7 for good, unless a bench measurement of the actual LED covers them.",
+   "effect_by_assumed_minimum": {
+    "1.7 V": {
+     "highest_accepted_current_ma_by_board": {
+      "arduino_uno": 15,
+      "esp32_devkitc": 12,
+      "blackpill_f411ce": 12
+     },
+     "worst_case_led_current_ma_at_the_2_ma_default": {
+      "arduino_uno": [
+       1.71,
+       2.22
+      ],
+      "esp32_devkitc": [
+       1.38,
+       2.5
+      ],
+      "blackpill_f411ce": [
+       1.38,
+       2.46
+      ]
+     }
+    },
+    "1.6 V": {
+     "highest_accepted_current_ma_by_board": {
+      "arduino_uno": 15,
+      "esp32_devkitc": 12,
+      "blackpill_f411ce": 12
+     },
+     "worst_case_led_current_ma_at_the_2_ma_default": {
+      "arduino_uno": [
+       1.71,
+       2.28
+      ],
+      "esp32_devkitc": [
+       1.38,
+       2.64
+      ],
+      "blackpill_f411ce": [
+       1.38,
+       2.6
+      ]
+     }
+    },
+    "1.5 V": {
+     "highest_accepted_current_ma_by_board": {
+      "arduino_uno": 15,
+      "esp32_devkitc": 10,
+      "blackpill_f411ce": 12
+     },
+     "worst_case_led_current_ma_at_the_2_ma_default": {
+      "arduino_uno": [
+       1.71,
+       2.35
+      ],
+      "esp32_devkitc": [
+       1.38,
+       2.78
+      ],
+      "blackpill_f411ce": [
+       1.38,
+       2.74
+      ]
+     }
+    },
+    "1.4 V": {
+     "highest_accepted_current_ma_by_board": {
+      "arduino_uno": 12,
+      "esp32_devkitc": 10,
+      "blackpill_f411ce": 10
+     },
+     "worst_case_led_current_ma_at_the_2_ma_default": {
+      "arduino_uno": [
+       1.71,
+       2.41
+      ],
+      "esp32_devkitc": [
+       1.38,
+       2.92
+      ],
+      "blackpill_f411ce": [
+       1.38,
+       2.88
+      ]
+     }
+    },
+    "1.2 V": {
+     "highest_accepted_current_ma_by_board": {
+      "arduino_uno": 12,
+      "esp32_devkitc": 10,
+      "blackpill_f411ce": 10
+     },
+     "worst_case_led_current_ma_at_the_2_ma_default": {
+      "arduino_uno": [
+       1.71,
+       2.54
+      ],
+      "esp32_devkitc": [
+       1.38,
+       3.21
+      ],
+      "blackpill_f411ce": [
+       1.38,
+       3.16
+      ]
+     }
+    }
+   },
+   "how_to_read_it": "The envelope (what the generator accepts) is checked at 1, 2, 5, 8, 10, 12, 15 and 20 mA. A lower assumed minimum is safer if real parts can be that low, at the cost of refusing the highest currents on 3.3 V boards. Physically, a red AlGaInP LED at 20 mA rarely drops below about 1.8 V; Everlight's own 0805 guarantees 1.7 V; Würth and Kingbright state ±0.1 V measurement tolerance around their binned values.",
+   "bench_option": "The engineer has a bench session planned (D1) with an Arduino Uno and a multimeter. Measuring V_F of the actual LED at a known current is a few minutes and would let the claims rest on a measurement instead of an assumption — for that LED, not for every LED of the part."
+  },
+  "constraints": [
+   "The LLM never writes a design; the part choice becomes a catalogue edit in data files, reviewed in a PR.",
+   "A changed figure invalidates the engineer's confirmation of that figure; they re-confirm under their name.",
+   "Changing the part number changes every LED design's BOM and re-derives the designs on their next patch."
+  ],
+  "follow_up": {
+   "your_first_answers": {
+    "led_part": {
+     "choice": "wurth_150080rs75000",
+     "confidence": 0.57
+    },
+    "vf_minimum_rule": {
+     "choice": "assume_1_7_and_bench",
+     "confidence": 0.57
+    },
+    "documented_minimum_outweighs_availability": {
+     "noul": 0.68
+    },
+    "red_led_vf_below_1_7_plausible": {
+     "noul": 0.41
+    }
+   },
+   "the_tension": "You preferred an orderable part (Würth) yet judged documented figures more important than availability (0.68). These are reconcilable only if the documentation the Everlight 0805 offers is worth something even when its part is not the one ordered.",
+   "facts_added": {
+    "what_documented_buys": "With the Everlight 17-21SURC/S530-A2/TR8 every LED figure is of kind 'guaranteed', so once the engineer confirms them, D7 leaves the three LED safety claims. With any other part, the minimum V_F is an assumption and those three claims keep D7 until a bench measurement covers them. In both cases D1 (no bench measurement) keeps those claims 'holds, defeasible' anyway, so the headline result a user sees is the same ('holds, defeasible') either way, until a bench measurement exists.",
+    "what_unorderable_costs": "The BOM is a deliverable a user orders from. A BOM naming a part with no listing at Mouser (and, per the earlier check, discontinued) cannot be ordered as written; the project's Stage 6 rule is that a price and order number belong to the exact part named, so the BOM could not even show a price for it.",
+    "no_split_allowed": "The project's 'one owner per fact' rule forbids naming one part in the BOM while taking figures from another: the figures must be the named part's own, or a stated assumption.",
+    "symmetric_minimum": "Würth gives 2.0 typ / 2.4 max: 0.4 V above typical. A minimum symmetric about the typical is 1.6 V. From the computed study, assuming 1.6 V instead of 1.7 V leaves every board's highest accepted current unchanged (Uno 15 mA, ESP32 12 mA, Black Pill 12 mA) and moves the 2 mA default's worst case from 2.22 to 2.28 mA (Uno), 2.50 to 2.64 mA (ESP32), 2.46 to 2.60 mA (Black Pill) — all far inside the 20 mA pin and 30 mA LED limits. 1.5 V is the first value that costs reach (ESP32 drops to 10 mA).",
+    "physics": "Red AlGaInP emits near 625–630 nm, a photon energy of about 1.97–1.98 eV; at 20 mA the junction forward voltage sits near or slightly above that, and series resistance adds to it. Everlight's 0805 of the same chemistry guarantees 1.7 V minimum; Würth and Kingbright quote ±0.1 V measurement tolerance on binned values (bins not listed for this Würth part).",
+    "bench_reach": "A bench V_F measurement covers the one measured design (generator, board, requirements, netlist) — not every LED design, and not every LED of the part."
+   }
+  }
+ },
+ "questions": {
+  "led_part_final": {
+   "type": "choice",
+   "instructions": "Given `follow_up` as well as everything before it, which part should the catalogue name? The choice is final for now; it can be revisited when a bench measurement exists.",
+   "criteria": {
+    "everlight_17_21surc_a2": "Everlight 17-21SURC/S530-A2/TR8: documented minimum, cannot be ordered.",
+    "wurth_150080rs75000": "Würth 150080RS75000: stocked; minimum V_F a stated assumption.",
+    "none_of_these": "None of these is right, or the state does not contain enough to choose."
+   }
+  },
+  "vf_minimum_final": {
+   "type": "choice",
+   "instructions": "For a part without a documented minimum V_F, which stated assumption should the catalogue carry? A V_F measurement will be added to the planned bench session in every case.",
+   "criteria": {
+    "1_7_from_everlight_0805": "1.7 V, sourced to Everlight's guaranteed minimum for its comparable 0805.",
+    "1_6_symmetric": "1.6 V, symmetric about the typical; costs no reach versus 1.7 V per `facts_added`.",
+    "none_of_these": "None of these is right, or the state does not contain enough to choose."
+   }
+  },
+  "vf_below_1_6_plausible": {
+   "type": "noul",
+   "instructions": "With `follow_up.facts_added.physics`: is it plausible that a red AlGaInP 0805 like the Würth part drops below 1.6 V forward at 20 mA and 25 °C?",
+   "criteria": {
+    "true": "Yes, plausible.",
+    "false": "No, not plausible."
+   }
+  }
+ }
+}

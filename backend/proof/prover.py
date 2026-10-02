@@ -542,8 +542,17 @@ def compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text: str)
         comp = next(c for c in circuit.components if c.id == d_name.split("_", 1)[1])
         vf = get_constraints(comp.part_number)["forward_voltage_v"]
         test_ma = get_constraints(comp.part_number)["test_current_ma"]
-        conditions.append(f"{comp.id}'s forward voltage anywhere in its datasheet range of "
-                          f"{vf['min']}–{vf['max']} V at {test_ma} mA")
+        from data.figures import FIGURES, Kind
+
+        record = FIGURES.get(f"{comp.part_number}/forward_voltage_v")
+        if record is not None and record.kind == Kind.ASSUMPTION:
+            # The signer must see that the bottom of the range is assumed ([2026-10-02]).
+            conditions.append(f"{comp.id}'s forward voltage anywhere from {vf['min']} V (assumed: the "
+                              f"datasheet gives no minimum) to its datasheet maximum of {vf['max']} V "
+                              f"at {test_ma} mA")
+        else:
+            conditions.append(f"{comp.id}'s forward voltage anywhere in its datasheet range of "
+                              f"{vf['min']}–{vf['max']} V at {test_ma} mA")
     english = back_translate(spec, relevant, conditions)
     statement = Statement(spec=spec, variables=tuple(relevant), conditions=tuple(conditions), english=english,
                           uses_pi=uses_pi, bracketed=kind in ("cutoff", "rise_time", "diode_current", "series_power"),

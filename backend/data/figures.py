@@ -82,7 +82,8 @@ _ESP32 = Source("Espressif", "ESP32-WROOM-32E & ESP32-WROOM-32UE datasheet v2.1;
                 "§5 power consumption and the notes on the ESP32 pin lists")
 _STM32 = Source("STMicroelectronics", "STM32F411xC/xE datasheet (DS10314)",
                 "§ Electrical characteristics — I/O port characteristics; operating conditions")
-_LED = Source("Everlight", "67-21URC/S530-A3/TR8 datasheet", "Electro-Optical Characteristics; Absolute Maximum Ratings")
+_LED = Source("Würth Elektronik", "150080RS75000 (WL-SMCW) datasheet, revision 003.000 (2022-05-20)",
+              "Optical & Electrical Properties; Absolute Maximum Ratings")
 _DHT = Source("Aosong (ASAIR)", "AM2302 Technical Manual V1.0", "Table 2 Electric Specification; single-bus timing table")
 _MAX485 = Source("Analog Devices (Maxim)", "MAX481/MAX483/MAX485/MAX487–MAX491/MAX1487 datasheet",
                  "Electrical Characteristics")
@@ -170,12 +171,15 @@ _SCALARS: List[Figure] = [
           "132 Ω on 3.3 V is 25 mA — above the 24.4 mA maximum run current at 100 MHz from flash with "
           "all peripherals enabled (Table 23, V_DD = 3.6 V, 125 °C); 11.6 mA typical with them disabled",
           "input leakage I_lkg of a standard I/O pin: ±1 µA maximum for V_SS ≤ V_IN ≤ V_DD"),
-    Figure("67-21URC/S530-A3/TR8/forward_voltage_v", Kind.GUARANTEED,
-           "V_F 1.7 V minimum, 2.4 V maximum at I_F = 20 mA; 2.0 V typical", _LED),
-    Figure("67-21URC/S530-A3/TR8/test_current_ma", Kind.GUARANTEED, "the forward-voltage test condition, 20 mA", _LED),
-    Figure("67-21URC/S530-A3/TR8/max_continuous_current_ma", Kind.GUARANTEED,
-           "25 mA continuous forward current, absolute maximum", _LED),
-    Figure("67-21URC/S530-A3/TR8/ideality", Kind.ASSUMPTION,
+    # The minimum is an assumption, so the record is one: a claim reading V_F keeps D7
+    # until a bench measurement covers it ([2026-10-02]).
+    Figure("150080RS75000/forward_voltage_v", Kind.ASSUMPTION,
+           "V_F 2.0 V typical, 2.4 V maximum at I_F = 20 mA (Würth); the 1.6 V minimum is assumed — Würth "
+           "publishes none — symmetric about the typical", _LED),
+    Figure("150080RS75000/test_current_ma", Kind.GUARANTEED, "the forward-voltage test condition, 20 mA", _LED),
+    Figure("150080RS75000/max_continuous_current_ma", Kind.GUARANTEED,
+           "30 mA continuous forward current, absolute maximum", _LED),
+    Figure("150080RS75000/ideality", Kind.ASSUMPTION,
            "the diode model's ideality factor, 2.0 — not published; chosen so one Shockley curve "
            "spans the V_F range", _LED),
     Figure("DHT22/supply_voltage_min", Kind.GUARANTEED, "3.3 V minimum supply", _DHT),

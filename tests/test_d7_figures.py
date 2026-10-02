@@ -89,7 +89,9 @@ class TestRegistry:
 
     def test_assumptions_and_typicals_are_labelled_as_such(self):
         assert F.FIGURES["DHT22/bus_capacitance_pf_per_m"].kind == F.Kind.ASSUMPTION
-        assert F.FIGURES["67-21URC/S530-A3/TR8/ideality"].kind == F.Kind.ASSUMPTION
+        assert F.FIGURES["150080RS75000/ideality"].kind == F.Kind.ASSUMPTION
+        # [2026-10-02]: Würth publishes no V_F minimum, so the figure holding it is an assumption.
+        assert F.FIGURES["150080RS75000/forward_voltage_v"].kind == F.Kind.ASSUMPTION
         assert F.FIGURES["ATmega328P-PU/gpio_output_resistance_ohm"].kind == F.Kind.TYPICAL
         assert F.FIGURES["MAX485ECSA/receiver_threshold_mv"].kind == F.Kind.STANDARD
 

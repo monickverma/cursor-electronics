@@ -106,14 +106,14 @@ IR_002 = CircuitIR(
         ),
         Component(
             id="LED1", type=ComponentType.LED,
-            part_number="67-21URC/S530-A3/TR8", manufacturer="Everlight", package="0805",
+            part_number="150080RS75000", manufacturer="Würth Elektronik", package="0805",
             supply_voltage_max=5.0, current_draw_ma=20,
             confidence=0.85,
             justification="Standard red LED in 0805 package. Forward voltage 2.0V at 20mA. "
                           "Current limited by R1 (150Ω): I = (5V - 2.0V) / 150Ω = 20mA. "
-                          "Reverse breakdown 5V — safe in 5V system.",
-            lcsc_pn=None,   # C72038 is a yellow 0603 LED, not this part ([2026-09-30])
-            datasheet_notes=["Forward voltage Vf=2.0V at 20mA", "Max reverse voltage 5V"],
+                          "Reverse current is specified at 5V — the most a 5V system applies.",
+            lcsc_pn=None,
+            datasheet_notes=["Forward voltage Vf=2.0V typical at 20mA", "Reverse current specified at 5V"],
         ),
         Component(
             id="C1", type=ComponentType.CAPACITOR,

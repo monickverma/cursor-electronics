@@ -2409,3 +2409,85 @@ Evidence now stands at 124 agree, 2 agree in part and 39 not checked. The 39
 are the 4 records of the LED part that does not exist and the Black Pill board
 rows, which need WeAct's documents. All of this is evidence only, never
 verification: it still waits on the user's confirmation under their own name.
+
+## [2026-10-02] The LED part: Würth 150080RS75000, minimum V_F assumed 1.6 V — decided with Jev
+
+**Decision:** The LED generator's red LED is now the Würth Elektronik 150080RS75000 (WL-SMCW, 0805), not
+"67-21URC/S530-A3/TR8", a part number that does not exist (found 2026-09-25, [2026-09-30]). Würth publishes
+V_F 2.0 V typical and 2.4 V maximum at 20 mA but no minimum. The catalogue assumes **1.6 V**, symmetric about
+the typical, so `150080RS75000/forward_voltage_v` is of kind *assumption*. The three LED safety claims that
+read it (pin current, LED rating, R1 power) keep D7 until a bench measurement covers them. `led_indicator`
+moves to 0.4.0. The engineer asked for the decision to be put to Jev (TypeSafe) with the whole picture.
+
+**What was established first, in code and from documents (2026-10-02):**
+- Datasheets were read for each candidate: Everlight DSE-0008896 Rev.5 (17-21SURC/S530-A2/TR8: 1.7/2.0/2.4 V,
+  25 mA), Everlight DSE-671-156 (67-21SURC/S530-XX/TR8: 2.0/2.4 V with no minimum, 25 mA), Würth 003.000
+  2022-05-20 (2.0/2.4 V with no minimum, ±0.1 V, 30 mA, 72 mW) and Kingbright DSAD0945 V.21A (1.95/2.5 V with
+  no minimum, 30 mA, 75 mW). Of the five red LEDs looked at, only the discontinued Everlight 0805 states a
+  minimum.
+- Mouser was queried live, the first use of the engineer's key. 17-21SURC/S530-A2/TR8 has no listing.
+  67-21SURC/S530-A3/TR8 has no stock, no price and a 3,000 minimum. 17-21SURC/S530-A3/TR8 is End of Life.
+  Würth has 212,999 in stock, Kingbright 124,605 and Lite-On LTST-C171KRKT 296,886, each with a minimum of 1.
+- The effect of the assumed minimum was computed across every board at 1–20 mA (`led_vf_study.py`). 1.6 V
+  leaves the highest accepted current the same as 1.7 V: Uno 15 mA, ESP32 12 mA, Black Pill 12 mA. 1.5 V is
+  the first value that costs reach (the ESP32 drops to 10 mA). At the 2 mA default the worst case moves from
+  2.22 to 2.28 mA (Uno), 2.50 to 2.64 mA (ESP32) and 2.46 to 2.60 mA (Black Pill).
+
+**Jev's first answers** (jev-1.13.0):
+  - `led_part`: **wurth_150080rs75000**, confidence 0.57 (wurth_150080rs75000 0.66, everlight_17_21surc_a2 0.19, none_of_these 0.12, everlight_67_21surc_a3 0.02, kingbright_apt2012surck 0.01)
+  - `vf_minimum_rule`: **assume_1_7_and_bench**, confidence 0.57 (assume_1_7_and_bench 0.66, assume_1_7 0.31, none_of_these 0.02, assume_1_5 0.01, assume_1_2 0.00)
+  - `documented_minimum_outweighs_availability` (noul): 0.68
+  - `red_led_vf_below_1_7_plausible` (noul): 0.41
+
+These were in tension. Jev chose an orderable part, yet judged documented figures more important than
+availability at 0.68, and was unsure whether V_F below 1.7 V is plausible. So the follow-up added the missing
+facts and asked again, rather than repeating the same question:
+- Either way the headline stays "holds, defeasible" until a bench measurement exists (D1).
+- An unorderable part cannot even be priced (the Stage 6 rule), and "one owner per fact" forbids naming one
+  part while taking figures from another.
+- 1.6 V costs no reach.
+- The physics of red AlGaInP.
+
+**Jev's follow-up answers:**
+  - `led_part_final`: **wurth_150080rs75000**, confidence 0.94 (wurth_150080rs75000 0.96, everlight_17_21surc_a2 0.03, none_of_these 0.01)
+  - `vf_minimum_final`: **1_6_symmetric**, confidence 0.69 (1_6_symmetric 0.80, 1_7_from_everlight_0805 0.19, none_of_these 0.01)
+  - `vf_below_1_6_plausible` (noul): 0.21
+
+**How it was applied:** the part at 0.94, so acted on. The minimum at 0.69 ("act with care"); 1.6 V is also
+the more conservative and more reversible choice, and Jev puts a minimum below 1.6 V at 0.21 plausibility.
+
+**Consequences:**
+- The figure records, constraints and component database now name the Würth part. It has no static price;
+  the live Mouser quote prices it.
+- The proof text now says the bottom of the V_F range is assumed: "from 1.6 V (assumed: the datasheet gives
+  no minimum) to its datasheet maximum of 2.4 V".
+- The 5.25 V "mW rating" refusal test moved from 17 to 16 mA, because 17 mA now trips the pin limit first.
+- `docs/BENCH_D1.md`: the LED bench step also reads the voltage across LED1.
+- LED designs built by 0.3.0 re-derive on their next patch. Their signed LED proofs need signing again,
+  because the statement text changed.
+- The four new LED records need the engineer's confirmation: test current, continuous current, V_F
+  (typ/max only; the minimum stays assumed) and ideality (never trusted: an assumption).
+
+**Re-checked under the stability-gated protocol, the same day.** The engineer's own research ("Jev decisions
+for Circuit OS Phase 3", in their Downloads, not yet adopted in this log) says not to threshold on
+`confidence`. That number is the top probability rescaled by the option count. Its replacement asks every
+consultation in three variants and reads the top probability, the margin and whether the answer is stable.
+The consultation is now a committed, re-runnable file: `tools/jev/2026-10-02_led_part.{py,json,results.jsonl}`.
+The model is pinned to `jev-1.13.0`, and every attempt is logged with its state hash and request id. The
+agent's own analysis is written in the script and was recorded before the calls. It chose the same two answers.
+
+| Question | Answer in all 3 variants (original, options reversed, neutral state) | min p_top | min margin | max P(none) | Band |
+|---|---|---|---|---|---|
+| `led_part_final` | wurth_150080rs75000 | 0.94 | 0.89 | 0.02 | **act** |
+| `vf_minimum_final` | 1_6_symmetric | 0.81 | 0.63 | 0.05 | **act with care** |
+| `vf_below_1_6_plausible` (Noul) | 0.23 / 0.24 / 0.23 | | | | unsettled; diagnostic only |
+
+Classification:
+- The decision is owner-owned. The engineer delegated it explicitly ("use jev to take the decision";
+  "do what you feel like").
+- It is a two-way door: a catalogue edit, reversed by another.
+- The checks named for "act with care" are the full suite and Playwright in a clean checkout, and the D7
+  closure on the new LED records.
+- **Review trigger:** the first bench V_F reading of the Würth LED, or a Würth V_F bin table. If either puts
+  V_F under 1.6 V, the assumption is wrong and comes down.
+- The decision is recorded as `jev_supported`.

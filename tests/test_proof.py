@@ -294,7 +294,8 @@ class TestGates:
                     enclosed.add((board, point["led_current_ma"]))
                 labels = {v.label for v in statement.variables}
                 assert {"R1", "U1 pin resistance"} <= labels
-                assert "forward voltage anywhere in its datasheet range of 1.7–2.4 V" in statement.english
+                assert ("forward voltage anywhere from 1.6 V (assumed: the datasheet gives no minimum) to its "
+                        "datasheet maximum of 2.4 V") in statement.english
                 seen += 1
         assert seen == 4 * 4 * 3   # four properties, four points, three boards
         assert enclosed == self.STRADDLES_THE_PEAK
