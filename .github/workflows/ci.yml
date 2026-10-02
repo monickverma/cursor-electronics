@@ -36,6 +36,9 @@ jobs:
       REDIS_URL: redis://localhost:6379/0
       SECRET_KEY: ci-test-secret-key-minimum-32-chars-long
       ENVIRONMENT: test
+      # The Postgres service above, for the tests that need a real database
+      # (sign-off, the price cache). Unset, they skip.
+      TEST_DATABASE_URL: postgresql+asyncpg://circuitos_user:circuitos_pass@localhost:5432/circuitos_test
 
     steps:
       - uses: actions/checkout@v4
@@ -59,6 +62,23 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install -r backend/requirements.txt
+
+      # The Postgres tests expect the project schema (tests/test_postgres_signoff.py
+      # says how it is loaded locally); the service starts with an empty database.
+      - name: Load the database schema
+        run: PGPASSWORD=circuitos_pass psql -h localhost -U circuitos_user -d circuitos_test -v ON_ERROR_STOP=1 -f backend/db/schema.sql
+
+      # Stage 5's gate: every emitted firmware variant compiles under PlatformIO,
+      # on every board, before it is shown. Without PlatformIO those tests skip.
+      # The version is the one the gate was verified with (firmware/project.py).
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-6.2.0-${{ hashFiles('backend/generators/firmware/project.py') }}
+
+      - name: Install PlatformIO
+        run: pip install platformio==6.2.0
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
