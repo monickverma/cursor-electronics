@@ -33,6 +33,7 @@ will re-litigate decisions that are already settled:
 | `PRODUCT_MASTER.md` | The canonical spec. `docs/PRODUCT_MASTER_v1.md` is superseded — do not build from it |
 | `PCB_STRATEGY.md` | Why the constraint layer, not the router, is the PCB bet |
 | `CRITERION_12_REVIEW.md` | How to run the external review that closes criterion 12 |
+| `fieldwork/README.md` | The person-only steps after Phase 2: bench, D7 spot-check, signing, outside reader, users |
 
 **If you add a root-level document, add a row here in the same commit.** A doc
 absent from this table is invisible to the five-action bootstrap — the same

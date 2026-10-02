@@ -22,8 +22,12 @@ Paste the text. Ask the questions in §3. Stay quiet.
 ## 1. Produce the artefact
 
 ```
-"Arduino reads DHT22 and alerts above 30°C"
+"Arduino Uno reads a DHT22 over a 2 m cable on a 5 V supply and alerts above 30°C"
 ```
+
+(The short form, "Arduino reads DHT22 and alerts above 30°C", is refused as
+underdetermined since Stage 1 — it names no cable length or supply. 2026-10-02.
+Three texts are better than one: `fieldwork/4_outside_reader.md`.)
 
 Run it through the live pipeline and copy the explanation **verbatim**. Do not
 tidy it, reorder it, or fix a typo.
