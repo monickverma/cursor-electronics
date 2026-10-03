@@ -1,6 +1,7 @@
 # Composition — from five circuits to real projects
 
-> Proposal, 2026-10-03. Status: **approved 2026-10-03; the current phase** (`brain/decisions.md` [2026-10-03]).
+> Proposal, 2026-10-03. Status: **approved 2026-10-03; M1–M4 built 2026-10-03** (`brain/decisions.md` [2026-10-03]). The live LLM run of
+> the target sentence waits on API credits; the bench build waits on the parts.
 > Target sentence: *"Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED."*
 > Done means: that sentence produces one board with a schematic, firmware that compiles, a BOM and graded
 > claims, and you can build it from the outputs.

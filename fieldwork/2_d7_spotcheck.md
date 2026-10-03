@@ -188,3 +188,12 @@ Record the result in `brain/decisions.md` with the counts, even if they're all �
 ---
 
 **Tally:** ✅ ___ ❌ ___ ❓ ___ · checked by ______ on ______
+
+## Added 2026-10-03: the load switch's transistor, never read
+
+The nine `MMBT2222ALT1G/*` records were written from memory: onsemi's site refused every scripted download of
+**MMBT2222LT1/D Rev 13**, so `figure_evidence.json` marks them `not_checked`. Download it in your browser
+(onsemi.com → MMBT2222AL → Datasheet) and check page 2: V_CEO 40 V, I_C 600 mA, P_D 225 mW (FR-5, 25 °C),
+V_CE(sat) ≤ 0.3 V and V_BE(sat) 0.6–1.2 V at I_C = 150 mA, I_B = 15 mA. Then `python scripts/verify_figures.py
+--verify MMBT2222ALT1G/<figure> --by "<your name>"` for each one that agrees. The diode's three figures were
+read from Diodes Inc. DS30086 Rev. 31-2 (p. 2); it gave 100 V where the first record said 75 V.

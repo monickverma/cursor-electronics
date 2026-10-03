@@ -409,6 +409,23 @@ PLANNED = {
             ("compose",      "function", "Blocks on one board: one MCU, one bypass, one rail; each block built by its own generator"),
             ("allocate_pins", "function", "Requested pins, then defaults, then the first free pin; never two blocks on one pin"),
             ("Project",      "class",    "A board and its blocks — the composition request"),
+            ("board_coverage", "function", "The board's claims: every block's, relabelled, plus rail and pins"),
+            ("compose_intent", "function", "A project IntentIR → the stored board, stamped from its lineage"),
+        ],
+    },
+    "generators/load_switch": {
+        "file": "backend/generators/load_switch.py",
+        "test_file": ["tests/test_generator_library.py", "tests/test_composition_m2_m4.py"],
+        "entries": [
+            ("LoadSwitchGenerator", "class",    "NPN low-side switch; proves its own saturation (forced beta)"),
+            ("select_r1",           "function", "The largest E96 base resistor that still saturates Q1"),
+        ],
+    },
+    "generators/firmware/composite": {
+        "file": "backend/generators/firmware/composite.py",
+        "test_file": "tests/test_composition_m2_m4.py",
+        "entries": [
+            ("composite_project", "function", "One sketch for the board from its pins and behaviour rules"),
         ],
     },
     "ai/intent_patcher": {

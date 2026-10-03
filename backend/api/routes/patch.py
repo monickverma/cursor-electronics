@@ -255,6 +255,16 @@ async def patch_design(
     new_intent = outcome.intent
 
     # 5. The same gate as a fresh request. A refusal keeps v(n) untouched.
+    if new_intent.requirements.get("function") == "project":
+        # Composition M4 ships generation only: a composed board is not patched
+        # yet, and saying so beats a refusal that names no generator.
+        ctx.refuse("patching a composed board is not supported yet")
+        raise HTTPException(422, detail={
+            "error": "out_of_envelope",
+            "refusals": [{"generator": "compose", "reason": "patching a composed board is not supported "
+                          "yet; describe the changed project and generate it again"}],
+            "catalogue": list(registry.functions()),
+        })
     dispatch = registry.dispatch(new_intent)
     if not dispatch.accepted:
         ctx.refuse(dispatch.refusal_summary())

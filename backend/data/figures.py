@@ -84,6 +84,10 @@ _STM32 = Source("STMicroelectronics", "STM32F411xC/xE datasheet (DS10314)",
                 "§ Electrical characteristics — I/O port characteristics; operating conditions")
 _LED = Source("Würth Elektronik", "150080RS75000 (WL-SMCW) datasheet, revision 003.000 (2022-05-20)",
               "Optical & Electrical Properties; Absolute Maximum Ratings")
+_MMBT2222A = Source("onsemi", "MMBT2222AL / SMMBT2222AL datasheet (MMBT2222ALT1/D)",
+                    "Maximum Ratings; Thermal Characteristics; ON characteristics (h_FE, V_CE(sat), V_BE(sat))")
+_1N4148W = Source("Diodes Incorporated", "BAV16W/1N4148W datasheet, DS30086 Rev. 31-2 (September 2024)",
+                  "Maximum Ratings (V_RRM, V_RWM, V_R, I_FM)")
 _DHT = Source("Aosong (ASAIR)", "AM2302 Technical Manual V1.0", "Table 2 Electric Specification; single-bus timing table")
 _MAX485 = Source("Analog Devices (Maxim)", "MAX481/MAX483/MAX485/MAX487–MAX491/MAX1487 datasheet",
                  "Electrical Characteristics")
@@ -221,6 +225,31 @@ _SCALARS: List[Figure] = [
     *_capacitor("CL05A224KQ5NNNC", "0402 X5R 220 nF, Q = 6.3 V"),
     *_capacitor("CL05B472KB5NNNC", "0402 X7R 4.7 nF, B = 50 V"),
     *_capacitor("CL05B473KO5NNNC", "0402 X7R 47 nF, O = 16 V"),
+    # Composition M3: the load switch ([2026-10-03]).
+    Figure("MMBT2222ALT1G/forward_voltage_v", Kind.ASSUMPTION,
+           "V_BE(sat) 0.6 V minimum, 1.2 V maximum at I_C = 150 mA, I_B = 15 mA (guaranteed); the 0.85 V "
+           "typical is the project's, inside that range — no typical is tabulated", _MMBT2222A),
+    Figure("MMBT2222ALT1G/test_current_ma", Kind.GUARANTEED,
+           "the V_BE(sat) test condition's base current, I_B = 15 mA", _MMBT2222A),
+    Figure("MMBT2222ALT1G/ideality", Kind.ASSUMPTION,
+           "the base-emitter diode model's ideality factor, 1.0 — not published; a silicon junction's", _MMBT2222A),
+    Figure("MMBT2222ALT1G/vce_sat_v", Kind.GUARANTEED,
+           "V_CE(sat) ≤ 0.3 V at I_C = 150 mA, I_B = 15 mA", _MMBT2222A),
+    Figure("MMBT2222ALT1G/vce_sat_test_ic_ma", Kind.GUARANTEED,
+           "the V_CE(sat) test condition's collector current, I_C = 150 mA", _MMBT2222A),
+    Figure("MMBT2222ALT1G/forced_beta", Kind.GUARANTEED,
+           "the V_CE(sat) test condition's I_C/I_B = 150 mA / 15 mA = 10", _MMBT2222A),
+    Figure("MMBT2222ALT1G/max_collector_current_ma", Kind.GUARANTEED,
+           "I_C 600 mA continuous, maximum rating", _MMBT2222A),
+    Figure("MMBT2222ALT1G/power_dissipation_mw", Kind.GUARANTEED,
+           "P_D 225 mW total device dissipation, FR-5 board, T_A = 25 °C", _MMBT2222A),
+    Figure("MMBT2222ALT1G/supply_voltage_max", Kind.GUARANTEED, "V_CEO 40 V collector-emitter voltage", _MMBT2222A),
+    Figure("1N4148W-7-F/reverse_voltage_max", Kind.GUARANTEED,
+           "V_RRM, V_RWM and V_R 100 V (peak repetitive, working peak and DC blocking reverse voltage)", _1N4148W),
+    Figure("1N4148W-7-F/max_forward_current_ma", Kind.GUARANTEED, "I_FM 300 mA forward continuous current",
+           _1N4148W),
+    Figure("1N4148W-7-F/supply_voltage_max", Kind.GUARANTEED,
+           "V_R 100 V DC blocking voltage — the rail it blocks while Q1 is on", _1N4148W),
 ]
 
 _BOARD_SOURCES = {

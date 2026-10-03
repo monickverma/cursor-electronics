@@ -2571,3 +2571,40 @@ enterprise contracts, ordered PCBs) sells a product that does not yet exist.
 - Composable today: `led_indicator`, `temperature_humidity_sensor` (the `SLOTS` table). Everything else is
   refused by name.
 - Evidence: the DHT22 + LED board simulates in ngspice to both blocks' own expected outputs on all three boards.
+
+
+## [2026-10-03] Composition M2–M4 — behaviour, the load switch, the front door
+
+**M2, behaviour.** `generators/compose.py`: `READS` (what a block reports: the DHT22's `temperature_c`,
+`humidity_pct`) and `SETS` (`on|off|blink|heartbeat` for the LED and the switch) are the whole vocabulary. A rule
+is `when`/`then`/`else` or `always`; `Project` refuses by name any rule naming a block, reading or setting the
+project does not have, and any threshold outside what the sensor reports. `generators/firmware/composite.py`
+renders one sketch (`templates/project.ino.j2`, non-blocking: sensors every 2 s, outputs every pass) from the
+composer's pins; `project_for()` rebuilds it for a stored board; it is shown only through the compile gate.
+The room monitor's sketch builds on the Uno, the ESP32 and the Black Pill.
+
+**M3, the load switch.** `generators/load_switch.py`, registered, under every library gate (grid within 2% of
+ngspice, M1 fault arms, D7 audit, D2 per claim, locality, firmware build on three boards). Model `npn_saturated`:
+B–E as a diode fitted to V_BE(sat), C–E as V_CE(sat) — valid only in saturation, so the block **proves** its
+base current meets I_load/10 (the datasheet's forced beta for V_CE(sat)) over every tolerance; G1 floor. The
+load is off-board on J1, declared by current and inductance; the flyback diode is reverse-biased in steady state
+and judged by its ratings. Parts: onsemi MMBT2222ALT1G, Diodes Inc. 1N4148W-7-F, Molex 22-27-2021.
+- **D7, honestly.** The diode's datasheet (DS30086 Rev. 31-2) was read: it gives V_R **100 V**, not the 75 V
+  the agent first recorded — corrected before the check. onsemi's MMBT2222LT1/D Rev 13 could not be fetched
+  (scripted downloads refused), so the transistor's nine figures are `not_checked`: recalled, not read. They
+  keep D7 on every switch claim and belong on the owner's spot-check.
+
+**M4, the front door.** `Requirements` gains optional `blocks` and `behaviour`, legal only on `function:
+project` (schema version unchanged: optional keys, every stored intent still valid). The LLM producer is told
+the project vocabulary from the code that enforces it; it asks a block's missing required field as
+`blocks.<id>.<section>.<field>` only when the model says the prose does not state it; a project is never
+re-prompted — the composer refuses it by name. `FormProducer.build_project` is the zero-call path.
+`compose_intent()` stamps the board from the intent's lineage as `realize()` does. `board_coverage()` keeps
+every block's claims and proofs (relabelled to board part names, verdicts untouched) and adds
+`board.rail_current` (sound enclosure, G2 — the switch's port bounds I_C by I_load), `board.pin_rules`
+(exact, G1), and `board.rail_interaction` **not assessed** (the rail is an ideal source in every block's
+claims). A board is not signed as one set yet (`properties_hash` None). Patching a board is refused by name.
+`/design/generate` returns it; the UI lists the blocks and rules (`BlocksPanel`).
+
+**Not done.** The target sentence through the live LLM (credits exhausted); a bench build; composing
+`voltage_divider`, `low_pass_filter` or `modbus_rtu_master` (refused by name).

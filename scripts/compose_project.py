@@ -1,13 +1,13 @@
 """
 Compose a project — several blocks on one board — and write what it builds.
 
-    python scripts/compose_project.py docs/projects/climate_status.json out/climate_status
+    python scripts/compose_project.py docs/projects/room_monitor.json out/room_monitor
 
 Writes `<name>.kicad_sch` (open it in KiCad), `<name>.cir` (the SPICE netlist),
-`<name>_bom.csv`, and `<name>_blocks.txt`: each block's pin, its parts as
-renumbered on the board, and the properties its own generator proved. M1 of
-`COMPOSITION_PLAN.md` — no firmware yet (M2), and nothing claimed about the
-board as a whole (M4).
+`<name>_bom.csv`, `firmware/` (a PlatformIO project: `cd firmware && pio run -t
+upload`), and `<name>_claims.txt`: each block's pin and parts, the behaviour
+the firmware runs, and every claim on the board — each block's own and the
+board's — including what is not assessed. `COMPOSITION_PLAN.md` M1–M4.
 """
 
 from __future__ import annotations
@@ -25,7 +25,8 @@ for key, value in {"ANTHROPIC_API_KEY": "", "DATABASE_URL": "postgresql+asyncpg:
     os.environ.setdefault(key, value)
 
 from generators.bom.compiler import BOMCompiler  # noqa: E402
-from generators.compose import CompositionRefused, Project, compose  # noqa: E402
+from generators.compose import CompositionRefused, Project, board_coverage, compose  # noqa: E402
+from generators.firmware.composite import composite_project  # noqa: E402
 from generators.netlist.spice import SpiceNetlistGenerator  # noqa: E402
 from generators.registry import default_registry  # noqa: E402
 from generators.schematic.kicad import KiCadSchematicGenerator  # noqa: E402
@@ -38,13 +39,13 @@ def write(project: Project, folder: Path) -> list:
     folder.mkdir(parents=True, exist_ok=True)
     paths = []
 
-    def put(suffix: str, text: str) -> None:
-        path = folder / f"{name}{suffix}"
+    def put(path: Path, text: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
         paths.append(path)
 
-    put(".kicad_sch", KiCadSchematicGenerator().generate(board))
-    put(".cir", SpiceNetlistGenerator().generate(board))
+    put(folder / f"{name}.kicad_sch", KiCadSchematicGenerator().generate(board))
+    put(folder / f"{name}.cir", SpiceNetlistGenerator().generate(board))
 
     rows = BOMCompiler().compile(board)
     path = folder / f"{name}_bom.csv"
@@ -56,15 +57,22 @@ def write(project: Project, folder: Path) -> list:
                           r["unit_price"] if r["price_known"] else "", r["currency"] or "", r["justification"]])
     paths.append(path)
 
-    lines = [f"{board.intent} — {board.target_mcu}", ""]
-    for b in result.blocks:
-        renamed = ", ".join(f"{old}→{new}" for old, new in b.parts.items() if old != new) or "none"
-        lines += [f"[{b.id}] {b.function} on {b.pin}  ({b.generator})", f"  parts renumbered: {renamed}"]
-        for p in b.circuit.validation_coverage["properties"]:
-            lines.append(f"  {p['status']:>8} {p['grade']}  {p['english']}")
-        lines.append("")
-    lines.append("Board-level claims (shared rail current, cross-block loading): not assessed until M4.")
-    put("_blocks.txt", "\n".join(lines) + "\n")
+    for file, content in composite_project(result).files:
+        put(folder / "firmware" / file, content)
+
+    coverage = board_coverage(result)
+    lines = [f"{board.intent} — {board.target_mcu}",
+             f"grade floor {coverage['grade_floor']}; open doubts {', '.join(coverage['open_defeaters'])}; "
+             f"not assessed: {', '.join(coverage['not_assessed']) or 'none'}", ""]
+    for b in coverage["blocks"]:
+        lines.append(f"[{b['id']}] {b['function']} on {b['pin']} ({b['generator']}): {', '.join(b['parts'])}")
+    lines += ["", "Behaviour the firmware runs:"]
+    lines += [f"  {n}. {rule}" for n, rule in enumerate(coverage["behaviour"], 1)] or ["  (none)"]
+    lines += ["", "Claims:"]
+    for c in coverage["claims"]:
+        if c["critical"] or c["verdict"] == "not_assessed":
+            lines.append(f"  {c['verdict']:>16} {c['grade'] or '':>2}  {c['claim']}")
+    put(folder / f"{name}_claims.txt", "\n".join(lines) + "\n")
     return paths
 
 

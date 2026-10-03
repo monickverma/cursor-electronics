@@ -132,6 +132,17 @@ export interface ValidationCoverage {
   properties_hash?: string | null
   properties_signed?: boolean
   signed_by?: string | null
+  // Composition M4: present only on a composed board.
+  blocks?: BlockView[]
+  behaviour?: string[]
+}
+
+export interface BlockView {
+  id: string
+  function: string
+  generator: string
+  pin: string
+  parts: string[]
 }
 
 export interface SignOffResponse {

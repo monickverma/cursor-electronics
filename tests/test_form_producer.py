@@ -49,8 +49,8 @@ class TestCatalogueIsDerived:
         # this project keeps hitting, one layer out. Here it is not expressible.
         producer = FormProducer()
         assert tuple(s.function for s in producer.catalogue()) == default_registry().functions()
-        # Stage 3: all five Phase 1 templates are back in coverage.
-        assert len(producer.catalogue()) == 5
+        # Stage 3: all five Phase 1 templates are back in coverage; Composition M3 adds load_switch.
+        assert len(producer.catalogue()) == 6
 
     def test_field_ranges_come_from_the_declared_grid(self):
         spec = FormProducer().spec_for("low_pass_filter")

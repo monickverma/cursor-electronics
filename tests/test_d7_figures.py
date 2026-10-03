@@ -321,6 +321,9 @@ KNOWN_DESIGN_INPUTS = {
     ("rs485_node@arduino_uno", "MAX485ECSA/requires_termination_ohm"),
     ("rs485_node@esp32_devkitc", "MAX3485ECSA/requires_termination_ohm"),
     ("rs485_node@blackpill_f411ce", "MAX3485ECSA/requires_termination_ohm"),
+    # The load switch picks R1 by the forced beta; on 3.3 V boards a ×1.37 move changes R1 ([2026-10-03]).
+    ("load_switch@esp32_devkitc", "MMBT2222ALT1G/forced_beta"),
+    ("load_switch@blackpill_f411ce", "MMBT2222ALT1G/forced_beta"),
 }
 
 

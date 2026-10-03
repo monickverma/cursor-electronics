@@ -45,6 +45,8 @@ REQUIREMENTS = {
         {"constraints": {"cable_length_m": 0.5}, "preferences": {"alert_threshold_c": 30}},
         {"constraints": {"cable_length_m": 1}, "preferences": {"alert_threshold_c": 45}}],
     "modbus_rtu_master": [{}, {"constraints": {"baud": 19200}}],
+    "load_switch": [{"targets": {"load_current_ma": 30}},
+                    {"targets": {"load_current_ma": 60}, "constraints": {"load_inductive": False}}],
 }
 
 

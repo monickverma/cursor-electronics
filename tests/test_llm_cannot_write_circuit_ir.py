@@ -108,6 +108,10 @@ _REVIEWED: Dict[Tuple[str, str], str] = {
         "sets the request-log context (RequestLogContext.generator), not a design",
     ("backend/api/routes/patch.py", "ctx.generator = tag"):
         "sets the request-log context (RequestLogContext.generator), not a design",
+    # Composition M4 ([2026-10-03]): a project's log row names the composer that built it.
+    ("backend/api/routes/design.py", "ctx.generator = ir.generator"):
+        "sets the request-log context (RequestLogContext.generator) from the composed circuit's own "
+        "stamp, not a design",
 }
 
 

@@ -7,9 +7,14 @@
 > | # | Milestone | Status |
 > |---|---|---|
 > | M1 | Composer: blocks on one board, pins allocated, one CircuitIR | ✅ 2026-10-03 — `generators/compose.py`, `tests/test_compose.py`, `scripts/compose_project.py` |
-> | M2 | Behaviour rules → composite firmware | ⏳ next |
-> | M3 | Load-switch block (buzzer first) | — |
-> | M4 | Board-level checks + LLM/form front door + UI | — |
+> | M2 | Behaviour rules → composite firmware | ✅ 2026-10-03 — `generators/firmware/composite.py`, `templates/project.ino.j2` |
+> | M3 | Load-switch block (buzzer first) | ✅ 2026-10-03 — `generators/load_switch.py`, registered, all library gates |
+> | M4 | Board-level checks + LLM/form front door + UI | ✅ 2026-10-03 — `compose_intent`, `board_coverage`, `/design/generate`, `BlocksPanel` |
+>
+> **Exit met in code, 2026-10-03:** the room-monitor project (`docs/projects/room_monitor.json`) composes on
+> all three boards, its firmware compiles on all three, and `/design/generate` returns the board with its
+> claims (`tests/test_composition_m2_m4.py`). **Not yet shown live:** the sentence through the real LLM
+> producer (OpenRouter credits exhausted 2026-10-02) — and nothing has been built on a bench.
 >
 > Phase 3 as written is not opened. Alongside, gating nothing: `fieldwork/`.
 

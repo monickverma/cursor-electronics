@@ -226,6 +226,7 @@ def default_registry() -> GeneratorRegistry:
     """
     from generators.dht22_node import DHT22NodeGenerator
     from generators.led_indicator import LedIndicatorGenerator
+    from generators.load_switch import LoadSwitchGenerator
     from generators.rc_lowpass import RCLowPassGenerator
     from generators.rs485_node import RS485NodeGenerator
     from generators.voltage_divider import VoltageDividerGenerator
@@ -237,4 +238,6 @@ def default_registry() -> GeneratorRegistry:
     registry.register(LedIndicatorGenerator())
     registry.register(DHT22NodeGenerator())
     registry.register(RS485NodeGenerator())
+    # Composition M3 ([2026-10-03]): the first block written for composition.
+    registry.register(LoadSwitchGenerator())
     return registry

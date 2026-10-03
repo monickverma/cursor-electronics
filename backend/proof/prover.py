@@ -273,7 +273,10 @@ def _conditions(netlist: Netlist) -> List[str]:
     for e in netlist.elements:
         if e.kind != "V":
             continue
-        if e.name.upper().startswith("V_PIN_"):
+        if e.name.upper().startswith("V_SAT_"):
+            out.append(f"{e.name[len('V_SAT_'):].upper()} saturated, its collector {si(e.value, 'V')} above its "
+                       f"emitter (V_CE(sat))")
+        elif e.name.upper().startswith("V_PIN_"):
             out.append(f"the MCU pin driving {e.a.replace('_src', '').upper()} high at {si(e.value, 'V')}")
         elif e.ac:
             out.append(f"{e.a.upper()} driven by the AC source")

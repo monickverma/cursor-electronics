@@ -36,6 +36,7 @@ GENERATOR_CLASSES = {
     "led_indicator": ("generators.led_indicator", "LedIndicatorGenerator"),
     "dht22_node": ("generators.dht22_node", "DHT22NodeGenerator"),
     "rs485_node": ("generators.rs485_node", "RS485NodeGenerator"),
+    "load_switch": ("generators.load_switch", "LoadSwitchGenerator"),
 }
 
 #: Modules that copy figures into module-level constants, in import order.

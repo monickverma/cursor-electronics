@@ -21,6 +21,7 @@ from core.ir_validator import validate_ir
 from db.crud import list_user_designs, save_design, save_output
 from db.models import get_db
 from generators.bom.compiler import BOMCompiler
+from generators.compose import CompositionRefused, compose_intent
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.realize import realize
 from generators.registry import default_registry
@@ -116,29 +117,45 @@ async def generate_design(
             "message": "The request does not pin these down. Supply them and resubmit.",
         })
 
-    # 3. Dispatch to a generator whose declared envelope accepts this intent.
-    #    A refusal is a product outcome, not an error: §4.5 makes the
-    #    out-of-envelope log the generator backlog, ranked by frequency.
-    dispatch = registry.dispatch(intent)
-    if not dispatch.accepted:
-        ctx.refuse(dispatch.refusal_summary())
-        raise HTTPException(422, detail={
-            "error": "out_of_envelope",
-            "refusals": [
-                {"generator": r.generator, "reason": r.reason} for r in dispatch.refusals
-            ],
-            "catalogue": list(registry.functions()),
-        })
+    # 3–4. A project (Composition M4) is several blocks on one board: each
+    #    block dispatched and realised by its own generator, merged by the
+    #    composer, every refusal collected and named. Anything else goes to
+    #    the one generator whose declared envelope accepts it.
+    if intent.requirements.get("function") == "project":
+        try:
+            composition = await run_in_threadpool(compose_intent, registry, intent, body.prompt)
+        except CompositionRefused as exc:
+            ctx.refuse("; ".join(exc.reasons))
+            raise HTTPException(422, detail={
+                "error": "out_of_envelope",
+                "refusals": [{"generator": "compose", "reason": r} for r in exc.reasons],
+                "catalogue": list(registry.functions()),
+            })
+        ir = composition.circuit
+        ctx.generator = ir.generator
+    else:
+        # A refusal is a product outcome, not an error: §4.5 makes the
+        # out-of-envelope log the generator backlog, ranked by frequency.
+        dispatch = registry.dispatch(intent)
+        if not dispatch.accepted:
+            ctx.refuse(dispatch.refusal_summary())
+            raise HTTPException(422, detail={
+                "error": "out_of_envelope",
+                "refusals": [
+                    {"generator": r.generator, "reason": r.reason} for r in dispatch.refusals
+                ],
+                "catalogue": list(registry.functions()),
+            })
 
-    generator = dispatch.generator
-    ctx.generator = f"{generator.name}@{generator.version}"
+        generator = dispatch.generator
+        ctx.generator = f"{generator.name}@{generator.version}"
 
-    # 4. The design itself is produced deterministically, with no model in the
-    #    loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
-    #    asserts mechanically. realize() stamps the circuit_id derived from the
-    #    intent, so the same intent always yields a byte-identical design.
-    # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
-    ir = await run_in_threadpool(realize, generator, intent)
+        # The design itself is produced deterministically, with no model in the
+        # loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
+        # asserts mechanically. realize() stamps the circuit_id derived from the
+        # intent, so the same intent always yields a byte-identical design.
+        # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
+        ir = await run_in_threadpool(realize, generator, intent)
 
     # 5. Validate
     val_result = validate_ir(ir)

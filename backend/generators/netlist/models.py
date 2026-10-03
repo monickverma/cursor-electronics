@@ -39,6 +39,11 @@ DEFAULT_PIN_OHMS = 25.0
 MODEL_MCU_SUPPLY = "mcu_as_100R"
 MODEL_MCU_PIN = "mcu_pin_thevenin"
 MODEL_LED = "shockley_diode"
+#: Composition M3 ([2026-10-03]): an NPN switch held in saturation — the
+#: base-emitter junction as a diode fitted to V_BE(sat), the collector as a
+#: V_CE(sat) source to the emitter. Valid only while the base current meets the
+#: datasheet's forced beta, which the load-switch generator proves.
+MODEL_NPN_SATURATED = "npn_saturated"
 #: D2's other two routes (`brain/decisions.md` [2026-09-24] D1, D2, D7). No
 #: netlist element carries them: an MCU pin on a node the netlist does not
 #: model — its capacitance, leakage and clamps act there — and a node state a
@@ -66,6 +71,17 @@ def led_parameters(part_number: str, forward_voltage: str = "typ") -> Optional[T
 
 def led_model_name(part_number: str) -> str:
     return "DLED_" + re.sub(r"[^A-Za-z0-9]", "_", part_number).upper()
+
+
+def junction_model_name(part_number: str) -> str:
+    """A transistor's base-emitter diode model (`npn_saturated`)."""
+    return "DBE_" + re.sub(r"[^A-Za-z0-9]", "_", part_number).upper()
+
+
+def vce_sat(part_number: str) -> Optional[float]:
+    """The collector-emitter drop of a tabulated NPN held in saturation; None if not tabulated."""
+    entry = get_constraints(part_number) or {}
+    return float(entry["vce_sat_v"]) if "vce_sat_v" in entry else None
 
 
 def diode_voltage(current: float, i_s: float, n: float) -> float:

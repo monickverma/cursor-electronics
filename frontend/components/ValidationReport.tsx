@@ -1,6 +1,7 @@
 'use client'
 
 import ClaimsTable from '@/components/ClaimsTable'
+import BlocksPanel from '@/components/BlocksPanel'
 import PropertiesPanel from '@/components/PropertiesPanel'
 import type { ValidationCoverage } from '@/lib/api'
 
@@ -30,6 +31,7 @@ export default function ValidationReport({ validation, explanation, coverage, ci
         <PropertiesPanel key={`${coverage.properties_hash ?? ''}:${!!coverage.properties_signed}`}
                          coverage={coverage} circuitId={circuitId} token={token} onSigned={onCoverage} />
       )}
+      {coverage && <BlocksPanel coverage={coverage} />}
       {coverage && <ClaimsTable coverage={coverage} />}
 
       {/* Overall badge. With claim objects present it must not say "all rules

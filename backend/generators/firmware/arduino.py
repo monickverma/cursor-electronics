@@ -97,6 +97,8 @@ class ArduinoFirmwareGenerator:
             return "sensor_read.ino.j2", self._sensor_context(ir)
         if has_led_only:
             return "led_blink.ino.j2", self._led_context(ir)
+        if self._is_switch_only(ir):
+            return "load_switch.ino.j2", self._switch_context(ir)
         return "base.ino.j2", self._base_context(ir)
 
     # ── Template selectors ────────────────────────────────────────────────
@@ -121,7 +123,20 @@ class ArduinoFirmwareGenerator:
         )
         return has_led and not has_complex
 
+    def _is_switch_only(self, ir: CircuitIR) -> bool:
+        has_switch = any(c.type == ComponentType.TRANSISTOR for c in ir.components)
+        has_complex = any(
+            c.type in (ComponentType.SENSOR, ComponentType.TRANSCEIVER, ComponentType.MODEM, ComponentType.LED)
+            for c in ir.components
+        )
+        return has_switch and not has_complex
+
     # ── Context builders ──────────────────────────────────────────────────
+
+    def _switch_context(self, ir: CircuitIR) -> dict:
+        q = next(c for c in ir.components if c.type == ComponentType.TRANSISTOR)
+        mcu_pin = self._mcu_pin_for(ir, q.id, "B")
+        return {"switch_pin": self._fw_pin(ir, mcu_pin) if mcu_pin else "8"}
 
     def _sensor_context(self, ir: CircuitIR) -> dict:
         sensor = next(

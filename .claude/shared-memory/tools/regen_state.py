@@ -108,7 +108,9 @@ MODULES = {
     "core/intent_patch":          {"file": "backend/core/intent_patch.py",          "test": "tests/test_intent_patch.py",         "phase": 2},
     "core/annotations":           {"file": "backend/core/annotations.py",           "test": "tests/test_annotations.py",          "phase": 2},
     "generators/realize":         {"file": "backend/generators/realize.py",         "test": "tests/test_realize.py",              "phase": 2},
-    "generators/compose":         {"file": "backend/generators/compose.py",         "test": "tests/test_compose.py",              "phase": 3},
+    "generators/compose":         {"file": "backend/generators/compose.py",         "test": ["tests/test_compose.py", "tests/test_composition_m2_m4.py"], "phase": 3},
+    "generators/load_switch":     {"file": "backend/generators/load_switch.py",     "test": ["tests/test_generator_library.py", "tests/test_composition_m2_m4.py"], "phase": 3},
+    "generators/firmware/composite": {"file": "backend/generators/firmware/composite.py", "test": "tests/test_composition_m2_m4.py", "phase": 3},
     "ai/intent_patcher":          {"file": "backend/ai/intent_patcher.py",          "test": "tests/test_intent_patcher.py",       "phase": 2},
     "db/migrations":              {"file": "backend/db/migrations.py",              "test": "tests/test_migrations.py",           "phase": 2},
     # Stage 3 — the generator library, claims, and the defeater register.

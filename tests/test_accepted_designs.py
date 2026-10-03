@@ -29,7 +29,7 @@ REGISTRY = default_registry()
 PER_FUNCTION = 20
 RULES = {f"rule.{r.value}" for r in ValidationRule}
 FUNCTIONS = ("low_pass_filter", "voltage_divider", "led_indicator", "temperature_humidity_sensor",
-             "modbus_rtu_master")
+             "modbus_rtu_master", "load_switch")
 
 
 def _requirements(rng: random.Random, function: str) -> dict:
@@ -70,6 +70,16 @@ def _requirements(rng: random.Random, function: str) -> dict:
         c["cable_length_m"] = r(0, 25, 1)
         if rng.random() < .2:
             c["pinned"] = {"R1": rng.choice(["4.7k", "10k", "2.2k"])}
+    elif function == "load_switch":
+        # Composition M3 ([2026-10-03]); last in FUNCTIONS, so earlier draws are unchanged.
+        t["load_current_ma"] = r(0.5, 160, 1)
+        c["supply_v"] = r(4.6, 5.4, 2)
+        if rng.random() < .5:
+            c["load_inductive"] = rng.random() < .5
+        if rng.random() < .3:
+            p["gpio_pin"] = rng.choice(["D3", "D8", "D12"])
+        if rng.random() < .2:
+            c["pinned"] = {"R1": rng.choice(["220", "470", "1k", "4.7k"])}
     else:
         c["supply_v"] = r(4.4, 5.6, 2)
         if rng.random() < .4:
