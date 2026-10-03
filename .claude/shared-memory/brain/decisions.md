@@ -2553,3 +2553,21 @@ enterprise contracts, ordered PCBs) sells a product that does not yet exist.
    prospect) wait until people use the tool. The `fieldwork/` steps run alongside and gate nothing.
 
 **What stops.** New assurance machinery beyond what composition needs: defeaters, Jev decisions, the PCB engine.
+
+## [2026-10-03] Composition M1 — the composer, and what it does not claim
+
+- `generators/compose.py`: a `Project` (board + blocks) → one CircuitIR. Each block is dispatched through the
+  registry and `realize()`d by its own generator with an allocated pin (`preferences.gpio_pin` / `data_pin`, the
+  pin preferences the generators already read and check). The composer designs nothing itself.
+- **Pins:** requested pins are kept or refused by name (taken, absent, or the USB console's); otherwise the board
+  default for the role, else the first free pin the table allows (no reserved, strapping or console pins); the
+  whole assignment re-checked with `pin_rules`, and the merged board with `check_design`.
+- **Merge:** one MCU (U1, same part across blocks or refused), one 100 nF bypass, shared power/ground nodes;
+  other parts renumbered by prefix; a net is prefixed with its block id only where two blocks share its name.
+- **Claims:** the composite carries no `validation_coverage`. Each block keeps its own, and a test asserts it is
+  byte-for-byte the standalone design's `properties_hash`. Block claims name block-local part ids (the LED's R1
+  is the board's R2); `BlockResult.parts` maps them. Board-level claims (rail current, cross-block loading) are
+  M4, and are reported as not assessed rather than implied.
+- Composable today: `led_indicator`, `temperature_humidity_sensor` (the `SLOTS` table). Everything else is
+  refused by name.
+- Evidence: the DHT22 + LED board simulates in ngspice to both blocks' own expected outputs on all three boards.

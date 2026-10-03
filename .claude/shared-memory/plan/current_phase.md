@@ -6,8 +6,8 @@
 >
 > | # | Milestone | Status |
 > |---|---|---|
-> | M1 | Composer: blocks on one board, pins allocated, one CircuitIR | ⏳ next |
-> | M2 | Behaviour rules → composite firmware | — |
+> | M1 | Composer: blocks on one board, pins allocated, one CircuitIR | ✅ 2026-10-03 — `generators/compose.py`, `tests/test_compose.py`, `scripts/compose_project.py` |
+> | M2 | Behaviour rules → composite firmware | ⏳ next |
 > | M3 | Load-switch block (buzzer first) | — |
 > | M4 | Board-level checks + LLM/form front door + UI | — |
 >

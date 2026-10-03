@@ -402,6 +402,15 @@ PLANNED = {
             ("predict_delta",     "function", "The comparative justification for a patch"),
         ],
     },
+    "generators/compose": {
+        "file": "backend/generators/compose.py",
+        "test_file": "tests/test_compose.py",
+        "entries": [
+            ("compose",      "function", "Blocks on one board: one MCU, one bypass, one rail; each block built by its own generator"),
+            ("allocate_pins", "function", "Requested pins, then defaults, then the first free pin; never two blocks on one pin"),
+            ("Project",      "class",    "A board and its blocks — the composition request"),
+        ],
+    },
     "ai/intent_patcher": {
         "file": "backend/ai/intent_patcher.py",
         "test_file": "tests/test_intent_patcher.py",
