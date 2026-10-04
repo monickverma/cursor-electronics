@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     ai_provider: str = "anthropic"
     openai_base_url: str = "http://localhost:8000/v1"
     openai_api_key: str = "EMPTY"
+    # openai_compat only ([2026-10-04]): a reasoning model's effort, sent as
+    # OpenRouter's `reasoning.effort` (e.g. "high", "xhigh"). Empty sends nothing.
+    # Reasoning tokens count against max_tokens and the timeout: raise
+    # AI_TIMEOUT_SECONDS with it.
+    ai_reasoning_effort: str = ""
 
     # The Anthropic SDK defaults to a 600s timeout and 2 retries. Left alone,
     # one slow upstream call occupies a request for up to half an hour and the

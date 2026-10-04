@@ -36,6 +36,7 @@ def make_client() -> anthropic.Anthropic | OpenAICompatClient:
             api_key=settings.openai_api_key,
             timeout=settings.ai_timeout_seconds,
             max_retries=settings.ai_max_retries,
+            reasoning_effort=settings.ai_reasoning_effort,
         )
 
     kwargs: dict = {
