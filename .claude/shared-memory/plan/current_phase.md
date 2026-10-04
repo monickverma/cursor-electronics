@@ -13,8 +13,15 @@
 >
 > **Exit met in code, 2026-10-03:** the room-monitor project (`docs/projects/room_monitor.json`) composes on
 > all three boards, its firmware compiles on all three, and `/design/generate` returns the board with its
-> claims (`tests/test_composition_m2_m4.py`). **Not yet shown live:** the sentence through the real LLM
-> producer (OpenRouter credits exhausted 2026-10-02) — and nothing has been built on a bench.
+> claims (`tests/test_composition_m2_m4.py`). **Shown live 2026-10-04** on DeepSeek V4.1 Flash (xhigh): the
+> sentence, with cable length and currents stated, returns the board; without them the producer asks three
+> questions. **Nothing has been built on a bench.**
+>
+> **Since M4 (PR #6, `brain/decisions.md` [2026-10-04], [2026-10-05]):** the explanation is queued and read
+> back from `GET /design/{id}/explanation` instead of written inside the request (generate ~10 s, explanation
+> ~80 s). Open before that work commits: run it against a real worker (only mocks so far), check the patch
+> route's inline explanation and the Playwright fixtures, and a person must read the two new `_REVIEWED`
+> entries in `tests/test_llm_cannot_write_circuit_ir.py`.
 >
 > Phase 3 as written is not opened. Alongside, gating nothing: `fieldwork/`.
 

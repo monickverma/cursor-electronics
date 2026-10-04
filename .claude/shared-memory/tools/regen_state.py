@@ -139,6 +139,8 @@ MODULES = {
     "generators/firmware/compile_gate": {"file": "backend/generators/firmware/compile_gate.py", "test": "tests/test_firmware_gate.py", "phase": 2},
     "tasks/firmware_task":        {"file": "backend/tasks/firmware_task.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
     "api/routes/firmware":        {"file": "backend/api/routes/firmware.py",        "test": "tests/test_firmware_gate.py",        "phase": 2},
+    "tasks/explain_task":         {"file": "backend/tasks/explain_task.py",         "test": "tests/test_explanation_queue.py",    "phase": 2},
+    "api/routes/explanation":     {"file": "backend/api/routes/explanation.py",     "test": "tests/test_explanation_queue.py",    "phase": 2},
     # D2, D7 and Stage 6. decisions.md [2026-09-24] D1, D2, D7; [2026-09-25] Stage 6.
     "proof/dependence":           {"file": "backend/proof/dependence.py",           "test": "tests/test_d2_dependence.py",        "phase": 2},
     "data/parts":                 {"file": "backend/data/parts.py",                 "test": ["tests/test_d7_figures.py", "tests/test_substitution.py"], "phase": 2},

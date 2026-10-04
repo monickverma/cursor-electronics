@@ -651,6 +651,24 @@ PLANNED = {
             ("get_firmware",  "function", "GET /design/{id}/firmware — poll a build"),
         ],
     },
+    # decisions.md [2026-10-05] The explanation leaves the request.
+    "tasks/explain_task": {
+        "file": "backend/tasks/explain_task.py",
+        "test_file": "tests/test_explanation_queue.py",
+        "entries": [
+            ("explain_design", "function", "Celery: write a stored design's explanation off the request"),
+        ],
+    },
+    "api/routes/explanation": {
+        "file": "backend/api/routes/explanation.py",
+        "test_file": "tests/test_explanation_queue.py",
+        "entries": [
+            ("ExplanationView",  "class",    "Explanation status: writing, written, failed or unavailable"),
+            ("queue_explanation", "function", "Queue the explanation behind the simulation and build"),
+            ("explanation_view", "function", "The one read every route's explanation goes through"),
+            ("get_explanation",  "function", "GET /design/{id}/explanation — poll it"),
+        ],
+    },
     # D2, D7 and Stage 6. decisions.md [2026-09-24] D1, D2, D7; [2026-09-25] Stage 6.
     "proof/dependence": {
         "file": "backend/proof/dependence.py",

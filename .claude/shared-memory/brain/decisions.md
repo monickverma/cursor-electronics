@@ -2631,3 +2631,23 @@ PlatformIO; `deepseek/deepseek-v4.1-flash`, effort xhigh, OpenRouter's OpenAI-co
   measures) — the owner's call.
 - After the fixes: generate 201 in 77 s, explanation 9.6k chars, firmware **compiled by the worker and shown**,
   simulation complete in 1 s.
+
+## [2026-10-05] The explanation leaves the request — decided by the owner
+
+**Context.** [2026-10-04]: a generate took 75–150 s against the 15 s target, almost all of it the explanation,
+and no reasoning effort made it faster.
+
+**Decision.** POST /design/generate returns the design and queues the explanation
+(`tasks/explain_task.py`, queued last so the worker reaches the simulation and the build first). GET
+/design/{id}/explanation reports writing / written / failed / unavailable and stores the text in
+`generated_outputs` the first time it is read back (the task result expires in an hour); a failure is stored
+too, with its reason. One explanation per design version. With no broker, generate writes it inline as before.
+The UI polls every 3 s (`ExplanationPanel`). The derived explainer was not substituted: it is not what
+criterion 12 measures.
+
+**Measured after, live:** generate 201 in 10 s; firmware compiled at 23 s; simulation at 29 s; explanation
+written at 80 s (12.7k chars) and read back from storage.
+
+**Left as it is.** The worker is `--pool=solo` on Windows, so tasks run one at a time: a 1 s simulation waits
+behind a 20 s firmware build, and a second design's simulation would wait behind the first's explanation.
+`tests/conftest.py` makes the queue unavailable in tests, so no test puts a task on a developer's broker.

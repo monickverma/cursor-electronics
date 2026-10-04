@@ -139,6 +139,12 @@
 
 **2026-09-24** — /update-memory re-sync: `brain/architecture.md` still named rc_lowpass "the one generator on the contract" and a flat 100 Ω MCU, and had nothing from Stages 3–5. It now covers the five generators, claims, defeaters and pin rules, `proof/`, the firmware compile gate, sign-off and the new frontend panels. `brain/knowledge.md` gains the per-part MCU resistor and the ESP32/Black Pill gotchas that cost a build.
 
+**2026-10-03** — **Composition M1–M4 built** (`d85af85`, `a60728f`, owner's decision recorded 2026-10-03): `generators/compose.py` puts several blocks on one board with pins allocated and claims renamed to board parts; `load_switch` (NPN, proves its own saturation) is the sixth generator; behaviour rules drive one composite sketch that compiles on all three boards; `/design/generate` accepts a project. The room-monitor sentence now yields schematic, netlist, 10-part BOM, firmware and claims. Board grade G2 (supply-current sum is a bound); the transistor's 9 figures are unread (D7).
+
+**2026-10-04** — First real run of the whole stack on DeepSeek V4.1 Flash (`4b7533f`, `fc35d1d`, PR #6): the room-monitor sentence works end to end through the live model. It exposed that every firmware build through a real Celery worker failed on an import path (mocks hid it), that stopping uvicorn on Windows left orphans serving old code, and that the explanation cost 77–149 s of a request.
+
+**2026-10-05** — The explanation leaves the request (uncommitted at this entry): `api/routes/explanation.py` + `tasks/explain_task.py`, `GET /design/{id}/explanation`, stored once written; generate returns in ~10 s, explanation lands at ~80 s. Both modules registered in the trackers; suite 2519 passing / 0 failing / 32 skipped. Not yet run against a real worker.
+
 ---
 
 ## Upcoming

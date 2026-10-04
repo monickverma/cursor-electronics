@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-10-02T00:40:29.587622Z",
-  "generated_from_commit": "01aa82f",
+  "generated_at": "2026-10-04T21:17:58.107512Z",
+  "generated_from_commit": "fc35d1d",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -272,6 +272,24 @@
       "exists": true,
       "test_status": "passing"
     },
+    "generators/compose": {
+      "status": "verified_done",
+      "file": "backend/generators/compose.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/load_switch": {
+      "status": "verified_done",
+      "file": "backend/generators/load_switch.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "generators/firmware/composite": {
+      "status": "verified_done",
+      "file": "backend/generators/firmware/composite.py",
+      "exists": true,
+      "test_status": "passing"
+    },
     "ai/intent_patcher": {
       "status": "verified_done",
       "file": "backend/ai/intent_patcher.py",
@@ -416,6 +434,18 @@
       "exists": true,
       "test_status": "passing"
     },
+    "tasks/explain_task": {
+      "status": "verified_done",
+      "file": "backend/tasks/explain_task.py",
+      "exists": true,
+      "test_status": "passing"
+    },
+    "api/routes/explanation": {
+      "status": "verified_done",
+      "file": "backend/api/routes/explanation.py",
+      "exists": true,
+      "test_status": "passing"
+    },
     "proof/dependence": {
       "status": "verified_done",
       "file": "backend/proof/dependence.py",
@@ -520,10 +550,10 @@
     }
   },
   "test_summary": {
-    "passed": 2273,
+    "passed": 2519,
     "failed": 0,
     "skipped": 32,
-    "total": 2273
+    "total": 2519
   },
   "phase2_gates": [
     {
@@ -836,6 +866,7 @@
       "D1": [
         "dht22_node",
         "led_indicator",
+        "load_switch",
         "rc_lowpass",
         "rs485_node",
         "voltage_divider"
@@ -843,11 +874,13 @@
       "D2": [
         "dht22_node",
         "led_indicator",
+        "load_switch",
         "rs485_node"
       ],
       "D7": [
         "dht22_node",
         "led_indicator",
+        "load_switch",
         "rs485_node"
       ]
     },
@@ -972,6 +1005,34 @@
           "proven": 2,
           "floor_if_signed": "G1"
         }
+      },
+      "load_switch": {
+        "grade_floor": "G1",
+        "coverage_le_g2": 1.0,
+        "open_defeaters": [
+          "D1",
+          "D2",
+          "D7"
+        ],
+        "not_assessed": [],
+        "floor_claims": [
+          "sw.saturation",
+          "sw.gpio_current_limit",
+          "sw.resistor_dissipation",
+          "sw.collector_limits",
+          "sw.rail_current",
+          "sw.flyback",
+          "rule.no_floating_nodes",
+          "rule.voltage_ratings_ok",
+          "rule.pin_assignment_valid",
+          "rule.peripheral_conflict_free",
+          "rule.strapping_pins_safe"
+        ],
+        "proofs": {
+          "declared": 4,
+          "proven": 4,
+          "floor_if_signed": "G1"
+        }
       }
     }
   },
@@ -981,13 +1042,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "01aa82f feat: Phase 2 closes — its exit gate written into the repo and derived from the tests",
-    "401a8d7 Merge pull request #4 from monickverma/led-wurth-150080rs75000",
-    "63e55a6 jev: the LED decision re-run under the stability-gated protocol, committed and re-runnable",
-    "eceeec4 data: the engineer's figure confirmations, signed by monick",
-    "3695af2 chore: regenerate state.json / progress.yaml after the LED change"
+    "fc35d1d fix: firmware builds through a real worker; an explanation that fails says why",
+    "4b7533f feat: AI_REASONING_EFFORT for OpenAI-compatible providers",
+    "a60728f feat: composition M2–M4 — behaviour, the load switch, the front door",
+    "d85af85 feat: composition M1 — several blocks on one board",
+    "5a6179d plan: open the Composition phase — owner's decision, transistor load switch for the buzzer"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md    |  45 +++++++++\n .claude/shared-memory/plan/current_phase.md |  27 ++++-\n .claude/shared-memory/plan/master_plan.md   |  15 ++-\n .claude/shared-memory/tools",
+  "last_diff_stat": ".claude/shared-memory/brain/decisions.md | 23 +++++++++++++\n backend/ai/client.py                     |  8 +++--\n backend/ai/explainer.py                  |  4 ++-\n backend/api/routes/design.py       ",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
