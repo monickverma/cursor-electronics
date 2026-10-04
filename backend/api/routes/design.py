@@ -16,6 +16,7 @@ from ai.client import timeout_detail
 from ai.explainer import ExplanationEngine
 from ai.intent_producer import IntentProducer, IntentProductionError
 from api.routes.auth import get_current_user
+from api.routes.explanation import queue_explanation
 from api.routes.firmware import firmware_view
 from core.config import settings
 from core.ir_schema import CircuitIR
@@ -61,6 +62,8 @@ class GenerateResponse(BaseModel):
     #: Why `explanation` is empty, when it is: the explainer is best-effort and
     #: its failure must not lose the design, but it must not be silent either.
     explanation_error: Optional[str] = None
+    #: writing (queued: poll GET /design/{id}/explanation) | written | failed
+    explanation_status: str = "written"
     pcb_netlist: Optional[dict] = None
     ir: dict
     #: Stage 3 claim objects: kind/grade/scope/defeaters per claim, the grade
@@ -176,18 +179,13 @@ async def generate_design(
     pcb_netlist = PcbNetlistGenerator().generate(ir)
 
     # 7. Explanation (best-effort — a failure here must not lose the design)
+    #    It is queued at the end of this handler, after the simulation and the
+    #    firmware build, and read back through GET /design/{id}/explanation: it
+    #    is the one long model answer (35–90 s measured) and the design must not
+    #    wait behind it ([2026-10-05]).
     explanation = ""
     explanation_error: Optional[str] = None
-    try:
-        ctx.count_api_call()
-        explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
-    except anthropic.APITimeoutError:
-        explanation_error = (f"the explanation timed out after {settings.ai_explainer_timeout_seconds:.0f} s "
-                             f"({settings.ai_model}); the design itself is complete")
-    except Exception as exc:  # noqa: BLE001 — reported, never raised: the design is already built
-        explanation_error = f"the explanation could not be written: {type(exc).__name__}: {str(exc)[:200]}"
-    if explanation_error:
-        logger.warning("explainer failed for %s: %s", ir.circuit_id, explanation_error)
+    explanation_status = "writing"
 
     # 7b. Firmware — shown only once it has compiled for the design's board
     #     (Stage 5 gate 1). A new build is queued; the client polls
@@ -210,6 +208,26 @@ async def generate_design(
             args=[ir.circuit_id, netlist, job_id, str(ir.application_class)],
             task_id=job_id,
         )
+
+    # 9b. The explanation: queued last, so the worker reaches the simulation
+    #     and the build first. With no broker to take it, it is written here as
+    #     it always was — slower, never absent without a reason.
+    try:
+        queue_explanation(ir)
+    except Exception:  # noqa: BLE001 — no queue: fall back to writing it inline
+        try:
+            ctx.count_api_call()
+            explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
+            explanation_status = "written"
+        except anthropic.APITimeoutError:
+            explanation_error = (f"the explanation timed out after "
+                                 f"{settings.ai_explainer_timeout_seconds:.0f} s ({settings.ai_model}); "
+                                 f"the design itself is complete")
+        except Exception as exc:  # noqa: BLE001 — reported, never raised: the design is already built
+            explanation_error = f"the explanation could not be written: {type(exc).__name__}: {str(exc)[:200]}"
+        if explanation_error:
+            explanation_status = "failed"
+            logger.warning("explainer failed for %s: %s", ir.circuit_id, explanation_error)
 
     # 10. Build validation summary
     all_errors = val_result.errors + rule_result.errors
@@ -236,6 +254,7 @@ async def generate_design(
         bom=bom,
         explanation=explanation,
         explanation_error=explanation_error,
+        explanation_status=explanation_status,
         pcb_netlist=pcb_netlist,
         ir=ir.model_dump(mode="json"),
         validation_coverage=ir.validation_coverage,

@@ -91,7 +91,8 @@ cursor-electronics/
 │   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
-│   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate)
+│   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate),
+│   │                               # explain_task.py (the explanation, read back by GET /design/{id}/explanation)
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/
 │   ├── app/page.tsx                # Two-panel layout

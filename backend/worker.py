@@ -19,6 +19,7 @@ app = Celery(
     include=[
         "tasks.simulation_task",
         "tasks.firmware_task",   # Stage 5: the compile gate
+        "tasks.explain_task",    # [2026-10-05]: the explanation, off the request
     ],
 )
 

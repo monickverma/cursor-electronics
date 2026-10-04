@@ -82,6 +82,8 @@ export interface GenerateResponse {
   bom: BOMRow[]
   explanation: string
   explanation_error?: string | null
+  // 'writing': the explanation is queued; poll getExplanation ([2026-10-05]).
+  explanation_status?: string
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
   validation_coverage?: ValidationCoverage | null
@@ -344,6 +346,16 @@ export interface FirmwareBuild {
 
 export async function getFirmware(circuitId: string, token: string): Promise<FirmwareBuild> {
   return apiGet(`/design/${circuitId}/firmware`, token)
+}
+
+export interface ExplanationView {
+  status: string   // writing | written | failed | unavailable
+  explanation: string
+  error?: string | null
+}
+
+export async function getExplanation(circuitId: string, token: string): Promise<ExplanationView> {
+  return apiGet(`/design/${circuitId}/explanation`, token)
 }
 
 export async function generateDesign(prompt: string, token: string): Promise<GenerateResponse> {

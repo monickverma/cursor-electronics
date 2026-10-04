@@ -98,6 +98,15 @@ _MUTATORS = frozenset({
 #: Writes into a design inside a model-facing module that a person has read and
 #: judged safe. Matched by file and exact source text; the reason is required.
 _REVIEWED: Dict[Tuple[str, str], str] = {
+    # [2026-10-05]: the explanation moved off the request. Both rebuild a design
+    # that already exists in order to *describe* it; the explainer returns text,
+    # which is stored as text and never read back into a design.
+    ("backend/api/routes/explanation.py", "CircuitIR.model_validate(design.ir_json)"):
+        "rebuilds the stored design record read from Postgres to poll or queue its explanation; "
+        "the explainer's output is a string saved to generated_outputs, never a design",
+    ("backend/tasks/explain_task.py", "CircuitIR.model_validate(ir_json)"):
+        "rebuilds the design the generate route serialised into the task, as the explainer's input; "
+        "the task returns the explanation text and writes no design",
     ("backend/api/routes/patch.py", "CircuitIR.model_validate(design.ir_json)"):
         "rebuilds the stored design record read from Postgres by `_load_owned`; "
         "the patcher's output reaches a design only through registry dispatch "

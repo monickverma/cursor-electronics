@@ -220,6 +220,7 @@ export default function Home() {
                   coverage={result.validation_coverage}
                   explanation={(result as GenerateResponse).explanation}
                   explanationError={(result as GenerateResponse).explanation_error}
+                  explanationStatus={(result as GenerateResponse).explanation_status}
                   circuitId={result.circuit_id}
                   token={token}
                   onCoverage={handleCoverage}

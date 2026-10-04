@@ -2,6 +2,7 @@
 
 import ClaimsTable from '@/components/ClaimsTable'
 import BlocksPanel from '@/components/BlocksPanel'
+import ExplanationPanel from '@/components/ExplanationPanel'
 import PropertiesPanel from '@/components/PropertiesPanel'
 import type { ValidationCoverage } from '@/lib/api'
 
@@ -15,6 +16,7 @@ interface Props {
   validation: ValidationData
   explanation?: string
   explanationError?: string | null
+  explanationStatus?: string
   // Stage 3 claim objects. Absent on designs built before Stage 3.
   coverage?: ValidationCoverage | null
   // Stage 4 sign-off needs the design and the session.
@@ -23,7 +25,7 @@ interface Props {
   onCoverage?: (coverage: ValidationCoverage) => void
 }
 
-export default function ValidationReport({ validation, explanation, explanationError, coverage, circuitId, token, onCoverage }: Props) {
+export default function ValidationReport({ validation, explanation, explanationError, explanationStatus, coverage, circuitId, token, onCoverage }: Props) {
   return (
     <div className="h-full overflow-y-auto p-5 space-y-5">
       {coverage && (
@@ -71,26 +73,12 @@ export default function ValidationReport({ validation, explanation, explanationE
         </Section>
       )}
 
-      {/* An explanation that could not be written says why; it is never just absent. */}
-      {!explanation && explanationError && (
-        <p className="text-sm text-muted border border-border rounded p-3">
-          No explanation for this design: {explanationError}.
-        </p>
-      )}
+      {/* The explanation arrives after the design; the panel polls for it. */}
+      <ExplanationPanel circuitId={circuitId} token={token} explanation={explanation}
+                        status={explanationStatus} error={explanationError} />
 
-      {/* Design explanation */}
-      {explanation && (
-        <section>
-          <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'EB Garamond, serif' }}>
-            Design Explanation
-          </h3>
-          <div className="text-sm text-cream-dim leading-relaxed whitespace-pre-wrap bg-surface border border-border rounded p-4">
-            {explanation}
-          </div>
-        </section>
-      )}
-
-      {validation.errors.length === 0 && validation.warnings.length === 0 && !explanation && !coverage && (
+      {validation.errors.length === 0 && validation.warnings.length === 0 && !explanation
+        && explanationStatus !== 'writing' && !coverage && (
         <p className="text-sm text-muted">No issues found.</p>
       )}
     </div>
