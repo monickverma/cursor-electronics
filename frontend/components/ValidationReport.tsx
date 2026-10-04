@@ -14,6 +14,7 @@ interface ValidationData {
 interface Props {
   validation: ValidationData
   explanation?: string
+  explanationError?: string | null
   // Stage 3 claim objects. Absent on designs built before Stage 3.
   coverage?: ValidationCoverage | null
   // Stage 4 sign-off needs the design and the session.
@@ -22,7 +23,7 @@ interface Props {
   onCoverage?: (coverage: ValidationCoverage) => void
 }
 
-export default function ValidationReport({ validation, explanation, coverage, circuitId, token, onCoverage }: Props) {
+export default function ValidationReport({ validation, explanation, explanationError, coverage, circuitId, token, onCoverage }: Props) {
   return (
     <div className="h-full overflow-y-auto p-5 space-y-5">
       {coverage && (
@@ -68,6 +69,13 @@ export default function ValidationReport({ validation, explanation, coverage, ci
             <RuleRow key={i} field={w.field} message={w.message} variant="warning" />
           ))}
         </Section>
+      )}
+
+      {/* An explanation that could not be written says why; it is never just absent. */}
+      {!explanation && explanationError && (
+        <p className="text-sm text-muted border border-border rounded p-3">
+          No explanation for this design: {explanationError}.
+        </p>
       )}
 
       {/* Design explanation */}

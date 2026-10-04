@@ -81,6 +81,7 @@ export interface GenerateResponse {
   schematic: string
   bom: BOMRow[]
   explanation: string
+  explanation_error?: string | null
   pcb_netlist?: Record<string, unknown>
   ir: Record<string, unknown>
   validation_coverage?: ValidationCoverage | null

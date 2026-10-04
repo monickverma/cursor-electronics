@@ -2608,3 +2608,26 @@ claims). A board is not signed as one set yet (`properties_hash` None). Patching
 
 **Not done.** The target sentence through the live LLM (credits exhausted); a bench build; composing
 `voltage_divider`, `low_pass_filter` or `modbus_rtu_master` (refused by name).
+
+## [2026-10-04] The first real run of the whole stack — what it found
+
+The room-monitor sentence was sent through the running API with a real worker (uvicorn, Celery, Redis,
+PlatformIO; `deepseek/deepseek-v4.1-flash`, effort xhigh, OpenRouter's OpenAI-compatible endpoint).
+
+- **Every firmware build through a real worker failed**: `ModuleNotFoundError: generators`. Celery puts the
+  working directory on `sys.path` only while it loads the app; `tasks/firmware_task.py` imports at run time.
+  The compile gate's tests call the task function directly, so they never saw it. `worker.py` now keeps its
+  own folder on the path. Stage 5's "firmware shown only once it compiles" had not worked end to end before.
+- **Redis had been down two weeks and no worker was running**; the app could not queue a simulation.
+- **Orphaned uvicorn workers** (children of a `--reload` parent that was killed) kept the port and served old
+  code. Killing the parent is not a restart on Windows: kill the `multiprocessing.spawn` children too.
+- **The explanation is the slow step and effort does not fix it**: 35–90 s on the composed board at every
+  reasoning effort (none … xhigh), 8–14k characters — it is output length. It was also failing silently at the
+  60 s timeout. It now has its own budget (`AI_EXPLAINER_TIMEOUT_SECONDS`, 150 s) and a failure is returned as
+  `explanation_error` and shown, never an empty string. Quality was the same at every effort (10/10 parts
+  named, 6–8 consequential markers), so no per-step effort setting was added.
+- **Open:** a generate takes 75–150 s against the 15 s target. The fix is to return the design and deliver the
+  explanation separately (or use `ai/derived_explainer.py`, which is 0 calls but is not what criterion 12
+  measures) — the owner's call.
+- After the fixes: generate 201 in 77 s, explanation 9.6k chars, firmware **compiled by the worker and shown**,
+  simulation complete in 1 s.

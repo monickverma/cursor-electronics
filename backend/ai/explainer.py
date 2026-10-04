@@ -97,7 +97,9 @@ def _first_text(response) -> str:
 
 class ExplanationEngine:
     def __init__(self):
-        self.client = make_client()
+        from core.config import settings
+
+        self.client = make_client(timeout=settings.ai_explainer_timeout_seconds or None)
 
     def explain(
         self,

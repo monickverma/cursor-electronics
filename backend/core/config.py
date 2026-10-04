@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     # that exceeds this is a failure worth surfacing, not worth waiting on.
     # Raise ai_timeout_seconds if AI_MODEL is a large/slow model.
     ai_timeout_seconds: float = 45.0
+    # The explanation is the one long answer (thousands of characters), so it
+    # gets its own budget ([2026-10-04]: 35–90 s measured on a composed board
+    # with deepseek-v4.1-flash, at every reasoning effort — it is output length,
+    # not thinking). 0 uses ai_timeout_seconds.
+    ai_explainer_timeout_seconds: float = 150.0
     ai_max_retries: int = 1
     celery_broker_url: str = ""          # defaults to redis_url if empty
     environment: str = "development"

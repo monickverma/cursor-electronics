@@ -1,5 +1,6 @@
 """POST /design/generate — full pipeline: intent → IR → all outputs."""
 
+import logging
 import uuid
 from typing import Annotated, Optional
 
@@ -16,6 +17,7 @@ from ai.explainer import ExplanationEngine
 from ai.intent_producer import IntentProducer, IntentProductionError
 from api.routes.auth import get_current_user
 from api.routes.firmware import firmware_view
+from core.config import settings
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
 from db.crud import list_user_designs, save_design, save_output
@@ -31,6 +33,7 @@ from tasks.simulation_task import run_simulation
 from validation.rule_engine import HardwareRuleEngine
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 from generators.netlist.pcb import PcbNetlistGenerator
@@ -55,6 +58,9 @@ class GenerateResponse(BaseModel):
     schematic: str
     bom: list
     explanation: str
+    #: Why `explanation` is empty, when it is: the explainer is best-effort and
+    #: its failure must not lose the design, but it must not be silent either.
+    explanation_error: Optional[str] = None
     pcb_netlist: Optional[dict] = None
     ir: dict
     #: Stage 3 claim objects: kind/grade/scope/defeaters per claim, the grade
@@ -171,11 +177,17 @@ async def generate_design(
 
     # 7. Explanation (best-effort — a failure here must not lose the design)
     explanation = ""
+    explanation_error: Optional[str] = None
     try:
         ctx.count_api_call()
         explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
-    except Exception:
-        pass
+    except anthropic.APITimeoutError:
+        explanation_error = (f"the explanation timed out after {settings.ai_explainer_timeout_seconds:.0f} s "
+                             f"({settings.ai_model}); the design itself is complete")
+    except Exception as exc:  # noqa: BLE001 — reported, never raised: the design is already built
+        explanation_error = f"the explanation could not be written: {type(exc).__name__}: {str(exc)[:200]}"
+    if explanation_error:
+        logger.warning("explainer failed for %s: %s", ir.circuit_id, explanation_error)
 
     # 7b. Firmware — shown only once it has compiled for the design's board
     #     (Stage 5 gate 1). A new build is queued; the client polls
@@ -223,6 +235,7 @@ async def generate_design(
         schematic=schematic,
         bom=bom,
         explanation=explanation,
+        explanation_error=explanation_error,
         pcb_netlist=pcb_netlist,
         ir=ir.model_dump(mode="json"),
         validation_coverage=ir.validation_coverage,

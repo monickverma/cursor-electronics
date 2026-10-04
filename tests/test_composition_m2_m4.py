@@ -287,3 +287,59 @@ class TestTheLLMProducerRecordsAProject:
         producer, calls = self._producer([payload], monkeypatch)
         producer.produce("an OLED")
         assert len(calls) == 1
+
+
+class TestAnExplanationThatFailsSaysWhy:
+    def test_a_timeout_is_reported_and_the_design_kept(self, monkeypatch):
+        import anthropic
+        import httpx
+        from fastapi.testclient import TestClient
+
+        from api.routes import design as design_route
+        from api.routes.auth import get_current_user
+        from db.models import get_db
+        from main import app
+        from middleware.rate_limit import limiter
+        from observability.request_log import RequestLogger
+
+        intent = project_intent()
+
+        class _Producer:
+            def __init__(self, registry):
+                pass
+
+            def produce(self, prompt):
+                return intent
+
+        async def nothing(*args, **kwargs):
+            return None
+
+        async def no_firmware(db, ir):
+            return SimpleNamespace(firmware=None, model_dump=lambda **kw: {"status": "unavailable"})
+
+        async def record(self, row):
+            return True
+
+        def slow(self, ir, validation):
+            raise anthropic.APITimeoutError(request=httpx.Request("POST", "http://model"))
+
+        monkeypatch.setattr(design_route, "IntentProducer", _Producer)
+        monkeypatch.setattr(design_route, "save_design", nothing)
+        monkeypatch.setattr(design_route, "save_output", nothing)
+        monkeypatch.setattr(design_route, "firmware_view", no_firmware)
+        monkeypatch.setattr(design_route.ExplanationEngine, "__init__", lambda self: None)
+        monkeypatch.setattr(design_route.ExplanationEngine, "explain", slow)
+        monkeypatch.setattr(design_route.run_simulation, "apply_async", lambda **kw: None)
+        monkeypatch.setattr(RequestLogger, "record", record)
+        app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id="u-explain")
+        app.dependency_overrides[get_db] = lambda: None
+        was_enabled, limiter.enabled = limiter.enabled, False
+        try:
+            res = TestClient(app).post("/design/generate", json={"prompt": ROOM["intent"]})
+        finally:
+            limiter.enabled = was_enabled
+            app.dependency_overrides.clear()
+        assert res.status_code == 201, res.text
+        body = res.json()
+        assert body["explanation"] == "" and "timed out" in body["explanation_error"]
+        assert len(body["bom"]) == 10

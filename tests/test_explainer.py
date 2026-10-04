@@ -82,7 +82,7 @@ def explainer_factory(monkeypatch):
     def build(reply_text: str = "stub explanation") -> ExplanationEngine:
         monkeypatch.setattr(
             "ai.explainer.make_client",
-            lambda: _FakeClient(reply_text, recorder),
+            lambda timeout=None: _FakeClient(reply_text, recorder),
         )
         return ExplanationEngine()
 
