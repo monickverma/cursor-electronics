@@ -2536,3 +2536,118 @@ first:
 
 Still open, and not a gate: D1 (no bench), D7 on the Black Pill board rows and two Uno figures, and the
 LED's assumed V_F minimum. Signing the 12 proven properties lifts the floor to G1.
+
+## [2026-10-03] The next phase is Composition, not Phase 3 as written — decided by the owner
+
+**Context.** Phase 2 made five single-circuit generators trustworthy; the system still cannot put two of them on
+one board, so it cannot design anything a person would build. Phase 3 as written (PRODUCT_MASTER: UL families,
+enterprise contracts, ordered PCBs) sells a product that does not yet exist.
+
+**Decision (owner, 2026-10-03).**
+1. The next phase is **Composition**, per `COMPOSITION_PLAN.md`: M1 composer, M2 behaviour rules, M3 load-switch
+   block, M4 board-level checks and the front door. Exit: the room-monitor sentence produces one buildable board.
+2. The buzzer is driven by a **transistor load-switch block** (NPN, base resistor, flyback diode when inductive),
+   proved like the other generators, because the same block later drives relays, motors and pumps. The
+   `tone()`-on-a-pin piezo was rejected as a dead end.
+3. Phase 3 as written is not opened. Its three owner calls (Gerber timing, UL family, criterion 12 before a
+   prospect) wait until people use the tool. The `fieldwork/` steps run alongside and gate nothing.
+
+**What stops.** New assurance machinery beyond what composition needs: defeaters, Jev decisions, the PCB engine.
+
+## [2026-10-03] Composition M1 — the composer, and what it does not claim
+
+- `generators/compose.py`: a `Project` (board + blocks) → one CircuitIR. Each block is dispatched through the
+  registry and `realize()`d by its own generator with an allocated pin (`preferences.gpio_pin` / `data_pin`, the
+  pin preferences the generators already read and check). The composer designs nothing itself.
+- **Pins:** requested pins are kept or refused by name (taken, absent, or the USB console's); otherwise the board
+  default for the role, else the first free pin the table allows (no reserved, strapping or console pins); the
+  whole assignment re-checked with `pin_rules`, and the merged board with `check_design`.
+- **Merge:** one MCU (U1, same part across blocks or refused), one 100 nF bypass, shared power/ground nodes;
+  other parts renumbered by prefix; a net is prefixed with its block id only where two blocks share its name.
+- **Claims:** the composite carries no `validation_coverage`. Each block keeps its own, and a test asserts it is
+  byte-for-byte the standalone design's `properties_hash`. Block claims name block-local part ids (the LED's R1
+  is the board's R2); `BlockResult.parts` maps them. Board-level claims (rail current, cross-block loading) are
+  M4, and are reported as not assessed rather than implied.
+- Composable today: `led_indicator`, `temperature_humidity_sensor` (the `SLOTS` table). Everything else is
+  refused by name.
+- Evidence: the DHT22 + LED board simulates in ngspice to both blocks' own expected outputs on all three boards.
+
+
+## [2026-10-03] Composition M2–M4 — behaviour, the load switch, the front door
+
+**M2, behaviour.** `generators/compose.py`: `READS` (what a block reports: the DHT22's `temperature_c`,
+`humidity_pct`) and `SETS` (`on|off|blink|heartbeat` for the LED and the switch) are the whole vocabulary. A rule
+is `when`/`then`/`else` or `always`; `Project` refuses by name any rule naming a block, reading or setting the
+project does not have, and any threshold outside what the sensor reports. `generators/firmware/composite.py`
+renders one sketch (`templates/project.ino.j2`, non-blocking: sensors every 2 s, outputs every pass) from the
+composer's pins; `project_for()` rebuilds it for a stored board; it is shown only through the compile gate.
+The room monitor's sketch builds on the Uno, the ESP32 and the Black Pill.
+
+**M3, the load switch.** `generators/load_switch.py`, registered, under every library gate (grid within 2% of
+ngspice, M1 fault arms, D7 audit, D2 per claim, locality, firmware build on three boards). Model `npn_saturated`:
+B–E as a diode fitted to V_BE(sat), C–E as V_CE(sat) — valid only in saturation, so the block **proves** its
+base current meets I_load/10 (the datasheet's forced beta for V_CE(sat)) over every tolerance; G1 floor. The
+load is off-board on J1, declared by current and inductance; the flyback diode is reverse-biased in steady state
+and judged by its ratings. Parts: onsemi MMBT2222ALT1G, Diodes Inc. 1N4148W-7-F, Molex 22-27-2021.
+- **D7, honestly.** The diode's datasheet (DS30086 Rev. 31-2) was read: it gives V_R **100 V**, not the 75 V
+  the agent first recorded — corrected before the check. onsemi's MMBT2222LT1/D Rev 13 could not be fetched
+  (scripted downloads refused), so the transistor's nine figures are `not_checked`: recalled, not read. They
+  keep D7 on every switch claim and belong on the owner's spot-check.
+
+**M4, the front door.** `Requirements` gains optional `blocks` and `behaviour`, legal only on `function:
+project` (schema version unchanged: optional keys, every stored intent still valid). The LLM producer is told
+the project vocabulary from the code that enforces it; it asks a block's missing required field as
+`blocks.<id>.<section>.<field>` only when the model says the prose does not state it; a project is never
+re-prompted — the composer refuses it by name. `FormProducer.build_project` is the zero-call path.
+`compose_intent()` stamps the board from the intent's lineage as `realize()` does. `board_coverage()` keeps
+every block's claims and proofs (relabelled to board part names, verdicts untouched) and adds
+`board.rail_current` (sound enclosure, G2 — the switch's port bounds I_C by I_load), `board.pin_rules`
+(exact, G1), and `board.rail_interaction` **not assessed** (the rail is an ideal source in every block's
+claims). A board is not signed as one set yet (`properties_hash` None). Patching a board is refused by name.
+`/design/generate` returns it; the UI lists the blocks and rules (`BlocksPanel`).
+
+**Not done.** The target sentence through the live LLM (credits exhausted); a bench build; composing
+`voltage_divider`, `low_pass_filter` or `modbus_rtu_master` (refused by name).
+
+## [2026-10-04] The first real run of the whole stack — what it found
+
+The room-monitor sentence was sent through the running API with a real worker (uvicorn, Celery, Redis,
+PlatformIO; `deepseek/deepseek-v4.1-flash`, effort xhigh, OpenRouter's OpenAI-compatible endpoint).
+
+- **Every firmware build through a real worker failed**: `ModuleNotFoundError: generators`. Celery puts the
+  working directory on `sys.path` only while it loads the app; `tasks/firmware_task.py` imports at run time.
+  The compile gate's tests call the task function directly, so they never saw it. `worker.py` now keeps its
+  own folder on the path. Stage 5's "firmware shown only once it compiles" had not worked end to end before.
+- **Redis had been down two weeks and no worker was running**; the app could not queue a simulation.
+- **Orphaned uvicorn workers** (children of a `--reload` parent that was killed) kept the port and served old
+  code. Killing the parent is not a restart on Windows: kill the `multiprocessing.spawn` children too.
+- **The explanation is the slow step and effort does not fix it**: 35–90 s on the composed board at every
+  reasoning effort (none … xhigh), 8–14k characters — it is output length. It was also failing silently at the
+  60 s timeout. It now has its own budget (`AI_EXPLAINER_TIMEOUT_SECONDS`, 150 s) and a failure is returned as
+  `explanation_error` and shown, never an empty string. Quality was the same at every effort (10/10 parts
+  named, 6–8 consequential markers), so no per-step effort setting was added.
+- **Open:** a generate takes 75–150 s against the 15 s target. The fix is to return the design and deliver the
+  explanation separately (or use `ai/derived_explainer.py`, which is 0 calls but is not what criterion 12
+  measures) — the owner's call.
+- After the fixes: generate 201 in 77 s, explanation 9.6k chars, firmware **compiled by the worker and shown**,
+  simulation complete in 1 s.
+
+## [2026-10-05] The explanation leaves the request — decided by the owner
+
+**Context.** [2026-10-04]: a generate took 75–150 s against the 15 s target, almost all of it the explanation,
+and no reasoning effort made it faster.
+
+**Decision.** POST /design/generate returns the design and queues the explanation
+(`tasks/explain_task.py`, queued last so the worker reaches the simulation and the build first). GET
+/design/{id}/explanation reports writing / written / failed / unavailable and stores the text in
+`generated_outputs` the first time it is read back (the task result expires in an hour); a failure is stored
+too, with its reason. One explanation per design version. With no broker, generate writes it inline as before.
+The UI polls every 3 s (`ExplanationPanel`). The derived explainer was not substituted: it is not what
+criterion 12 measures.
+
+**Measured after, live:** generate 201 in 10 s; firmware compiled at 23 s; simulation at 29 s; explanation
+written at 80 s (12.7k chars) and read back from storage.
+
+**Left as it is.** The worker is `--pool=solo` on Windows, so tasks run one at a time: a 1 s simulation waits
+behind a 20 s firmware build, and a second design's simulation would wait behind the first's explanation.
+`tests/conftest.py` makes the queue unavailable in tests, so no test puts a task on a developer's broker.

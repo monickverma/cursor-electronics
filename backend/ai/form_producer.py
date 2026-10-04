@@ -109,6 +109,34 @@ _UNIVERSAL_FIELDS: Tuple[FormField, ...] = (
 )
 
 
+#: The universal fields a block on a board does not ask for: the board sets its rail.
+_BOARD_SET_FIELDS = ("constraints.supply_v",)
+
+
+def project_open_fields(producer: "FormProducer", requirements: Mapping[str, Any]) -> List[str]:
+    """
+    Composition M4: each block's REQUIRED catalogue fields it leaves unset, as
+    `blocks.<id>.<section>.<field>`. A block whose function is not in the
+    catalogue asks nothing — the composer refuses it by name.
+    """
+    out: List[str] = []
+    for block in requirements.get("blocks") or []:
+        if not isinstance(block, Mapping):
+            continue
+        try:
+            spec = producer.spec_for(str(block.get("function")))
+        except ValueError:
+            continue
+        for field in spec.required_fields():
+            path = f"{field.section}.{field.name}"
+            section = block.get(field.section)
+            if path in _BOARD_SET_FIELDS:
+                continue
+            if not isinstance(section, Mapping) or section.get(field.name) is None:
+                out.append(f"blocks.{block.get('id')}.{path}")
+    return out
+
+
 class FormProducer:
     """
     Builds IntentIR from structured input. Zero API calls, no network.
@@ -216,6 +244,28 @@ class FormProducer:
         return sections
 
     # ── Production ────────────────────────────────────────────────────────
+
+    def build_project(
+        self,
+        blocks: Sequence[Mapping[str, Any]],
+        behaviour: Sequence[Mapping[str, Any]] = (),
+        mcu: Optional[str] = None,
+        supply_current_ma: Optional[float] = None,
+    ) -> IntentIR:
+        """
+        Composition M4: several blocks on one board, as IntentIR. Zero API
+        calls. A block missing a required field is a question, as on a single
+        form; anything else wrong with the project is the composer's refusal.
+        """
+        constraints: Dict[str, Any] = {}
+        if mcu is not None:
+            constraints["mcu"] = mcu
+        if supply_current_ma is not None:
+            constraints["supply_current_ma"] = supply_current_ma
+        requirements = {"function": "project", "targets": {}, "constraints": constraints, "preferences": {},
+                        "blocks": [dict(b) for b in blocks], "behaviour": [dict(r) for r in behaviour]}
+        return IntentIR(requirements=requirements, underdetermined=project_open_fields(self, requirements),
+                        provenance=Provenance(producer=Producer.FORM))
 
     def build(
         self,

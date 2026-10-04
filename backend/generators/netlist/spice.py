@@ -6,8 +6,10 @@ from typing import Dict, List, Optional, Tuple
 from core.ir_schema import CircuitIR, ComponentType, SignalType
 from generators.netlist.models import (
     mcu_supply_ohms,
+    junction_model_name,
     led_model_name,
     led_parameters,
+    vce_sat,
     load_ohms,
     pin_resistance,
 )
@@ -120,11 +122,15 @@ class SpiceNetlistGenerator:
             pins = pin_map.get(comp.id, {})
             element = self._comp_to_spice(comp, pins, spice_node)
             if element:
-                lines.append(element)
-                # Positions 1 and 2 of every SPICE element are the two terminal nodes
-                parts = element.split()
-                for sn in parts[1:3]:
-                    touch(sn)
+                # A transistor is two elements (`npn_saturated`), one per line.
+                for line in element.splitlines():
+                    lines.append(line)
+                    # Positions 1 and 2 of every SPICE element are the two terminal nodes
+                    for sn in line.split()[1:3]:
+                        touch(sn)
+            if comp.type == ComponentType.TRANSISTOR and element:
+                i_s, n = led_parameters(comp.part_number)
+                led_models[junction_model_name(comp.part_number)] = f"(Is={i_s:.6e} N={n:g})"
             if comp.type == ComponentType.LED:
                 params = led_parameters(comp.part_number)
                 if params is None:
@@ -211,6 +217,24 @@ class SpiceNetlistGenerator:
             cathode = spice_node(others[0]) if others else "0"
             model = led_model_name(comp.part_number) if led_parameters(comp.part_number) else "DLED"
             return f"D_{comp.id} {anode} {cathode} {model}"
+
+        if ctype == "transistor":
+            # `npn_saturated` (Composition M3): B–E as a diode fitted to V_BE(sat),
+            # C–E as V_CE(sat). Only for a tabulated part; anything else is not modelled.
+            if led_parameters(comp.part_number) is None or vce_sat(comp.part_number) is None:
+                return None
+            if not {"B", "C", "E"} <= set(pins):
+                return None
+            b, c, e = (spice_node(pins[k]) for k in ("B", "C", "E"))
+            return (f"D_{comp.id} {b} {e} {junction_model_name(comp.part_number)}\n"
+                    f"V_SAT_{comp.id} {c} {e} DC {vce_sat(comp.part_number):g}")
+
+        if ctype == "connector" and {"1", "2"} <= set(pins) and comp.value:
+            # An off-board load on a header (Composition M3): its equivalent
+            # resistance, declared by the design, between the header's two pins.
+            ohms = _parse_ohms(comp.value)
+            if ohms:
+                return f"R_LOAD_{comp.id} {spice_node(pins['1'])} {spice_node(pins['2'])} {round(ohms, 4)}"
 
         # Active components (MCU, sensor, transceiver, etc.): resistive load between VCC and GND
         vcc_node = next(

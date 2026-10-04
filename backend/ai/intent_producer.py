@@ -131,7 +131,19 @@ Black Pill STM32F411 is blackpill_f411ce. A board not on the list is recorded \
 as the user named it, never swapped for a listed one; the system refuses it.
 
 Never convert a value the user gave into a different one. If they said 2 MHz, \
-record 2000000, even if it looks out of range.\
+record 2000000, even if it looks out of range.
+
+PROJECTS. When the request asks for several catalogue circuits on one board \
+(a sensor and an LED and a buzzer, say), record `function` = `project`, the \
+board in `constraints.mcu`, and one entry per circuit in `blocks`: a short \
+lowercase `id` you choose (climate, alarm, status), its catalogue `function`, \
+and its `targets` / `constraints` / `preferences` under that function's \
+catalogue fields — not supply_v, which the board sets. A buzzer, relay, motor \
+or pump is a `load_switch` block; its required load current is a question if \
+the user did not state it. Record what the board should DO in `behaviour`, \
+using only the vocabulary listed under PROJECTS below; a behaviour it cannot \
+express is left out, never approximated. A required block field the request \
+does not state goes in `underdetermined` as `blocks.<id>.<section>.<field>`.\
 """
 
 _INTENT_TOOL: Dict[str, Any] = {
@@ -156,6 +168,26 @@ _INTENT_TOOL: Dict[str, Any] = {
             "preferences": {
                 "type": "object",
                 "description": "Tradeable choices, e.g. package",
+            },
+            "blocks": {
+                "type": "array",
+                "description": "Only for function 'project': one circuit each, on one board",
+                "items": {
+                    "type": "object",
+                    "required": ["id", "function"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "function": {"type": "string"},
+                        "targets": {"type": "object"},
+                        "constraints": {"type": "object"},
+                        "preferences": {"type": "object"},
+                    },
+                },
+            },
+            "behaviour": {
+                "type": "array",
+                "description": "Only for function 'project': rules, each {when, then, else?} or {always}",
+                "items": {"type": "object"},
             },
             "underdetermined": {
                 "type": "array",
@@ -249,6 +281,17 @@ def _requested_values(requirements: Mapping[str, Any]) -> Dict[str, Any]:
         if isinstance(values, Mapping):
             for key, value in values.items():
                 flat[f"{section}.{key}"] = value
+    # A project's blocks and behaviour are what was asked for too (Composition M4).
+    for block in requirements.get("blocks") or []:
+        if isinstance(block, Mapping):
+            flat[f"blocks.{block.get('id')}.function"] = block.get("function")
+            for section in ("targets", "constraints", "preferences"):
+                values = block.get(section) or {}
+                if isinstance(values, Mapping):
+                    for key, value in values.items():
+                        flat[f"blocks.{block.get('id')}.{section}.{key}"] = value
+    if requirements.get("behaviour"):
+        flat["behaviour"] = json.dumps(requirements["behaviour"], sort_keys=True, default=str)
     return flat
 
 
@@ -326,6 +369,10 @@ class IntentProducer:
             # Underdetermined is a question for the user, not a retry.
             if not intent.is_answerable:
                 return intent
+            # A project is refused by the composer, block by block and by name;
+            # it is not re-prompted (Composition M4).
+            if requirements.get("function") == "project":
+                return intent
 
             result = self._registry.dispatch(intent)
             if result.accepted or attempt == MAX_SEMANTIC_RETRIES:
@@ -348,6 +395,11 @@ class IntentProducer:
         to record what the user said: it goes to the envelope, which refuses
         it by name, and X5's one retry adds it.
         """
+        if requirements.get("function") == "project":
+            from ai.form_producer import project_open_fields
+
+            wanted = set(claimed)
+            return [path for path in project_open_fields(self._forms, requirements) if path in wanted]
         try:
             spec = self._forms.spec_for(str(requirements.get("function")))
         except ValueError:
@@ -373,7 +425,21 @@ class IntentProducer:
                 for f in spec.fields
             )
             lines.append(f"- {spec.function}: {fields}")
-        return "\n".join(lines) or "(nothing installed)"
+        if not lines:
+            return "(nothing installed)"
+        from generators.compose import READS, SETS, SLOTS
+
+        lines.append("PROJECTS (function project, constraints.mcu, blocks, behaviour):")
+        lines.append(f"- block functions that can share a board: {', '.join(sorted(SLOTS))}")
+        for function, quantities in READS.items():
+            lines.append(f"- a {function} block can be read for: "
+                         + ", ".join(f"{q} [{u}]" for q, (_, _, u) in quantities.items()))
+        for function, modes in SETS.items():
+            lines.append(f"- a {function} block can be set to: {'|'.join(modes)}")
+        lines.append('- a rule is {"when": {"block", "reads", "op": ">|<|>=|<=", "value"}, '
+                     '"then": {"block", "set"}, "else": {"block", "set"}} (else optional) '
+                     'or {"always": {"block", "set"}}; later rules win')
+        return "\n".join(lines)
 
     def _user_content(self, prompt: str) -> str:
         return (
@@ -449,6 +515,10 @@ class IntentProducer:
             "constraints": payload.get("constraints") or {},
             "preferences": payload.get("preferences") or {},
         }
+        # Composition M4: carried as written; `Requirements` refuses them on anything but a project.
+        for key in ("blocks", "behaviour"):
+            if payload.get(key) is not None:
+                requirements[key] = payload[key]
         return requirements, underdetermined
 
     def _append_refusal(

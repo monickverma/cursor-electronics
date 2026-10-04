@@ -36,8 +36,8 @@ from validation.grid_adapters import ADAPTERS, M1_COVERED, board_cases, intent_a
 
 REGISTRY = default_registry()
 GENERATORS = {g.name: g for g in REGISTRY.generators}
-NEW = ("voltage_divider", "led_indicator", "dht22_node", "rs485_node")
-MCU_DESIGNS = ("led_indicator", "dht22_node", "rs485_node")
+NEW = ("voltage_divider", "led_indicator", "dht22_node", "rs485_node", "load_switch")
+MCU_DESIGNS = ("led_indicator", "dht22_node", "rs485_node", "load_switch")
 
 
 def form_intent(name, point=None, board=None, **sections):
@@ -72,7 +72,8 @@ GRID_IDS = [f"{name}-{board + '-' if board else ''}{'-'.join(f'{v:g}' for v in p
 # ── The library itself ───────────────────────────────────────────────────────
 
 class TestLibrary:
-    def test_five_generators_one_per_phase1_template(self):
+    def test_five_phase1_templates_and_the_composition_blocks(self):
+        # Composition M3 ([2026-10-03]) adds load_switch, the first block written for composition.
         assert set(GENERATORS) == {"rc_lowpass", *NEW}
 
     @pytest.mark.parametrize("name", sorted(GENERATORS))
@@ -234,6 +235,12 @@ BAD_INPUTS = {
     # Stage 3 + 4 verification: a source that moves f_c past tolerance, accepted by
     # 0.2.1. Since 0.2.3 a larger R1 swamps what it can; 10 kΩ it cannot.
     "rc_lowpass": [({"constraints": {"source_impedance_ohm": 10_000.0}}, "lowers f_c")],
+    "load_switch": [({"targets": {"load_current_ma": "30"}}, "not a number"),
+                    ({"targets": {"load_current_ma": 150.0}}, "MOSFET"),
+                    ({"constraints": {"load_inductive": "yes"}}, "true or false"),
+                    ({"constraints": {"supply_v": 3.3}}, "characterised at 5 V"),
+                    ({"constraints": {"pinned": {"R1": "10k"}}}, "saturates Q1"),
+                    ({"preferences": {"gpio_pin": "D0"}}, "D0 is reserved")],
     "rs485_node": [({"constraints": {"baud": 115200}}, "SoftwareSerial"),
                    ({"constraints": {"supply_v": 3.3}}, "MAX3485"),
                    ({"constraints": {"far_end_terminated": "yes"}}, "true or false"),
@@ -346,6 +353,12 @@ class TestPinsHonoured:
                          form_intent("dht22_node", constraints={"pinned": {"R1": "4k7"}}))
         assert float(next(c for c in design.components if c.id == "R1").value) == 4700
 
+    def test_load_switch_pin(self):
+        design = realize(GENERATORS["load_switch"],
+                         form_intent("load_switch", {"load_current_ma": 30.0},
+                                     constraints={"pinned": {"R1": "1k"}}))
+        assert float(next(c for c in design.components if c.id == "R1").value) == 1000
+
     def test_rs485_bias_pins(self):
         design = realize(GENERATORS["rs485_node"],
                          form_intent("rs485_node", constraints={"pinned": {"R2": "560", "R3": "560"}}))
@@ -368,6 +381,10 @@ LOCALITY = [
     ("rs485_node", "/constraints/supply_v", 5.25),
     ("rs485_node", "/constraints/far_end_terminated", False),
     ("rs485_node", "/constraints/baud", 19200),
+    ("load_switch", "/targets/load_current_ma", 60.0),
+    ("load_switch", "/constraints/load_inductive", False),
+    ("load_switch", "/preferences/gpio_pin", "D9"),
+    ("load_switch", "/constraints/supply_current_ma", 300.0),
 ]
 
 

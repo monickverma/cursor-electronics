@@ -99,12 +99,14 @@ DEFINES = {
     "led_indicator": {"LED_PIN": "LED_CTRL"},
     "dht22_node": {"DHTPIN": "DHT22_DATA"},
     "rs485_node": {"RS485_TX_PIN": "UART_TX", "RS485_RX_PIN": "UART_RX", "RS485_DE_RE_PIN": "RS485_DE_RE"},
+    "load_switch": {"SWITCH_PIN": "SW_CTRL"},
 }
 #: A pin other than the board's default, so a sketch that ignores the design
 #: and writes its own default is caught.
 OTHER_PIN = {
     "led_indicator": ("gpio_pin", {"arduino_uno": "D5", "esp32_devkitc": "GPIO27", "blackpill_f411ce": "PB5"}),
     "dht22_node": ("data_pin", {"arduino_uno": "D4", "esp32_devkitc": "GPIO27", "blackpill_f411ce": "PB5"}),
+    "load_switch": ("gpio_pin", {"arduino_uno": "D5", "esp32_devkitc": "GPIO27", "blackpill_f411ce": "PB5"}),
 }
 FIRMWARE_CASES = [(n, b, None) for n in MCU_DESIGNS for b in TARGETS] + [
     (n, b, pins[b]) for n, (field, pins) in OTHER_PIN.items() for b in TARGETS]

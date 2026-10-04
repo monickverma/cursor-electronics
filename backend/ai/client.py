@@ -29,18 +29,21 @@ from core.config import settings
 from ai.openai_compat import OpenAICompatClient
 
 
-def make_client() -> anthropic.Anthropic | OpenAICompatClient:
+def make_client(timeout: float | None = None) -> anthropic.Anthropic | OpenAICompatClient:
+    """`timeout` overrides AI_TIMEOUT_SECONDS for one caller (the explainer's long answer)."""
+    timeout = timeout or settings.ai_timeout_seconds
     if settings.ai_provider == "openai_compat":
         return OpenAICompatClient(
             base_url=settings.openai_base_url,
             api_key=settings.openai_api_key,
-            timeout=settings.ai_timeout_seconds,
+            timeout=timeout,
             max_retries=settings.ai_max_retries,
+            reasoning_effort=settings.ai_reasoning_effort,
         )
 
     kwargs: dict = {
         "api_key": settings.anthropic_api_key,
-        "timeout": settings.ai_timeout_seconds,
+        "timeout": timeout,
         "max_retries": settings.ai_max_retries,
     }
 

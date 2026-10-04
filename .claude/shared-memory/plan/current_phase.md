@@ -1,3 +1,32 @@
+# Current Phase: Composition — several blocks on one board (opened 2026-10-03)
+
+> Plan of record: `COMPOSITION_PLAN.md`. Decided by the owner, `brain/decisions.md` [2026-10-03].
+> Exit: *"Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED"* produces
+> one board with a schematic, firmware that compiles, a BOM and graded claims.
+>
+> | # | Milestone | Status |
+> |---|---|---|
+> | M1 | Composer: blocks on one board, pins allocated, one CircuitIR | ✅ 2026-10-03 — `generators/compose.py`, `tests/test_compose.py`, `scripts/compose_project.py` |
+> | M2 | Behaviour rules → composite firmware | ✅ 2026-10-03 — `generators/firmware/composite.py`, `templates/project.ino.j2` |
+> | M3 | Load-switch block (buzzer first) | ✅ 2026-10-03 — `generators/load_switch.py`, registered, all library gates |
+> | M4 | Board-level checks + LLM/form front door + UI | ✅ 2026-10-03 — `compose_intent`, `board_coverage`, `/design/generate`, `BlocksPanel` |
+>
+> **Exit met in code, 2026-10-03:** the room-monitor project (`docs/projects/room_monitor.json`) composes on
+> all three boards, its firmware compiles on all three, and `/design/generate` returns the board with its
+> claims (`tests/test_composition_m2_m4.py`). **Shown live 2026-10-04** on DeepSeek V4.1 Flash (xhigh): the
+> sentence, with cable length and currents stated, returns the board; without them the producer asks three
+> questions. **Nothing has been built on a bench.**
+>
+> **Since M4 (PR #6, `brain/decisions.md` [2026-10-04], [2026-10-05]):** the explanation is queued and read
+> back from `GET /design/{id}/explanation` instead of written inside the request (generate ~10 s, explanation
+> ~80 s). Open before that work commits: run it against a real worker (only mocks so far), check the patch
+> route's inline explanation and the Playwright fixtures, and a person must read the two new `_REVIEWED`
+> entries in `tests/test_llm_cannot_write_circuit_ir.py`.
+>
+> Phase 3 as written is not opened. Alongside, gating nothing: `fieldwork/`.
+
+---
+
 # Current Phase: Phase 2 — Validation Engine — ✅ COMPLETE (2026-10-02)
 
 > **Phase 2 is closed.** Every gate of `PHASE_2_PLAN_v2.md` §5 is met, or deferred with a trigger; see

@@ -1,5 +1,6 @@
 """POST /design/generate — full pipeline: intent → IR → all outputs."""
 
+import logging
 import uuid
 from typing import Annotated, Optional
 
@@ -15,12 +16,15 @@ from ai.client import timeout_detail
 from ai.explainer import ExplanationEngine
 from ai.intent_producer import IntentProducer, IntentProductionError
 from api.routes.auth import get_current_user
+from api.routes.explanation import queue_explanation
 from api.routes.firmware import firmware_view
+from core.config import settings
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
 from db.crud import list_user_designs, save_design, save_output
 from db.models import get_db
 from generators.bom.compiler import BOMCompiler
+from generators.compose import CompositionRefused, compose_intent
 from generators.netlist.spice import SpiceNetlistGenerator
 from generators.realize import realize
 from generators.registry import default_registry
@@ -30,6 +34,7 @@ from tasks.simulation_task import run_simulation
 from validation.rule_engine import HardwareRuleEngine
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 from generators.netlist.pcb import PcbNetlistGenerator
@@ -54,6 +59,11 @@ class GenerateResponse(BaseModel):
     schematic: str
     bom: list
     explanation: str
+    #: Why `explanation` is empty, when it is: the explainer is best-effort and
+    #: its failure must not lose the design, but it must not be silent either.
+    explanation_error: Optional[str] = None
+    #: writing (queued: poll GET /design/{id}/explanation) | written | failed
+    explanation_status: str = "written"
     pcb_netlist: Optional[dict] = None
     ir: dict
     #: Stage 3 claim objects: kind/grade/scope/defeaters per claim, the grade
@@ -116,29 +126,45 @@ async def generate_design(
             "message": "The request does not pin these down. Supply them and resubmit.",
         })
 
-    # 3. Dispatch to a generator whose declared envelope accepts this intent.
-    #    A refusal is a product outcome, not an error: §4.5 makes the
-    #    out-of-envelope log the generator backlog, ranked by frequency.
-    dispatch = registry.dispatch(intent)
-    if not dispatch.accepted:
-        ctx.refuse(dispatch.refusal_summary())
-        raise HTTPException(422, detail={
-            "error": "out_of_envelope",
-            "refusals": [
-                {"generator": r.generator, "reason": r.reason} for r in dispatch.refusals
-            ],
-            "catalogue": list(registry.functions()),
-        })
+    # 3–4. A project (Composition M4) is several blocks on one board: each
+    #    block dispatched and realised by its own generator, merged by the
+    #    composer, every refusal collected and named. Anything else goes to
+    #    the one generator whose declared envelope accepts it.
+    if intent.requirements.get("function") == "project":
+        try:
+            composition = await run_in_threadpool(compose_intent, registry, intent, body.prompt)
+        except CompositionRefused as exc:
+            ctx.refuse("; ".join(exc.reasons))
+            raise HTTPException(422, detail={
+                "error": "out_of_envelope",
+                "refusals": [{"generator": "compose", "reason": r} for r in exc.reasons],
+                "catalogue": list(registry.functions()),
+            })
+        ir = composition.circuit
+        ctx.generator = ir.generator
+    else:
+        # A refusal is a product outcome, not an error: §4.5 makes the
+        # out-of-envelope log the generator backlog, ranked by frequency.
+        dispatch = registry.dispatch(intent)
+        if not dispatch.accepted:
+            ctx.refuse(dispatch.refusal_summary())
+            raise HTTPException(422, detail={
+                "error": "out_of_envelope",
+                "refusals": [
+                    {"generator": r.generator, "reason": r.reason} for r in dispatch.refusals
+                ],
+                "catalogue": list(registry.functions()),
+            })
 
-    generator = dispatch.generator
-    ctx.generator = f"{generator.name}@{generator.version}"
+        generator = dispatch.generator
+        ctx.generator = f"{generator.name}@{generator.version}"
 
-    # 4. The design itself is produced deterministically, with no model in the
-    #    loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
-    #    asserts mechanically. realize() stamps the circuit_id derived from the
-    #    intent, so the same intent always yields a byte-identical design.
-    # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
-    ir = await run_in_threadpool(realize, generator, intent)
+        # The design itself is produced deterministically, with no model in the
+        # loop. This is the invariant tests/test_llm_cannot_write_circuit_ir.py
+        # asserts mechanically. realize() stamps the circuit_id derived from the
+        # intent, so the same intent always yields a byte-identical design.
+        # Off the event loop: realize() runs the Stage 4 proofs (sympy, z3).
+        ir = await run_in_threadpool(realize, generator, intent)
 
     # 5. Validate
     val_result = validate_ir(ir)
@@ -153,12 +179,13 @@ async def generate_design(
     pcb_netlist = PcbNetlistGenerator().generate(ir)
 
     # 7. Explanation (best-effort — a failure here must not lose the design)
+    #    It is queued at the end of this handler, after the simulation and the
+    #    firmware build, and read back through GET /design/{id}/explanation: it
+    #    is the one long model answer (35–90 s measured) and the design must not
+    #    wait behind it ([2026-10-05]).
     explanation = ""
-    try:
-        ctx.count_api_call()
-        explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
-    except Exception:
-        pass
+    explanation_error: Optional[str] = None
+    explanation_status = "writing"
 
     # 7b. Firmware — shown only once it has compiled for the design's board
     #     (Stage 5 gate 1). A new build is queued; the client polls
@@ -181,6 +208,26 @@ async def generate_design(
             args=[ir.circuit_id, netlist, job_id, str(ir.application_class)],
             task_id=job_id,
         )
+
+    # 9b. The explanation: queued last, so the worker reaches the simulation
+    #     and the build first. With no broker to take it, it is written here as
+    #     it always was — slower, never absent without a reason.
+    try:
+        queue_explanation(ir)
+    except Exception:  # noqa: BLE001 — no queue: fall back to writing it inline
+        try:
+            ctx.count_api_call()
+            explanation = await run_in_threadpool(ExplanationEngine().explain, ir, val_result)
+            explanation_status = "written"
+        except anthropic.APITimeoutError:
+            explanation_error = (f"the explanation timed out after "
+                                 f"{settings.ai_explainer_timeout_seconds:.0f} s ({settings.ai_model}); "
+                                 f"the design itself is complete")
+        except Exception as exc:  # noqa: BLE001 — reported, never raised: the design is already built
+            explanation_error = f"the explanation could not be written: {type(exc).__name__}: {str(exc)[:200]}"
+        if explanation_error:
+            explanation_status = "failed"
+            logger.warning("explainer failed for %s: %s", ir.circuit_id, explanation_error)
 
     # 10. Build validation summary
     all_errors = val_result.errors + rule_result.errors
@@ -206,6 +253,8 @@ async def generate_design(
         schematic=schematic,
         bom=bom,
         explanation=explanation,
+        explanation_error=explanation_error,
+        explanation_status=explanation_status,
         pcb_netlist=pcb_netlist,
         ir=ir.model_dump(mode="json"),
         validation_coverage=ir.validation_coverage,

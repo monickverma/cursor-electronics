@@ -1,0 +1,14 @@
+{
+  "intent": "Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED",
+  "mcu": "arduino_uno",
+  "blocks": [
+    {"id": "climate", "function": "temperature_humidity_sensor", "constraints": {"cable_length_m": 0.3}},
+    {"id": "alarm", "function": "load_switch", "targets": {"load_current_ma": 30}, "constraints": {"load_inductive": true}},
+    {"id": "status", "function": "led_indicator", "targets": {"led_current_ma": 10}}
+  ],
+  "behaviour": [
+    {"when": {"block": "climate", "reads": "temperature_c", "op": ">", "value": 30},
+     "then": {"block": "alarm", "set": "blink"}, "else": {"block": "alarm", "set": "off"}},
+    {"always": {"block": "status", "set": "heartbeat"}}
+  ]
+}

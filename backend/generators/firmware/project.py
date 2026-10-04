@@ -73,6 +73,16 @@ def project_for(ir: CircuitIR) -> Optional[FirmwareProject]:
     """The design's firmware project, or None for a design with no microcontroller."""
     if not any(c.type == ComponentType.MICROCONTROLLER for c in ir.components):
         return None
+    if (ir.generator or "").startswith("compose@") and "project" in ir.constraints:
+        # Composition M2: one sketch for the board, from its blocks' pins and behaviour rules.
+        from dataclasses import replace
+
+        from generators.compose import Project, compose
+        from generators.firmware.composite import composite_project
+        from generators.registry import default_registry
+
+        composed = compose(default_registry(), Project.model_validate(ir.constraints["project"]))
+        return composite_project(replace(composed, circuit=ir))
     generator = ArduinoFirmwareGenerator()
     target = generator.target(ir)
     source = generator.generate(ir)

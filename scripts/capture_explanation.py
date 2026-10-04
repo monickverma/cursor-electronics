@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -85,6 +86,23 @@ def slug(text: str, n: int = 40) -> str:
     return s[:n] or "capture"
 
 
+def wait_for_explanation(base: str, token: str, circuit_id: str, timeout_s: int = 240) -> dict:
+    deadline = time.time() + timeout_s
+    view: dict = {"status": "writing"}
+    while time.time() < deadline:
+        req = urllib.request.Request(f"{base}/design/{circuit_id}/explanation")
+        req.add_header("Authorization", f"Bearer {token}")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                view = json.loads(r.read().decode("utf-8"))
+        except urllib.error.URLError:
+            pass                      # a failed poll is retried
+        if view.get("status") != "writing":
+            return view
+        time.sleep(3)
+    return {"status": "writing", "error": f"still being written after {timeout_s} s"}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -100,8 +118,17 @@ def main() -> None:
     print("  logging in...", flush=True)
     token = login(args.base, args.email, args.password)
 
-    print("  generating (this takes ~15s)...", flush=True)
+    print("  generating...", flush=True)
     resp = generate(args.base, token, args.prompt)
+
+    # Since [2026-10-05] the explanation is written after the design is
+    # returned; wait for it here, so the capture holds what a reader is shown.
+    if resp.get("explanation_status") == "writing":
+        print("  waiting for the explanation (about a minute)...", flush=True)
+        view = wait_for_explanation(args.base, token, resp["circuit_id"])
+        resp["explanation"] = view.get("explanation") or ""
+        resp["explanation_status"] = view.get("status")
+        resp["explanation_error"] = view.get("error")
 
     model = model_in_use()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -128,7 +155,7 @@ def main() -> None:
     print(f"  bom rows    : {len(resp.get('bom') or [])}")
     print(f"  explanation : {len(expl)} chars, {len(expl.split())} words")
     if not expl.strip():
-        print("  WARNING: explanation is empty — check ANTHROPIC_API_KEY and the logs.")
+        print(f"  WARNING: no explanation — {resp.get('explanation_error') or resp.get('explanation_status')}")
     print(f"\n  -> {path}")
 
 

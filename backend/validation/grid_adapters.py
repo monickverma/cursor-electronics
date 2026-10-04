@@ -124,6 +124,15 @@ def measure_led(ir: CircuitIR) -> Dict[str, float]:
     return {"led_current_ma": pin * 1000.0, "supply_current_ma": (rail + pin) * 1000.0}
 
 
+def measure_switch(ir: CircuitIR) -> Dict[str, float]:
+    data = simulate(netlist_of(ir))
+    pin = -data.branch_currents.get("v_pin_sw_ctrl", math.nan)
+    collector = data.branch_currents.get("v_sat_q1", math.nan)
+    # As for the LED, the pin's Thevenin source stands in for current from VCC.
+    return {"base_current_ma": pin * 1000.0, "collector_current_ma": collector * 1000.0,
+            "supply_current_ma": (_rail_a(data) + pin) * 1000.0}
+
+
 def measure_dht22(ir: CircuitIR) -> Dict[str, float]:
     # Hold DATA low, as the MCU's start pulse or the sensor's reply does.
     data = simulate(with_probes(netlist_of(ir), ["V_PROBE dht22_data 0 DC 0"]))
@@ -175,6 +184,7 @@ def _adapter(generator_cls, function: str, measure, base=None) -> Callable[..., 
 def _library() -> Dict[str, AdapterSpec]:
     from generators.dht22_node import DHT22NodeGenerator
     from generators.led_indicator import LedIndicatorGenerator
+    from generators.load_switch import LoadSwitchGenerator
     from generators.rc_lowpass import RCLowPassGenerator
     from generators.rs485_node import RS485NodeGenerator
     from generators.voltage_divider import VoltageDividerGenerator
@@ -193,6 +203,8 @@ def _library() -> Dict[str, AdapterSpec]:
             DHT22NodeGenerator, "temperature_humidity_sensor", measure_dht22), "R1"),
         "rs485_node": AdapterSpec(_adapter(
             RS485NodeGenerator, "modbus_rtu_master", measure_rs485), "R1"),
+        "load_switch": AdapterSpec(_adapter(
+            LoadSwitchGenerator, "load_switch", measure_switch), "R1"),
     }
 
 

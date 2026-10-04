@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-10-02T00:51:23.363963Z'
+generated_at: '2026-10-04T21:42:54.449865Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -100,7 +100,7 @@ files:
         description: IR → multi-section report with failure analysis
         signature: 'ExplanationEngine.explain(ir: CircuitIR, validation_result: IRValidationResult
           | None, simulation_results: dict | None) -> str'
-        line: 102
+        line: 104
         test_file: tests/test_explainer.py
     module_status: done
   generators/spice:
@@ -117,14 +117,14 @@ files:
         description: Translates a CircuitIR into an ngspice-compatible SPICE netlist
           string.
         signature: null
-        line: 48
+        line: 50
         test_file: *id001
       SpiceNetlistGenerator.generate:
         status: verified_done
         type: method
         description: 'Main entry: MCU=100Ω, floating→1GΩ tie-down'
         signature: 'SpiceNetlistGenerator.generate(ir: CircuitIR) -> str'
-        line: 51
+        line: 53
         test_file: *id001
     module_status: done
   generators/firmware:
@@ -1049,14 +1049,14 @@ files:
         type: class
         description: Builds IntentIR from structured input. Zero API calls, no network.
         signature: null
-        line: 112
+        line: 140
         test_file: tests/test_form_producer.py
       FormProducer.catalogue:
         status: verified_done
         type: method
         description: Every function the installed generators cover, with their fields.
         signature: FormProducer.catalogue() -> Tuple[FormSpec, ...]
-        line: 126
+        line: 154
         test_file: tests/test_form_producer.py
       FormProducer.build:
         status: verified_done
@@ -1064,7 +1064,7 @@ files:
         description: Turn form input into an IntentIR. Never calls a model.
         signature: 'FormProducer.build(function: str, values: Mapping[str, Any]) ->
           IntentIR'
-        line: 220
+        line: 270
         test_file: tests/test_form_producer.py
     module_status: done
   ai/intent_producer:
@@ -1078,21 +1078,21 @@ files:
         type: class
         description: Raised when a prompt could not be turned into a usable IntentIR.
         signature: null
-        line: 170
+        line: 202
         test_file: tests/test_intent_producer.py
       IntentProducer:
         status: verified_done
         type: class
         description: Prompt → IntentIR. One model call, or two when a retry is warranted.
         signature: null
-        line: 255
+        line: 298
         test_file: tests/test_intent_producer.py
       IntentProducer.produce:
         status: verified_done
         type: method
         description: Transcribe `prompt`. Raises `IntentProductionError` if it cannot.
         signature: 'IntentProducer.produce(prompt: str) -> IntentIR'
-        line: 265
+        line: 308
         test_file: tests/test_intent_producer.py
     module_status: done
   core/intent_ir:
@@ -1122,7 +1122,7 @@ files:
         description: A human agreeing to a specification, and to exactly this version
           of it.
         signature: null
-        line: 95
+        line: 108
         test_file: tests/test_intent_ir.py
       Provenance:
         status: verified_done
@@ -1130,35 +1130,35 @@ files:
         description: Where this IntentIR came from. Needed to answer the §4.5 questions
           —
         signature: null
-        line: 118
+        line: 131
         test_file: tests/test_intent_ir.py
       IntentIR:
         status: verified_done
         type: class
         description: The requirement as an artifact. Satisfies `generators.protocol.IntentLike`.
         signature: null
-        line: 142
+        line: 155
         test_file: tests/test_intent_ir.py
       IntentIR.is_answerable:
         status: verified_done
         type: method
         description: Whether this intent can be built from as it stands.
         signature: IntentIR.is_answerable() -> bool
-        line: 208
+        line: 221
         test_file: tests/test_intent_ir.py
       IntentIR.open_questions:
         status: verified_done
         type: method
         description: The fields the user still has to supply, in declared order.
         signature: IntentIR.open_questions() -> List[str]
-        line: 218
+        line: 231
         test_file: tests/test_intent_ir.py
       IntentIR.requirements_hash:
         status: verified_done
         type: method
         description: Stable hash of the requirements alone.
         signature: IntentIR.requirements_hash() -> str
-        line: 224
+        line: 237
         test_file: tests/test_intent_ir.py
       IntentIR.sign_off:
         status: verified_done
@@ -1167,14 +1167,14 @@ files:
           now —
         signature: 'IntentIR.sign_off(by: str, properties_hash: Optional[str]) ->
           ''IntentIR'''
-        line: 236
+        line: 249
         test_file: tests/test_intent_ir.py
       IntentIR.is_intact:
         status: verified_done
         type: method
         description: Whether the requirements still match what was signed.
         signature: IntentIR.is_intact() -> bool
-        line: 259
+        line: 272
         test_file: tests/test_intent_ir.py
       IntentIR.with_requirements:
         status: verified_done
@@ -1182,7 +1182,7 @@ files:
         description: A new version carrying different requirements, at revision n+1.
         signature: 'IntentIR.with_requirements(requirements: Mapping[str, Any]) ->
           ''IntentIR'''
-        line: 274
+        line: 287
         test_file: tests/test_intent_ir.py
     module_status: done
   core/intent_patch:
@@ -1298,6 +1298,96 @@ files:
         line: 208
         test_file: tests/test_realize.py
     module_status: done
+  generators/compose:
+    file: backend/generators/compose.py
+    exists: true
+    test_file: tests/test_compose.py
+    test_file_status: passing
+    entries:
+      compose:
+        status: verified_done
+        type: function
+        description: The board for `project`, deterministic for the same project.
+          Raises `CompositionRefused`.
+        signature: 'compose(registry: GeneratorRegistry, project: Project) -> Composition'
+        line: 329
+        test_file: tests/test_compose.py
+      allocate_pins:
+        status: verified_done
+        type: function
+        description: Block id → pin. Requested pins first, then defaults, then the
+          first free pin, in table order.
+        signature: 'allocate_pins(target: Target, blocks: Sequence[Block]) -> Dict[str,
+          str]'
+        line: 223
+        test_file: tests/test_compose.py
+      Project:
+        status: verified_done
+        type: class
+        description: A board and the blocks on it. The board's MCU is the project's,
+          never a block's.
+        signature: null
+        line: 122
+        test_file: tests/test_compose.py
+      board_coverage:
+        status: verified_done
+        type: function
+        description: The board's `validation_coverage`, in the shape every single
+          design has.
+        signature: 'board_coverage(composition: Composition, registry: Optional[GeneratorRegistry])
+          -> Dict[str, Any]'
+        line: 466
+        test_file: tests/test_compose.py
+      compose_intent:
+        status: verified_done
+        type: function
+        description: '`compose()` for a stored design: the circuit stamped from the
+          intent''s'
+        signature: 'compose_intent(registry: GeneratorRegistry, intent: IntentIR,
+          sentence: str) -> Composition'
+        line: 566
+        test_file: tests/test_compose.py
+    module_status: done
+  generators/load_switch:
+    file: backend/generators/load_switch.py
+    exists: true
+    test_file: &id005
+    - tests/test_generator_library.py
+    - tests/test_composition_m2_m4.py
+    test_file_status: passing
+    entries:
+      LoadSwitchGenerator:
+        status: verified_done
+        type: class
+        description: One NPN low-side switch on one MCU GPIO, on any target board.
+          Implements `generators.protocol.Generator`.
+        signature: null
+        line: 244
+        test_file: *id005
+      select_r1:
+        status: verified_done
+        type: function
+        description: The largest E96 R1 that still saturates Q1 at its worst corner.
+          Deterministic.
+        signature: 'select_r1(spec: _Spec) -> Optional[float]'
+        line: 227
+        test_file: *id005
+    module_status: done
+  generators/firmware/composite:
+    file: backend/generators/firmware/composite.py
+    exists: true
+    test_file: tests/test_composition_m2_m4.py
+    test_file_status: passing
+    entries:
+      composite_project:
+        status: verified_done
+        type: function
+        description: The board's PlatformIO project — pinned platform and libraries,
+          keyed by SHA-256 like any other.
+        signature: 'composite_project(composition: Composition) -> FirmwareProject'
+        line: 81
+        test_file: tests/test_composition_m2_m4.py
+    module_status: done
   ai/intent_patcher:
     file: backend/ai/intent_patcher.py
     exists: true
@@ -1372,7 +1462,7 @@ files:
           the'
         signature: 'put_annotations(request: Request, circuit_id: str, body: AnnotationsRequest,
           db: Annotated[AsyncSession, Depends(get_db)], user)'
-        line: 375
+        line: 385
         test_file: tests/test_patch_route.py
       get_history:
         status: verified_done
@@ -1381,13 +1471,13 @@ files:
           1 rows are shown as they were.
         signature: 'get_history(circuit_id: str, db: Annotated[AsyncSession, Depends(get_db)],
           user)'
-        line: 404
+        line: 414
         test_file: tests/test_patch_route.py
     module_status: done
   generators/common:
     file: backend/generators/common.py
     exists: true
-    test_file: &id005
+    test_file: &id006
     - tests/test_rc_lowpass_generator.py
     - tests/test_generator_library.py
     test_file_status: passing
@@ -1398,7 +1488,7 @@ files:
         description: Nearest E96 value. Chooses in log space, because the series is
         signature: 'snap_to_e96(ohms: float) -> float'
         line: 69
-        test_file: *id005
+        test_file: *id006
       read_number:
         status: verified_done
         type: function
@@ -1407,7 +1497,7 @@ files:
         signature: 'read_number(intent: IntentLike, section: str, key: str, default:
           Optional[float]) -> Optional[float]'
         line: 125
-        test_file: *id005
+        test_file: *id006
       read_pins:
         status: verified_done
         type: function
@@ -1416,7 +1506,7 @@ files:
         signature: 'read_pins(intent: IntentLike, pinnable: Sequence[str]) -> Dict[str,
           Any]'
         line: 165
-        test_file: *id005
+        test_file: *id006
       worst_corners:
         status: verified_done
         type: function
@@ -1424,12 +1514,12 @@ files:
         signature: 'worst_corners(fn: Callable[..., float], boxes: Sequence[Sequence[float]])
           -> tuple'
         line: 302
-        test_file: *id005
+        test_file: *id006
     module_status: done
   generators/netlist_models:
     file: backend/generators/netlist/models.py
     exists: true
-    test_file: &id006
+    test_file: &id007
     - tests/test_claims.py
     - tests/test_generator_library.py
     test_file_status: passing
@@ -1441,23 +1531,23 @@ files:
           equals the
         signature: 'led_parameters(part_number: str, forward_voltage: str) -> Optional[Tuple[float,
           float]]'
-        line: 52
-        test_file: *id006
+        line: 57
+        test_file: *id007
       solve_series_diode:
         status: verified_done
         type: function
         description: 'Current in V → R → diode → ground: the root of'
         signature: 'solve_series_diode(v_source: float, r_series: float, i_s: float,
           n: float) -> float'
-        line: 76
-        test_file: *id006
+        line: 92
+        test_file: *id007
       pin_resistance:
         status: verified_done
         type: function
         description: Output resistance of a GPIO driven high (`mcu_pin_thevenin`).
         signature: 'pin_resistance(mcu_part: Optional[str], which: str) -> float'
-        line: 113
-        test_file: *id006
+        line: 129
+        test_file: *id007
       load_ohms:
         status: verified_done
         type: function
@@ -1465,8 +1555,8 @@ files:
           as between
         signature: 'load_ohms(current_draw_ma: Optional[float], supply_voltage_max:
           Optional[float]) -> float'
-        line: 124
-        test_file: *id006
+        line: 140
+        test_file: *id007
     module_status: done
   generators/voltage_divider:
     file: backend/generators/voltage_divider.py
@@ -1536,7 +1626,7 @@ files:
   generators/rs485_node:
     file: backend/generators/rs485_node.py
     exists: true
-    test_file: &id007
+    test_file: &id008
     - tests/test_generator_library.py
     - tests/test_d2_dependence.py
     test_file_status: passing
@@ -1548,14 +1638,14 @@ files:
           protocol.
         signature: null
         line: 303
-        test_file: *id007
+        test_file: *id008
       select:
         status: verified_done
         type: function
         description: (R1, R2, R3). Largest equal bias pair meeting the fail-safe margin.
         signature: 'select(spec: _Spec)'
         line: 289
-        test_file: *id007
+        test_file: *id008
       DeHold:
         status: verified_done
         type: class
@@ -1563,7 +1653,7 @@ files:
           it.
         signature: null
         line: 240
-        test_file: *id007
+        test_file: *id008
       de_hold:
         status: verified_done
         type: function
@@ -1571,12 +1661,12 @@ files:
           driver off
         signature: 'de_hold(spec: ''_Spec'') -> DeHold'
         line: 285
-        test_file: *id007
+        test_file: *id008
     module_status: done
   validation/claims:
     file: backend/validation/claims.py
     exists: true
-    test_file: &id008
+    test_file: &id009
     - tests/test_claims.py
     - tests/test_generator_library.py
     - tests/test_d2_dependence.py
@@ -1589,7 +1679,7 @@ files:
         description: One row of EVIDENCE_CLASSES Table A.
         signature: null
         line: 139
-        test_file: *id008
+        test_file: *id009
       ValidationCoverage:
         status: verified_done
         type: class
@@ -1597,7 +1687,7 @@ files:
           never fused.
         signature: null
         line: 233
-        test_file: *id008
+        test_file: *id009
       graded:
         status: verified_done
         type: function
@@ -1607,7 +1697,7 @@ files:
           defeaters: Iterable[str], detail: Optional[str], kind: Kind, critical: bool,
           covers: Iterable[str]) -> Claim'
         line: 188
-        test_file: *id008
+        test_file: *id009
       assess:
         status: verified_done
         type: function
@@ -1615,7 +1705,7 @@ files:
           no model.
         signature: 'assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverage'
         line: 826
-        test_file: *id008
+        test_file: *id009
       netlist_models:
         status: verified_done
         type: function
@@ -1624,7 +1714,7 @@ files:
         signature: 'netlist_models(circuit: CircuitIR, netlist: Optional[str]) ->
           Tuple[str, ...]'
         line: 294
-        test_file: *id008
+        test_file: *id009
       derive_mcu_models:
         status: verified_done
         type: function
@@ -1633,7 +1723,7 @@ files:
         signature: 'derive_mcu_models(circuit: CircuitIR, netlist: str, measures:
           Sequence[Measure], assumes: Sequence[str]) -> Tuple[str, ...]'
         line: 372
-        test_file: *id008
+        test_file: *id009
       held_to_rail:
         status: verified_done
         type: function
@@ -1641,7 +1731,7 @@ files:
           a supply rail.
         signature: 'held_to_rail(circuit: CircuitIR, netlist: str) -> frozenset'
         line: 358
-        test_file: *id008
+        test_file: *id009
     module_status: done
   validation/defeaters:
     file: backend/validation/defeaters.py
@@ -1780,7 +1870,7 @@ files:
   proof/properties:
     file: backend/proof/properties.py
     exists: true
-    test_file: &id009
+    test_file: &id010
     - tests/test_proof.py
     - tests/test_sign_off.py
     test_file_status: passing
@@ -1791,7 +1881,7 @@ files:
         description: 'A generator''s property: quantity, relation, bounds, bench'
         signature: null
         line: 50
-        test_file: *id009
+        test_file: *id010
       Statement:
         status: verified_done
         type: class
@@ -1799,7 +1889,7 @@ files:
           is signed.
         signature: null
         line: 92
-        test_file: *id009
+        test_file: *id010
       back_translate:
         status: verified_done
         type: function
@@ -1808,7 +1898,7 @@ files:
         signature: 'back_translate(spec: PropertySpec, variables: List[Variable],
           conditions: List[str]) -> str'
         line: 191
-        test_file: *id009
+        test_file: *id010
       outward:
         status: verified_done
         type: function
@@ -1816,7 +1906,7 @@ files:
         signature: 'outward(lo: Optional[float], hi: Optional[float], digits: int)
           -> Tuple[Optional[str], Optional[str]]'
         line: 163
-        test_file: *id009
+        test_file: *id010
       set_hash:
         status: verified_done
         type: function
@@ -1824,12 +1914,12 @@ files:
           covers.
         signature: 'set_hash(statements: List[Statement]) -> str'
         line: 123
-        test_file: *id009
+        test_file: *id010
     module_status: done
   proof/prover:
     file: backend/proof/prover.py
     exists: true
-    test_file: &id010
+    test_file: &id011
     - tests/test_proof.py
     - tests/test_sign_off.py
     - tests/test_proof_oracle.py
@@ -1841,8 +1931,8 @@ files:
         description: Netlist + property → Statement and z3 obligations
         signature: 'compile_statement(circuit: CircuitIR, spec: PropertySpec, netlist_text:
           str) -> Tuple[Statement, Problem]'
-        line: 343
-        test_file: *id010
+        line: 346
+        test_file: *id011
       prove:
         status: verified_done
         type: function
@@ -1850,8 +1940,8 @@ files:
           statement.
         signature: 'prove(statement: Statement, problem: Problem, strategies: Sequence[Strategy])
           -> ProofResult'
-        line: 839
-        test_file: *id010
+        line: 842
+        test_file: *id011
       FrozenPropertyViolation:
         status: verified_done
         type: class
@@ -1859,7 +1949,7 @@ files:
           the frozen property.
         signature: null
         line: 91
-        test_file: *id010
+        test_file: *id011
       falsify:
         status: verified_done
         type: function
@@ -1867,20 +1957,20 @@ files:
           does.
         signature: 'falsify(circuit: CircuitIR, spec: PropertySpec, netlist_text:
           Optional[str]) -> Optional[Mutation]'
-        line: 1009
-        test_file: *id010
+        line: 1012
+        test_file: *id011
       check:
         status: verified_done
         type: function
         description: (Statement, Problem, ProofResult) for one property of one design.
         signature: 'check(circuit: CircuitIR, spec: PropertySpec, netlist_text: Optional[str])'
-        line: 946
-        test_file: *id010
+        line: 949
+        test_file: *id011
     module_status: done
   data/mcu_targets:
     file: backend/data/mcu_targets.py
     exists: true
-    test_file: &id011
+    test_file: &id012
     - tests/test_pin_rules.py
     - tests/test_multi_target.py
     test_file_status: passing
@@ -1891,28 +1981,28 @@ files:
         description: 'One pin: what it can do, reserved or strapping and why'
         signature: null
         line: 30
-        test_file: *id011
+        test_file: *id012
       Target:
         status: verified_done
         type: class
         description: 'A board: PlatformIO env, logic rail, pin table, defaults'
         signature: null
         line: 55
-        test_file: *id011
+        test_file: *id012
       get_target:
         status: verified_done
         type: function
         description: A board by id; None for one this system does not target
         signature: 'get_target(target_id: object) -> Optional[Target]'
         line: 234
-        test_file: *id011
+        test_file: *id012
       target_for_part:
         status: verified_done
         type: function
         description: The board whose MCU is this part
         signature: 'target_for_part(mcu_part: str) -> Optional[Target]'
         line: 238
-        test_file: *id011
+        test_file: *id012
       normalise:
         status: verified_done
         type: function
@@ -1920,12 +2010,12 @@ files:
           write:'
         signature: 'normalise(target: Target, text: object) -> Optional[str]'
         line: 242
-        test_file: *id011
+        test_file: *id012
     module_status: done
   validation/pin_rules:
     file: backend/validation/pin_rules.py
     exists: true
-    test_file: &id012
+    test_file: &id013
     - tests/test_pin_rules.py
     - tests/test_multi_target.py
     test_file_status: passing
@@ -1936,14 +2026,14 @@ files:
         description: What one MCU pin is asked to do
         signature: null
         line: 40
-        test_file: *id012
+        test_file: *id013
       Finding:
         status: verified_done
         type: class
         description: A rule a pin breaks, and why
         signature: null
         line: 47
-        test_file: *id012
+        test_file: *id013
       check_assignment:
         status: verified_done
         type: function
@@ -1952,7 +2042,7 @@ files:
         signature: 'check_assignment(target: Target, assignments: Sequence[Assignment])
           -> List[Finding]'
         line: 53
-        test_file: *id012
+        test_file: *id013
       assignments_of:
         status: verified_done
         type: function
@@ -1960,7 +2050,7 @@ files:
           and direction.
         signature: 'assignments_of(ir: CircuitIR) -> List[Assignment]'
         line: 143
-        test_file: *id012
+        test_file: *id013
       check_design:
         status: verified_done
         type: function
@@ -1969,7 +2059,7 @@ files:
         signature: 'check_design(ir: CircuitIR) -> Optional[Dict[str, Tuple[bool,
           str]]]'
         line: 167
-        test_file: *id012
+        test_file: *id013
     module_status: done
   generators/firmware/project:
     file: backend/generators/firmware/project.py
@@ -2075,6 +2165,60 @@ files:
         line: 138
         test_file: tests/test_firmware_gate.py
     module_status: done
+  tasks/explain_task:
+    file: backend/tasks/explain_task.py
+    exists: true
+    test_file: tests/test_explanation_queue.py
+    test_file_status: passing
+    entries:
+      explain_design:
+        status: verified_done
+        type: function
+        description: '{status: written, explanation} or {status: failed, error}.'
+        signature: 'explain_design(ir_json: dict) -> dict'
+        line: 17
+        test_file: tests/test_explanation_queue.py
+    module_status: done
+  api/routes/explanation:
+    file: backend/api/routes/explanation.py
+    exists: true
+    test_file: tests/test_explanation_queue.py
+    test_file_status: passing
+    entries:
+      ExplanationView:
+        status: verified_done
+        type: class
+        description: 'Explanation status: writing, written, failed or unavailable'
+        signature: null
+        line: 38
+        test_file: tests/test_explanation_queue.py
+      queue_explanation:
+        status: verified_done
+        type: function
+        description: Queue the design's explanation. Raises if there is no broker
+          to take it.
+        signature: 'queue_explanation(ir: CircuitIR) -> None'
+        line: 53
+        test_file: tests/test_explanation_queue.py
+      explanation_view:
+        status: verified_done
+        type: function
+        description: Where the design's explanation stands, storing it the first time
+          it is read back.
+        signature: 'explanation_view(db: AsyncSession, ir: CircuitIR, design_age_s:
+          float) -> ExplanationView'
+        line: 81
+        test_file: tests/test_explanation_queue.py
+      get_explanation:
+        status: verified_done
+        type: function
+        description: Poll a design's explanation. It is written after the design is
+          returned.
+        signature: 'get_explanation(request: Request, circuit_id: str, db: Annotated[AsyncSession,
+          Depends(get_db)], user)'
+        line: 110
+        test_file: tests/test_explanation_queue.py
+    module_status: done
   proof/dependence:
     file: backend/proof/dependence.py
     exists: true
@@ -2110,7 +2254,7 @@ files:
   data/parts:
     file: backend/data/parts.py
     exists: true
-    test_file: &id013
+    test_file: &id014
     - tests/test_d7_figures.py
     - tests/test_substitution.py
     test_file_status: passing
@@ -2122,14 +2266,14 @@ files:
           figures.'
         signature: null
         line: 26
-        test_file: *id013
+        test_file: *id014
       Capacitor:
         status: verified_done
         type: class
         description: One capacitor part and its figures
         signature: null
         line: 38
-        test_file: *id013
+        test_file: *id014
       resistor_series:
         status: verified_done
         type: function
@@ -2137,21 +2281,21 @@ files:
           not tabulated.
         signature: 'resistor_series(part_number: Optional[str]) -> Optional[ResistorSeries]'
         line: 80
-        test_file: *id013
+        test_file: *id014
       capacitor:
         status: verified_done
         type: function
         description: A tabulated capacitor by part number
         signature: 'capacitor(part_number: Optional[str]) -> Optional[Capacitor]'
         line: 86
-        test_file: *id013
+        test_file: *id014
       resistor_part:
         status: verified_done
         type: function
         description: The part number of a value in a series
         signature: 'resistor_part(ohms: float, series: str) -> str'
         line: 108
-        test_file: *id013
+        test_file: *id014
       resistor_value:
         status: verified_done
         type: function
@@ -2159,7 +2303,7 @@ files:
           if unreadable.
         signature: 'resistor_value(part_number: str) -> Optional[float]'
         line: 112
-        test_file: *id013
+        test_file: *id014
       passive_figures:
         status: verified_done
         type: function
@@ -2168,7 +2312,7 @@ files:
         signature: 'passive_figures(part_number: Optional[str]) -> Optional[Tuple[str,
           float, Optional[float], float]]'
         line: 125
-        test_file: *id013
+        test_file: *id014
     module_status: done
   data/figures:
     file: backend/data/figures.py
@@ -2189,14 +2333,14 @@ files:
         description: The figure's current value, from the table that owns it. KeyError
           if there is none.
         signature: 'value(figure_id: str) -> Any'
-        line: 286
+        line: 315
         test_file: tests/test_d7_figures.py
       record_hash:
         status: verified_done
         type: function
         description: Covers the record and the value; an edit voids a verification
         signature: 'record_hash(figure_id: str) -> str'
-        line: 303
+        line: 332
         test_file: tests/test_d7_figures.py
       verified:
         status: verified_done
@@ -2205,7 +2349,7 @@ files:
           checked.
         signature: 'verified(figure_id: str, rows: Optional[Iterable[Tuple[str, str,
           str, str]]]) -> bool'
-        line: 353
+        line: 382
         test_file: tests/test_d7_figures.py
       trusted:
         status: verified_done
@@ -2214,7 +2358,7 @@ files:
           trusted
         signature: 'trusted(figure_id: str, rows: Optional[Iterable[Tuple[str, str,
           str, str]]], _seen: Tuple[str, ...]) -> bool'
-        line: 362
+        line: 391
         test_file: tests/test_d7_figures.py
       untrusted:
         status: verified_done
@@ -2222,7 +2366,7 @@ files:
         description: The figures a claim reads that keep D7 open
         signature: 'untrusted(figures: Iterable[str], rows: Optional[Iterable[Tuple[str,
           str, str, str]]]) -> Tuple[str, ...]'
-        line: 377
+        line: 406
         test_file: tests/test_d7_figures.py
       of:
         status: verified_done
@@ -2230,7 +2374,7 @@ files:
         description: Figure ids `<owner>/<key>`; KeyError for one with no record —
           a claim may not read an unrecorded figure.
         signature: 'of(owner: str) -> Tuple[str, ...]'
-        line: 384
+        line: 413
         test_file: tests/test_d7_figures.py
       passive:
         status: verified_done
@@ -2238,7 +2382,7 @@ files:
         description: 'Figures of a tabulated passive: its resistor series, or the
           capacitor itself.'
         signature: 'passive(part_number: str) -> Tuple[str, ...]'
-        line: 393
+        line: 422
         test_file: tests/test_d7_figures.py
       evidence:
         status: verified_done
@@ -2246,7 +2390,7 @@ files:
         description: The agent's check of each record against its document; {} if
           there is none. Read by
         signature: 'evidence(path: Optional[str]) -> Dict[str, Any]'
-        line: 314
+        line: 343
         test_file: tests/test_d7_figures.py
     module_status: done
   validation/figure_audit:
@@ -2261,7 +2405,7 @@ files:
         description: Move one figure (and any it is linked to); yields False if it
           cannot move that way.
         signature: 'perturbed(figure_id: str, factor: float, mode: str) -> Iterator[bool]'
-        line: 63
+        line: 64
         test_file: tests/test_d7_figures.py
       audit:
         status: verified_done
@@ -2269,13 +2413,13 @@ files:
         description: Every claim that moves with a figure must declare it
         signature: 'audit(cases: Optional[Sequence[Tuple[str, Optional[str]]]], attempts)
           -> Dict[str, Any]'
-        line: 149
+        line: 150
         test_file: tests/test_d7_figures.py
     module_status: done
   generators/bom/substitution:
     file: backend/generators/bom/substitution.py
     exists: true
-    test_file: &id014
+    test_file: &id015
     - tests/test_substitution.py
     - tests/test_bom_route.py
     test_file_status: passing
@@ -2286,14 +2430,14 @@ files:
         description: A part that passed every check the original passed.
         signature: null
         line: 46
-        test_file: *id014
+        test_file: *id015
       Rejected:
         status: verified_done
         type: class
         description: A candidate that did not surface, and the check it failed.
         signature: null
         line: 63
-        test_file: *id014
+        test_file: *id015
       candidates:
         status: verified_done
         type: function
@@ -2301,7 +2445,7 @@ files:
           placed.
         signature: 'candidates(component: Component) -> List[str]'
         line: 73
-        test_file: *id014
+        test_file: *id015
       check:
         status: verified_done
         type: function
@@ -2311,7 +2455,7 @@ files:
           str, part_number: str, prices: Optional[Dict[str, Dict[str, Any]]], base:
           Optional[CircuitIR])'
         line: 128
-        test_file: *id014
+        test_file: *id015
       substitutes:
         status: verified_done
         type: function
@@ -2320,7 +2464,7 @@ files:
         signature: 'substitutes(generator: Any, intent: Any, circuit: CircuitIR, prices:
           Optional[Dict[str, Dict[str, Any]]]) -> Tuple[List[Substitute], List[Rejected]]'
         line: 196
-        test_file: *id014
+        test_file: *id015
     module_status: done
   api/routes/bom:
     file: backend/api/routes/bom.py
@@ -2348,7 +2492,7 @@ files:
   validation/bench:
     file: backend/validation/bench.py
     exists: true
-    test_file: &id015
+    test_file: &id016
     - tests/test_bench.py
     - tests/test_bench_rc_method.py
     test_file_status: passing
@@ -2359,7 +2503,7 @@ files:
         description: 'A measurement of one design: parts, quantities, instruments'
         signature: null
         line: 67
-        test_file: *id015
+        test_file: *id016
       predicted_interval:
         status: verified_done
         type: function
@@ -2368,7 +2512,7 @@ files:
         signature: 'predicted_interval(circuit: Any, spec: Any, parts: Dict[str, Reading])
           -> Tuple[float, float]'
         line: 172
-        test_file: *id015
+        test_file: *id016
       evaluate:
         status: verified_done
         type: function
@@ -2376,7 +2520,7 @@ files:
           against the model.
         signature: 'evaluate(record: BenchRecord) -> List[Finding]'
         line: 255
-        test_file: *id015
+        test_file: *id016
       evidence_for:
         status: verified_done
         type: function
@@ -2386,7 +2530,7 @@ files:
           str, requirements: Any, records: Optional[Sequence[BenchRecord]], invalid:
           Optional[Sequence[Invalid]]) -> Dict[str, Finding]'
         line: 306
-        test_file: *id015
+        test_file: *id016
     module_status: done
   pricing/quotes:
     file: backend/pricing/quotes.py
@@ -2482,7 +2626,7 @@ files:
   pricing/live:
     file: backend/pricing/live.py
     exists: true
-    test_file: &id016
+    test_file: &id017
     - tests/test_pricing.py
     - tests/test_bom_route.py
     test_file_status: passing
@@ -2495,14 +2639,14 @@ files:
         signature: 'live_fields(quote: Quote, quantity: int) -> Optional[Dict[str,
           Any]]'
         line: 45
-        test_file: *id016
+        test_file: *id017
       apply:
         status: verified_done
         type: function
         description: Lay the quotes over the view's rows and substitutes, in place.
         signature: 'apply(view: Dict[str, Any], quotes: Dict[str, Quote]) -> None'
         line: 78
-        test_file: *id016
+        test_file: *id017
       price_view:
         status: verified_done
         type: function
@@ -2510,13 +2654,13 @@ files:
           saying which.
         signature: 'price_view(db: Any, view: Dict[str, Any]) -> Dict[str, Any]'
         line: 95
-        test_file: *id016
+        test_file: *id017
     module_status: done
 summary:
-  entries_total: 260
-  entries_verified_done: 242
+  entries_total: 273
+  entries_verified_done: 255
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 93.1
+  pct_verified: 93.4

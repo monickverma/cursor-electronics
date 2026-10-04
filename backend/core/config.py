@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     ai_provider: str = "anthropic"
     openai_base_url: str = "http://localhost:8000/v1"
     openai_api_key: str = "EMPTY"
+    # openai_compat only ([2026-10-04]): a reasoning model's effort, sent as
+    # OpenRouter's `reasoning.effort` (e.g. "high", "xhigh"). Empty sends nothing.
+    # Reasoning tokens count against max_tokens and the timeout: raise
+    # AI_TIMEOUT_SECONDS with it.
+    ai_reasoning_effort: str = ""
 
     # The Anthropic SDK defaults to a 600s timeout and 2 retries. Left alone,
     # one slow upstream call occupies a request for up to half an hour and the
@@ -31,6 +36,11 @@ class Settings(BaseSettings):
     # that exceeds this is a failure worth surfacing, not worth waiting on.
     # Raise ai_timeout_seconds if AI_MODEL is a large/slow model.
     ai_timeout_seconds: float = 45.0
+    # The explanation is the one long answer (thousands of characters), so it
+    # gets its own budget ([2026-10-04]: 35–90 s measured on a composed board
+    # with deepseek-v4.1-flash, at every reasoning effort — it is output length,
+    # not thinking). 0 uses ai_timeout_seconds.
+    ai_explainer_timeout_seconds: float = 150.0
     ai_max_retries: int = 1
     celery_broker_url: str = ""          # defaults to redis_url if empty
     environment: str = "development"

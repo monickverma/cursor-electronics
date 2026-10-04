@@ -75,3 +75,21 @@ def all_example_irs(request):
         "ir_004": IR_004,
         "ir_005": IR_005,
     }[request.param]
+
+
+@pytest.fixture(autouse=True)
+def _no_real_explanation_queue(monkeypatch):
+    """
+    POST /design/generate queues the explanation on Celery ([2026-10-05]). A
+    test must never put a task on a developer's real broker, so the queue is
+    unavailable here, and the route then writes the explanation inline as it
+    did before. A test that wants a queue installs its own `queue_explanation`.
+    """
+    def unavailable(ir):
+        raise RuntimeError("no explanation queue in tests")
+
+    for name in ("api.routes.design", "api.routes.explanation"):
+        module = sys.modules.get(name)
+        if module is not None:
+            monkeypatch.setattr(module, "queue_explanation", unavailable, raising=False)
+    yield

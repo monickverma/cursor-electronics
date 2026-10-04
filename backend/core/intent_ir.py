@@ -83,6 +83,19 @@ class Requirements(BaseModel):
     targets: Dict[str, Any] = Field(default_factory=dict)
     constraints: Dict[str, Any] = Field(default_factory=dict)
     preferences: Dict[str, Any] = Field(default_factory=dict)
+    #: Composition M4 ([2026-10-03]): a project — several blocks on one board —
+    #: is a requirement too. Its blocks and behaviour rules are checked in full
+    #: by `generators/compose.py::Project`; only `function: project` carries them.
+    blocks: Optional[List[Dict[str, Any]]] = None
+    behaviour: Optional[List[Dict[str, Any]]] = None
+
+    @model_validator(mode="after")
+    def _blocks_only_on_a_project(self) -> "Requirements":
+        if self.function != "project" and (self.blocks is not None or self.behaviour is not None):
+            raise ValueError("only function 'project' carries blocks and behaviour")
+        if self.function == "project" and not self.blocks:
+            raise ValueError("a project names its blocks")
+        return self
 
     @field_validator("function")
     @classmethod

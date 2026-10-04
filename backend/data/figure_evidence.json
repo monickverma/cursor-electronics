@@ -161,6 +161,13 @@
    "revision": "read 2026-09-25",
    "url": "https://weblib.samsungsem.com/mlcc/mlcc-ec-data-sheet.do?partNumber=CL05B473KO5NNN",
    "sha256": "57fe4add44c6ca2c554917f57a5839711bfb4681eff9b3333e8a6ff9395fd37d"
+  },
+  "diodes-DS30086-r31-2": {
+   "maker": "Diodes Incorporated",
+   "title": "BAV16W/1N4148W Surface-Mount Fast Switching Diode datasheet",
+   "revision": "DS30086 Rev. 31-2, September 2024 (downloaded 2026-10-03)",
+   "url": "https://www.diodes.com/assets/Datasheets/ds30086.pdf",
+   "sha256": "39c16a6888bdab22418e93e17182174aad763a66957a4632e70c944194e3fc08"
   }
  },
  "figures": {
@@ -2048,6 +2055,120 @@
    "reads": "'The pins for UART can be chosen from any GPIOs via the GPIO Matrix'",
    "note": "input-only GPIO34–39 can be RX but not TX, as the record's output-capable/input-capable split says",
    "record_hash": "722c0456e15af2b836c1c68b96eb5500c5f91f4e2f73db7f0fe0766c3555c101"
+  },
+  "1N4148W-7-F/reverse_voltage_max": {
+   "verdict": "agrees",
+   "documents": [
+    "diodes-DS30086-r31-2"
+   ],
+   "pages": "2",
+   "location": "Maximum Ratings",
+   "reads": "Maximum Ratings: V_RRM / V_RWM / V_R 100 V",
+   "note": "the first record said 75 V; the document gives 100 V and the record was corrected before this check (2026-10-03)",
+   "record_hash": "c486145eb39d45990bd4e66b4105d810cff2baff4701336c418e247e899c70ab"
+  },
+  "1N4148W-7-F/supply_voltage_max": {
+   "verdict": "agrees",
+   "documents": [
+    "diodes-DS30086-r31-2"
+   ],
+   "pages": "2",
+   "location": "Maximum Ratings",
+   "reads": "Maximum Ratings: DC blocking voltage V_R 100 V",
+   "note": "the first record said 75 V; the document gives 100 V and the record was corrected before this check (2026-10-03)",
+   "record_hash": "0eab7fd54429233beb563e42ed6889dd98d36616f8dd11c8b8e3139d81f2a1ba"
+  },
+  "1N4148W-7-F/max_forward_current_ma": {
+   "verdict": "agrees",
+   "documents": [
+    "diodes-DS30086-r31-2"
+   ],
+   "pages": "2",
+   "location": "Maximum Ratings",
+   "reads": "Maximum Ratings: forward continuous current I_FM 300 mA",
+   "note": "",
+   "record_hash": "ac4d74cf199d34f35fb1f12d3bc7c760e666133af5699ff897ea82874b633d2c"
+  },
+  "MMBT2222ALT1G/forward_voltage_v": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "f5bda4d838c44308fa12bfd69d10b4ebaad37eb1dca9da46ac8979f9cc38c986"
+  },
+  "MMBT2222ALT1G/test_current_ma": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "a46c1df371df96ca171e5f68be87a2945a76961d8586892a5ae39030f487a7e5"
+  },
+  "MMBT2222ALT1G/ideality": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "147a827eb9fa9992086d44b24d5140a3759573d14bbbce6406d87e9dcb16e34c"
+  },
+  "MMBT2222ALT1G/vce_sat_v": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "756782e8c5b16cd4a38a19e25e485a4a55eb3cd67fcd2ff24d20eca182613335"
+  },
+  "MMBT2222ALT1G/vce_sat_test_ic_ma": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "061e62b85fb8f03cf5372f2d3e1fe8d51a1bfc047668ca3549f72654bdad9561"
+  },
+  "MMBT2222ALT1G/forced_beta": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "f7229c766f964eea81e1fd095242c68c16a02bda46d54fe2fbc9b56c36b7c9b6"
+  },
+  "MMBT2222ALT1G/max_collector_current_ma": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "82e9bc0f66d61cbfc18c3b16f57633d3c992cc7a3c73b2ccd7f13b8581c8b30c"
+  },
+  "MMBT2222ALT1G/power_dissipation_mw": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "824dc75336a5439d9e733e3999f8d609c14df03d4f163a49b370500e3d62b7fc"
+  },
+  "MMBT2222ALT1G/supply_voltage_max": {
+   "verdict": "not_checked",
+   "documents": [],
+   "pages": "",
+   "location": "",
+   "reads": "",
+   "note": "onsemi MMBT2222LT1/D Rev 13 (the MMBT2222A's datasheet) was identified but could not be obtained by the agent on 2026-10-03: onsemi's site refuses scripted downloads. The record is the agent's recollection of that datasheet — check it against the PDF",
+   "record_hash": "99779012116d55eedb8a2ebbfba08ade10f126582d594d8066c9e5f7b45d0031"
   }
  }
 }

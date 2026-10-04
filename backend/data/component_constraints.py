@@ -371,6 +371,32 @@ COMPONENT_CONSTRAINTS: dict[str, dict] = {
             "Clamps voltage spikes from cable induction or ESD to 9.2V",
         ],
     },
+    # Composition M3 ([2026-10-03]): the load-switch block. onsemi MMBT2222A
+    # (MMBT2222ALT1G). The base-emitter junction is modelled as a diode fitted
+    # to V_BE(sat) at its test condition (I_C = 150 mA, I_B = 15 mA); the
+    # collector as V_CE(sat), which the datasheet guarantees at that forced beta.
+    "MMBT2222ALT1G": {
+        "forward_voltage_v": {"min": 0.6, "typ": 0.85, "max": 1.2},
+        "test_current_ma": 15,
+        "ideality": 1.0,
+        "vce_sat_v": 0.3,
+        "vce_sat_test_ic_ma": 150,
+        "forced_beta": 10,
+        "max_collector_current_ma": 600,
+        "power_dissipation_mw": 225,
+        "supply_voltage_max": 40.0,
+        "notes": [
+            "NPN, V_CEO 40 V, I_C 600 mA continuous, P_D 225 mW (FR-5 board, 25 °C)",
+            "V_CE(sat) ≤ 0.3 V and V_BE(sat) 0.6–1.2 V at I_C = 150 mA, I_B = 15 mA",
+        ],
+    },
+    # Flyback diode across an inductive load.
+    "1N4148W-7-F": {
+        "reverse_voltage_max": 100.0,
+        "max_forward_current_ma": 300,
+        "supply_voltage_max": 100.0,
+        "notes": ["V_RRM = V_RWM = V_R = 100 V; I_FM 300 mA forward continuous (Diodes Inc. DS30086 Rev. 31-2)"],
+    },
 }
 
 

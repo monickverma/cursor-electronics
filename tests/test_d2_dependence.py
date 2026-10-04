@@ -198,7 +198,7 @@ class TestTheThreeRoutes:
     def test_rail_currents_name_the_boards_supply_model(self, name, board):
         rows = claims(name, board)
         rail = {"led_indicator": "led.rail_current", "dht22_node": "dht.rail_current",
-                "rs485_node": "rs485.rail_current"}[name]
+                "rs485_node": "rs485.rail_current", "load_switch": "sw.rail_current"}[name]
         netlist = SpiceNetlistGenerator().generate(case(name, board)[2])
         ohms = next(float(l.split()[3]) for l in netlist.splitlines() if l.startswith("R_MCU_"))
         assert f"mcu_as_{ohms:g}R" in models(rows[rail])
@@ -238,7 +238,9 @@ class TestTheThreeRoutes:
         # [2026-09-25]: +3 — the DE/RE pull-down claim, on each board.
         # [2026-10-01]: +3 — rs485.bias_dissipation, whose R4 sits on the pin the MCU drives.
         cited = sum("D2" in r["defeaters"] for n, b in MCU_CASES for r in claims(n, b).values() if r["critical"])
-        assert cited == 39
+        # [2026-10-03]: +15 — the load switch's base-current claims, R1's, its rail and its proofs, x3;
+        # its collector and flyback claims do not reach the MCU and do not cite D2.
+        assert cited == 54
 
 
 class _Declares:
@@ -397,4 +399,4 @@ class TestRouteOneAgainstNgspice:
             checked += 1
         # Not vacuous: the claims an operating point can see were all compared.
         # DHT22's line claims use test-bench elements, so only its rail is seen.
-        assert checked >= {"led_indicator": 8, "rs485_node": 4, "dht22_node": 1}[name]
+        assert checked >= {"led_indicator": 8, "rs485_node": 4, "dht22_node": 1, "load_switch": 6}[name]

@@ -165,9 +165,14 @@ def _to_message(data: dict, model: str) -> Message:
     )
 
 
+#: The token ceiling when a reasoning effort is set: room for the thinking and the tool call.
+REASONING_MAX_TOKENS = 16000
+
+
 class _Messages:
-    def __init__(self, http: httpx.Client):
+    def __init__(self, http: httpx.Client, reasoning_effort: str = ""):
         self._http = http
+        self._reasoning_effort = reasoning_effort
 
     def create(
         self,
@@ -190,6 +195,11 @@ class _Messages:
             payload["tools"] = _to_openai_tools(tools)
             if tool_choice:
                 payload["tool_choice"] = _to_openai_tool_choice(tool_choice)
+        if self._reasoning_effort:
+            # The model thinks before it answers; its reasoning is spent inside
+            # max_tokens, so the ceiling rises with it or the tool call truncates.
+            payload["reasoning"] = {"effort": self._reasoning_effort}
+            payload["max_tokens"] = max(max_tokens, REASONING_MAX_TOKENS)
 
         try:
             resp = self._http.post("/chat/completions", json=payload)
@@ -218,6 +228,7 @@ class OpenAICompatClient:
         timeout: float = 45.0,
         max_retries: int = 1,
         transport: Optional[httpx.BaseTransport] = None,
+        reasoning_effort: str = "",
     ):
         self._http = httpx.Client(
             base_url=base_url.rstrip("/"),
@@ -225,4 +236,4 @@ class OpenAICompatClient:
             timeout=timeout,
             transport=transport or httpx.HTTPTransport(retries=max_retries),
         )
-        self.messages = _Messages(self._http)
+        self.messages = _Messages(self._http, reasoning_effort)

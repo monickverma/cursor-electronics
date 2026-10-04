@@ -243,6 +243,20 @@ async def save_output(
     return out
 
 
+async def get_output(
+    db: AsyncSession, circuit_id: str, output_type: str, file_name: str
+) -> Optional[GeneratedOutput]:
+    """The newest stored output of this type and name, or None."""
+    result = await db.execute(
+        select(GeneratedOutput)
+        .where(GeneratedOutput.circuit_id == circuit_id, GeneratedOutput.output_type == output_type,
+               GeneratedOutput.file_name == file_name)
+        .order_by(GeneratedOutput.generated_at.desc())
+        .limit(1)
+    )
+    return result.scalars().first()
+
+
 # ── Stage 5: the compile gate's cache ────────────────────────────────────────
 
 async def get_firmware_build(db: AsyncSession, build_hash: str):

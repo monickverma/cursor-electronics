@@ -118,14 +118,15 @@ class TestCatalogue:
 
     def test_default_registry_installs_the_real_generator(self):
         r = default_registry()
-        # Stage 3: the five Phase 1 templates, in registration order.
+        # Stage 3: the five Phase 1 templates, in registration order; then the
+        # composition blocks (Composition M3, [2026-10-03]).
         assert r.functions() == (
             "low_pass_filter", "voltage_divider", "led_indicator",
-            "temperature_humidity_sensor", "modbus_rtu_master",
+            "temperature_humidity_sensor", "modbus_rtu_master", "load_switch",
         )
         assert isinstance(r.by_name("rc_lowpass"), RCLowPassGenerator)
         assert [g.name for g in r.generators] == [
-            "rc_lowpass", "voltage_divider", "led_indicator", "dht22_node", "rs485_node",
+            "rc_lowpass", "voltage_divider", "led_indicator", "dht22_node", "rs485_node", "load_switch",
         ]
 
 

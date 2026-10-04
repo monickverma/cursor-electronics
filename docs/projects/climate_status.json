@@ -1,0 +1,8 @@
+{
+  "intent": "Climate node: an Uno reads a DHT22 and lights a status LED",
+  "mcu": "arduino_uno",
+  "blocks": [
+    {"id": "climate", "function": "temperature_humidity_sensor", "constraints": {"cable_length_m": 0.3}},
+    {"id": "status", "function": "led_indicator", "targets": {"led_current_ma": 10}}
+  ]
+}

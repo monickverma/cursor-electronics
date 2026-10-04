@@ -50,10 +50,13 @@ cursor-electronics/
 │   │   ├── led_indicator.py        # TPL_003 — Thevenin GPIO + fitted LED diode
 │   │   ├── dht22_node.py           # TPL_001 — pull-up vs cable rise time
 │   │   ├── rs485_node.py           # TPL_002 — fail-safe bias; wired as its firmware drives
+│   │   ├── load_switch.py          # Composition M3 — NPN low-side switch; proves its own saturation
+│   │   ├── compose.py              # Composition — blocks on one board; behaviour rules; board claims
 │   │   ├── common.py               # E96, strict requirement reader, pins — one owner
 │   │   ├── arduino_parts.py        # Shared MCU (per board) + bypass cap + rail model
 │   │   ├── netlist/models.py       # Device models read by BOTH spice.py and predict()
 │   │   ├── firmware/arduino.py     # IR → .ino (Jinja2), pins from the wiring, per board
+│   │   ├── firmware/composite.py   # Composition M2 — one sketch for a board, from its behaviour rules
 │   │   ├── firmware/project.py     # Stage 5 — PlatformIO project, pinned, keyed by SHA-256
 │   │   ├── firmware/compile_gate.py # Stage 5 — build it; firmware shown only once it compiles
 │   │   ├── netlist/spice.py        # IR → SPICE netlist
@@ -88,7 +91,8 @@ cursor-electronics/
 │   │                               # placement tested; routing is not
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
-│   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate)
+│   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate),
+│   │                               # explain_task.py (the explanation, read back by GET /design/{id}/explanation)
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/
 │   ├── app/page.tsx                # Two-panel layout

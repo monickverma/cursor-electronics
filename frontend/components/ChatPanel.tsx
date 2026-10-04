@@ -72,7 +72,7 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
       } else {
         res = await generateDesign(text, token)
         const g = res as GenerateResponse
-        const summary = `Generated ${g.application_class}${g.target_mcu ? ` on ${g.target_mcu}` : ''} — v${g.version}.\n\n${g.explanation.slice(0, 360)}…`
+        const summary = `Generated ${g.application_class}${g.target_mcu ? ` on ${g.target_mcu}` : ''} — v${g.version}.\n\n${g.explanation ? `${g.explanation.slice(0, 360)}…` : 'The explanation is being written; it appears under Validation in about a minute.'}`
         setMessages(prev => [...prev, { role: 'assistant', text: summary, timestamp: new Date() }])
       }
       onResult(res)

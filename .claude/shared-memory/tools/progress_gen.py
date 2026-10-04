@@ -402,6 +402,32 @@ PLANNED = {
             ("predict_delta",     "function", "The comparative justification for a patch"),
         ],
     },
+    "generators/compose": {
+        "file": "backend/generators/compose.py",
+        "test_file": "tests/test_compose.py",
+        "entries": [
+            ("compose",      "function", "Blocks on one board: one MCU, one bypass, one rail; each block built by its own generator"),
+            ("allocate_pins", "function", "Requested pins, then defaults, then the first free pin; never two blocks on one pin"),
+            ("Project",      "class",    "A board and its blocks — the composition request"),
+            ("board_coverage", "function", "The board's claims: every block's, relabelled, plus rail and pins"),
+            ("compose_intent", "function", "A project IntentIR → the stored board, stamped from its lineage"),
+        ],
+    },
+    "generators/load_switch": {
+        "file": "backend/generators/load_switch.py",
+        "test_file": ["tests/test_generator_library.py", "tests/test_composition_m2_m4.py"],
+        "entries": [
+            ("LoadSwitchGenerator", "class",    "NPN low-side switch; proves its own saturation (forced beta)"),
+            ("select_r1",           "function", "The largest E96 base resistor that still saturates Q1"),
+        ],
+    },
+    "generators/firmware/composite": {
+        "file": "backend/generators/firmware/composite.py",
+        "test_file": "tests/test_composition_m2_m4.py",
+        "entries": [
+            ("composite_project", "function", "One sketch for the board from its pins and behaviour rules"),
+        ],
+    },
     "ai/intent_patcher": {
         "file": "backend/ai/intent_patcher.py",
         "test_file": "tests/test_intent_patcher.py",
@@ -623,6 +649,24 @@ PLANNED = {
             ("FirmwareView",  "class",    "Build status; source only when compiled"),
             ("firmware_view", "function", "The one gate every route's firmware goes through"),
             ("get_firmware",  "function", "GET /design/{id}/firmware — poll a build"),
+        ],
+    },
+    # decisions.md [2026-10-05] The explanation leaves the request.
+    "tasks/explain_task": {
+        "file": "backend/tasks/explain_task.py",
+        "test_file": "tests/test_explanation_queue.py",
+        "entries": [
+            ("explain_design", "function", "Celery: write a stored design's explanation off the request"),
+        ],
+    },
+    "api/routes/explanation": {
+        "file": "backend/api/routes/explanation.py",
+        "test_file": "tests/test_explanation_queue.py",
+        "entries": [
+            ("ExplanationView",  "class",    "Explanation status: writing, written, failed or unavailable"),
+            ("queue_explanation", "function", "Queue the explanation behind the simulation and build"),
+            ("explanation_view", "function", "The one read every route's explanation goes through"),
+            ("get_explanation",  "function", "GET /design/{id}/explanation — poll it"),
         ],
     },
     # D2, D7 and Stage 6. decisions.md [2026-09-24] D1, D2, D7; [2026-09-25] Stage 6.
