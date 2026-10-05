@@ -205,7 +205,7 @@ PLANNED = {
     },
     "pcb_engine/footprints": {
         "file": "backend/pcb_engine/footprints.py",
-        "test_file": "tests/test_pcb_placement.py",
+        "test_file": ["tests/test_pcb_placement.py", "tests/test_pcb_scene3d.py"],
         "entries": [
             ("normalize_package", "function", "Package string → canonical form"),
             ("guess",             "function", "Infer footprint from component metadata"),
@@ -217,6 +217,17 @@ PLANNED = {
         "test_file": None,
         "entries": [
             ("to_svg", "function", "Board → SVG for the frontend PCB tab"),
+        ],
+    },
+    # decisions.md [2026-10-06] — the board in 3D, derived from the Board IR.
+    "pcb_engine/scene3d": {
+        "file": "backend/pcb_engine/scene3d.py",
+        "test_file": "tests/test_pcb_scene3d.py",
+        "entries": [
+            ("board_scene",    "function", "Board IR → normalised 3D scene (stack-up, pads, holes, copper, bodies, DRC, ratsnest)"),
+            ("body_for",       "function", "Package → parametric body; unknown packages flagged generic"),
+            ("component_kind", "function", "Declared type, else designator prefix"),
+            ("drill_for",      "function", "Through-hole drill from pad size and annular ring"),
         ],
     },
     "generators/pcb_netlist": {

@@ -35,6 +35,7 @@ import footprints
 from kernel import drc, score
 from router import AStarRouter, generate_candidates
 from render_pretty import to_svg
+from scene3d import board_scene
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -58,6 +59,9 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
         
         raw_pkg = c.get("package")
         pkg = footprints.normalize_package(raw_pkg) if raw_pkg else None
+        specific = footprints.guess(mpn)
+        if specific in footprints.PART_SPECIFIC:
+            pkg = specific
         pkg = pkg or footprints.guess(mpn, len(pins))
         
         if not pkg:
@@ -65,10 +69,16 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
                         f"Supply \"package\" explicitly.")
             continue
         try:
-            b.components.append(footprints.build(ref, pkg, pins, warnings=warn))
+            comp = footprints.build(ref, pkg, pins, warnings=warn)
         except KeyError as e:
             warn.append(f"{ref}: {e}")
             continue
+        # What the part is, carried on the IR so every consumer (3D scene, a
+        # later KiCad export) reads one answer instead of re-guessing it.
+        comp.attrs.update({k: v for k, v in (("package", pkg), ("mpn", mpn),
+                                             ("type", c.get("type")),
+                                             ("value", c.get("value"))) if v})
+        b.components.append(comp)
 
     power = [n for n in nl.get("power_nets", [ground]) if n]
     signal = [n for n in b.nets() if n not in power]
@@ -177,7 +187,8 @@ class Result:
     def to_dict(self) -> dict:
         return {"stats": self.stats, "warnings": self.warnings,
                 "violations": self.violations, "svg": self.svg,
-                "board": json.loads(self.board.to_json(indent=None))}
+                "board": json.loads(self.board.to_json(indent=None)),
+                "scene": board_scene(self.board)}
 
 
 def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",

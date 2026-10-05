@@ -88,6 +88,22 @@ def _sot23():
     return out, 3.30, 3.70
 
 
+def _sod123():
+    """SOD-123, KiCad Diode_SMD:D_SOD-123 pad geometry. Pad 1 is the cathode —
+    the banded end — as in KiCad's and the JEDEC convention for SMD diodes."""
+    return _chip(3.27, 0.91, 1.22)
+
+
+def _dht22():
+    """DHT22 / AM2302: four 2.54 mm pins in a row, under a 15.1 x 7.7 mm body.
+
+    Same pads as HEADER-4, but the courtyard covers the body. As a bare header
+    the placer saw a 3 x 9 mm part and tucked passives under a sensor that
+    stands 25 mm tall — found by drawing the board in 3D (scene3d.py)."""
+    pads, _, _ = _inline(4, vertical=True)
+    return pads, 7.7 + 0.5, 15.1 + 0.5
+
+
 def _soic(npins: int, row: float = 5.40, pitch: float = 1.27,
           pad_w: float = 0.60, pad_h: float = 1.50):
     """SOIC, narrow body. Pin order matches _dip: 1..n/2 up the left, then back
@@ -114,6 +130,7 @@ PACKAGES = {
     "AXIAL":    lambda: _axial(10.16),
     "RADIAL-2": lambda: _inline(2, pitch=5.08),
     "RELAY-SRD": _relay_srd,
+    "DHT22":    _dht22,
     "HEADER-2": lambda: _inline(2, vertical=True, pad=1.5),
     "HEADER-3": lambda: _inline(3, vertical=True, pad=1.5),
     "HEADER-4": lambda: _inline(4, vertical=True, pad=1.5),
@@ -130,6 +147,7 @@ PACKAGES = {
     "1206":     lambda: _chip(3.00, 1.15, 1.80),
     "1210":     lambda: _chip(3.00, 1.15, 2.70),
     "SOT-23":   _sot23,
+    "SOD-123":  _sod123,
     "SOIC-8":   lambda: _soic(8),
     "SOIC-14":  lambda: _soic(14),
     "SOIC-16":  lambda: _soic(16),
@@ -142,7 +160,7 @@ PACKAGES = {
 # connection to nothing.
 SMD_PACKAGES = frozenset({
     "0402", "0603", "0805", "1206", "1210",
-    "SOT-23", "SOIC-8", "SOIC-14", "SOIC-16",
+    "SOT-23", "SOD-123", "SOIC-8", "SOIC-14", "SOIC-16",
 })
 
 
@@ -159,7 +177,7 @@ _RULES: list[tuple[str, str]] = [
     (r"^LM78\d\d|^LM317",           "TO-220"),
     (r"^CFR-|^MFR-|CARBON|METAL.?FILM", "AXIAL"),
     (r"^SRD-\d+VDC",                "RELAY-SRD"),
-    (r"DHT(11|22)|AM2302",          "HEADER-4"),
+    (r"DHT(11|22)|AM2302",          "DHT22"),
     (r"^K\d+K\d+X7R|CERAMIC.?DISC", "RADIAL-2"),
     (r"^ECA-|ELECTROLYTIC",         "RADIAL-2"),
 ]
@@ -178,6 +196,7 @@ def normalize_package(pkg: str | None) -> str | None:
     m = re.fullmatch(r"[RCL]?(0201|0402|0603|0805|1206|1210)", p)
     if m: return m.group(1)
     if p in ("SOT23", "SOT-23"): return "SOT-23"
+    if p in ("SOD123", "SOD-123"): return "SOD-123"
     m = re.fullmatch(r"SOIC-?(\d+)", p)
     if m: return f"SOIC-{m.group(1)}"
 
@@ -189,6 +208,11 @@ def normalize_package(pkg: str | None) -> str | None:
     m = re.search(r"DIP-(\d+)", p)
     if m: return f"DIP-{m.group(1)}"
     return p
+
+
+# Packages that name one part rather than a shape. When the part number says
+# DHT22, the netlist's generic "4-pin SIP" must not hide the sensor's body.
+PART_SPECIFIC = frozenset({"DHT22", "RELAY-SRD"})
 
 
 def guess(mpn: str, npins: int | None = None) -> str | None:
@@ -242,6 +266,20 @@ PINMAPS = {
         "BASE": ["2"], "B": ["2"],
         "COLLECTOR": ["3"], "C": ["3"],
     },
+    # The standard SOT-23 pinout for a BJT (1 base, 2 emitter, 3 collector; e.g.
+    # MMBT2222A) and a MOSFET (1 gate, 2 source, 3 drain). The names cannot
+    # collide, so one map serves both. A part with a non-standard SOT-23 pinout
+    # needs its own map; without this, B/C/E fell to free-pad assignment and a
+    # switch transistor was wired in whatever order its pins were listed.
+    "SOT-23": {
+        "B": ["1"], "BASE": ["1"], "E": ["2"], "EMITTER": ["2"],
+        "C": ["3"], "COLLECTOR": ["3"],
+        "G": ["1"], "GATE": ["1"], "S": ["2"], "SOURCE": ["2"],
+        "D": ["3"], "DRAIN": ["3"],
+    },
+    "SOD-123": {
+        "K": ["1"], "CATHODE": ["1"], "A": ["2"], "ANODE": ["2"],
+    },
     "DO-41": {
         "ANODE": ["1"], "A": ["1"],
         "CATHODE": ["2"], "K": ["2"],
@@ -252,6 +290,9 @@ PINMAPS = {
         "COM": ["3"],
         "NC": ["4"],
         "NO": ["5"],
+    },
+    "DHT22": {
+        "VCC": ["1"], "DATA": ["2"], "NC": ["3"], "GND": ["4"],
     },
     "HEADER-4": {
         "VCC": ["1"],

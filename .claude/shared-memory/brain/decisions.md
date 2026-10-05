@@ -2651,3 +2651,34 @@ written at 80 s (12.7k chars) and read back from storage.
 **Left as it is.** The worker is `--pool=solo` on Windows, so tasks run one at a time: a 1 s simulation waits
 behind a 20 s firmware build, and a second design's simulation would wait behind the first's explanation.
 `tests/conftest.py` makes the queue unavailable in tests, so no test puts a task on a developer's broker.
+
+## [2026-10-06] The board goes 3D, on the board IR — decided by the owner
+
+**Context.** The owner's picture of the finished product is a PCB on screen that engineers can orbit and see
+from every side, move and edit, and ask the AI to generate, add to or remove from. They require the board to
+live in a structured, readable format so the AI can read what was built, run deterministic checks and fix
+errors through structured operations — the One Rule, applied to layout. Research:
+`research_notes/CAD board editor - deep research/` (`report.md`, adversarially verified; `survey_3d_viewers.md`).
+
+**Decision.**
+1. **`pcb_engine/board_ir.py` stays the source of truth** for layout (UUID-keyed JSON and export formats are
+   for later). Nothing downstream — SVG, 3D, later KiCad/Gerber — is authored by a model.
+2. **A deterministic scene builder, `pcb_engine/scene3d.py`,** turns a Board into a normalised 3D scene:
+   stack-up, pads, plated holes, tracks, vias, and a *parametric* body per package. A package with no body
+   model is drawn as its courtyard box and **flagged `generic`**, never passed off as the real part.
+3. **`POST /pcb/compile` returns the board IR and the scene** alongside the SVG it already returned.
+4. **Frontend: three.js through React Three Fiber v8 + drei** (React 18 / Next 14), loaded with `ssr: false`
+   like kicanvas, rendering on demand. Chosen because OpenPCB shares one R3F renderer across all its editors
+   with demand rendering, and tscircuit's viewer is three.js; AGPL projects (pcb-scene3d-viewer, OpenPCB) are
+   used for ideas only, no code.
+5. **This amends two standing lines.** `.claude/CLAUDE.md` said not to extend `pcb_engine`, and
+   `COMPOSITION_PLAN.md` said no PCB output. The owner's goal overrides both for this work. The engine stays
+   **experimental** (behind `pcb_engine_enabled`, labelled in the UI), its router is still not production
+   routing, and freerouting remains the plan for real routing.
+
+**Order after this step** (each its own decision when it starts): board IR edits as patch operations
+re-checked by the DRC kernel (move / rotate / flip first); `.kicad_pcb` export → real 3D models through
+`kicad-cli pcb export glb`; the composed CircuitIR feeding the board; freerouting.
+
+**Not claimed.** The 3D bodies are package-shaped, not manufacturer models; nothing here is checked against a
+physical board.

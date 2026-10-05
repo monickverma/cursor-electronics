@@ -11,7 +11,11 @@ checks — signs its properties the way `POST /sign-off` does, and runs its
 netlist through ngspice and the Stage 3 waveform shaper. Re-run it when a
 response shape changes; the tests then check the UI against the new shape.
 
-Writes `frontend/e2e/fixtures/{generate,sign_off,simulation,firmware,bom}.json`.
+Writes `frontend/e2e/fixtures/{generate,sign_off,simulation,firmware,bom,pcb}.json`.
+`pcb.json` is the composed room monitor and what POST /pcb/compile returns for it —
+the routed Board IR and its 3D scene (decisions.md [2026-10-06]). Only that one:
+
+    python scripts/export_ui_fixtures.py --only pcb
 Needs ngspice on PATH (as the simulation worker does). `firmware.json` (Stage 5)
 is an ESP32 LED design and the compile gate's answers for it, from
 `firmware_view` itself with its table and broker held in memory.
@@ -213,8 +217,31 @@ def _bom(registry) -> dict:
             "bom_live": live}
 
 
+def _pcb(registry) -> dict:
+    """The room monitor (docs/projects/room_monitor.json), composed, and the PCB
+    compile route's answer for its netlist: SVG, stats, Board IR and 3D scene."""
+    from generators.compose import Project, compose
+    from generators.netlist.pcb import PcbNetlistGenerator
+    from pcb_engine import compile_board
+
+    project = Project.model_validate(json.loads(
+        (ROOT / "docs" / "projects" / "room_monitor.json").read_text(encoding="utf-8")))
+    ir = compose(registry, project).circuit
+    netlist = PcbNetlistGenerator().generate(ir)
+    generate = _generate_response(ir, {"status": "unavailable",
+                                       "reason": "fixture: firmware is not under test here"})
+    generate["pcb_netlist"] = netlist
+    return {"generate": generate, "compile": compile_board(netlist).to_dict()}
+
+
 def main() -> None:
     registry = default_registry()
+    if sys.argv[1:] == ["--only", "pcb"]:
+        path = OUT / "pcb.json"
+        path.write_text(json.dumps(_pcb(registry), indent=1, sort_keys=True, ensure_ascii=False) + "\n",
+                        encoding="utf-8", newline="\n")
+        print(f"wrote {path.relative_to(ROOT)}")
+        return
     intent = FormProducer(registry).build("low_pass_filter", {"cutoff_hz": 1000, "supply_v": 5})
     generator = registry.dispatch(intent).generator
     ir = realize(generator, intent)
@@ -249,10 +276,11 @@ def main() -> None:
 
     firmware = _firmware(registry)
     bom = _bom(registry)
+    pcb = _pcb(registry)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for name, body in (("generate", generate), ("sign_off", sign_off), ("simulation", simulation),
-                       ("firmware", firmware), ("bom", bom)):
+                       ("firmware", firmware), ("bom", bom), ("pcb", pcb)):
         path = OUT / f"{name}.json"
         path.write_text(json.dumps(body, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
                         encoding="utf-8", newline="\n")

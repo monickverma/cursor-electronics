@@ -53,6 +53,10 @@ class CompileResponse(BaseModel):
     stats: dict
     warnings: list[str]
     violations: list[str]
+    # The routed Board IR (pcb_engine/board_ir.py) — the source of truth — and
+    # the 3D scene derived from it (pcb_engine/scene3d.py). decisions.md [2026-10-06].
+    board: dict
+    scene: dict
 
 
 @router.post("/compile", response_model=CompileResponse)
@@ -93,9 +97,12 @@ async def compile_pcb(
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(500, detail=f"PCB compilation failed: {type(exc).__name__}: {exc}")
 
+    out = result.to_dict()
     return CompileResponse(
-        svg=result.svg,
-        stats=result.stats,
-        warnings=result.warnings,
-        violations=result.violations,
+        svg=out["svg"],
+        stats=out["stats"],
+        warnings=out["warnings"],
+        violations=out["violations"],
+        board=out["board"],
+        scene=out["scene"],
     )

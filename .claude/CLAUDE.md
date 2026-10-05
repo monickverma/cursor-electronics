@@ -89,6 +89,8 @@ cursor-electronics/
 │   │                               # PostgreSQL; exact part number only; never read by validation
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
+│   │   ├── board_ir.py             # THE layout contract — the board's source of truth
+│   │   └── scene3d.py              # Board IR → 3D scene (bodies per package, DRC, ratsnest)
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate),
@@ -143,8 +145,13 @@ Do not add these — they are Phase 2+ scope:
 - Gerber export, DFM, fab APIs
 - ~~PCB auto-layout~~ — **exists**: `backend/pcb_engine/` ships at `POST /pcb/compile`
   with a frontend tab. Pulled forward from Phase 3. Scope decision 2026-08-22 is
-  **(b) experimental**, excluded from the v0.1.0 gate. Do not extend it; when
-  Phase 3 begins, integrate freerouting instead. See `PHASE1_COMPLETE.md` §4.
+  **(b) experimental**, excluded from the v0.1.0 gate. When Phase 3 begins,
+  integrate freerouting instead of extending the router. See `PHASE1_COMPLETE.md` §4.
+  **Amended 2026-10-06 (owner):** the board is drawn in 3D from the Board IR
+  (`pcb_engine/scene3d.py` → `frontend/components/Board3DView.tsx`, three.js via
+  React Three Fiber, `ssr: false`), toward an editable 3D board. The Board IR stays
+  the source of truth; edits will be patch operations re-checked by the DRC kernel.
+  `brain/decisions.md` [2026-10-06].
 - ~~Live distributor pricing~~ — **exists since 2026-09-25**: Mouser, optional (`MOUSER_API_KEY`),
   on `GET /design/{id}/bom` only; see `brain/decisions.md` [2026-09-25]. No Digikey/LCSC.
 - Qdrant vector DB / RAG (use `component_constraints.py`)

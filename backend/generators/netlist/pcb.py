@@ -38,6 +38,10 @@ class PcbNetlistGenerator:
             }
             if comp.package:
                 comp_entry["package"] = comp.package
+            # What the part is, for the 3D scene's body choice (pcb_engine/scene3d.py)
+            comp_entry["type"] = comp.type.value
+            if comp.value:
+                comp_entry["value"] = comp.value
             components.append(comp_entry)
 
         # 4. Board dimensions heuristic based on component count
