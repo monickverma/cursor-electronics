@@ -1,0 +1,279 @@
+/* Landing page — scoped. Does not touch the app's design tokens (globals.css).
+   Structure and motion follow the twks.ch study: one family, black / white / greys,
+   10px base spacing, thin rules, no radii, no shadows. */
+
+.root {
+  --base: 10px;
+  --black: #000;
+  --white: #fff;
+  --grey-01: #505050;
+  --grey-02: #8c8c8c;
+  --grey-03: #c8c8c8;
+  --grey-02-inv: #737373;
+  --pass: #55b068;
+  --ease: cubic-bezier(0.83, 0, 0.17, 1); /* ≈ power4.inOut */
+
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-landing), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  overflow-x: clip;
+}
+
+/* globals.css sets every h1–h5 to the app's serif; the landing page is one family. */
+.root h1, .root h2, .root h3 { font-family: inherit; }
+
+/* ── Type scale ─────────────────────────────────────────────── */
+.big { font-size: 2.25rem; font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
+.normal { font-size: 1.125rem; font-weight: 400; line-height: 1.2; letter-spacing: 0.01em; }
+.small { font-size: 1.125rem; font-weight: 400; line-height: 1.2; letter-spacing: 0.01em; }
+@media (min-width: 48rem) {
+  .big { font-size: 3.3rem; }
+  .normal { font-size: 1.25rem; }
+  .small { font-size: 1rem; }
+}
+
+.grey { color: var(--grey-02); }
+.mono { font-family: var(--font-mono), ui-monospace, monospace; }
+.srOnly {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ── Thin rule that draws in ────────────────────────────────── */
+.rule {
+  position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  overflow: hidden; pointer-events: none;
+}
+.rule > i {
+  position: absolute; inset: 0; background: currentColor;
+  transform: translateX(-101%);
+}
+
+/* ── Reveal (entry) ─────────────────────────────────────────── */
+.reveal { opacity: 0; }
+
+/* ── Nav ────────────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--base);
+  color: var(--white);
+  font-size: 1.125rem; line-height: 1.2; text-transform: lowercase;
+  will-change: transform;
+}
+.navBlend { mix-blend-mode: difference; }
+.navGroup, .navTag { display: none; }
+@media (min-width: 64rem) {
+  .nav {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--base); font-size: 1.25rem;
+  }
+  .navBrand { grid-column: 1 / span 3; }
+  .navGroup { display: flex; gap: 15px; grid-column: 4 / span 5; }
+  .navTag { display: block; grid-column: 9 / span 3; }
+  .navCta { grid-column: 12 / span 1; justify-self: end; }
+}
+.navButton {
+  background: none; border: 0; padding: 0; color: inherit;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer;
+}
+
+/* ── Reverse underline (old line leaves right, new one enters left) ── */
+.ulink {
+  position: relative; display: inline-block; overflow: hidden;
+  padding-bottom: 3px; color: inherit; text-decoration: none;
+}
+.ulink::before, .ulink::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor;
+}
+.ulink::after { transform: translateX(-110%); }
+@media (hover: hover) {
+  .ulink:hover::before { transform: translateX(110%); transition: transform 0.6s var(--ease); }
+  .ulink:hover::after { transform: translateX(0); transition: transform 0.6s var(--ease) 0.1s; }
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero {
+  position: relative; height: 100vh; height: 100svh;
+  overflow: hidden; background: var(--black);
+}
+.heroZoom {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: var(--base);
+  transform-origin: 50% 50%; will-change: transform, opacity;
+}
+.heroTerminal {
+  align-self: flex-end; width: min(100%, 26rem);
+  font-size: 0.8125rem; line-height: 1.55; color: var(--grey-02-inv);
+  padding-top: 56px;
+}
+.heroTerminal .done { color: var(--grey-03); }
+.heroTerminal .live { color: var(--white); }
+.heroBottom { display: block; }
+.heroMeta {
+  display: grid; grid-template-columns: 1fr; row-gap: 6px;
+  margin-bottom: 18px; color: var(--grey-02-inv);
+}
+@media (min-width: 48rem) {
+  .heroMeta { grid-template-columns: repeat(12, 1fr); column-gap: var(--base); }
+  .heroMeta > :first-child { grid-column: 1 / span 6; }
+  .heroMeta > :last-child { grid-column: 7 / span 6; }
+}
+.heroTitle {
+  margin: 0; font-weight: 600; letter-spacing: -0.045em; line-height: 0.84;
+  font-size: clamp(3.6rem, 15.5vw, 19rem);
+  padding-bottom: 0.04em;
+}
+
+/* ── Main (white) ───────────────────────────────────────────── */
+.main {
+  position: relative; z-index: 1;
+  background: var(--white); color: var(--black);
+  padding-bottom: 150px;
+}
+
+.statement { padding: 80px var(--base) 80px; }
+@media (min-width: 48rem) { .statement { padding: 90px var(--base) 160px; } }
+.statementLabel { display: block; margin-bottom: 20px; }
+.statementText { margin: 0; text-indent: 16.6667%; }
+
+.vision {
+  position: relative; display: grid; grid-template-columns: 1fr;
+  row-gap: 24px; padding: var(--base) var(--base) 80px;
+}
+@media (min-width: 48rem) {
+  .vision { grid-template-columns: repeat(6, 1fr); column-gap: var(--base); padding-bottom: 100px; }
+  .visionLabel { grid-column: 1 / span 3; }
+  .visionBody { grid-column: 4 / span 3; }
+}
+.visionLabel { padding-top: 6px; }
+.visionBody p { margin: 0 0 40px; text-indent: 16.6667%; }
+.rows { display: flex; flex-direction: column; }
+.row { position: relative; }
+
+.cta {
+  position: relative; display: flex; justify-content: space-between; align-items: center;
+  width: 100%; padding: var(--base) 0; color: inherit; background: none; border: 0;
+  font: inherit; letter-spacing: inherit; text-align: left; text-decoration: none; cursor: pointer;
+}
+.ctaLines { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; overflow: hidden; pointer-events: none; }
+.ctaLine1, .ctaLine2 { position: absolute; inset: 0; background: currentColor; }
+.ctaLine2 { transform: translateX(-110%); }
+@media (hover: hover) {
+  .cta:hover .ctaLine1 { transform: translateX(110%); transition: transform 0.6s var(--ease); }
+  .cta:hover .ctaLine2 { transform: translateX(0); transition: transform 0.6s var(--ease) 0.1s; }
+}
+
+.ctaSecondary {
+  display: inline-flex; text-align: right; color: var(--grey-02);
+  background: none; border: 0; padding: 0; font: inherit; letter-spacing: inherit;
+  text-decoration: none; cursor: pointer;
+  transition: color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (hover: hover) { .ctaSecondary:hover { color: var(--black); } }
+
+/* ── Section header ─────────────────────────────────────────── */
+.sectionHead {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 0 var(--base); margin-bottom: 20px;
+}
+.sectionHead h2 { margin: 0; font-weight: 400; }
+
+/* ── Templates (staggered, square) ──────────────────────────── */
+.templates { margin-top: 150px; padding: 0 var(--base); }
+.cols { display: grid; grid-template-columns: 1fr; column-gap: var(--base); }
+@media (min-width: 48rem) {
+  .cols { grid-template-columns: 1fr 1fr; }
+  .colB { margin-top: 160px; }
+}
+.item { margin-bottom: 70px; }
+.item h3 { margin: 12px 0 2px; font-weight: 400; }
+.item p { margin: 0; color: var(--grey-02); }
+
+.panel {
+  position: relative; display: block; width: 100%;
+  background: var(--black); color: var(--grey-03);
+  border: 0; padding: 0; border-radius: 0; overflow: hidden; cursor: pointer;
+  text-align: left; font: inherit;
+}
+.panelInner {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  justify-content: space-between; padding: 20px;
+  transform-origin: 50% 50%;
+}
+.panelTags { color: var(--grey-02-inv); font-size: 0.9375rem; }
+.panelLines { display: flex; flex-direction: column; gap: 10px; font-size: clamp(1rem, 2.1vw, 1.875rem); line-height: 1.25; color: var(--white); }
+.panelLines span { display: block; }
+.panelGrade { color: var(--pass); font-size: 0.9375rem; }
+
+/* ── Included (ruled list) ──────────────────────────────────── */
+.included { margin-top: 200px; padding: 0 var(--base); }
+.list { border: 0; margin: 0; padding: 0; list-style: none; }
+.li {
+  position: relative; display: grid; grid-template-columns: 1fr; row-gap: 8px;
+  padding: 20px 0 40px;
+}
+@media (min-width: 48rem) {
+  .li { grid-template-columns: repeat(12, 1fr); column-gap: var(--base); }
+  .liNum { grid-column: 1 / span 1; }
+  .liTitle { grid-column: 2 / span 4; }
+  .liDesc { grid-column: 7 / span 5; }
+}
+.liNum { color: var(--grey-02); }
+.liTitle { margin: 0; font-weight: 400; }
+.liDesc { margin: 0; color: var(--grey-02); }
+
+/* ── Explanation ────────────────────────────────────────────── */
+.explain { margin-top: 200px; padding: 0 var(--base); }
+.explainText { margin: 0 0 40px; text-indent: 16.6667%; }
+.explainBlock {
+  background: var(--black); color: var(--grey-03);
+  padding: 20px; font-size: 0.9375rem; line-height: 1.75;
+}
+@media (min-width: 48rem) { .explainBlock { padding: 40px; } }
+.explainBlock .c { color: var(--grey-02-inv); }
+.explainBlock .w { color: var(--white); }
+.explainBlock .warn { color: #e0b04a; }
+
+/* ── Footer (revealed from under the white main) ────────────── */
+.footerWrap { overflow: hidden; background: var(--black); }
+.footer {
+  position: relative; display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 100vh; min-height: 100svh;
+  padding: 64px var(--base) var(--base); background: var(--black); color: var(--white);
+}
+.footerCols { display: grid; grid-template-columns: 1fr; row-gap: 40px; }
+@media (min-width: 48rem) {
+  .footerCols { grid-template-columns: repeat(3, 1fr); column-gap: var(--base); }
+}
+.fCol { position: relative; padding-top: 10px; }
+.fLabel { display: block; margin-bottom: 20px; font-size: 1rem; }
+.fBtn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border: 1px solid var(--white); background: none;
+  color: var(--white); font: inherit; letter-spacing: inherit; cursor: pointer;
+  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (hover: hover) { .fBtn:hover { background: var(--white); color: var(--black); } }
+.fList { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; color: var(--grey-03); font-size: 1rem; }
+.footerBottom {
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  color: var(--grey-02-inv); font-size: 1rem;
+}
+
+/* ── Cursor label ───────────────────────────────────────────── */
+.tip {
+  position: fixed; top: 0; left: 0; z-index: 60; pointer-events: none;
+  white-space: nowrap; color: var(--white); font-size: 1rem; line-height: 1.2;
+  mix-blend-mode: difference; opacity: 0; will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; }
+  .rule > i { transform: none; }
+}
