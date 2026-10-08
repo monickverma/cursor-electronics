@@ -205,7 +205,7 @@ PLANNED = {
     },
     "pcb_engine/footprints": {
         "file": "backend/pcb_engine/footprints.py",
-        "test_file": "tests/test_pcb_placement.py",
+        "test_file": ["tests/test_pcb_placement.py", "tests/test_pcb_scene3d.py"],
         "entries": [
             ("normalize_package", "function", "Package string → canonical form"),
             ("guess",             "function", "Infer footprint from component metadata"),
@@ -217,6 +217,17 @@ PLANNED = {
         "test_file": None,
         "entries": [
             ("to_svg", "function", "Board → SVG for the frontend PCB tab"),
+        ],
+    },
+    # decisions.md [2026-10-06] — the board in 3D, derived from the Board IR.
+    "pcb_engine/scene3d": {
+        "file": "backend/pcb_engine/scene3d.py",
+        "test_file": "tests/test_pcb_scene3d.py",
+        "entries": [
+            ("board_scene",    "function", "Board IR → normalised 3D scene (stack-up, pads, holes, copper, bodies, DRC, ratsnest)"),
+            ("body_for",       "function", "Package → parametric body; unknown packages flagged generic"),
+            ("component_kind", "function", "Declared type, else designator prefix"),
+            ("drill_for",      "function", "Through-hole drill from pad size and annular ring"),
         ],
     },
     "generators/pcb_netlist": {
@@ -742,6 +753,19 @@ PLANNED = {
             ("predicted_interval", "function", "The model for the parts as measured, exactly at the corners"),
             ("evaluate",           "function", "agrees | disagrees | stale, per measured property"),
             ("evidence_for",       "function", "What drops D1 on this design; nothing if the family disagrees"),
+        ],
+    },
+    # decisions.md [2026-10-08]: the build check — did the person wire the design that was drawn?
+    "validation/build_check": {
+        "file": "backend/validation/build_check.py",
+        "test_file": "tests/test_build_check.py",
+        "entries": [
+            ("Meter",             "class",    "A multimeter as its data sheet states it: volts, ohms, input resistance, OL"),
+            ("Probe",             "class",    "One reading: a voltage (powered) or a resistance between two nets (power off)"),
+            ("BuildModel",        "class",    "The design as a person builds it: parts and boxes, nets, what a meter can reach"),
+            ("enumerate_faults",  "function", "Every listed way to build it wrong, as a changed netlist"),
+            ("Analysis",          "class",    "The design and every fault through every reading: plans, blind spots, verdicts"),
+            ("Verdict",           "class",    "as_designed | inconclusive | fault | unexplained — and whether the model is implicated"),
         ],
     },
     # [2026-09-25]: live Mouser pricing, optional; never read by validation.

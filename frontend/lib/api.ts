@@ -36,6 +36,10 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
         const reasons = (detail.refusals as Array<{ generator: string; reason: string }>)
           .map(r => `  - ${r.generator}: ${r.reason}`)
         message = ['No generator accepts that requirement:', ...reasons].join('\n') + kept
+      } else if (detail.error === 'underdetermined' && Array.isArray(detail.questions)) {
+        // An unanswered question is put back to the user: name what is missing.
+        message = `${detail.message ?? 'The request does not pin these down.'}\n` +
+          (detail.questions as string[]).map(q => `  - ${q}`).join('\n')
       } else if (typeof detail.message === 'string') {
         message = detail.message
       } else {
@@ -387,6 +391,82 @@ export interface PCBCompileResponse {
   }
   warnings: string[]
   violations: string[]
+  /** The routed Board IR — the layout's source of truth (backend/pcb_engine/board_ir.py). */
+  board?: Record<string, unknown>
+  /** The 3D scene derived from it (backend/pcb_engine/scene3d.py). */
+  scene?: BoardScene
+}
+
+// ── 3D board scene (backend/pcb_engine/scene3d.py, SCENE_VERSION 1.x) ──────────
+// Millimetres; x right and y up in the board plane, z up out of the top copper.
+
+export interface SceneBody {
+  shape: string
+  size: [number, number, number]
+  standoff: number
+  color: string
+  [extra: string]: unknown
+}
+
+export interface SceneComponent {
+  ref: string
+  kind: string
+  package: string | null
+  mpn: string | null
+  x: number
+  y: number
+  rotation: number
+  side: 'top' | 'bottom'
+  courtyard: [number, number]
+  body: SceneBody
+  model: 'parametric' | 'generic'
+  nets: string[]
+  pins: number
+  locked: boolean
+}
+
+export interface ScenePad {
+  ref: string
+  pin: string
+  x: number
+  y: number
+  w: number
+  h: number
+  net: string
+  shape: 'rect' | 'round'
+  through: boolean
+  layer: string
+  drill?: number
+}
+
+export interface SceneDrc {
+  rule: string
+  severity: 'error' | 'warning'
+  detail: string
+  x: number
+  y: number
+  nets: string[]
+  measured: number | null
+  required: number | null
+}
+
+export interface BoardScene {
+  version: string
+  units: 'mm'
+  name: string
+  board: { w: number; h: number; thickness: number; copper: number
+           soldermask: string; silkscreen: string; finish: string }
+  layers: { name: string; type: string; z: number | null }[]
+  planes: { layer: string; net: string; z: number }[]
+  components: SceneComponent[]
+  pads: ScenePad[]
+  holes: { x: number; y: number; d: number; plated: boolean; ref: string | null; pin: string | null }[]
+  tracks: { layer: string; net: string; width: number; z: number; points: [number, number][] }[]
+  vias: { x: number; y: number; net: string; drill: number; diameter: number }[]
+  drc: SceneDrc[]
+  ratsnest: { net: string; a: [number, number]; b: [number, number] }[]
+  stats: { components: number; generic_bodies: number; pads: number; holes: number
+           tracks: number; vias: number; drc_errors: number; unrouted: number }
 }
 
 export async function compilePCB(

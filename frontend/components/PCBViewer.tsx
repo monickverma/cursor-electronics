@@ -1,7 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { compilePCB, PCBCompileResponse } from '@/lib/api'
+
+// three.js needs the browser (WebGL, document): never server-render it — the
+// same rule as the kicanvas schematic viewer.
+const Board3DView = dynamic(() => import('@/components/Board3DView'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full flex items-center justify-center text-sm" style={{ color: 'var(--glow)' }}>
+      Loading 3D view…
+    </div>
+  ),
+})
 
 interface Props {
   netlist?: Record<string, any>
@@ -18,6 +30,7 @@ export default function PCBViewer({ netlist, token }: Props) {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<PCBCompileResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [mode, setMode] = useState<'3d' | '2d'>('3d')
 
   useEffect(() => {
     if (!netlist) return
@@ -97,6 +110,24 @@ export default function PCBViewer({ netlist, token }: Props) {
             <span style={{ color: 'var(--text-muted-dark)', marginRight: 4 }}>Copper:</span>
             <span>{data.stats.copper_mm} mm</span>
           </div>
+          <div className="ml-auto flex gap-1" role="group" aria-label="Board view">
+            {(['3d', '2d'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                aria-pressed={mode === m}
+                disabled={m === '3d' && !data.scene}
+                className="rounded px-2 py-0.5"
+                style={{
+                  background: mode === m ? 'var(--dawn)' : 'transparent',
+                  color: mode === m ? 'var(--vast)' : 'var(--lumen-dim)',
+                  border: '1px solid var(--border-dark)',
+                }}
+              >
+                {m.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -156,7 +187,13 @@ export default function PCBViewer({ netlist, token }: Props) {
           </div>
         )}
 
-        {data?.svg && !loading && (
+        {data?.scene && mode === '3d' && !loading && (
+          <div className="absolute inset-0">
+            <Board3DView scene={data.scene} />
+          </div>
+        )}
+
+        {data?.svg && (mode === '2d' || !data.scene) && !loading && (
           <div
             id="pcb-panel"
             className="w-full h-full flex items-center justify-center overflow-auto"

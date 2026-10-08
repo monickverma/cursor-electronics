@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-10-04T21:17:58.107512Z",
-  "generated_from_commit": "fc35d1d",
+  "generated_at": "2026-10-08T01:16:12.114472Z",
+  "generated_from_commit": "7dab95d",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -181,6 +181,12 @@
       "file": "backend/pcb_engine/render_pretty.py",
       "exists": true,
       "test_status": "no_test"
+    },
+    "pcb_engine/scene3d": {
+      "status": "verified_done",
+      "file": "backend/pcb_engine/scene3d.py",
+      "exists": true,
+      "test_status": "passing"
     },
     "generators/pcb_netlist": {
       "status": "verified_done",
@@ -488,6 +494,12 @@
       "exists": true,
       "test_status": "passing"
     },
+    "validation/build_check": {
+      "status": "verified_done",
+      "file": "backend/validation/build_check.py",
+      "exists": true,
+      "test_status": "passing"
+    },
     "pricing/quotes": {
       "status": "verified_done",
       "file": "backend/pricing/quotes.py",
@@ -550,10 +562,10 @@
     }
   },
   "test_summary": {
-    "passed": 2519,
+    "passed": 2604,
     "failed": 0,
     "skipped": 32,
-    "total": 2519
+    "total": 2604
   },
   "phase2_gates": [
     {
@@ -1042,13 +1054,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "fc35d1d fix: firmware builds through a real worker; an explanation that fails says why",
-    "4b7533f feat: AI_REASONING_EFFORT for OpenAI-compatible providers",
-    "a60728f feat: composition M2–M4 — behaviour, the load switch, the front door",
-    "d85af85 feat: composition M1 — several blocks on one board",
-    "5a6179d plan: open the Composition phase — owner's decision, transistor load switch for the buzzer"
+    "7dab95d feat: the build check, and the generators set beside real circuits — [2026-10-08]",
+    "c470770 chore: regenerate state.json / progress.yaml — scene3d registered, 2552 pass / 0 fail",
+    "a7b8660 feat: the board in 3D, drawn from the Board IR — owner's decision [2026-10-06]",
+    "aea361e Merge pull request #6 from monickverma/fieldwork-and-composition",
+    "c7506dd feat: the explanation leaves the request — queued, stored, read back from GET /design/{id}/explanation"
   ],
-  "last_diff_stat": ".claude/shared-memory/brain/decisions.md | 23 +++++++++++++\n backend/ai/client.py                     |  8 +++--\n backend/ai/explainer.py                  |  4 ++-\n backend/api/routes/design.py       ",
+  "last_diff_stat": ".claude/CLAUDE.md                                  |    6 +-\n .claude/shared-memory/brain/decisions.md           |   45 +\n .claude/shared-memory/plan/current_phase.md        |   17 +\n .claude/shared-m",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",

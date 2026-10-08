@@ -83,10 +83,11 @@ MODULES = {
     # memory system entirely. All currently untested — see current_phase.md.
     "pcb_engine/board_ir":     {"file": "backend/pcb_engine/board_ir.py",           "test": None,                               "phase": 3},
     "pcb_engine/compile_board":{"file": "backend/pcb_engine/compile_board.py",      "test": "tests/test_pcb_placement.py",                               "phase": 3},
-    "pcb_engine/footprints":   {"file": "backend/pcb_engine/footprints.py",         "test": "tests/test_pcb_placement.py",                               "phase": 3},
+    "pcb_engine/footprints":   {"file": "backend/pcb_engine/footprints.py",         "test": ["tests/test_pcb_placement.py", "tests/test_pcb_scene3d.py"],                               "phase": 3},
     "pcb_engine/kernel":       {"file": "backend/pcb_engine/kernel.py",             "test": None,                               "phase": 3},
     "pcb_engine/router":       {"file": "backend/pcb_engine/router.py",             "test": None,                               "phase": 3},
     "pcb_engine/render_pretty":{"file": "backend/pcb_engine/render_pretty.py",      "test": None,                               "phase": 3},
+    "pcb_engine/scene3d":      {"file": "backend/pcb_engine/scene3d.py",            "test": "tests/test_pcb_scene3d.py",        "phase": 3},
     "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": "tests/test_pcb_route.py",          "phase": 3},
 
@@ -149,6 +150,8 @@ MODULES = {
     "generators/bom/substitution": {"file": "backend/generators/bom/substitution.py", "test": ["tests/test_substitution.py", "tests/test_bom_route.py"], "phase": 2},
     "api/routes/bom":             {"file": "backend/api/routes/bom.py",             "test": "tests/test_bom_route.py",            "phase": 2},
     "validation/bench":           {"file": "backend/validation/bench.py",           "test": ["tests/test_bench.py", "tests/test_bench_rc_method.py"], "phase": 2},
+    # [2026-10-08]: did the person wire this design? — faults, readings, a plan, a verdict.
+    "validation/build_check":     {"file": "backend/validation/build_check.py",     "test": "tests/test_build_check.py",          "phase": 2},
     # [2026-09-25]: live Mouser pricing, optional; never read by validation.
     "pricing/quotes":             {"file": "backend/pricing/quotes.py",             "test": "tests/test_pricing.py",              "phase": 2},
     "pricing/mouser":             {"file": "backend/pricing/mouser.py",             "test": "tests/test_pricing.py",              "phase": 2},

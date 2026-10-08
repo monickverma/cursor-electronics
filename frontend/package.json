@@ -10,17 +10,21 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "jose": "^5.2.3",
     "lucide-react": "^0.400.0",
     "next": "^14.2.35",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/three": "^0.169.0",
     "autoprefixer": "^10",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",

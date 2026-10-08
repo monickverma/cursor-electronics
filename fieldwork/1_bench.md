@@ -14,6 +14,22 @@ still match the designs the generators build today.
 - A red LED (the catalogue part is Würth 150080RS75000; any red LED works if you write down which one)
 - A DHT22
 
+## First, check the board is the design (about 10 minutes a design)
+
+A resistor in the wrong breadboard row would be charged to the model: D1 would reopen for a design that was never
+built. So before each design's measurements, build it, then — power off — read the few resistances on its sheet in
+[`docs/BUILD_CHECK_SHEETS.md`](../docs/BUILD_CHECK_SHEETS.md) (three for the divider, DHT22 and RC, five for the LED
+and RS-485; the sheet says between which nets and what to expect), and type them in:
+
+```bash
+python scripts/build_check_cli.py diagnose voltage_divider '{"r:vin,vout": 3412, "r:vout,0": 6603, "r:vin,0": 10010}'
+```
+
+`as_designed` means the board is the design (a capacitor's value excepted — the sheet says so; use the `rc_timer`
+sketch). Anything else names the fault, or the part that reads off — fix the board first. Only if every resistance
+agrees and the powered voltages still do not, is it a model question. The method, and how accurate it was in
+simulation, is in [`docs/REAL_DATA_CHECK.md`](../docs/REAL_DATA_CHECK.md) §8.
+
 ## Order (about 3 hours)
 
 | # | Design | Measure | Record file |
