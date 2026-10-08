@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
-import { generateDesign, patchDesign, login, register, GenerateResponse, PatchResponse } from '@/lib/api'
+import { generateDesign, patchDesign, login, register, UnderdeterminedError, GenerateResponse, PatchResponse } from '@/lib/api'
 
 interface Message {
   role: 'user' | 'assistant' | 'error'
@@ -22,6 +22,8 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  // The request the system asked about. Held until it is answered, so the reply is added to it.
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null)
   const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('test@circuitos.dev')
   const [password, setPassword] = useState('TestPass123!')
@@ -70,13 +72,16 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
           : p.note_to_user || 'No changes applied.'
         setMessages(prev => [...prev, { role: 'assistant', text: summary, timestamp: new Date() }])
       } else {
-        res = await generateDesign(text, token)
+        const prompt = pendingPrompt ? `${pendingPrompt}. ${text}` : text
+        res = await generateDesign(prompt, token)
+        setPendingPrompt(null)
         const g = res as GenerateResponse
         const summary = `Generated ${g.application_class}${g.target_mcu ? ` on ${g.target_mcu}` : ''} — v${g.version}.\n\n${g.explanation ? `${g.explanation.slice(0, 360)}…` : 'The explanation is being written; it appears under Validation in about a minute.'}`
         setMessages(prev => [...prev, { role: 'assistant', text: summary, timestamp: new Date() }])
       }
       onResult(res)
     } catch (err: unknown) {
+      if (err instanceof UnderdeterminedError) setPendingPrompt(pendingPrompt ? `${pendingPrompt}. ${text}` : text)
       const msg = err instanceof Error ? err.message : 'Unknown error'
       setMessages(prev => [...prev, { role: 'error', text: msg, timestamp: new Date() }])
     } finally {
