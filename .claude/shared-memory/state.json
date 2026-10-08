@@ -1,8 +1,8 @@
 {
   "_note": "DERIVED file. Run: python .claude/shared-memory/tools/regen_state.py",
   "_layer": "LAYER 4 (Progress) — module-level summary",
-  "generated_at": "2026-10-08T01:16:12.114472Z",
-  "generated_from_commit": "7dab95d",
+  "generated_at": "2026-10-08T02:47:47.815704Z",
+  "generated_from_commit": "9e49631",
   "project": "Circuit OS",
   "description": "AI hardware compiler: plain English → schematic + firmware + simulation + BOM",
   "phase": {
@@ -562,10 +562,10 @@
     }
   },
   "test_summary": {
-    "passed": 2604,
+    "passed": 2608,
     "failed": 0,
     "skipped": 32,
-    "total": 2604
+    "total": 2608
   },
   "phase2_gates": [
     {
@@ -1054,13 +1054,13 @@
     "Memory trackers need manual registration"
   ],
   "recent_commits": [
-    "7dab95d feat: the build check, and the generators set beside real circuits — [2026-10-08]",
-    "c470770 chore: regenerate state.json / progress.yaml — scene3d registered, 2552 pass / 0 fail",
-    "a7b8660 feat: the board in 3D, drawn from the Board IR — owner's decision [2026-10-06]",
-    "aea361e Merge pull request #6 from monickverma/fieldwork-and-composition",
-    "c7506dd feat: the explanation leaves the request — queued, stored, read back from GET /design/{id}/explanation"
+    "9e49631 Merge pull request #10 from monickverma/sim-grade-fix-2",
+    "e77eeab fix: the simulation task returns the whole ngspice output (PR 9 merged only its test)",
+    "4eebd50 Merge pull request #9 from monickverma/sim-grade-fix",
+    "5a4e489 fix: a correct AC design no longer grades as failed — the task kept 4000 chars of ngspice output",
+    "8fdce82 Merge pull request #8 from monickverma/worker-health"
   ],
-  "last_diff_stat": ".claude/CLAUDE.md                                  |    6 +-\n .claude/shared-memory/brain/decisions.md           |   45 +\n .claude/shared-memory/plan/current_phase.md        |   17 +\n .claude/shared-m",
+  "last_diff_stat": "backend/tasks/simulation_task.py | 5 ++++-\n 1 file changed, 4 insertions(+), 1 deletion(-)",
   "pointers": {
     "see_function_level": "progress.yaml",
     "see_current_tasks": "plan/current_phase.md",
