@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-10-05T23:47:22.147781Z'
+generated_at: '2026-10-08T01:24:24.354256Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -2571,6 +2571,61 @@ files:
         line: 306
         test_file: *id017
     module_status: done
+  validation/build_check:
+    file: backend/validation/build_check.py
+    exists: true
+    test_file: tests/test_build_check.py
+    test_file_status: passing
+    entries:
+      Meter:
+        status: verified_done
+        type: class
+        description: 'A DC voltmeter as its data sheet states it: ±(gain · reading
+          + digits · resolution)'
+        signature: null
+        line: 100
+        test_file: tests/test_build_check.py
+      Probe:
+        status: verified_done
+        type: class
+        description: 'One reading. Voltage (powered): v(a) to ground, or v(a) − v(b).
+          Resistance (power off): a to b.'
+        signature: null
+        line: 156
+        test_file: tests/test_build_check.py
+      BuildModel:
+        status: verified_done
+        type: class
+        description: 'The design as a person builds it: parts with boxes, nets, and
+          what a meter can reach.'
+        signature: null
+        line: 179
+        test_file: tests/test_build_check.py
+      enumerate_faults:
+        status: verified_done
+        type: function
+        description: Every listed way to build it wrong, as a changed netlist. Duplicates
+          (same DC network) are folded.
+        signature: 'enumerate_faults(model: BuildModel, moved: bool) -> List[Fault]'
+        line: 306
+        test_file: tests/test_build_check.py
+      Analysis:
+        status: verified_done
+        type: class
+        description: The correct build and every listed fault, read through every
+          reading a meter can take.
+        signature: null
+        line: 641
+        test_file: tests/test_build_check.py
+      Verdict:
+        status: verified_done
+        type: class
+        description: as_designed | inconclusive | fault | unexplained — and whether
+          the model is implicated
+        signature: null
+        line: 596
+        test_file: tests/test_build_check.py
+    module_status: done
   pricing/quotes:
     file: backend/pricing/quotes.py
     exists: true
@@ -2696,10 +2751,10 @@ files:
         test_file: *id018
     module_status: done
 summary:
-  entries_total: 277
-  entries_verified_done: 259
+  entries_total: 283
+  entries_verified_done: 265
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 93.5
+  pct_verified: 93.6

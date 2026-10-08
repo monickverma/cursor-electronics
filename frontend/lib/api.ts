@@ -36,6 +36,10 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
         const reasons = (detail.refusals as Array<{ generator: string; reason: string }>)
           .map(r => `  - ${r.generator}: ${r.reason}`)
         message = ['No generator accepts that requirement:', ...reasons].join('\n') + kept
+      } else if (detail.error === 'underdetermined' && Array.isArray(detail.questions)) {
+        // An unanswered question is put back to the user: name what is missing.
+        message = `${detail.message ?? 'The request does not pin these down.'}\n` +
+          (detail.questions as string[]).map(q => `  - ${q}`).join('\n')
       } else if (typeof detail.message === 'string') {
         message = detail.message
       } else {
