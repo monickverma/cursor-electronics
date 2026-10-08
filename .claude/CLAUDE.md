@@ -76,6 +76,7 @@ cursor-electronics/
 │   │   ├── pin_rules.py            # Stage 5 — pin-mux, peripheral conflict, strapping pins
 │   │   ├── figure_audit.py         # D7 — every figure a claim reads is declared, by experiment
 │   │   ├── bench.py                # D1 — bench evidence: agrees, disagrees, stale
+│   │   ├── build_check.py          # Did the person wire this design? faults, readings, plans, verdicts (2026-10-08)
 │   │   ├── envelope_grid.py        # CI grid harness + M1 fault injection
 │   │   └── grid_adapters.py        # Per-generator ngspice adapters and probes
 │   ├── proof/                      # Stage 4 — properties proved from the design's netlist
@@ -102,7 +103,10 @@ cursor-electronics/
 │   └── lib/api.ts                  # Typed API client
 ├── scripts/                        # capture_explanation.py, review_panel.py, verify_figures.py (D7),
 │                                   # bench_template.py (D1), export_ui_fixtures.py,
-│                                   # bench/rc_timer/ (D1: the Uno sketch that times an RC)
+│                                   # bench/rc_timer/ (D1: the Uno sketch that times an RC),
+│                                   # real_data_check.py (generated vs real circuits, ngspice is the oracle),
+│                                   # build_check_cli.py / _oracle.py / _accuracy.py (the build check at the bench,
+│                                   # its arithmetic against ngspice, its accuracy), ngspice_batch.py
 ├── tests/                          # pytest, conftest.py, 12 test modules + fixtures/
 └── docker-compose.yml
 ```

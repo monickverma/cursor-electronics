@@ -1,0 +1,1881 @@
+{
+ "generated:voltage_divider": {
+  "kinds": "v",
+  "faults": 13,
+  "detectable": 13,
+  "blind": 0,
+  "plan": [
+   "v(vin) − v(vout)"
+  ],
+  "identify_plan": [
+   "v(vin) − v(vout)"
+  ],
+  "plan_size": 2,
+  "identify_size": 2,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 159,
+   "false_unexplained": 1
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 159,
+   "false_unexplained": 1
+  },
+  "detectable_detect": {
+   "n": 260,
+   "ambiguous": 260,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.3192307692307694,
+   "within_3_candidates": 0.38461538461538464
+  },
+  "detectable_identify": {
+   "n": 260,
+   "ambiguous": 260,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.3192307692307694,
+   "within_3_candidates": 0.38461538461538464
+  },
+  "detectable_all": {
+   "n": 260,
+   "ambiguous": 260,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.3115384615384613,
+   "within_3_candidates": 0.38461538461538464
+  },
+  "sensitivity": {
+   "R1": {
+    "high": 1.1,
+    "low": 1.1
+   },
+   "R2": {
+    "high": 1.1,
+    "low": 1.1
+   }
+  },
+  "blind_plan": {
+   "n": 0
+  },
+  "guarantee_replay": {
+   "readings_replayed": 288,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 40,
+   "two_faults:missed": 2,
+   "two_faults:names_one_of_the_two": 60,
+   "two_faults:unexplained_d1": 14,
+   "two_faults:misnamed": 4
+  }
+ },
+ "generated:led_indicator": {
+  "kinds": "v",
+  "faults": 18,
+  "detectable": 13,
+  "blind": 5,
+  "plan": [
+   "v(led_anode)",
+   "v(vcc_5v) − v(led_ctrl)"
+  ],
+  "identify_plan": [
+   "v(led_anode)",
+   "v(led_ctrl) − v(led_anode)",
+   "v(vcc_5v) − v(led_ctrl)"
+  ],
+  "plan_size": 3,
+  "identify_size": 4,
+  "probes_available": 5,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 158,
+   "false_fault": 2
+  },
+  "detectable_detect": {
+   "n": 260,
+   "ambiguous": 216,
+   "exact": 44,
+   "by_kind": {
+    "reversed": {
+     "ambiguous": 20
+    },
+    "open": {
+     "ambiguous": 20,
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 36,
+     "exact": 4
+    },
+    "moved": {
+     "ambiguous": 140,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 2.996153846153846,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_identify": {
+   "n": 260,
+   "ambiguous": 126,
+   "exact": 134,
+   "by_kind": {
+    "reversed": {
+     "ambiguous": 20
+    },
+    "open": {
+     "ambiguous": 20,
+     "exact": 20
+    },
+    "short": {
+     "exact": 34,
+     "ambiguous": 6
+    },
+    "moved": {
+     "ambiguous": 80,
+     "exact": 80
+    }
+   },
+   "mean_candidates": 2.6384615384615384,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_all": {
+   "n": 260,
+   "ambiguous": 127,
+   "exact": 133,
+   "by_kind": {
+    "reversed": {
+     "ambiguous": 20
+    },
+    "open": {
+     "ambiguous": 20,
+     "exact": 20
+    },
+    "short": {
+     "exact": 33,
+     "ambiguous": 7
+    },
+    "moved": {
+     "ambiguous": 80,
+     "exact": 80
+    }
+   },
+   "mean_candidates": 2.6423076923076922,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "sensitivity": {
+   "R1": {
+    "high": 5.0,
+    "low": 5.0
+   }
+  },
+  "blind_plan": {
+   "n": 100,
+   "false_fault": 35,
+   "correct": 65
+  },
+  "guarantee_replay": {
+   "readings_replayed": 576,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 19,
+   "near_miss_value:misnamed": 1
+  }
+ },
+ "generated:rc_lowpass": {
+  "kinds": "v",
+  "faults": 9,
+  "detectable": 4,
+  "blind": 5,
+  "plan": [
+   "v(out)"
+  ],
+  "identify_plan": [
+   "v(in) − v(out)",
+   "v(out)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "false_unexplained": 47,
+   "correct": 112,
+   "false_fault": 1
+  },
+  "detectable_detect": {
+   "n": 80,
+   "exact": 20,
+   "ambiguous": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 2.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R1": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 100,
+   "correct": 99,
+   "false_fault": 1
+  },
+  "guarantee_replay": {
+   "readings_replayed": 54,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "generated:dht22_node": {
+  "kinds": "v",
+  "faults": 9,
+  "detectable": 3,
+  "blind": 6,
+  "plan": [
+   "v(dht22_data)"
+  ],
+  "identify_plan": [
+   "v(dht22_data)",
+   "v(vcc_5v) − v(dht22_data)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 104,
+   "false_fault": 28,
+   "false_unexplained": 28
+  },
+  "detectable_detect": {
+   "n": 60,
+   "exact": 20,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 1.6666666666666667,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R1": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 120,
+   "correct": 120
+  },
+  "guarantee_replay": {
+   "readings_replayed": 30,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "generated:rs485_node": {
+  "kinds": "v",
+  "faults": 64,
+  "detectable": 58,
+  "blind": 6,
+  "plan": [
+   "v(rs485_a) − v(rs485_b)",
+   "v(rs485_a) − v(rs485_de_re)"
+  ],
+  "identify_plan": [
+   "v(rs485_a) − v(rs485_b)",
+   "v(rs485_a) − v(rs485_de_re)",
+   "v(vcc_5v) − v(rs485_b)"
+  ],
+  "plan_size": 3,
+  "identify_size": 4,
+  "probes_available": 9,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 155,
+   "false_unexplained": 5
+  },
+  "detectable_detect": {
+   "n": 1160,
+   "ambiguous": 894,
+   "exact": 266,
+   "by_kind": {
+    "open": {
+     "ambiguous": 80
+    },
+    "short": {
+     "ambiguous": 59,
+     "exact": 1
+    },
+    "wrong_value": {
+     "exact": 110,
+     "ambiguous": 10
+    },
+    "swapped": {
+     "exact": 54,
+     "ambiguous": 46
+    },
+    "moved": {
+     "ambiguous": 699,
+     "exact": 101
+    }
+   },
+   "mean_candidates": 5.099137931034483,
+   "within_3_candidates": 0.4663793103448276
+  },
+  "detectable_identify": {
+   "n": 1160,
+   "ambiguous": 855,
+   "exact": 305,
+   "by_kind": {
+    "open": {
+     "ambiguous": 80
+    },
+    "short": {
+     "ambiguous": 59,
+     "exact": 1
+    },
+    "wrong_value": {
+     "exact": 119,
+     "ambiguous": 1
+    },
+    "swapped": {
+     "exact": 60,
+     "ambiguous": 40
+    },
+    "moved": {
+     "ambiguous": 675,
+     "exact": 125
+    }
+   },
+   "mean_candidates": 5.037068965517242,
+   "within_3_candidates": 0.47672413793103446
+  },
+  "detectable_all": {
+   "n": 1160,
+   "ambiguous": 833,
+   "exact": 327,
+   "by_kind": {
+    "open": {
+     "ambiguous": 80
+    },
+    "short": {
+     "ambiguous": 49,
+     "exact": 11
+    },
+    "wrong_value": {
+     "exact": 119,
+     "ambiguous": 1
+    },
+    "swapped": {
+     "exact": 60,
+     "ambiguous": 40
+    },
+    "moved": {
+     "ambiguous": 663,
+     "exact": 137
+    }
+   },
+   "mean_candidates": 4.9862068965517246,
+   "within_3_candidates": 0.4862068965517241
+  },
+  "sensitivity": {
+   "R1": {
+    "high": 1.1,
+    "low": 1.1
+   },
+   "R2": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "R3": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "R4": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 120,
+   "correct": 120
+  },
+  "guarantee_replay": {
+   "readings_replayed": 5376,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 60,
+   "near_miss_value:missed": 20,
+   "two_faults:unexplained_d1": 85,
+   "two_faults:names_one_of_the_two": 103,
+   "two_faults:misnamed": 12
+  }
+ },
+ "real:rs485.modbus_v102.dc_150": {
+  "kinds": "v",
+  "faults": 26,
+  "detectable": 26,
+  "blind": 0,
+  "plan": [
+   "v(a) − v(b)"
+  ],
+  "identify_plan": [
+   "v(a)",
+   "v(a) − v(b)",
+   "v(vcc) − v(a)"
+  ],
+  "plan_size": 2,
+  "identify_size": 4,
+  "probes_available": 5,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 157,
+   "false_unexplained": 3
+  },
+  "detectable_detect": {
+   "n": 520,
+   "ambiguous": 519,
+   "exact": 1,
+   "by_kind": {
+    "open": {
+     "ambiguous": 60
+    },
+    "short": {
+     "ambiguous": 59,
+     "exact": 1
+    },
+    "wrong_value": {
+     "ambiguous": 120
+    },
+    "swapped": {
+     "ambiguous": 40
+    },
+    "moved": {
+     "ambiguous": 240
+    }
+   },
+   "mean_candidates": 6.4788461538461535,
+   "within_3_candidates": 0.46153846153846156
+  },
+  "detectable_identify": {
+   "n": 520,
+   "ambiguous": 262,
+   "exact": 258,
+   "by_kind": {
+    "open": {
+     "ambiguous": 43,
+     "exact": 17
+    },
+    "short": {
+     "exact": 41,
+     "ambiguous": 19
+    },
+    "wrong_value": {
+     "exact": 120
+    },
+    "swapped": {
+     "exact": 40
+    },
+    "moved": {
+     "ambiguous": 200,
+     "exact": 40
+    }
+   },
+   "mean_candidates": 2.2326923076923078,
+   "within_3_candidates": 0.6923076923076923
+  },
+  "detectable_all": {
+   "n": 520,
+   "ambiguous": 263,
+   "exact": 257,
+   "by_kind": {
+    "open": {
+     "ambiguous": 43,
+     "exact": 17
+    },
+    "short": {
+     "exact": 40,
+     "ambiguous": 20
+    },
+    "wrong_value": {
+     "exact": 120
+    },
+    "swapped": {
+     "exact": 40
+    },
+    "moved": {
+     "ambiguous": 200,
+     "exact": 40
+    }
+   },
+   "mean_candidates": 2.2365384615384616,
+   "within_3_candidates": 0.6923076923076923
+  },
+  "sensitivity": {
+   "RB1": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "RB2": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "RT1": {
+    "high": 1.3,
+    "low": 1.2
+   },
+   "RT2": {
+    "high": 1.3,
+    "low": 1.2
+   }
+  },
+  "blind_plan": {
+   "n": 0
+  },
+  "guarantee_replay": {
+   "readings_replayed": 2352,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 80,
+   "two_faults:names_one_of_the_two": 85,
+   "two_faults:unexplained_d1": 96,
+   "two_faults:misnamed": 19
+  }
+ },
+ "real:rs485.ti_slla272d.fig7_1": {
+  "kinds": "v",
+  "faults": 26,
+  "detectable": 26,
+  "blind": 0,
+  "plan": [
+   "v(a) − v(b)"
+  ],
+  "identify_plan": [
+   "v(a)",
+   "v(a) − v(b)",
+   "v(vcc) − v(a)"
+  ],
+  "plan_size": 2,
+  "identify_size": 4,
+  "probes_available": 5,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 153,
+   "false_unexplained": 7
+  },
+  "detectable_detect": {
+   "n": 520,
+   "ambiguous": 518,
+   "exact": 2,
+   "by_kind": {
+    "open": {
+     "ambiguous": 60
+    },
+    "short": {
+     "ambiguous": 58,
+     "exact": 2
+    },
+    "wrong_value": {
+     "ambiguous": 120
+    },
+    "swapped": {
+     "ambiguous": 40
+    },
+    "moved": {
+     "ambiguous": 240
+    }
+   },
+   "mean_candidates": 6.505769230769231,
+   "within_3_candidates": 0.4461538461538462
+  },
+  "detectable_identify": {
+   "n": 520,
+   "ambiguous": 269,
+   "exact": 251,
+   "by_kind": {
+    "open": {
+     "ambiguous": 49,
+     "exact": 11
+    },
+    "short": {
+     "exact": 40,
+     "ambiguous": 20
+    },
+    "wrong_value": {
+     "exact": 120
+    },
+    "swapped": {
+     "exact": 40
+    },
+    "moved": {
+     "ambiguous": 200,
+     "exact": 40
+    }
+   },
+   "mean_candidates": 2.248076923076923,
+   "within_3_candidates": 0.6923076923076923
+  },
+  "detectable_all": {
+   "n": 520,
+   "ambiguous": 267,
+   "exact": 253,
+   "by_kind": {
+    "open": {
+     "ambiguous": 49,
+     "exact": 11
+    },
+    "short": {
+     "exact": 42,
+     "ambiguous": 18
+    },
+    "wrong_value": {
+     "exact": 120
+    },
+    "swapped": {
+     "exact": 40
+    },
+    "moved": {
+     "ambiguous": 200,
+     "exact": 40
+    }
+   },
+   "mean_candidates": 2.2403846153846154,
+   "within_3_candidates": 0.6923076923076923
+  },
+  "sensitivity": {
+   "RB1": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "RB2": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "RT1": {
+    "high": 1.3,
+    "low": 1.2
+   },
+   "RT2": {
+    "high": 1.3,
+    "low": 1.2
+   }
+  },
+  "blind_plan": {
+   "n": 0
+  },
+  "guarantee_replay": {
+   "readings_replayed": 2352,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 80,
+   "two_faults:unexplained_d1": 98,
+   "two_faults:misnamed": 19,
+   "two_faults:names_one_of_the_two": 83
+  }
+ },
+ "real:led.feather_m0_d13": {
+  "kinds": "v",
+  "faults": 15,
+  "detectable": 13,
+  "blind": 2,
+  "plan": [
+   "v(anode)",
+   "v(drv) − v(pin)"
+  ],
+  "identify_plan": [
+   "v(anode)",
+   "v(drv) − v(anode)",
+   "v(drv) − v(pin)"
+  ],
+  "plan_size": 3,
+  "identify_size": 4,
+  "probes_available": 5,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 159,
+   "false_fault": 1
+  },
+  "detectable_detect": {
+   "n": 260,
+   "exact": 20,
+   "ambiguous": 240,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 160
+    }
+   },
+   "mean_candidates": 3.076923076923077,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_identify": {
+   "n": 260,
+   "exact": 100,
+   "ambiguous": 160,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "ambiguous": 20,
+     "exact": 20
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 100,
+     "exact": 60
+    }
+   },
+   "mean_candidates": 2.769230769230769,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_all": {
+   "n": 260,
+   "exact": 106,
+   "ambiguous": 154,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "ambiguous": 14,
+     "exact": 26
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 100,
+     "exact": 60
+    }
+   },
+   "mean_candidates": 2.746153846153846,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "sensitivity": {
+   "R7": {
+    "high": null,
+    "low": 10.0
+   }
+  },
+  "blind_plan": {
+   "n": 40,
+   "false_fault": 33,
+   "correct": 7
+  },
+  "guarantee_replay": {
+   "readings_replayed": 576,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "real:led.sparkfun_rs485_rts": {
+  "kinds": "v",
+  "faults": 15,
+  "detectable": 13,
+  "blind": 2,
+  "plan": [
+   "v(anode)",
+   "v(drv) − v(pin)"
+  ],
+  "identify_plan": [
+   "v(anode)",
+   "v(drv) − v(pin)",
+   "v(pin) − v(anode)"
+  ],
+  "plan_size": 3,
+  "identify_size": 4,
+  "probes_available": 5,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "detectable_detect": {
+   "n": 260,
+   "exact": 31,
+   "ambiguous": 229,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "ambiguous": 39,
+     "exact": 1
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 150,
+     "exact": 10
+    }
+   },
+   "mean_candidates": 3.1192307692307693,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_identify": {
+   "n": 260,
+   "exact": 123,
+   "ambiguous": 137,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "exact": 28,
+     "ambiguous": 12
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 85,
+     "exact": 75
+    }
+   },
+   "mean_candidates": 2.6807692307692306,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "detectable_all": {
+   "n": 260,
+   "exact": 118,
+   "ambiguous": 142,
+   "by_kind": {
+    "open": {
+     "exact": 20,
+     "ambiguous": 20
+    },
+    "short": {
+     "exact": 28,
+     "ambiguous": 12
+    },
+    "reversed": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 90,
+     "exact": 70
+    }
+   },
+   "mean_candidates": 2.7,
+   "within_3_candidates": 0.6153846153846154
+  },
+  "sensitivity": {
+   "R3": {
+    "high": 10.0,
+    "low": 10.0
+   }
+  },
+  "blind_plan": {
+   "n": 40,
+   "false_fault": 35,
+   "correct": 5
+  },
+  "guarantee_replay": {
+   "readings_replayed": 576,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "real:divider.feather_m0_vbat": {
+  "kinds": "v",
+  "faults": 12,
+  "detectable": 12,
+  "blind": 0,
+  "plan": [
+   "v(out)"
+  ],
+  "identify_plan": [
+   "v(out)",
+   "v(vin) − v(out)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 159,
+   "false_unexplained": 1
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 158,
+   "false_unexplained": 2
+  },
+  "detectable_detect": {
+   "n": 240,
+   "ambiguous": 240,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.341666666666667,
+   "within_3_candidates": 0.3333333333333333
+  },
+  "detectable_identify": {
+   "n": 240,
+   "ambiguous": 240,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.3208333333333333,
+   "within_3_candidates": 0.3416666666666667
+  },
+  "detectable_all": {
+   "n": 240,
+   "ambiguous": 240,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.3333333333333335,
+   "within_3_candidates": 0.3333333333333333
+  },
+  "sensitivity": {
+   "R3": {
+    "high": 1.2,
+    "low": 1.2
+   },
+   "R6": {
+    "high": 1.2,
+    "low": 1.2
+   }
+  },
+  "blind_plan": {
+   "n": 0
+  },
+  "guarantee_replay": {
+   "readings_replayed": 264,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 40,
+   "two_faults:unexplained_d1": 24,
+   "two_faults:names_one_of_the_two": 54,
+   "two_faults:missed": 2
+  }
+ },
+ "real:divider.sparkfun_5v_to_3v3": {
+  "kinds": "v",
+  "faults": 13,
+  "detectable": 13,
+  "blind": 0,
+  "plan": [
+   "v(out)"
+  ],
+  "identify_plan": [
+   "v(vin) − v(out)"
+  ],
+  "plan_size": 2,
+  "identify_size": 2,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 159,
+   "false_unexplained": 1
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "detectable_detect": {
+   "n": 260,
+   "ambiguous": 258,
+   "exact": 2,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 38,
+     "exact": 2
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.4923076923076923,
+   "within_3_candidates": 0.3923076923076923
+  },
+  "detectable_identify": {
+   "n": 260,
+   "ambiguous": 260,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 40
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.326923076923077,
+   "within_3_candidates": 0.38461538461538464
+  },
+  "detectable_all": {
+   "n": 260,
+   "ambiguous": 258,
+   "exact": 2,
+   "by_kind": {
+    "open": {
+     "ambiguous": 40
+    },
+    "short": {
+     "ambiguous": 38,
+     "exact": 2
+    },
+    "wrong_value": {
+     "ambiguous": 80
+    },
+    "swapped": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 80
+    }
+   },
+   "mean_candidates": 3.2846153846153845,
+   "within_3_candidates": 0.3923076923076923
+  },
+  "sensitivity": {
+   "R1": {
+    "high": 1.1,
+    "low": 1.1
+   },
+   "R2": {
+    "high": 1.1,
+    "low": 1.1
+   }
+  },
+  "blind_plan": {
+   "n": 0
+  },
+  "guarantee_replay": {
+   "readings_replayed": 288,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:unexplained_d1": 40,
+   "two_faults:names_one_of_the_two": 63,
+   "two_faults:unexplained_d1": 14,
+   "two_faults:misnamed": 3
+  }
+ },
+ "real:dht22.aosong_datasheet": {
+  "kinds": "v",
+  "faults": 6,
+  "detectable": 3,
+  "blind": 3,
+  "plan": [
+   "v(data)"
+  ],
+  "identify_plan": [
+   "v(data)",
+   "v(vcc) − v(data)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 106,
+   "false_unexplained": 51,
+   "false_fault": 3
+  },
+  "detectable_detect": {
+   "n": 60,
+   "exact": 20,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 1.6666666666666667,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R1": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 60,
+   "correct": 60
+  },
+  "guarantee_replay": {
+   "readings_replayed": 30,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "real:dht22.adafruit_guide": {
+  "kinds": "v",
+  "faults": 6,
+  "detectable": 3,
+  "blind": 3,
+  "plan": [
+   "v(data)"
+  ],
+  "identify_plan": [
+   "v(data)",
+   "v(vcc) − v(data)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "correct": 108,
+   "false_unexplained": 45,
+   "false_fault": 7
+  },
+  "detectable_detect": {
+   "n": 60,
+   "exact": 20,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 1.6666666666666667,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 60,
+   "exact": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "moved": {
+     "exact": 40
+    }
+   },
+   "mean_candidates": 1.0,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R1": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 60,
+   "correct": 59,
+   "false_fault": 1
+  },
+  "guarantee_replay": {
+   "readings_replayed": 30,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "real:rc.nxp_an14520": {
+  "kinds": "v",
+  "faults": 9,
+  "detectable": 4,
+  "blind": 5,
+  "plan": [
+   "v(out)"
+  ],
+  "identify_plan": [
+   "v(in) − v(out)",
+   "v(out)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "false_unexplained": 57,
+   "correct": 99,
+   "false_fault": 4
+  },
+  "detectable_detect": {
+   "n": 80,
+   "exact": 20,
+   "ambiguous": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 2.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 100,
+   "correct": 100
+  },
+  "guarantee_replay": {
+   "readings_replayed": 54,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ },
+ "real:rc.espressif_en_delay": {
+  "kinds": "v",
+  "faults": 9,
+  "detectable": 4,
+  "blind": 5,
+  "plan": [
+   "v(out)"
+  ],
+  "identify_plan": [
+   "v(in) − v(out)",
+   "v(out)"
+  ],
+  "plan_size": 2,
+  "identify_size": 3,
+  "probes_available": 2,
+  "meter": "±(0.5% + 3 digits) V, ±(0.8% + 3 digits) Ω",
+  "correct_detect": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_identify": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_all": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_loose_parts_2x": {
+   "n": 160,
+   "correct": 160
+  },
+  "correct_bad_meter_2x": {
+   "n": 160,
+   "false_unexplained": 50,
+   "correct": 101,
+   "false_fault": 9
+  },
+  "detectable_detect": {
+   "n": 80,
+   "exact": 20,
+   "ambiguous": 60,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 40
+    }
+   },
+   "mean_candidates": 2.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_identify": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "detectable_all": {
+   "n": 80,
+   "exact": 40,
+   "ambiguous": 40,
+   "by_kind": {
+    "open": {
+     "exact": 20
+    },
+    "short": {
+     "ambiguous": 20
+    },
+    "moved": {
+     "ambiguous": 20,
+     "exact": 20
+    }
+   },
+   "mean_candidates": 1.5,
+   "within_3_candidates": 1.0
+  },
+  "sensitivity": {
+   "R": {
+    "high": null,
+    "low": null
+   }
+  },
+  "blind_plan": {
+   "n": 100,
+   "correct": 100
+  },
+  "guarantee_replay": {
+   "readings_replayed": 54,
+   "violations": 0,
+   "first": []
+  },
+  "unlisted": {
+   "near_miss_value:missed": 20
+  }
+ }
+}

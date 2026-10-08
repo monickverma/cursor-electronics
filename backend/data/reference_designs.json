@@ -1,0 +1,664 @@
+{
+  "_about": "Real published circuits, read from their sources on 2026-10-08, to check Circuit OS against. Every value below is what the SOURCE states or what its schematic netlist contains; anything the source does not state is listed under `assumed`. Read by the agent, not yet verified by a person (the same standing as data/figures.py records before scripts/verify_figures.py). Evidence classes: eagle-netlist (parsed from the vendor's own EAGLE .sch, connectivity machine-read) > standard-text / app-note-text / datasheet-figure (read from the document) > tutorial-text (a vendor's teaching page). The AM2302-labelled copy of the Aosong datasheet carries its connection diagram too small to read; the SparkFun-hosted DHT22 copy is legible and is the one cited.",
+  "schema": {
+    "elements": "R: {id, kind:'R', a, b, ohm, tol} · C: {id, kind:'C', a, b, farad, tol, dc:false} · SRC: {id, kind:'V', a, b:'0', volts_ref:'supply'} · LED: {id, kind:'LED', a, b:'0', led}",
+    "request": "the form Circuit OS would be asked for the same job: {function, fields}",
+    "assumed": "numbers the source did not give, and what they were taken as"
+  },
+  "leds": {
+    "red_0805": {
+      "n": 2.0,
+      "vf_min_v": 1.6,
+      "vf_typ_v": 2.0,
+      "vf_max_v": 2.4,
+      "if_ref_ma": 20,
+      "if_max_ma": 25,
+      "basis": "assumed: the same red 0805 figures the project tabulates for its own LED (Würth 150080RS75000, data/component_constraints.py); the references name only 'RED 0805'"
+    },
+    "green_0603": {
+      "n": 2.0,
+      "vf_min_v": 1.8,
+      "vf_typ_v": 2.1,
+      "vf_max_v": 2.4,
+      "if_ref_ma": 20,
+      "if_max_ma": 20,
+      "basis": "assumed: a conventional green 0603 chip LED; the reference names only 'Green 0603'"
+    }
+  },
+  "designs": [
+    {
+      "id": "rs485.modbus_v102.dc_150",
+      "family": "rs485_node",
+      "title": "Modbus over Serial Line V1.02 — polarized pair, 150 Ω terminations at both ends (range ends 450 Ω and 650 Ω)",
+      "source": {
+        "doc": "MODBUS over serial line specification and implementation guide V1.02, Modbus-IDA, 20 Dec 2006",
+        "where": "§3.4.5 Line Termination (p.27) and §3.4.6 Line Polarization (p.28)",
+        "url": "https://millenia.cars.aps.anl.gov/software/epics/Modbus_over_serial_line_V1_02.pdf",
+        "evidence": "standard-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "states": "pull-up to 5 V on D1 and pull-down to common on D0, each between 450 Ω and 650 Ω, polarization at ONE location only; termination 'may be a 150 ohms value (0.5 W) resistor' at each of the two ends",
+      "supply_v": {
+        "min": 4.75,
+        "nominal": 5.0,
+        "max": 5.25
+      },
+      "variants": {
+        "bias_ohm": [
+          450,
+          550,
+          650
+        ]
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vcc",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "RB1",
+          "kind": "R",
+          "a": "vcc",
+          "b": "a",
+          "ohm": "$bias_ohm",
+          "tol": 0.01
+        },
+        {
+          "id": "RB2",
+          "kind": "R",
+          "a": "b",
+          "b": "0",
+          "ohm": "$bias_ohm",
+          "tol": 0.01
+        },
+        {
+          "id": "RT1",
+          "kind": "R",
+          "a": "a",
+          "b": "b",
+          "ohm": 150,
+          "tol": 0.01
+        },
+        {
+          "id": "RT2",
+          "kind": "R",
+          "a": "a",
+          "b": "b",
+          "ohm": 150,
+          "tol": 0.01
+        }
+      ],
+      "request": {
+        "function": "modbus_rtu_master",
+        "fields": {
+          "supply_v": 5.0,
+          "mcu": "arduino_uno"
+        }
+      },
+      "assumed": {
+        "tolerance": "the spec gives no resistor tolerance; taken as 1%",
+        "receiver_threshold_v": "0.2 V, TIA/EIA-485 (TI SLLA272D §4)",
+        "labelling": "A and B are named as MAX485/TI do (the receiver reads high for V_A − V_B ≥ 200 mV); Modbus calls the pulled-up line D1 and the pulled-down line D0. The idle differential has the same magnitude under either naming."
+      }
+    },
+    {
+      "id": "rs485.ti_slla272d.fig7_1",
+      "family": "rs485_node",
+      "title": "TI RS-485 Design Guide — external idle-bus failsafe biasing (Fig. 7-1): RB 523 Ω ×2, RT 120 Ω at each end",
+      "source": {
+        "doc": "SLLA272D The RS-485 Design Guide, TI, Feb 2008 rev. May 2021",
+        "where": "§7 Failsafe, Eq. 2 and Fig. 7-1",
+        "url": "https://www.ti.com/lit/an/slla272d/slla272d.pdf",
+        "evidence": "app-note-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "states": "for V_bus,min = 4.75 V (5 V − 5 %), V_AB = 0.25 V (200 mV threshold + 50 mV noise) and Z0 = 120 Ω, R_B = 528 Ω; two 523 Ω resistors are used with R_T = 120 Ω",
+      "supply_v": {
+        "min": 4.75,
+        "nominal": 5.0,
+        "max": 5.25
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vcc",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "RB1",
+          "kind": "R",
+          "a": "vcc",
+          "b": "a",
+          "ohm": 523,
+          "tol": 0.01
+        },
+        {
+          "id": "RB2",
+          "kind": "R",
+          "a": "b",
+          "b": "0",
+          "ohm": 523,
+          "tol": 0.01
+        },
+        {
+          "id": "RT1",
+          "kind": "R",
+          "a": "a",
+          "b": "b",
+          "ohm": 120,
+          "tol": 0.01
+        },
+        {
+          "id": "RT2",
+          "kind": "R",
+          "a": "a",
+          "b": "b",
+          "ohm": 120,
+          "tol": 0.01
+        }
+      ],
+      "request": {
+        "function": "modbus_rtu_master",
+        "fields": {
+          "supply_v": 5.0,
+          "mcu": "arduino_uno"
+        }
+      },
+      "stated": {
+        "vab_target_v": 0.25,
+        "threshold_v": 0.2
+      },
+      "assumed": {
+        "tolerance": "the guide gives none; taken as 1%",
+        "two_terminations": "Fig. 7-1 shows R_T at each end of the bus"
+      }
+    },
+    {
+      "id": "rs485.sparkfun_breakout",
+      "family": "rs485_node",
+      "title": "SparkFun RS-485 Breakout — transceiver U2, no bias network, 220 Ω across A–B",
+      "source": {
+        "doc": "sparkfun/RS-485_Breakout, Hardware/RS485_Breakout.sch (EAGLE)",
+        "where": "parts R3, R4, C3, LED3, U2; nets A, B, RTS, VCC",
+        "url": "https://github.com/sparkfun/RS-485_Breakout",
+        "evidence": "eagle-netlist",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "states": "net A = U2.A, JP2.2, JP3.2, R4.1, JP4.8; net B = U2.B, JP2.3, JP3.3, R4.2, JP4.7; R4 value attribute '220' (device name '22OHM…'); no resistor from A or B to VCC or GND; DE and /RE tied to RTS",
+      "supply_v": {
+        "min": 3.0,
+        "nominal": 3.3,
+        "max": 3.6
+      },
+      "elements": [
+        {
+          "id": "R4",
+          "kind": "R",
+          "a": "a",
+          "b": "b",
+          "ohm": 220,
+          "tol": 0.01
+        }
+      ],
+      "request": {
+        "function": "modbus_rtu_master",
+        "fields": {
+          "supply_v": 3.3,
+          "mcu": "esp32_devkitc"
+        }
+      },
+      "assumed": {
+        "tolerance": "R4 is a 1/10 W 1 % 0603 per its device name",
+        "supply": "the breakout is a 3.3 V part (SparkFun product page); the schematic names only 'VCC'"
+      },
+      "notes": "R4's value attribute (220) and its device name (22OHM) disagree in the schematic; a community thread asks whether it should be 120 Ω. Taken as 220 Ω, the value attribute."
+    },
+    {
+      "id": "led.feather_m0_d13",
+      "family": "led_indicator",
+      "title": "Adafruit Feather M0 Basic — D13 LED: GPIO → 2.2 kΩ → red 0805 LED",
+      "source": {
+        "doc": "adafruit/Adafruit-Feather-M0-Basic-Proto-PCB, 'Adafruit Feather M0 Basic rev C.sch' (EAGLE)",
+        "where": "net D13 = JP3.4, R7.1, U$4.PA17; net N$2 = L.A, R7.2; L.C on GND; R7 value '2.2K', L value 'RED' 0805",
+        "url": "https://github.com/adafruit/Adafruit-Feather-M0-Basic-Proto-PCB",
+        "evidence": "eagle-netlist",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 3.135,
+        "nominal": 3.3,
+        "max": 3.465
+      },
+      "elements": [
+        {
+          "id": "VD",
+          "kind": "V",
+          "a": "drv",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "RP",
+          "kind": "R",
+          "a": "drv",
+          "b": "pin",
+          "ohm": 40,
+          "tol": 0.0
+        },
+        {
+          "id": "R7",
+          "kind": "R",
+          "a": "pin",
+          "b": "anode",
+          "ohm": 2200,
+          "tol": 0.01
+        },
+        {
+          "id": "L",
+          "kind": "LED",
+          "a": "anode",
+          "b": "0",
+          "led": "red_0805"
+        }
+      ],
+      "request": {
+        "function": "led_indicator",
+        "fields": {
+          "led_current_ma": "$delivered_ma",
+          "mcu": "blackpill_f411ce",
+          "supply_v": 3.3
+        }
+      },
+      "assumed": {
+        "pin_resistance_ohm": "the SAMD21 output resistance is not in the schematic; 40 Ω taken (negligible against 2.2 kΩ)",
+        "led": "red_0805 figures above",
+        "tolerance": "R7 0603, taken 1 %"
+      }
+    },
+    {
+      "id": "led.sparkfun_rs485_rts",
+      "family": "led_indicator",
+      "title": "SparkFun RS-485 Breakout — RTS line → 330 Ω → green 0603 LED",
+      "source": {
+        "doc": "sparkfun/RS-485_Breakout, Hardware/RS485_Breakout.sch (EAGLE)",
+        "where": "net N$4 = R3.1, LED3.A; net RTS = U2.DE, U2./RE, JP9.4, R3.2; LED3.C on GND; R3 '330', LED3 'Green' 0603",
+        "url": "https://github.com/sparkfun/RS-485_Breakout",
+        "evidence": "eagle-netlist",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 3.135,
+        "nominal": 3.3,
+        "max": 3.465
+      },
+      "elements": [
+        {
+          "id": "VD",
+          "kind": "V",
+          "a": "drv",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "RP",
+          "kind": "R",
+          "a": "drv",
+          "b": "pin",
+          "ohm": 40,
+          "tol": 0.0
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "a": "pin",
+          "b": "anode",
+          "ohm": 330,
+          "tol": 0.01
+        },
+        {
+          "id": "LED3",
+          "kind": "LED",
+          "a": "anode",
+          "b": "0",
+          "led": "green_0603"
+        }
+      ],
+      "request": {
+        "function": "led_indicator",
+        "fields": {
+          "led_current_ma": "$delivered_ma",
+          "mcu": "blackpill_f411ce",
+          "supply_v": 3.3
+        }
+      },
+      "assumed": {
+        "drive_level": "RTS is the host's logic level; taken 3.3 V to match the SP3485-class transceiver on the board",
+        "pin_resistance_ohm": "40 Ω",
+        "led": "green_0603 figures above"
+      }
+    },
+    {
+      "id": "divider.feather_m0_vbat",
+      "family": "voltage_divider",
+      "title": "Adafruit Feather M0 Basic — battery monitor: VBAT → 100 kΩ → D9/A7 → 100 kΩ → GND",
+      "source": {
+        "doc": "adafruit/Adafruit-Feather-M0-Basic-Proto-PCB, 'Adafruit Feather M0 Basic rev C.sch' (EAGLE)",
+        "where": "net VBAT includes R3.1; net D9 = JP3.8, R3.2, R6.1, U$4.PA07; R6.2 on GND; R3 '100k', R6 '100K'",
+        "url": "https://github.com/adafruit/Adafruit-Feather-M0-Basic-Proto-PCB",
+        "evidence": "eagle-netlist",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 3.2,
+        "nominal": 3.7,
+        "max": 4.2
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vin",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "R3",
+          "kind": "R",
+          "a": "vin",
+          "b": "out",
+          "ohm": 100000,
+          "tol": 0.01
+        },
+        {
+          "id": "R6",
+          "kind": "R",
+          "a": "out",
+          "b": "0",
+          "ohm": 100000,
+          "tol": 0.01
+        }
+      ],
+      "request": {
+        "function": "voltage_divider",
+        "fields": {
+          "vout_v": 2.1,
+          "supply_v": 4.2
+        }
+      },
+      "assumed": {
+        "supply_range": "a single-cell Li-Po, 3.2–4.2 V (Adafruit's own description of the board); the schematic names only 'VBAT'",
+        "tolerance": "0603, taken 1 %"
+      }
+    },
+    {
+      "id": "divider.sparkfun_5v_to_3v3",
+      "family": "voltage_divider",
+      "title": "SparkFun Logic Levels tutorial — 5 V → 3.3 V with 1 kΩ and 2 kΩ",
+      "source": {
+        "doc": "SparkFun learn: Logic Levels, 'Shifting Logic Levels'",
+        "where": "'You can use a simple voltage divider (like a 1KΩ and a 2KΩ) to knock down 5 V signals to 3.3 V levels'",
+        "url": "https://learn.sparkfun.com/tutorials/logic-levels/shifting-logic-levels",
+        "evidence": "tutorial-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 4.75,
+        "nominal": 5.0,
+        "max": 5.25
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vin",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "a": "vin",
+          "b": "out",
+          "ohm": 1000,
+          "tol": 0.01
+        },
+        {
+          "id": "R2",
+          "kind": "R",
+          "a": "out",
+          "b": "0",
+          "ohm": 2000,
+          "tol": 0.01
+        }
+      ],
+      "request": {
+        "function": "voltage_divider",
+        "fields": {
+          "vout_v": 3.3,
+          "supply_v": 5.0
+        }
+      },
+      "assumed": {
+        "orientation": "the page does not say which resistor is on top; 1 kΩ on the input side is the only one that gives about 3.3 V",
+        "tolerance": "taken 1 %"
+      }
+    },
+    {
+      "id": "dht22.aosong_datasheet",
+      "family": "dht22_node",
+      "title": "Aosong DHT22 datasheet — electrical connection diagram: MCU DATA with a 5K pull-up to VDD",
+      "source": {
+        "doc": "Aosong DHT22 / AM2302 datasheet (SparkFun-hosted copy)",
+        "where": "§5 Electrical connection diagram (a figure; the label reads '5K'); §6(1) supply 3.3–6 V, 100 nF between VDD and GND",
+        "url": "https://cdn.sparkfun.com/assets/f/7/d/9/c/DHT22.pdf",
+        "evidence": "datasheet-figure",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 4.75,
+        "nominal": 5.0,
+        "max": 5.25
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vcc",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "a": "vcc",
+          "b": "data",
+          "ohm": 5000,
+          "tol": 0.05
+        }
+      ],
+      "request": {
+        "function": "temperature_humidity_sensor",
+        "fields": {
+          "cable_length_m": 0.3,
+          "mcu": "arduino_uno",
+          "supply_v": 5.0
+        }
+      },
+      "assumed": {
+        "tolerance": "the figure shows no tolerance; taken 5 %",
+        "value": "the figure's '5K'; the AM2302 manual's 'typical 5.1 kΩ' is how the project's own generator cites it"
+      }
+    },
+    {
+      "id": "dht22.adafruit_guide",
+      "family": "dht22_node",
+      "title": "Adafruit DHT guide — 10 kΩ between VCC and the data pin",
+      "source": {
+        "doc": "Adafruit Learn: DHT Humidity Sensing on Arduino, 'Connecting to a DHTxx Sensor'",
+        "where": "'a 10 Kohm resistor between VCC and the data pin'; power 3.3–5 V",
+        "url": "https://learn.adafruit.com/dht/connecting-to-a-dhtxx-sensor",
+        "evidence": "tutorial-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 4.75,
+        "nominal": 5.0,
+        "max": 5.25
+      },
+      "elements": [
+        {
+          "id": "VS",
+          "kind": "V",
+          "a": "vcc",
+          "b": "0",
+          "volts_ref": "supply"
+        },
+        {
+          "id": "R1",
+          "kind": "R",
+          "a": "vcc",
+          "b": "data",
+          "ohm": 10000,
+          "tol": 0.05
+        }
+      ],
+      "request": {
+        "function": "temperature_humidity_sensor",
+        "fields": {
+          "cable_length_m": 0.3,
+          "mcu": "arduino_uno",
+          "supply_v": 5.0
+        }
+      },
+      "assumed": {
+        "tolerance": "taken 5 %"
+      }
+    },
+    {
+      "id": "rc.nxp_an14520",
+      "family": "rc_lowpass",
+      "title": "NXP AN14520 — PWM DAC output filter: 4.7 kΩ and 0.1 µF on a 3.3 V, 40 kHz PWM",
+      "source": {
+        "doc": "NXP AN14520 General MCU PWM DAC Application, Rev. 1.1, 22 April 2025",
+        "where": "§2.2 Design of parameters: 'R = 4.7 K and C = 0.1 µF'; §2.1: settling about 2.86 ms",
+        "url": "https://nxp.com/docs/en/application-note/AN14520.pdf",
+        "evidence": "app-note-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 3.135,
+        "nominal": 3.3,
+        "max": 3.465
+      },
+      "elements": [
+        {
+          "id": "VIN",
+          "kind": "V",
+          "a": "in",
+          "b": "0",
+          "volts_ref": "supply",
+          "ac": true
+        },
+        {
+          "id": "R",
+          "kind": "R",
+          "a": "in",
+          "b": "out",
+          "ohm": 4700,
+          "tol": 0.01
+        },
+        {
+          "id": "C",
+          "kind": "C",
+          "a": "out",
+          "b": "0",
+          "farad": 1e-07,
+          "tol": 0.1
+        }
+      ],
+      "request": {
+        "function": "low_pass_filter",
+        "fields": {
+          "cutoff_hz": 338.6,
+          "supply_v": 3.3
+        }
+      },
+      "stated": {
+        "settling_ms": 2.86
+      },
+      "assumed": {
+        "tolerance": "the note gives none; R 1 %, C 10 %"
+      }
+    },
+    {
+      "id": "rc.espressif_en_delay",
+      "family": "rc_lowpass",
+      "title": "Espressif hardware design guidelines — RC delay on the EN (CHIP_PU) pin: 10 kΩ and 1 µF",
+      "source": {
+        "doc": "ESP Hardware Design Guidelines (ESP32), Schematic checklist",
+        "where": "Chip Power-up and Reset Timing: 'The recommended setting for the RC delay circuit is usually R = 10 kΩ and C = 1 µF.'",
+        "url": "https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/schematic-checklist.html",
+        "evidence": "app-note-text",
+        "read": "2026-10-08",
+        "by": "agent"
+      },
+      "supply_v": {
+        "min": 3.0,
+        "nominal": 3.3,
+        "max": 3.6
+      },
+      "elements": [
+        {
+          "id": "VIN",
+          "kind": "V",
+          "a": "in",
+          "b": "0",
+          "volts_ref": "supply",
+          "ac": true
+        },
+        {
+          "id": "R",
+          "kind": "R",
+          "a": "in",
+          "b": "out",
+          "ohm": 10000,
+          "tol": 0.01
+        },
+        {
+          "id": "C",
+          "kind": "C",
+          "a": "out",
+          "b": "0",
+          "farad": 1e-06,
+          "tol": 0.1
+        }
+      ],
+      "request": {
+        "function": "low_pass_filter",
+        "fields": {
+          "cutoff_hz": 15.9,
+          "supply_v": 3.3
+        }
+      },
+      "assumed": {
+        "tolerance": "R 1 %, C 10 %",
+        "use": "a power-up delay, not a signal filter — included because it is a published RC low-pass with explicit values"
+      }
+    }
+  ]
+}

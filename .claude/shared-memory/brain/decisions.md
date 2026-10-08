@@ -2682,3 +2682,48 @@ re-checked by the DRC kernel (move / rotate / flip first); `.kicad_pcb` export �
 
 **Not claimed.** The 3D bodies are package-shaped, not manufacturer models; nothing here is checked against a
 physical board.
+
+## [2026-10-08] The build check — did the person wire the design that was drawn?
+
+**Context.** The owner, 2026-10-06: a validator that tests against the *built* circuit and, by physics, tells a
+correct build from a wrongly built one. `validation/bench.py` takes the build as right and tests the *model*
+(defeater D1), so today a resistor in the wrong breadboard row is charged to the model. The owner's answers to
+the two design questions: **multimeter first**, and **a reading that fits no listed fault but disagrees with the
+model reopens D1 as today.** Asked the same day to check it against real circuits and measure its accuracy;
+the real-circuit comparison and the results are in `docs/REAL_DATA_CHECK.md`.
+
+**Decision.**
+1. **`validation/build_check.py`** — listed faults (open, short, a value far off, two parts exchanged, a lead
+   one hole over, an LED backwards) made by changing the design's own netlist; for every reading a multimeter
+   can take, the exact range the correct build can give over every part's tolerance box and the rail, and the
+   same for each fault; a smallest *detection plan*, a smallest *identification plan* (also tells apart every
+   pair of faults any reading can), and the *blind spots*, each with its reason; a verdict from readings.
+2. **The guarantee is stated narrowly.** Parts in their boxes, the rail in the range it was read in, the meter
+   within its stated accuracy: a fault the plan detects cannot give readings the correct build could give. The
+   device models are assumed right; unlisted faults are not covered; a capacitor's value is invisible to a
+   multimeter. The arithmetic is checked against ngspice at every corner of every box and at random interior
+   points (`scripts/build_check_oracle.py`, `tests/test_build_check.py`).
+3. **Resistance readings with the power off were added** to the owner's "multimeter DC first". Reason, measured:
+   with voltages alone a two-node divider's faults are noticed but never named (R1 missing and R2 shorted read
+   the same), a short across the rail is invisible to a voltmeter, and a DHT22's pull-up value cannot be seen at
+   all. The same meter's ohm range removes all three, and it is safe: it runs before power is applied.
+4. **A refinement of "reopen D1 as today" — the owner to confirm.** The status stays `unexplained`, as before,
+   and `bench.py` is untouched. But `Verdict.reopens_d1` is false when a power-off resistance reads off: then a
+   *part* is wrong, not the model, and charging D1 would blame a model that was never wrong. D1 reopens only
+   when no listed fault fits **and** every resistance agrees with the design (or none was taken). To restore
+   "as today" exactly, use `status == "unexplained"` instead of `reopens_d1`. Measured (`docs/REAL_DATA_CHECK.md`):
+   none of 2,400 simulated correct boards, per reading set, was charged to D1; a wrong board with one part
+   1.25× or 0.8× off was charged to D1 in 63 % of builds with voltages alone (and missed in the other 37 %) and in
+   0 % with the ohm readings, which said which part reads off instead (99.4 %).
+5. **A short is a range (1 mΩ–1 Ω), a wrong value is a range (more than 1.5× too large, less than ⅔).** A bridge
+   never reads exactly zero; a mis-picked value is not one of a handful of factors. A part closer than 1.5× is
+   reported as a *sensitivity* (`Analysis.min_detectable_factor`), not listed as a fault.
+
+**How it is judged.** Not by itself. ngspice builds the wrongly built boards (random in-tolerance parts, the
+rail, meter error inside its stated accuracy), and the check is given only what a person would give it;
+`scripts/build_check_accuracy.py`. No hardware is involved and none is claimed: this is the model of record
+against itself and a second solver, not against a bench.
+
+**Not claimed.** Nothing here is measured on a board. D1 stays open until `docs/BENCH_D1.md` is done. A
+capacitor's value is invisible to every reading here; use the `rc_timer` sketch. Rail faults are judged against
+an ideal supply. The tolerance boxes are the proofs' — they are datasheet figures nobody has yet verified (D7).

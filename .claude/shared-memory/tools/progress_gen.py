@@ -755,6 +755,19 @@ PLANNED = {
             ("evidence_for",       "function", "What drops D1 on this design; nothing if the family disagrees"),
         ],
     },
+    # decisions.md [2026-10-08]: the build check — did the person wire the design that was drawn?
+    "validation/build_check": {
+        "file": "backend/validation/build_check.py",
+        "test_file": "tests/test_build_check.py",
+        "entries": [
+            ("Meter",             "class",    "A multimeter as its data sheet states it: volts, ohms, input resistance, OL"),
+            ("Probe",             "class",    "One reading: a voltage (powered) or a resistance between two nets (power off)"),
+            ("BuildModel",        "class",    "The design as a person builds it: parts and boxes, nets, what a meter can reach"),
+            ("enumerate_faults",  "function", "Every listed way to build it wrong, as a changed netlist"),
+            ("Analysis",          "class",    "The design and every fault through every reading: plans, blind spots, verdicts"),
+            ("Verdict",           "class",    "as_designed | inconclusive | fault | unexplained — and whether the model is implicated"),
+        ],
+    },
     # [2026-09-25]: live Mouser pricing, optional; never read by validation.
     "pricing/quotes": {
         "file": "backend/pricing/quotes.py",

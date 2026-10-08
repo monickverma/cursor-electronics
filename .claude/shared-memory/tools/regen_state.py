@@ -150,6 +150,8 @@ MODULES = {
     "generators/bom/substitution": {"file": "backend/generators/bom/substitution.py", "test": ["tests/test_substitution.py", "tests/test_bom_route.py"], "phase": 2},
     "api/routes/bom":             {"file": "backend/api/routes/bom.py",             "test": "tests/test_bom_route.py",            "phase": 2},
     "validation/bench":           {"file": "backend/validation/bench.py",           "test": ["tests/test_bench.py", "tests/test_bench_rc_method.py"], "phase": 2},
+    # [2026-10-08]: did the person wire this design? — faults, readings, a plan, a verdict.
+    "validation/build_check":     {"file": "backend/validation/build_check.py",     "test": "tests/test_build_check.py",          "phase": 2},
     # [2026-09-25]: live Mouser pricing, optional; never read by validation.
     "pricing/quotes":             {"file": "backend/pricing/quotes.py",             "test": "tests/test_pricing.py",              "phase": 2},
     "pricing/mouser":             {"file": "backend/pricing/mouser.py",             "test": "tests/test_pricing.py",              "phase": 2},

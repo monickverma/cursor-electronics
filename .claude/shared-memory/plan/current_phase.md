@@ -25,6 +25,23 @@
 >
 > Phase 3 as written is not opened. Alongside, gating nothing: `fieldwork/`.
 
+## Checked against real circuits, and the build check — 2026-10-08 (`brain/decisions.md` [2026-10-08])
+
+The owner asked for two things: the generators and the validator checked against real, published, readable
+circuits, and a validator that tells a correct build from a wrongly built one by physics. Done, and recorded in
+`docs/REAL_DATA_CHECK.md` (method, findings, measured accuracy, what is not claimed):
+
+- `backend/data/reference_designs.json` — 11 real circuits (13 runs: the Modbus bias range is three points), each with its source and how it was read.
+- `scripts/real_data_check.py` — generated vs real, judged by ngspice against criteria from the standards.
+- `backend/validation/build_check.py` — faults, power-off resistance and powered voltage readings, a detection
+  plan and an identification plan, blind spots with reasons, a verdict. Checked against ngspice at every corner.
+- `scripts/build_check_cli.py` — the bench sheets (`docs/BUILD_CHECK_SHEETS.md`) and `diagnose`.
+
+**For the owner:** (1) confirm or reverse `Verdict.reopens_d1` — it keeps D1 closed when a power-off resistance
+reads off ([2026-10-08] item 4); (2) RS-485 bias is sized at the requested rail, not its low end — 523 Ω, TI's
+own value, holds 250 mV at 4.75 V where the generator's 549 Ω gives 240 mV; a generator change is yours to call;
+(3) a bench session would turn every "simulated" in that report into a measurement.
+
 ## The board in 3D — opened 2026-10-06 by the owner (`brain/decisions.md` [2026-10-06])
 
 Goal: an editable 3D board the AI changes through structured operations. Research:
