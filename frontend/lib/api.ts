@@ -6,6 +6,10 @@ function authHeaders(token?: string): Record<string, string> {
   return h
 }
 
+/** A request the producer would not guess at: it names what is missing. The chat keeps the original words and
+ *  adds the answer to them, because a reply of "5 V, 10 mA" on its own describes no circuit. */
+export class UnderdeterminedError extends Error {}
+
 export async function apiPost<T>(path: string, body: unknown, token?: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
@@ -16,6 +20,7 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     const detail = err.detail
     let message: string
+    let underdetermined = false
     if (Array.isArray(detail)) {
       // FastAPI validation error array
       message = detail.map((d: { msg?: string; loc?: string[] }) => `${d.loc?.slice(1).join('.')}: ${d.msg}`).join('; ')
@@ -38,8 +43,10 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
         message = ['No generator accepts that requirement:', ...reasons].join('\n') + kept
       } else if (detail.error === 'underdetermined' && Array.isArray(detail.questions)) {
         // An unanswered question is put back to the user: name what is missing.
+        underdetermined = true
         message = `${detail.message ?? 'The request does not pin these down.'}\n` +
-          (detail.questions as string[]).map(q => `  - ${q}`).join('\n')
+          (detail.questions as string[]).map(q => `  - ${q}`).join('\n') +
+          '\nReply with the missing values and I will add them to your request.'
       } else if (typeof detail.message === 'string') {
         message = detail.message
       } else {
@@ -48,7 +55,7 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
     } else {
       message = detail || `HTTP ${res.status}`
     }
-    throw new Error(message)
+    throw underdetermined ? new UnderdeterminedError(message) : new Error(message)
   }
   return res.json()
 }
