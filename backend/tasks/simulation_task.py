@@ -56,7 +56,10 @@ def run_simulation(self, circuit_id: str, netlist: str, job_id: str, circuit_typ
             "ac_points_count": len(parsed.ac_points),
             # Stage 3: the points themselves, downsampled, for the viewer.
             "waveforms": waveforms_from(parsed),
-            "stdout": result["stdout"][:4000],
+            # The route grades from this text. Cutting it short drops the tail of an
+            # AC sweep (a 9.5 kB RC sweep lost its `out` column at 4000 chars) and
+            # grades a correct design as failed. The cap only guards the result store.
+            "stdout": result["stdout"][:1_000_000],
             "stderr": result["stderr"][:2000],
         }
 
