@@ -105,3 +105,25 @@ async def health():
         "environment": settings.environment,
         "pcb_engine_enabled": settings.pcb_engine_enabled,
     }
+
+
+@app.get("/health/worker")
+async def health_worker():
+    """
+    Is a Celery worker alive to take a simulation? A queued job with no worker
+    stays "queued" forever and nothing else says so. The ping blocks for up to
+    its timeout, so it is its own route, not part of /health (which a platform
+    probes every few seconds). Unauthenticated: it reveals only that a worker
+    answers, never its host names.
+    """
+    from starlette.concurrency import run_in_threadpool
+    from worker import app as celery_app
+
+    def _ping() -> int:
+        return len(celery_app.control.ping(timeout=2.0) or [])
+
+    try:
+        workers = await run_in_threadpool(_ping)
+    except Exception:  # noqa: BLE001 — a broker that is down is an answer, not a crash
+        return {"worker": "unreachable", "workers": 0}
+    return {"worker": "up" if workers else "none", "workers": workers}
