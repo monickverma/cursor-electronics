@@ -26,5 +26,7 @@ if _PKG_DIR not in sys.path:
     sys.path.insert(0, _PKG_DIR)
 
 from compile_board import compile_board, from_netlist, place_constructive  # noqa: E402
+from verify import verify_board, Report, Finding  # noqa: E402
 
-__all__ = ["compile_board", "from_netlist", "place_constructive"]
+__all__ = ["compile_board", "from_netlist", "place_constructive",
+           "verify_board", "Report", "Finding"]

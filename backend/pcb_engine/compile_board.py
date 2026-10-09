@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 import math
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from board_ir import Board, Layer, NetClass
 import footprints
@@ -36,6 +36,7 @@ from kernel import drc, score
 from router import AStarRouter, generate_candidates
 from render_pretty import to_svg
 from scene3d import board_scene
+from verify import verify_board, unrouted_connections
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -183,10 +184,19 @@ class Result:
     stats: dict
     warnings: list[str]
     violations: list[str]
+    # The independent verification report (verify.py). Empty until compile_board
+    # fills it; a caller constructing a Result by hand gets the old behaviour.
+    verification: dict = field(default_factory=dict)
+
+    @property
+    def ok(self) -> bool:
+        """False when a decidable check failed — the board should not ship."""
+        return self.verification.get("ok", True)
 
     def to_dict(self) -> dict:
         return {"stats": self.stats, "warnings": self.warnings,
                 "violations": self.violations, "svg": self.svg,
+                "verification": self.verification,
                 "board": json.loads(self.board.to_json(indent=None)),
                 "scene": board_scene(self.board)}
 
@@ -204,6 +214,12 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
         s = score(b)
 
     vs = drc(b)
+    # The completion count is the independent judge's, not the router's own.
+    # `Board.unrouted()` matches quantisation cells; on the shipped demo board
+    # it reports 4 unrouted where the judge finds 0. `router_unrouted` keeps the
+    # old number visible so the gap is a number, not a rumour.
+    judge = unrouted_connections(b)
+    rep = verify_board(b, netlist)
     stats = {
         "name": b.name,
         "size_mm": [b.outline_w, b.outline_h],
@@ -211,16 +227,21 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
         "pads": len(b.pads()),
         "nets": len(b.nets()),
         "connections": n,
-        "routed": n - s.unrouted,
-        "unrouted": s.unrouted,
+        "routed": n - len(judge),
+        "unrouted": len(judge),
+        "router_unrouted": s.unrouted,
         "drc_errors": s.errors,
         "vias": s.vias,
         "copper_mm": round(s.length_mm, 1),
+        "verified": rep.ok,
+        "proven": rep.proven,
+        "failed_checks": [f.check for f in rep.failed()],
     }
     title = (f"{b.name}   {stats['routed']}/{n} routed   "
              f"{s.errors} DRC errors   {s.vias} vias   {s.length_mm:.0f} mm")
     return Result(b, to_svg(b, scale=22.0, theme=theme, title=title),
-                  stats, warn, [str(v) for v in vs[:20]])
+                  stats, warn, [str(v) for v in vs[:20]],
+                  verification=rep.to_dict())
 
 
 # ─────────────────────────────────────────────────────────────────────────────

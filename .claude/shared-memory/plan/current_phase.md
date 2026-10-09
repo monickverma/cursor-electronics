@@ -42,6 +42,17 @@ reads off ([2026-10-08] item 4); (2) RS-485 bias is sized at the requested rail,
 own value, holds 250 mV at 4.75 V where the generator's 549 Ω gives 240 mV; a generator change is yours to call;
 (3) a bench session would turn every "simulated" in that report into a measurement.
 
+## The board verifier — 2026-10-09 (`brain/decisions.md` [2026-10-09])
+
+The owner asked how far software alone can say a board works in real life. The tree of claims and the
+research are in `reports/Is the board correct - a software-only verification tree.md`; steps 1–4 of its
+Part 5 are built: `pcb_engine/verify.py`, `pcb_engine/land_patterns.json`, `tests/test_pcb_verify.py`, and
+`/pcb/compile` returns the report as `verification`.
+
+**For the owner:** (1) should `/pcb/compile` refuse a board whose report failed, or keep showing it with the
+failure; (2) Gerber export moved forward, with Gerbonara, for step 5; (3) PyPEEC for step 6. Open without a
+decision: every `land_patterns.json` entry is unverified, and no pinout is checked against a datasheet.
+
 ## The board in 3D — opened 2026-10-06 by the owner (`brain/decisions.md` [2026-10-06])
 
 Goal: an editable 3D board the AI changes through structured operations. Research:
