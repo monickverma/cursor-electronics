@@ -1,6 +1,6 @@
 _note: 'DERIVED. Run: python .claude/shared-memory/tools/progress_gen.py'
 _layer: LAYER 4 (Progress) — class/method-level reality
-generated_at: '2026-10-08T03:02:36.369878Z'
+generated_at: '2026-10-09T08:00:45.302206Z'
 project: Circuit OS
 files:
   core/ir_schema:
@@ -382,7 +382,7 @@ files:
         description: Returns (board, warnings). Unknown packages are reported, not
           guessed.
         signature: 'from_netlist(nl: dict) -> tuple[Board, list[str]]'
-        line: 44
+        line: 45
         test_file: tests/test_pcb_placement.py
       place_constructive:
         status: verified_done
@@ -390,7 +390,7 @@ files:
         description: Seed with the largest package, then insert each part at the legal
           grid
         signature: 'place_constructive(b: Board, margin: float, step: float) -> Board'
-        line: 131
+        line: 132
         test_file: tests/test_pcb_placement.py
       compile_board:
         status: verified_done
@@ -398,7 +398,7 @@ files:
         description: 'Main entry: netlist → placed + routed board'
         signature: 'compile_board(netlist: dict, candidates: int, theme: str, grid:
           float) -> Result'
-        line: 194
+        line: 204
         test_file: tests/test_pcb_placement.py
     module_status: done
   pcb_engine/router:
@@ -567,6 +567,28 @@ files:
         line: 179
         test_file: tests/test_pcb_scene3d.py
     module_status: done
+  pcb_engine/verify:
+    file: backend/pcb_engine/verify.py
+    exists: true
+    test_file: tests/test_pcb_verify.py
+    test_file_status: passing
+    entries:
+      verify_board:
+        status: verified_done
+        type: function
+        description: Board IR + netlist → Report; every check carries its rung, unchecked
+          is unknown
+        signature: 'verify_board(board: Board, netlist: dict | None) -> Report'
+        line: 629
+        test_file: tests/test_pcb_verify.py
+      unrouted_connections:
+        status: verified_done
+        type: function
+        description: Required connections with no copper joining their pads.
+        signature: 'unrouted_connections(board: Board) -> list'
+        line: 282
+        test_file: tests/test_pcb_verify.py
+    module_status: done
   generators/pcb_netlist:
     file: backend/generators/netlist/pcb.py
     exists: true
@@ -599,7 +621,7 @@ files:
         type: function
         description: POST /pcb/compile → runs layout engine in-process
         signature: 'compile_pcb(request: Request, body: CompileRequest, user)'
-        line: 64
+        line: 68
         test_file: null
     module_status: in_progress
   observability/request_log:
@@ -2751,10 +2773,10 @@ files:
         test_file: *id018
     module_status: done
 summary:
-  entries_total: 283
-  entries_verified_done: 265
+  entries_total: 285
+  entries_verified_done: 267
   entries_broken: 0
   entries_stub: 0
   entries_untested: 18
   entries_not_started: 0
-  pct_verified: 93.6
+  pct_verified: 93.7
