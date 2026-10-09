@@ -91,7 +91,8 @@ cursor-electronics/
 │   ├── pcb_engine/                 # EXPERIMENTAL — A* router, DRC, footprints, SVG
 │   │                               # placement tested; routing is not
 │   │   ├── board_ir.py             # THE layout contract — the board's source of truth
-│   │   └── scene3d.py              # Board IR → 3D scene (bodies per package, DRC, ratsnest)
+│   │   ├── scene3d.py              # Board IR → 3D scene (bodies per package, DRC, ratsnest)
+│   │   └── verify.py               # The independent judge of a compiled board; each check on its rung (2026-10-09)
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate),
