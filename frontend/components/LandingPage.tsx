@@ -21,6 +21,8 @@ interface Props {
 
 const DEMO_URL =
   'https://drive.google.com/drive/folders/1GkFsTZ7xmXJsFuvLrNU-J_l4yDbeylfo?usp=sharing'
+const REPO_URL = 'https://github.com/monickverma/cursor-electronics'
+const DOCS_URL = `${REPO_URL}#readme`
 
 const TEMPLATES = [
   {
@@ -297,6 +299,8 @@ export default function LandingPage({ onGetStarted }: Props) {
           <a href="#templates" className={styles.ulink}>templates</a>
           <a href="#included" className={styles.ulink}>included</a>
           <a href="#explanation" className={styles.ulink}>explanation</a>
+          <a href={DOCS_URL} className={styles.ulink} target="_blank" rel="noopener noreferrer">docs</a>
+          <a href={REPO_URL} className={styles.ulink} target="_blank" rel="noopener noreferrer">github</a>
         </span>
         <span className={styles.navTag}>ai hardware compiler</span>
         <span className={styles.navCta}>
@@ -475,6 +479,12 @@ export default function LandingPage({ onGetStarted }: Props) {
               <span className={styles.rule} data-rule><i /></span>
               <span className={styles.fLabel}>Elsewhere</span>
               <div className={styles.fList} style={{ marginTop: 0 }}>
+                <a className={styles.ulink} href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+                  Docs
+                </a>
+                <a className={styles.ulink} href={REPO_URL} target="_blank" rel="noopener noreferrer">
+                  GitHub
+                </a>
                 <a className={styles.ulink} href={DEMO_URL} target="_blank" rel="noopener noreferrer">
                   Demo video
                 </a>
@@ -484,7 +494,7 @@ export default function LandingPage({ onGetStarted }: Props) {
               <span className={styles.rule} data-rule><i /></span>
               <span className={styles.fLabel}>Status</span>
               <div className={styles.fList} style={{ marginTop: 0 }}>
-                <span>Phase 1 · v0.1.0-rc · MIT</span>
+                <span>Phase 1 · v0.1.0-rc · AGPL-3.0</span>
               </div>
             </div>
           </div>
