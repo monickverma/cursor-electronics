@@ -230,6 +230,15 @@ PLANNED = {
             ("drill_for",      "function", "Through-hole drill from pad size and annular ring"),
         ],
     },
+    # decisions.md [2026-10-09] — the independent judge of a compiled board.
+    "pcb_engine/verify": {
+        "file": "backend/pcb_engine/verify.py",
+        "test_file": "tests/test_pcb_verify.py",
+        "entries": [
+            ("verify_board",         "function", "Board IR + netlist → Report; every check carries its rung, unchecked is unknown"),
+            ("unrouted_connections", "function", "Required connections with no copper path, by union-find over the copper"),
+        ],
+    },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
         "test_file": "tests/test_pcb_placement.py",

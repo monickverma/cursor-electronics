@@ -53,6 +53,10 @@ class CompileResponse(BaseModel):
     stats: dict
     warnings: list[str]
     violations: list[str]
+    # The independent verification report (pcb_engine/verify.py): every check,
+    # the rung it stands on, and whether generation should emit or refuse.
+    # decisions.md [2026-10-09].
+    verification: dict = Field(default_factory=dict)
     # The routed Board IR (pcb_engine/board_ir.py) — the source of truth — and
     # the 3D scene derived from it (pcb_engine/scene3d.py). decisions.md [2026-10-06].
     board: dict
@@ -103,6 +107,7 @@ async def compile_pcb(
         stats=out["stats"],
         warnings=out["warnings"],
         violations=out["violations"],
+        verification=out.get("verification", {}),
         board=out["board"],
         scene=out["scene"],
     )

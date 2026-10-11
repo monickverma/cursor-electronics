@@ -145,6 +145,8 @@
 
 **2026-10-05** — The explanation leaves the request (uncommitted at this entry): `api/routes/explanation.py` + `tasks/explain_task.py`, `GET /design/{id}/explanation`, stored once written; generate returns in ~10 s, explanation lands at ~80 s. Both modules registered in the trackers; suite 2519 passing / 0 failing / 32 skipped. Not yet run against a real worker.
 
+**2026-10-09** — The board verifier (`brain/decisions.md` [2026-10-09]): `pcb_engine/verify.py` judges a compiled board independently of the router and puts every check on a rung; an unchecked thing is unknown, never passed. `compile_board` reports the judge's routed count — the shipped DHT22 board reads fully routed where the router's cell comparison counted four connections open. Gerber read-back and parasitics are not built.
+
 ---
 
 ## Upcoming

@@ -2727,3 +2727,43 @@ against itself and a second solver, not against a bench.
 **Not claimed.** Nothing here is measured on a board. D1 stays open until `docs/BENCH_D1.md` is done. A
 capacitor's value is invisible to every reading here; use the `rc_timer` sketch. Rail faults are judged against
 an ideal supply. The tolerance boxes are the proofs' — they are datasheet figures nobody has yet verified (D7).
+
+---
+
+## [2026-10-09] The board verifier — a second opinion on the compiled board, each check on its rung
+
+**Context.** The owner, 2026-10-09: *"I only want one thing: what my software does is also working in real
+life"*, broken top-down into smaller claims, checked in software as far as software reaches, with ranked
+guarantees, inside Circuit OS at generation time. The research and the tree of claims are in
+`reports/Is the board correct - a software-only verification tree.md`; this entry records what was built from
+its Part 5, steps 1–4. Written after the code (the session that built it ended before recording it).
+
+**Decision.**
+1. **`pcb_engine/verify.py::verify_board(board, netlist) -> Report`.** Authored against the Board IR, never
+   against the router. Every finding carries a rung — `exact`, `sound`, `bounded`, `evidence`, `unknown` — and
+   a check that cannot decide reports `unknown` and names what is missing. It never reports a pass.
+2. **The completion count is the judge's.** `compile_board` reports `unrouted_connections` (union-find over
+   the copper, contact within 0.06 mm) as `routed` / `unrouted`, and keeps the router's own figure as
+   `stats["router_unrouted"]`. `Board.unrouted()` compares quantisation cells, not distances; it is left as it
+   is because `scene3d.py` and `kernel.score` read it and the golden fixtures move with it.
+3. **Exact failures:** an unrouted connection, two nets touching, a pad the netlist names left without a net,
+   two pins on one pad, a courtyard outside the outline or over another, unequal pad copper on a two-terminal
+   SMD part. **Unknown:** a pin label with no declared pinout (the SOT-23 class — placed on the first free
+   pad, unchecked against the part).
+4. **`pcb_engine/land_patterns.json` is a registry, not ground truth.** It is written outside
+   `footprints.py`, so it can disagree and the check fails when it does; every entry is `verified: false`, so
+   an agreement is `evidence` at best. Filling it from datasheets is D7's kind of work and is not done.
+5. **`ok` is not `proven`.** `Report.ok` — no decidable check failed. `Report.proven` — nothing is unknown.
+   Parasitics, signal and power integrity, EMC, whether the circuit itself is right, and the environment are
+   emitted as unknowns on every call, so `proven` is false for every board today. `POST /pcb/compile` returns
+   the report as `verification`.
+
+**Not decided — the owner's.** (a) `Result.ok` and `Report.gate()` exist, and nothing refuses yet:
+`/pcb/compile` still returns a board whose report failed. Refusing changes what the experimental tab shows.
+(b) Step 5, the copper read back from the fabrication files, needs Gerber export, which is Phase 4 scope
+(owner's call 1 in `plan/current_phase.md`), and Gerbonara. (c) Step 6, parasitics back into the circuit,
+needs PyPEEC and a capacitance extractor. New dependencies are approved by the owner before they are added.
+
+**Not claimed.** Nothing here is checked against a manufactured board. The verifier and the generator share
+the Board IR and `footprints.PINMAPS`: a wrong pinout declared there is wrong in both and passes.
+

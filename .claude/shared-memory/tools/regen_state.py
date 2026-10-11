@@ -88,6 +88,7 @@ MODULES = {
     "pcb_engine/router":       {"file": "backend/pcb_engine/router.py",             "test": None,                               "phase": 3},
     "pcb_engine/render_pretty":{"file": "backend/pcb_engine/render_pretty.py",      "test": None,                               "phase": 3},
     "pcb_engine/scene3d":      {"file": "backend/pcb_engine/scene3d.py",            "test": "tests/test_pcb_scene3d.py",        "phase": 3},
+    "pcb_engine/verify":       {"file": "backend/pcb_engine/verify.py",             "test": "tests/test_pcb_verify.py",         "phase": 3},
     "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": "tests/test_pcb_route.py",          "phase": 3},
 

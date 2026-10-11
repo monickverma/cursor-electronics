@@ -1,0 +1,46 @@
+{
+  "_schema": {
+    "what": "An external ground truth for the land pattern a package is supposed to have. verify.py compares the geometry footprints.py generates against this file. The file exists so that the claim 'this footprint is correct' has a place to live that is not the code that makes the footprint.",
+    "fields": {
+      "pad_count": "Number of copper pads. Checked exactly against the generated footprint.",
+      "pitch_mm": "Pad centre-to-centre pitch, when the package has one repeating pitch. null to skip.",
+      "row_mm": "Row-to-row spacing for two-row packages (DIP/SOIC). null to skip.",
+      "source": "Where the numbers came from. Empty string means nobody has supplied an external figure yet.",
+      "verified": "true only when source names a real, checked figure (datasheet table, IPC-7351B, KiCad library). false = self-declared."
+    },
+    "how_to_use": "Add or correct an entry when a part's real land pattern is established. verified:true is a person's claim and should name its source exactly. Until then the check reports 'evidence/unknown', never 'pass'.",
+    "why_not_more": "Rung IV of the verification tree. No free tool checks pin numbering or land geometry against a real part; the strongest honest claim available in software is 'the code matches a figure we wrote down', which is not the same as 'the figure is right'."
+  },
+
+  "_note_on_provenance": "Every entry below is verified:false. The pad counts and pitches are read back from footprints.py's own comments and geometry, so they confirm the code is self-consistent and nothing more. Setting verified:true requires an external figure for that specific package.",
+
+  "_table_note": "exception_to_footprints_py: where an entry's numbers disagree with footprints.py, the check FAILS and names the package. That is the point — the table is written to be able to disagree.",
+
+  "0402":      {"pad_count": 2, "pitch_mm": 0.95, "row_mm": null, "source": "", "verified": false},
+  "0603":      {"pad_count": 2, "pitch_mm": 1.55, "row_mm": null, "source": "", "verified": false},
+  "0805":      {"pad_count": 2, "pitch_mm": 1.90, "row_mm": null, "source": "", "verified": false},
+  "1206":      {"pad_count": 2, "pitch_mm": 3.00, "row_mm": null, "source": "", "verified": false},
+  "1210":      {"pad_count": 2, "pitch_mm": 3.00, "row_mm": null, "source": "", "verified": false},
+  "SOD-123":   {"pad_count": 2, "pitch_mm": 3.27, "row_mm": null, "source": "", "verified": false},
+  "SOT-23":    {"pad_count": 3, "pitch_mm": 0.95, "row_mm": null, "source": "", "verified": false},
+  "SOIC-8":    {"pad_count": 8, "pitch_mm": 1.27, "row_mm": 5.40, "source": "", "verified": false},
+  "SOIC-14":   {"pad_count": 14, "pitch_mm": 1.27, "row_mm": 5.40, "source": "", "verified": false},
+  "SOIC-16":   {"pad_count": 16, "pitch_mm": 1.27, "row_mm": 5.40, "source": "", "verified": false},
+  "DIP-8":     {"pad_count": 8, "pitch_mm": 2.54, "row_mm": 7.62, "source": "", "verified": false},
+  "DIP-14":    {"pad_count": 14, "pitch_mm": 2.54, "row_mm": 7.62, "source": "", "verified": false},
+  "DIP-16":    {"pad_count": 16, "pitch_mm": 2.54, "row_mm": 7.62, "source": "", "verified": false},
+  "DIP-28":    {"pad_count": 28, "pitch_mm": 2.54, "row_mm": 7.62, "source": "", "verified": false},
+  "DIP-40":    {"pad_count": 40, "pitch_mm": 2.54, "row_mm": 15.24, "source": "", "verified": false},
+  "TO-92":     {"pad_count": 3, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "TO-220":    {"pad_count": 3, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "DO-41":     {"pad_count": 2, "pitch_mm": 10.16, "row_mm": null, "source": "", "verified": false},
+  "AXIAL":     {"pad_count": 2, "pitch_mm": 10.16, "row_mm": null, "source": "", "verified": false},
+  "RADIAL-2":  {"pad_count": 2, "pitch_mm": 5.08, "row_mm": null, "source": "", "verified": false},
+  "HEADER-2":  {"pad_count": 2, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "HEADER-3":  {"pad_count": 3, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "HEADER-4":  {"pad_count": 4, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "HEADER-5":  {"pad_count": 5, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "HEADER-6":  {"pad_count": 6, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "DHT22":     {"pad_count": 4, "pitch_mm": 2.54, "row_mm": null, "source": "", "verified": false},
+  "RELAY-SRD": {"pad_count": 5, "pitch_mm": null, "row_mm": null, "source": "", "verified": false}
+}
