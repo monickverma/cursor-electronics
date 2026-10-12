@@ -1,0 +1,22 @@
+[
+ {
+  "slug": "rc-lowpass",
+  "prompt": "RC low-pass filter with a 1 kHz cutoff on a 5 V supply"
+ },
+ {
+  "slug": "voltage-divider",
+  "prompt": "Voltage divider stepping 5 V down to 3.3 V"
+ },
+ {
+  "slug": "led-indicator",
+  "prompt": "Arduino Uno driving a status LED at 10 mA"
+ },
+ {
+  "slug": "rs485-modbus",
+  "prompt": "Arduino Uno + MAX485 RS-485 Modbus RTU master"
+ },
+ {
+  "slug": "room-monitor",
+  "prompt": "Room monitor: an Uno reads a DHT22, sounds a buzzer above 30 °C, and lights a status LED"
+ }
+]

@@ -2,6 +2,8 @@
 
 **Describe a circuit in plain English → get a validated schematic, Arduino firmware, a SPICE simulation, a bill of materials, and an explanation of every design choice.**
 
+**Live demo: [circuit-os-ecru.vercel.app](https://circuit-os-ecru.vercel.app)** — runs in demo mode: five recorded designs (schematic, firmware, SPICE, BOM, validation) produced by the real deterministic pipeline via [`scripts/build_demo_fixtures.py`](scripts/build_demo_fixtures.py). Free-text design needs the backend; see [SETUP.md](SETUP.md).
+
 Circuit OS is an AI hardware compiler. It runs on Claude or on **open models served by vLLM on AMD ROCm GPUs** — see [docs/AMD.md](docs/AMD.md).
 
 ## The one rule

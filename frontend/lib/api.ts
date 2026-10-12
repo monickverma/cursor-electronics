@@ -1,4 +1,11 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { DEMO_MODE, demoRequest } from './demo'
+
+// localhost only in `next dev`: in a deployed page it is the visitor's machine.
+// A production build with no API URL runs in demo mode (lib/demo.ts) instead.
+const BASE = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '')
+
+export { DEMO_MODE }
 
 function authHeaders(token?: string): Record<string, string> {
   const h: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -11,6 +18,7 @@ function authHeaders(token?: string): Record<string, string> {
 export class UnderdeterminedError extends Error {}
 
 export async function apiPost<T>(path: string, body: unknown, token?: string): Promise<T> {
+  if (DEMO_MODE) return demoRequest<T>('POST', path, body)
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
     headers: authHeaders(token),
@@ -61,6 +69,7 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
 }
 
 export async function apiGet<T>(path: string, token?: string): Promise<T> {
+  if (DEMO_MODE) return demoRequest<T>('GET', path)
   const res = await fetch(`${BASE}${path}`, { headers: authHeaders(token) })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
@@ -484,6 +493,7 @@ export async function compilePCB(
 }
 
 export async function login(email: string, password: string): Promise<{ access_token: string }> {
+  if (DEMO_MODE) return demoRequest('POST', '/auth/login')
   const res = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -507,6 +517,7 @@ export interface HealthResponse {
 // a tab wired to an unreachable backend is the same dead click as a tab wired
 // to a disabled route.
 export async function fetchHealth(): Promise<HealthResponse> {
+  if (DEMO_MODE) return demoRequest('GET', '/health')
   const res = await fetch(`${BASE}/health`)
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`)
   return res.json()

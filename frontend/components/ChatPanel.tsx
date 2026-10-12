@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { generateDesign, patchDesign, login, register, UnderdeterminedError, GenerateResponse, PatchResponse } from '@/lib/api'
+import { DEMO_MODE, DEMO_PROMPTS } from '@/lib/demo'
 
 interface Message {
   role: 'user' | 'assistant' | 'error'
@@ -55,15 +56,15 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
     }
   }
 
-  async function handleSend() {
-    const text = input.trim()
+  async function handleSend(override?: string) {
+    const text = (override ?? input).trim()
     if (!text || loading) return
     setInput('')
     setMessages(prev => [...prev, { role: 'user', text, timestamp: new Date() }])
     setLoading(true)
     try {
       let res: GenerateResponse | PatchResponse
-      if (currentCircuitId && messages.length > 0) {
+      if (currentCircuitId && messages.length > 0 && !DEMO_MODE) {
         res = await patchDesign(currentCircuitId, text, token)
         const p = res as PatchResponse
         const delta = p.predict_delta?.length ? `\n\nPredicted: ${p.predict_delta.join('; ')}` : ''
@@ -181,13 +182,14 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
         {messages.length === 0 && (
           <div style={{ paddingTop: '0.5rem' }}>
             <p style={{ fontSize: 'var(--body-xs)', color: 'var(--text-muted-light)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>
-              Try an example
+              {DEMO_MODE ? 'Recorded examples — click to open' : 'Try an example'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {EXAMPLES.map((ex, i) => (
                 <button
                   key={i}
-                  onClick={() => setInput(ex)}
+                  // In demo mode an example is a recording: open it at once.
+                  onClick={() => (DEMO_MODE ? handleSend(ex) : setInput(ex))}
                   style={{
                     textAlign: 'left',
                     fontSize: 'var(--body-xs)',
@@ -234,13 +236,40 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
           background: 'var(--lumen)',
         }}
       >
+        {DEMO_MODE && messages.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+            {EXAMPLES.map((ex, i) => (
+              <button
+                key={i}
+                onClick={() => handleSend(ex)}
+                disabled={loading}
+                title={ex}
+                style={{
+                  fontSize: 11,
+                  color: 'var(--text-muted-light)',
+                  background: 'white',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 100,
+                  padding: '3px 10px',
+                  cursor: 'pointer',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {ex.length > 42 ? `${ex.slice(0, 40)}…` : ex}
+              </button>
+            ))}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
           <textarea
             ref={textareaRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder={currentCircuitId ? 'Request a change…' : 'Describe your circuit…'}
+            placeholder={DEMO_MODE ? 'Pick a recorded example…' : currentCircuitId ? 'Request a change…' : 'Describe your circuit…'}
             rows={1}
             disabled={loading}
             className="input-light"
@@ -252,7 +281,7 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
             }}
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={loading || !input.trim()}
             className="btn-amber"
             style={{ padding: '9px 16px', flexShrink: 0 }}
@@ -261,7 +290,9 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
           </button>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-muted-light)', marginTop: 6 }}>
-          Enter to send · Shift+Enter for newline
+          {DEMO_MODE
+            ? 'Demo mode: only the recorded examples above can be opened.'
+            : 'Enter to send · Shift+Enter for newline'}
         </p>
       </div>
     </div>
@@ -365,10 +396,13 @@ function TypingIndicator() {
   )
 }
 
-const EXAMPLES = [
+const LIVE_EXAMPLES = [
   'Temperature sensor with DHT22, alert relay above 40°C',
   'Arduino + MAX485 RS-485 Modbus RTU master, 9600 baud',
   'LED blink with current-limiting resistor',
   'RC low-pass filter with 1kHz cutoff',
   'Voltage divider stepping 12V down to 5V',
 ]
+
+// Demo mode offers exactly the prompts that have recordings (lib/demo/prompts.json).
+const EXAMPLES = DEMO_MODE ? DEMO_PROMPTS : LIVE_EXAMPLES

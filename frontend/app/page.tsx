@@ -11,6 +11,7 @@ import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
 import PCBViewer from '@/components/PCBViewer'
 import { GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth } from '@/lib/api'
+import { DEMO_MODE, REPO_URL } from '@/lib/demo'
 
 const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
 
@@ -74,7 +75,8 @@ export default function Home() {
 
   // Show marketing page until user explicitly clicks "Get started" or is already logged in
   if (!token && !showApp) {
-    return <LandingPage onGetStarted={() => setShowApp(true)} />
+    // Demo mode has no accounts to sign in to: straight to the examples.
+    return <LandingPage onGetStarted={() => { setShowApp(true); if (DEMO_MODE) setToken('demo') }} />
   }
 
   return (
@@ -111,6 +113,7 @@ export default function Home() {
           <p style={{ fontSize: 'var(--body-xs)', color: 'var(--text-muted-light)', marginTop: 2 }}>
             AI hardware compiler
           </p>
+          {DEMO_MODE && <DemoBadge />}
         </div>
 
         {/* Chat */}
@@ -180,6 +183,22 @@ export default function Home() {
               </button>
             )
           })}
+          {DEMO_MODE && (
+            <span
+              style={{
+                marginLeft: 'auto',
+                alignSelf: 'center',
+                fontSize: 11,
+                color: '#f5c26b',
+                border: '1px solid #f5c26b',
+                borderRadius: 100,
+                padding: '2px 10px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Demo mode — recorded results
+            </span>
+          )}
         </div>
 
         {/* Output content */}
@@ -234,6 +253,33 @@ export default function Home() {
   )
 }
 
+function DemoBadge() {
+  return (
+    <div
+      role="status"
+      style={{
+        marginTop: 10,
+        padding: '8px 10px',
+        borderRadius: 'var(--r-sm)',
+        background: '#fff7e6',
+        border: '1px solid #f5c26b',
+        fontSize: 'var(--body-xs)',
+        color: '#7a4b00',
+        lineHeight: 1.5,
+      }}
+    >
+      <strong style={{ fontWeight: 600 }}>Demo mode — recorded results.</strong>{' '}
+      No backend is attached to this deployment. The examples below are real outputs of the
+      deterministic pipeline (generator, ngspice, PlatformIO, BOM), recorded locally; the
+      requirement was entered through the form, not the LLM.{' '}
+      <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>
+        Run it locally
+      </a>{' '}
+      to describe your own circuit.
+    </div>
+  )
+}
+
 function EmptyState() {
   return (
     <div
@@ -259,7 +305,7 @@ function EmptyState() {
           }}
         >
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--glow)', display: 'inline-block' }} />
-          Ready
+          {DEMO_MODE ? 'Demo mode — recorded results' : 'Ready'}
         </div>
 
         <h2
@@ -281,8 +327,9 @@ function EmptyState() {
             marginBottom: '2rem',
           }}
         >
-          Type a description in the chat panel. Circuit OS generates a validated
-          schematic, firmware, SPICE simulation, and BOM.
+          {DEMO_MODE
+            ? 'Pick an example in the chat panel to open its recorded schematic, firmware, SPICE simulation, BOM and validation.'
+            : 'Type a description in the chat panel. Circuit OS generates a validated schematic, firmware, SPICE simulation, and BOM.'}
         </p>
 
         {/* Feature pills */}
