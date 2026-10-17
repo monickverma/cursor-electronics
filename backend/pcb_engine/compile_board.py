@@ -70,7 +70,7 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
                         f"Supply \"package\" explicitly.")
             continue
         try:
-            comp = footprints.build(ref, pkg, pins, warnings=warn)
+            comp = footprints.build(ref, pkg, pins, warnings=warn, mpn=mpn)
         except KeyError as e:
             warn.append(f"{ref}: {e}")
             continue
@@ -215,9 +215,10 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
 
     vs = drc(b)
     # The completion count is the independent judge's, not the router's own.
-    # `Board.unrouted()` matches quantisation cells; on the shipped demo board
-    # it reports 4 unrouted where the judge finds 0. `router_unrouted` keeps the
-    # old number visible so the gap is a number, not a rumour.
+    # `router_unrouted` is the router's (kernel.open_connections), kept visible
+    # beside it: two implementations of one question, so any disagreement is a
+    # bug in one of them. Until 2026-10-17 the router matched quantisation cells
+    # and reported 4 of 12 open on the shipped board where the judge found 0.
     judge = unrouted_connections(b)
     rep = verify_board(b, netlist)
     stats = {
