@@ -19,13 +19,20 @@ candidates you have a random number generator, not an optimiser.
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from dataclasses import dataclass, field
 
-from board_ir import Board, Pad, Track, Via, Point
+from board_ir import Board, Connection, Pad, Track, Via, Point
 
 # Cheapest common fab process limits (2-layer/4-layer, 1 oz). Rules, not targets.
 MIN_FAB_WIDTH = 0.127      # 5 mil
 MIN_FAB_CLEARANCE = 0.127
+
+# Copper closer than this is one piece. Below any fab's minimum feature, so a
+# gap this small is not a gap a board house can make. verify.py states the same
+# number independently; the two must agree or the judge and the router disagree
+# about what "connected" means.
+CONTACT_TOL = 0.06
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,6 +68,30 @@ def seg_rect_dist(a: Point, b: Point, rect: tuple[float, float, float, float]) -
         if x0 <= p[0] <= x1 and y0 <= p[1] <= y1:
             return 0.0
     return min(seg_seg_dist(a, b, corners[i], corners[(i + 1) % 4]) for i in range(4))
+
+
+def _pad_point_dist(pad: Pad, p: Point) -> float:
+    """Distance from a point to a pad's copper; zero inside it. Only 'round' is
+    a disc — 'th' pads are drawn square in this IR."""
+    if pad.shape == "round":
+        return max(0.0, math.dist(p, pad.center) - max(pad.w, pad.h) / 2)
+    return seg_rect_dist(p, p, pad.bbox())
+
+
+def _pad_seg_dist(pad: Pad, a: Point, b: Point) -> float:
+    """Distance from a segment centreline to a pad's copper."""
+    if pad.shape == "round":
+        return max(0.0, _seg_point_dist(a, b, pad.center) - max(pad.w, pad.h) / 2)
+    return seg_rect_dist(a, b, pad.bbox())
+
+
+def _pad_pad_gap(p: Pad, q: Pad) -> float:
+    if p.shape == "round":
+        return max(0.0, _pad_point_dist(q, p.center) - max(p.w, p.h) / 2)
+    if q.shape == "round":
+        return _pad_pad_gap(q, p)
+    x0, y0, x1, y1 = p.bbox(); X0, Y0, X1, Y1 = q.bbox()
+    return math.hypot(max(X0 - x1, 0.0, x0 - X1), max(Y0 - y1, 0.0, y0 - Y1))
 
 
 def _segments(t: Track):
@@ -103,7 +134,14 @@ def drc(board: Board, edge_clearance: float = 0.3) -> list[Violation]:
     pads = board.pads()
 
     # ── 1. track ↔ track, different nets, same layer ──
-    boxes = [_bbox_of(t, t.width) for t in tracks]
+    # Each box grows by its own half-width plus its own class clearance, so the
+    # two paddings sum to w1/2 + w2/2 + c1 + c2 — never less than the
+    # max(c1, c2) + w1/2 + w2/2 a pair needs. Padding by the width alone (as
+    # this did until 2026-10-17) culled every pair whose clearance exceeded
+    # (w1 + w2) / 2 before it was ever measured: 0.2 mm tracks at a 0.25 mm
+    # clearance could sit 0.42 mm apart and report no violation.
+    boxes = [_bbox_of(t, t.width / 2 + board.net_class_for(t.net).clearance)
+             for t in tracks]
     for i, t1 in enumerate(tracks):
         c1 = board.net_class_for(t1.net)
         for j in range(i + 1, len(tracks)):
@@ -167,6 +205,35 @@ def drc(board: Board, edge_clearance: float = 0.3) -> list[Violation]:
                         (via.x, via.y), (via.net, t.net), d, need))
                     break
 
+    # ── 3b. via ↔ pad and via ↔ via, different nets ──
+    # A via is plated through, so it meets a pad on EITHER layer. Until
+    # 2026-10-17 the kernel had no rule here at all: the router put an RS485_A
+    # via 0.035 mm from an RS485_B pad, the board scored zero DRC errors, and
+    # only verify.py's III.2 saw the short.
+    for k, via in enumerate(board.vias):
+        cl = board.net_class_for(via.net).clearance
+        for p in pads:
+            if p.net == via.net:
+                continue
+            need = max(cl, board.net_class_for(p.net).clearance) + via.diameter / 2
+            d = _pad_point_dist(p, (via.x, via.y))
+            if d < need:
+                v.append(Violation(
+                    "clearance.via_pad", "error",
+                    f"via {via.net} vs pad {p.ref}.{p.pin} ({p.net})",
+                    (via.x, via.y), (via.net, p.net), d, need))
+        for other in board.vias[k + 1:]:
+            if other.net == via.net:
+                continue
+            need = (max(cl, board.net_class_for(other.net).clearance)
+                    + via.diameter / 2 + other.diameter / 2)
+            d = math.dist((via.x, via.y), (other.x, other.y))
+            if d < need:
+                v.append(Violation(
+                    "clearance.via_via", "error",
+                    f"via {via.net} vs via {other.net}",
+                    (via.x, via.y), (via.net, other.net), d, need))
+
     # ── 4. keepout intrusion ──
     for k in board.keepouts:
         rect = (k.x, k.y, k.x + k.w, k.y + k.h)
@@ -225,6 +292,88 @@ def drc(board: Board, edge_clearance: float = 0.3) -> list[Violation]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Connectivity — which required connections copper actually joins
+# ─────────────────────────────────────────────────────────────────────────────
+def _touch(ka: str, a, kb: str, b, tol: float) -> bool:
+    """Do two pieces of one net's copper make contact? Measured copper edge to
+    copper edge: a track is its centreline swept by half its width, a via a disc
+    through every layer, a pad a rectangle (or disc) on its own layer."""
+    if ka > kb:                                  # canonical order: pad, track, via
+        ka, a, kb, b = kb, b, ka, a
+    if ka == "pad" and kb == "pad":
+        meet = a.shape == "th" or b.shape == "th" or a.layer == b.layer
+        return meet and _pad_pad_gap(a, b) <= tol
+    if ka == "pad" and kb == "track":
+        if a.shape != "th" and a.layer != b.layer:
+            return False
+        return any(_pad_seg_dist(a, *s) <= b.width / 2 + tol for s in _segments(b))
+    if ka == "pad" and kb == "via":
+        return _pad_point_dist(a, (b.x, b.y)) <= b.diameter / 2 + tol
+    if ka == "track" and kb == "track":
+        if a.layer != b.layer:
+            return False
+        reach = a.width / 2 + b.width / 2 + tol
+        return any(seg_seg_dist(*s, *r) <= reach
+                   for s in _segments(a) for r in _segments(b))
+    if ka == "track" and kb == "via":
+        return any(_seg_point_dist(*s, (b.x, b.y)) <= a.width / 2 + b.diameter / 2 + tol
+                   for s in _segments(a))
+    return math.dist((a.x, a.y), (b.x, b.y)) <= (a.diameter + b.diameter) / 2 + tol
+
+
+def open_connections(board: Board, tol: float = CONTACT_TOL) -> list[Connection]:
+    """Required connections whose two pads no copper of their net joins.
+
+    Union-find over each net's pads, tracks and vias. It has to be connectivity,
+    not endpoint matching: the router splits one run into several tracks (the
+    neck-down at each pad), its endpoints land wherever the grid rounded them,
+    and two stubs that each touch a pad but not each other are not a connection.
+    The endpoint-cell matching this replaces (2026-10-17) reported 4 of 12
+    connections open on the shipped dht22_relay_monitor board while every one
+    was joined — and with `Weights.unrouted` at 1000 that phantom count, not the
+    board, decided which candidate won.
+
+    Only same-net copper is joined here; copper of two nets touching is a short,
+    which is DRC's business and verify.py's, not this count's."""
+    pairs = board.required_pairs()
+    if not pairs:
+        return []
+    want = {a.net for a, _ in pairs}
+    items: dict[str, list[tuple[str, object]]] = defaultdict(list)
+    for p in board.pads():
+        if p.net in want:
+            items[p.net].append(("pad", p))
+    for t in board.tracks:
+        if t.net in want:
+            items[t.net].append(("track", t))
+    for v in board.vias:
+        if v.net in want:
+            items[v.net].append(("via", v))
+
+    root: dict[int, int] = {}                    # id(pad) -> its copper group
+    for its in items.values():
+        parent = list(range(len(its)))
+
+        def find(x: int) -> int:
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+
+        for i in range(len(its)):
+            for j in range(i + 1, len(its)):
+                if find(i) != find(j) and _touch(*its[i], *its[j], tol):
+                    parent[find(j)] = find(i)
+        for i, (k, o) in enumerate(its):
+            if k == "pad":
+                root[id(o)] = find(i)
+
+    # Groups are numbered per net, but both pads of a pair share one.
+    return [Connection(a.net, a.center, b.center)
+            for a, b in pairs if root[id(a)] != root[id(b)]]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Scoring — the total order over candidates
 # ─────────────────────────────────────────────────────────────────────────────
 @dataclass
@@ -276,7 +425,7 @@ def score(board: Board, w: Weights | None = None,
     vs = violations if violations is not None else drc(board)
     errors = sum(1 for x in vs if x.severity == "error")
     warnings = len(vs) - errors
-    unrouted = len(board.unrouted())
+    unrouted = len(open_connections(board))
     length = sum(t.length() for t in board.tracks)
     layers = len({t.layer for t in board.tracks})
     skew = diff_pair_skew(board)

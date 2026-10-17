@@ -185,9 +185,11 @@ def test_room_monitor_keeps_every_part(routed_room):
 
 
 def test_sot23_transistor_is_wired_by_its_pinout():
-    """1 base, 2 emitter, 3 collector — not the order the pins were listed in."""
+    """1 base, 2 emitter, 3 collector for the MMBT2222A — not the order the pins
+    were listed in. The part number decides it, not the package."""
     import footprints
-    q = footprints.build("Q1", "SOT-23", {"C": "LOAD", "B": "BASE", "E": "GND"})
+    q = footprints.build("Q1", "SOT-23", {"C": "LOAD", "B": "BASE", "E": "GND"},
+                         mpn="MMBT2222ALT1G")
     assert {p.pin: p.net for p in q.pads} == {"1": "BASE", "2": "GND", "3": "LOAD"}
 
 
