@@ -159,3 +159,46 @@ def export_fab(board: Board, out_dir: str | Path, name: str = "board",
     (fab / "manifest.json").write_text(json.dumps(res.manifest, indent=2), encoding="utf-8")
     res.files["manifest.json"] = fab / "manifest.json"
     return res
+
+
+def kicad_package(board: Board, verification=None, name: str | None = None) -> dict:
+    """Everything KiCad-side about one board, as text for an API response
+    (finding F-S2-R001-4): the project KiCad re-saved, its DRC and read-back
+    verdicts, and the fab files — the last only when every gate passed.
+
+    The board file is returned for a failed board too: a person fixing it must
+    be able to open it in KiCad. Only the fab files are withheld. Nothing is
+    kept on disk; the work directory is removed before returning."""
+    import tempfile
+    from kicad_export import write_pcb
+
+    name = name or "board"
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)[:60] or "board"
+    if not kicad_cli.available():
+        return {"available": False,
+                "reason": "kicad-cli is not installed on this server; the board file is "
+                          "this writer's text, not re-saved by KiCad, and no fab file is given",
+                "kicad_pcb": write_pcb(board), "fab": {"ok": False, "files": {},
+                "refusals": ["KiCad not available: fab files are not exported unchecked"]}}
+    work = Path(tempfile.mkdtemp(prefix="circuitos_kicad_"))
+    try:
+        res = export_fab(board, work, safe, verification)
+
+        def text(p: Path) -> str | None:
+            return p.read_text(encoding="utf-8") if p.exists() else None
+
+        return {
+            "available": True,
+            "kicad_version": kicad_cli.version(),
+            "name": safe,
+            "kicad_pcb": text(work / f"{safe}.kicad_pcb") or write_pcb(board),
+            "kicad_pro": text(work / f"{safe}.kicad_pro"),
+            "kicad_dru": text(work / f"{safe}.kicad_dru"),
+            "drc": res.drc,
+            "readback": res.readback,
+            "fab": {"ok": res.ok, "refusals": res.refusals, "manifest": res.manifest,
+                    "files": {n: p.read_text(encoding="utf-8", errors="replace")
+                              for n, p in res.files.items()} if res.ok else {}},
+        }
+    finally:
+        shutil.rmtree(work, ignore_errors=True)

@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 from api.routes.auth import get_current_user
 from core.config import settings
 from middleware.rate_limit import limiter
-from pcb_engine import compile_board
+from pcb_engine import compile_board, kicad_package
 
 router = APIRouter()
 
@@ -44,6 +44,9 @@ class CompileRequest(BaseModel):
     ground_net: Optional[str] = None
     power_nets: Optional[list] = None
     components: list[dict] = Field(default_factory=list)
+    # The KiCad project, KiCad DRC, read-back and fab files (pcb_engine/kicad_fab.py).
+    # On by default; it adds a few seconds of kicad-cli to the request.
+    kicad: bool = True
 
     model_config = {"extra": "allow"}
 
@@ -61,6 +64,13 @@ class CompileResponse(BaseModel):
     # the 3D scene derived from it (pcb_engine/scene3d.py). decisions.md [2026-10-06].
     board: dict
     scene: dict
+    # The board as KiCad sees it, so anyone can open it and run KiCad's own DRC
+    # (finding F-S2-R001-4): `kicad_pcb` / `kicad_pro` / `kicad_dru` text, KiCad's
+    # DRC and the Gerber read-back verdicts, and `fab.files` — Gerber, drill,
+    # position, IPC-D-356 and a hashed manifest. Owner decision 2026-10-17: a
+    # failed board is still returned, but `fab.files` is empty and
+    # `fab.refusals` says why.
+    kicad: dict = Field(default_factory=dict)
 
 
 @router.post("/compile", response_model=CompileResponse)
@@ -80,6 +90,7 @@ async def compile_pcb(
         )
 
     netlist: dict[str, Any] = body.model_dump(exclude_none=True)
+    want_kicad = netlist.pop("kicad", True)
 
     if not netlist.get("components"):
         raise HTTPException(422, detail="Netlist contains no components.")
@@ -102,6 +113,16 @@ async def compile_pcb(
         raise HTTPException(500, detail=f"PCB compilation failed: {type(exc).__name__}: {exc}")
 
     out = result.to_dict()
+    kicad: dict = {}
+    if want_kicad:
+        try:
+            kicad = await run_in_threadpool(kicad_package, result.board,
+                                            out.get("verification"), result.board.name)
+        except Exception as exc:  # noqa: BLE001
+            # The board is still shown; only the KiCad side failed, and says so.
+            kicad = {"available": False, "error": f"{type(exc).__name__}: {exc}",
+                     "fab": {"ok": False, "files": {},
+                             "refusals": [f"KiCad export failed: {type(exc).__name__}"]}}
     return CompileResponse(
         svg=out["svg"],
         stats=out["stats"],
@@ -110,4 +131,5 @@ async def compile_pcb(
         verification=out.get("verification", {}),
         board=out["board"],
         scene=out["scene"],
+        kicad=kicad,
     )
