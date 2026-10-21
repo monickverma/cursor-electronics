@@ -198,7 +198,7 @@ PLANNED = {
         "test_file": None,
         "entries": [
             ("drc",              "function", "Design rule check → list of Violation"),
-            ("score",            "function", "Physics scorecard for a candidate layout"),
+            ("score",            "function", "Layout cost score (unrouted, DRC, vias, length, layers, skew; no physics term)"),
             ("diff_pair_skew",   "function", "Differential pair length skew"),
             ("seg_seg_dist",     "function", "Segment-to-segment clearance primitive"),
         ],

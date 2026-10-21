@@ -107,10 +107,10 @@ For voltage-aware schematic checking, the real commercial product is **Siemens X
 | Capability | In code today | Where |
 |---|---|---|
 | Auto-layout | **Experimental**: greedy placement, A* grid router, 2 layers, at most 40 parts, behind a flag | `pcb_engine/compile_board.py`, `router.py` |
-| Layout "score" | Weighted count of unrouted connections, DRC errors, vias, length, layers and skew. **No physics term**, although `progress.yaml` calls it a "Physics scorecard" | `pcb_engine/kernel.py` |
+| Layout "score" | Weighted count of unrouted connections, DRC errors, vias, length, layers and skew. **No physics term**. `progress.yaml` called it a "Physics scorecard" until 2026-10-21; it now says "Layout cost score" | `pcb_engine/kernel.py` |
 | DRC | 7 geometric rules; no annular ring, drill, mask or silk | `kernel.py` |
 | Connectivity, shorts, pin parity | **Exact** on the Board IR | `pcb_engine/verify.py` |
-| Layout physics (impedance, IR drop, current, thermal, crosstalk) | **None.** Branch V is one blanket "unknown" whose text says it needs "an EM solver or a bench measurement". That is false for DC drop, trace current and closed-form impedance | `verify.py` |
+| Layout physics (impedance, IR drop, current, thermal, crosstalk) | **None.** Branch V was one blanket "unknown" saying it needed "an EM solver or a bench measurement", false for DC drop, trace current and closed-form impedance. Since 2026-10-21 (build step 0) it is six findings V.1-V.6, each naming its kind of unknown: only V.5 (EMC) is "not checkable" | `verify.py` |
 | Stackup data | Fields exist but nothing reads them. The default dielectric of **0.48 mm contradicts the 1.6 mm board** that `scene3d` draws | `board_ir.py` |
 | Ground plane | Declared (`plane_net=GND`) but **never realised as copper**, so return-path and PDN analysis have nothing to analyse | `board_ir.py`, `verify.py` III.1c |
 | Voltage/current checks | **Strong at schematic level**: exact graph rules plus z3 proofs over tolerance boxes for GPIO current, LED current, base current and resistor dissipation. **None at layout level**: trace width is never checked against the current the proofs compute | `validation/claims.py`, `proof/prover.py` |
@@ -142,7 +142,7 @@ The z3 prover can already accept extra interval elements through its bench hook.
 | Plan (~L202) | "The earlier report's `kicad-parasitics` project could not be found again." | **Wrong** | It is at [github.com/Steffen-W/KiCad-Parasitics](https://github.com/Steffen-W/KiCad-Parasitics) (GPL-3.0): DC R via ngspice, loop L via bfieldtools, no mutuals |
 | Plan (~L71) and tree (~L214) | "No fab offers a CI/API DFM check" | Out of date | NextPCB's undocumented HTTP endpoint, Aisler's CLI push (upload only, no results back) and Boardera's API (trade-press report) exist; none is yet a documented, licensed gate |
 | `verify.py` branch V text | "need an EM solver or a bench measurement" | Overstated | DC IR drop, trace current and ΔT, and closed-form impedance need only geometry and stackup |
-| `progress.yaml` | `score`: "Physics scorecard for a candidate layout" | **Wrong** | It is a weighted count with no physical quantity |
+| `progress.yaml` | `score`: "Physics scorecard for a candidate layout" | **Wrong** (fixed 2026-10-21) | It is a weighted count with no physical quantity |
 | `PCB_STRATEGY.md` (~L41-76) | Quilter is "a full generation past" us; "intent never reached it" | Overstated, outdated | Quilter's checks are geometric and closed-form, and it now detects constraints from the schematic. Our remaining edge is constraints derived from proven quantities and stated requirements |
 
 These statements stay correct and should be kept: the analog report's undecidability results (they concern formal proof, not layout simulation); "SI is a non-issue at this board class" (a scope choice; Quilter may mirror it by refusing diff pairs on 2-layer boards, but that limit is unverified); "no sound EMC check"; and every "nothing proves it" statement.
