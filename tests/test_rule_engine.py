@@ -226,3 +226,75 @@ class TestRuleEngineIntegration:
         assert result.is_valid
         assert result.errors == []
         assert result.warnings == []
+
+
+class TestRailShort:
+    """no_rail_short: a supply rail with a near-zero-ohm DC path to ground or another rail."""
+
+    @staticmethod
+    def _shorts(ir):
+        from generators.netlist.spice import SpiceNetlistGenerator
+        from validation.rule_engine import find_rail_shorts
+
+        return find_rail_shorts(ir, SpiceNetlistGenerator().generate(ir))
+
+    @staticmethod
+    def _with_link(ir, a: str, b: str, ohms: str):
+        from core.ir_schema import Component, ComponentType, Connection
+
+        bad = ir.model_copy(deep=True)
+        bad.components.append(Component(
+            id="R_LINK", type=ComponentType.RESISTOR, part_number="LINK", manufacturer="-",
+            package="0402", value=ohms, confidence=1.0, justification="a seeded fault for the rail-short rule"))
+        bad.connections += [Connection(component_id="R_LINK", pin="A", node_id=a),
+                            Connection(component_id="R_LINK", pin="B", node_id=b)]
+        return bad
+
+    @staticmethod
+    def _rail_and_ground(ir):
+        rail = next(n.id for n in ir.nodes if n.type == SignalType.POWER and n.voltage_nominal is not None)
+        ground = next(n.id for n in ir.nodes if n.type == SignalType.GROUND)
+        return rail, ground
+
+    def test_pass_on_the_examples(self):
+        from core.ir_examples import IR_001, IR_002, IR_003, IR_004, IR_005
+
+        for ir in (IR_001, IR_002, IR_003, IR_004, IR_005):
+            assert self._shorts(ir) == [], ir.intent
+
+    def test_fail_on_a_milliohm_link_to_ground(self):
+        rail, ground = self._rail_and_ground(IR_001)
+        found = self._shorts(self._with_link(IR_001, rail, ground, "0.001"))
+        assert len(found) == 1 and rail in found[0] and "ground" in found[0]
+
+    def test_a_real_load_is_not_a_short(self):
+        rail, ground = self._rail_and_ground(IR_001)
+        assert self._shorts(self._with_link(IR_001, rail, ground, "10")) == []
+
+    def test_fail_through_a_voltage_source_path(self):
+        # VCC → 1 mΩ → a node held to ground by an ideal source (the saturated
+        # transistor's V_CE model) is a short, though no single part spans VCC–GND.
+        from validation.grid_adapters import ADAPTERS
+
+        adapter = ADAPTERS["load_switch"].build()
+        ir = adapter.generator.generate(adapter.intent_for({"load_current_ma": 60.0}))
+        assert self._shorts(ir) == []
+        diode = next(c for c in ir.components if c.type.value == "diode")
+        a, b = [k.node_id for k in ir.connections if k.component_id == diode.id]
+        assert self._shorts(self._with_link(ir, a, b, "0.001"))
+
+    def test_the_claim_fails_on_a_short_and_holds_otherwise(self):
+        from validation.claims import assess
+
+        class _Bare:
+            name, version = "bare", "0"
+
+            def envelope(self, intent):
+                from types import SimpleNamespace
+                return SimpleNamespace(accepted=False, ports=())
+
+        rail, ground = self._rail_and_ground(IR_001)
+        ok = {c.id: c for c in assess(_Bare(), object(), IR_001).claims}["rule.no_rail_short"]
+        bad = {c.id: c for c in assess(_Bare(), object(), self._with_link(IR_001, rail, ground, "0.001")).claims}
+        assert ok.verdict == "holds"
+        assert bad["rule.no_rail_short"].verdict == "fails"

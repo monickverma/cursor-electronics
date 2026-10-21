@@ -5,7 +5,8 @@ Only evaluates rules listed in ir.validation_rules.
 """
 
 import re
-from typing import Optional, Set
+from fractions import Fraction
+from typing import Dict, List, Optional, Set
 
 from core.ir_schema import CircuitIR, SignalType, ValidationRule
 from core.ir_validator import IRValidationResult
@@ -31,6 +32,62 @@ def _parse_ohms(value: str) -> Optional[float]:
         frac = float(frac_str) / (10 ** len(frac_str)) if frac_str else 0.0
         return (integer + frac) * 1000.0
     return None
+
+
+#: Below this a DC path counts as a short. 1 Ω across a 5 V rail is 5 A, past
+#: what any rail on the supported boards can source; a real current-sense
+#: shunt sits in series with a load, so it never closes a path to ground alone.
+RAIL_SHORT_OHMS = Fraction(1)
+
+
+def find_rail_shorts(ir: CircuitIR, netlist: str) -> List[str]:
+    """
+    Every supply rail that reaches ground, or another rail, through low impedance.
+
+    Read from the netlist the simulator would run, not from the IR, so a part
+    the SPICE generator models as a short (a 0 Ω link, a saturated transistor's
+    V_CE source) counts as one. Low impedance is a resistor below
+    RAIL_SHORT_OHMS or any voltage source other than a rail's own supply —
+    an ideal source has none. Capacitors are open at DC; a diode is not a short.
+    """
+    from proof.netlist import parse
+
+    def sn(node_id: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9_]", "_", node_id.lower())
+
+    rails = {sn(n.id): n.id for n in ir.nodes
+             if n.type == SignalType.POWER and n.voltage_nominal is not None}
+    if not rails:
+        return []
+    own_supply = {f"v_{node.lower()}" for node in rails}
+
+    parent: Dict[str, str] = {}
+
+    def find(x: str) -> str:
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for e in parse(netlist, allow_partial=True).elements:
+        low = (e.kind == "R" and e.value is not None and e.value < RAIL_SHORT_OHMS) or               (e.kind == "V" and e.name.lower() not in own_supply)
+        if low:
+            parent[find(e.a)] = find(e.b)
+
+    found: List[str] = []
+    ground = find("0")
+    for node, rail in sorted(rails.items()):
+        if find(node) == ground:
+            found.append(f"{rail} reaches ground below {RAIL_SHORT_OHMS} ohm")
+    by_group: Dict[str, List[str]] = {}
+    for node, rail in rails.items():
+        if find(node) != ground:
+            by_group.setdefault(find(node), []).append(rail)
+    for group in by_group.values():
+        if len(group) > 1:
+            found.append(f"rails {', '.join(sorted(group))} are joined below {RAIL_SHORT_OHMS} ohm")
+    return found
 
 
 class HardwareRuleEngine:

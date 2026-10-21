@@ -74,6 +74,9 @@ class ValidationRule(str, Enum):
     PIN_ASSIGNMENT_VALID = "pin_assignment_valid"
     PERIPHERAL_CONFLICT_FREE = "peripheral_conflict_free"
     STRAPPING_PINS_SAFE = "strapping_pins_safe"
+    # A supply rail with a near-zero-ohm DC path to ground or another rail
+    # (validation/rule_engine.py::find_rail_shorts). Found by ablation, 2026-10-21.
+    NO_RAIL_SHORT = "no_rail_short"
 
 
 class Component(BaseModel):

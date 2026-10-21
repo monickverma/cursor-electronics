@@ -107,6 +107,8 @@ _IMPLEMENTED: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     ValidationRule.PIN_ASSIGNMENT_VALID.value: ("exact_graph_check", ("D7",)),
     ValidationRule.PERIPHERAL_CONFLICT_FREE.value: ("exact_graph_check", ("D7",)),
     ValidationRule.STRAPPING_PINS_SAFE.value: ("exact_graph_check", ("D7",)),
+    # Read from the design's own netlist; no figure, no model of the parts.
+    ValidationRule.NO_RAIL_SHORT.value: ("exact_graph_check", ()),
 }
 
 #: Rules declared out of scope rather than unimplemented.
@@ -551,11 +553,12 @@ _RULE_SENTENCES = {
     "pin_assignment_valid": "every MCU pin exists on the board, is not reserved, and can do what it is wired for",
     "peripheral_conflict_free": "no MCU pin carries two nets, and each hardware UART has one user and is not the console",
     "strapping_pins_safe": "nothing external is wired to a strapping pin",
+    "no_rail_short": "no supply rail has a near-zero-ohm path to ground or to another rail",
 }
 
 
-def _rule_claims(circuit: CircuitIR, ports: Sequence[str]) -> List[Claim]:
-    from validation.rule_engine import HardwareRuleEngine
+def _rule_claims(circuit: CircuitIR, ports: Sequence[str], netlist: Optional[str] = None) -> List[Claim]:
+    from validation.rule_engine import HardwareRuleEngine, find_rail_shorts
 
     structural = validate_ir(circuit)
     engine = HardwareRuleEngine()
@@ -626,6 +629,12 @@ def _rule_claims(circuit: CircuitIR, ports: Sequence[str]) -> List[Claim]:
     engine._check_pwm_pin_valid(circuit, result)
     row("pwm_pin_valid", not result.errors, has_pwm and circuit.target_mcu == "arduino_uno",
         "; ".join(e.message for e in result.errors) or ("valid" if has_pwm else "no PWM signals"))
+
+    rails = [n for n in circuit.nodes if n.type == SignalType.POWER and n.voltage_nominal is not None]
+    shorts = find_rail_shorts(circuit, netlist if netlist is not None else _netlist_text(circuit))
+    row("no_rail_short", not shorts, bool(rails),
+        "; ".join(shorts) or ("no rail reaches ground or another rail below "
+                              "the short threshold" if rails else "no supply rail"))
     return rows
 
 
@@ -897,7 +906,7 @@ def assess(generator: Any, intent: Any, circuit: CircuitIR) -> ValidationCoverag
     ports = tuple(p.name for p in decision.ports) if decision.accepted else ()
     physics, proofs = _with_bench(generator, circuit, netlist, proved, physics, proofs,
                                   getattr(intent, "requirements", None))
-    rows = physics + proofs + _rule_claims(circuit, ports) + _accounting_rows(
+    rows = physics + proofs + _rule_claims(circuit, ports, netlist) + _accounting_rows(
         physics, getattr(generator, "not_applicable_rules", {}) or {}
     )
     views = [
