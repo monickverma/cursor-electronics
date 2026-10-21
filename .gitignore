@@ -8,6 +8,13 @@ _to_delete/
 # it and was untracked only by luck.
 *.jsonl
 
+# …except the Alpha program's own record. `findings.jsonl` is the feedback
+# channel the builders read and the master session assigns from, and
+# `ledger.jsonl` is the per-milestone cost log. Both are durable program
+# state that must survive a restart and a branch switch, and the handoff
+# requires them committed. Added 2026-10-21 with the Alpha program.
+!.claude/shared-memory/alpha/*.jsonl
+
 # Python
 __pycache__/
 *.py[cod]
