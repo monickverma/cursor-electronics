@@ -213,6 +213,79 @@ def test_drc_measures_two_vias_of_different_nets():
     assert len(vs) == 1 and vs[0].measured == pytest.approx(0.9)
 
 
+# ── pad ↔ pad (F-0002) ───────────────────────────────────────────────────────
+# The kernel had no pad-to-pad rule. Two parts whose pads touched, two pads of
+# one footprint that overlapped, a through-hole pad over a bottom-side SMD pad:
+# each scored zero DRC errors while verify.py's III.2 failed it.
+def _part(ref, *pads, x=10.0, courtyard=1.0, side="top"):
+    return Component(ref, x, 10.0, side=side, courtyard_w=courtyard,
+                     courtyard_h=courtyard, pads=list(pads))
+
+
+def _pads_board(*parts):
+    b = Board(name="t", outline_w=30, outline_h=30,
+              layers=[Layer("F.Cu", "signal"), Layer("B.Cu", "signal")])
+    b.components.extend(parts)
+    return b
+
+
+def _short_boards():
+    return {
+        "two parts touch": _pads_board(
+            _part("R1", Pad("R1", "1", 10.0, 10.0, 1.6, 1.0, "A")),
+            _part("R2", Pad("R2", "1", 11.5, 10.0, 1.6, 1.0, "B"), x=11.5)),
+        "one footprint overlaps": _pads_board(
+            _part("U1", Pad("U1", "1", 10.0, 10.0, 1.0, 1.0, "A"),
+                  Pad("U1", "2", 10.9, 10.0, 1.0, 1.0, "B"), courtyard=4.0)),
+        "th over bottom smd": _pads_board(
+            _part("J1", Pad("J1", "1", 10.0, 10.0, 1.6, 1.6, "A", "F.Cu", "th")),
+            _part("R3", Pad("R3", "1", 11.2, 10.0, 1.0, 1.0, "B", "B.Cu"),
+                  x=11.2, side="bottom")),
+    }
+
+
+@pytest.mark.parametrize("case", list(_short_boards()))
+def test_drc_reports_pads_of_two_nets_that_touch(case):
+    vs = [v for v in drc(_short_boards()[case]) if v.rule == "short.pad_pad"]
+    assert len(vs) == 1 and set(vs[0].nets) == {"A", "B"}
+    assert vs[0].severity == "error"
+
+
+@pytest.mark.parametrize("case", list(_short_boards()))
+def test_the_kernel_reports_every_pad_short_the_judge_finds(case):
+    """Two implementations of one question: the router must not ship a board
+    the judge refuses for a short the router could have measured."""
+    from verify import verify_board
+    b = _short_boards()[case]
+    judged = next(f for f in verify_board(b).findings if f.check == "III.2")
+    assert judged.status == "fail"
+    assert any(v.severity == "error" and set(v.nets) == {"A", "B"} for v in drc(b))
+
+
+def test_drc_passes_smd_pads_on_opposite_sides():
+    """Top and bottom SMD pads at one point share no copper."""
+    b = _pads_board(
+        _part("R1", Pad("R1", "1", 10.0, 10.0, 1.0, 1.0, "A", "F.Cu")),
+        _part("R2", Pad("R2", "1", 10.0, 10.0, 1.0, 1.0, "B", "B.Cu"), side="bottom"))
+    assert not [v for v in drc(b) if v.rule.endswith("pad_pad")]
+
+
+def test_drc_measures_pads_of_two_parts_closer_than_the_clearance():
+    b = _pads_board(
+        _part("R1", Pad("R1", "1", 10.0, 10.0, 1.0, 1.0, "A")),
+        _part("R2", Pad("R2", "1", 11.1, 10.0, 1.0, 1.0, "B"), x=12.0))
+    vs = [v for v in drc(b) if v.rule == "clearance.pad_pad"]
+    assert len(vs) == 1 and vs[0].measured == pytest.approx(0.1)
+
+
+def test_drc_leaves_a_footprints_own_pitch_to_the_footprint():
+    """A 0.1 mm gap between two pads of one part is the land pattern's design,
+    not something placement or routing chose; only contact is reported."""
+    b = _pads_board(_part("U1", Pad("U1", "1", 10.0, 10.0, 1.0, 1.0, "A"),
+                          Pad("U1", "2", 11.1, 10.0, 1.0, 1.0, "B"), courtyard=4.0))
+    assert not [v for v in drc(b) if v.rule.endswith("pad_pad")]
+
+
 # ── DSN export ───────────────────────────────────────────────────────────────
 def _dsn_board():
     b = _board(_pad("R1", 10.0, 10.0), _pad("R2", 20.0, 10.0, shape="th"))
