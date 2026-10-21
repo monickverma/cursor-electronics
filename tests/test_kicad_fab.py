@@ -14,8 +14,11 @@ import pcb_engine  # noqa: F401  — puts the engine directory on sys.path
 from board_ir import Board, Component, Layer, NetClass, Pad, Track
 import kicad_cli
 import kicad_fab
+import readback
 
-pytestmark = pytest.mark.skipif(not kicad_cli.available(), reason="kicad-cli not installed")
+# Export now ends in the stage-7 read-back, which refuses where it cannot run.
+pytestmark = pytest.mark.skipif(not (kicad_cli.available() and readback.available()),
+                                reason="kicad-cli or the Python 3.12 read-back env missing")
 
 NETLIST = Path(__file__).parent.parent / "backend" / "pcb_engine" / "netlist_dht22.json"
 

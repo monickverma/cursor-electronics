@@ -8,7 +8,10 @@ fabrication files are REFUSED here. "Failed" means any of:
   * verify.py found a decidable fault (Report.ok is False);
   * the writer round trip failed (KiCad could not load the board as written);
   * KiCad's DRC refused it (kicad_drc: sentinel missing, required rule fired,
-    required check skipped, DRC did not run).
+    required check skipped, DRC did not run);
+  * the exported files, read back into copper (readback.py, stage 7), show an
+    open, a short, a pad off copper or a label that disagrees with the IR — or
+    the read-back could not run.
 
 A refusal writes no fab file at all — a half-written fab directory is a set of
 files someone could still upload. Any export command that exits non-zero is a
@@ -34,6 +37,7 @@ from board_ir import Board
 import kicad_cli
 import kicad_drc
 from kicad_export import copper_layers
+from readback import run_readback
 
 FAB_LAYERS_FIXED = ["F.Paste", "B.Paste", "F.SilkS", "B.SilkS",
                     "F.Mask", "B.Mask", "Edge.Cuts"]
@@ -49,6 +53,7 @@ class FabExport:
     files: dict[str, Path] = field(default_factory=dict)
     manifest: dict = field(default_factory=dict)
     drc: dict = field(default_factory=dict)
+    readback: dict = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -57,7 +62,8 @@ class FabExport:
     def to_dict(self) -> dict:
         return {"ok": self.ok, "refusals": self.refusals,
                 "files": {k: str(v) for k, v in self.files.items()},
-                "manifest": self.manifest, "drc": self.drc}
+                "manifest": self.manifest, "drc": self.drc,
+                "readback": self.readback}
 
 
 def _verification_ok(board: Board, verification) -> tuple[bool, list[str]]:
@@ -126,6 +132,17 @@ def export_fab(board: Board, out_dir: str | Path, name: str = "board",
     missing = [e for e in expected if not any(n.startswith(e + ".") for n in res.files)]
     if missing:
         res.refusals.append(f"export wrote no file for {missing}")
+        shutil.rmtree(fab, ignore_errors=True)
+        res.files = {}
+        return res
+
+    # Stage 7: the files themselves, read back into copper, against the IR.
+    # A fault only the files carry (a drill hit moved, a track lost in the
+    # plot) is invisible to every check above; this is the one that sees it.
+    rb = run_readback(board, fab)
+    res.readback = rb.to_dict()
+    if not rb.ok:
+        res.refusals += [f"read-back: {r}" for r in rb.refusals]
         shutil.rmtree(fab, ignore_errors=True)
         res.files = {}
         return res
