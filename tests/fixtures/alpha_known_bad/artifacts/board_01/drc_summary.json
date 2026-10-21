@@ -1,0 +1,14 @@
+{
+  "available": true,
+  "kicad_version": "10.0.1",
+  "violations": 26,
+  "unconnected_items": 4,
+  "by_type": {
+    "shorting_items": 10,
+    "clearance": 1,
+    "solder_mask_bridge": 2,
+    "via_dangling": 5,
+    "lib_footprint_issues": 8
+  },
+  "severity_error_violations": 13
+}

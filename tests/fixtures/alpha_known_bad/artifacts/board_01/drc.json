@@ -1,0 +1,624 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-10-21T21:06:41",
+    "ignored_checks": [
+        {
+            "description": "Footprint has no courtyard defined",
+            "key": "missing_courtyard"
+        },
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "Footprint component type doesn't match footprint pads",
+            "key": "footprint_type_mismatch"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning"
+    ],
+    "kicad_version": "10.0.1",
+    "schematic_parity": [],
+    "source": "board_01.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 10.2,
+                        "y": 21.72
+                    },
+                    "uuid": "139f1f95-4d69-5ee7-a47c-29f66c48fb42"
+                },
+                {
+                    "description": "PTH pad 8 [GND] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 21.59
+                    },
+                    "uuid": "7d5f2272-c8cd-5a89-aaee-fbd5c19f0036"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 12.6,
+                        "y": 35.52
+                    },
+                    "uuid": "44d25291-bda6-5772-948c-9e0bf89303b0"
+                },
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 10.2,
+                        "y": 21.72
+                    },
+                    "uuid": "139f1f95-4d69-5ee7-a47c-29f66c48fb42"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "PTH pad 22 [GND] of U1",
+                    "pos": {
+                        "x": 24.13,
+                        "y": 24.13
+                    },
+                    "uuid": "08c826c7-0c2f-5c0e-b511-4acdfc01fdbd"
+                },
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 21.52
+                    },
+                    "uuid": "63b210ab-3ca4-5d4c-9259-d39b4d9043bd"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "PTH pad 1 [GND] of Q1",
+                    "pos": {
+                        "x": 27.9,
+                        "y": 24.17
+                    },
+                    "uuid": "033dc07e-056e-56ae-a7a3-27167ad832df"
+                },
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 24.2,
+                        "y": 24.12
+                    },
+                    "uuid": "36ca544b-b605-59a6-90d3-639b1312fa28"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": [
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.0343 mm",
+                    "pos": {
+                        "x": 17.2,
+                        "y": 23.72
+                    },
+                    "uuid": "ce8c77ca-2d5b-5eae-bb4a-b949f81b3a57"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets GND and )",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 21.52
+                    },
+                    "uuid": "63b210ab-3ca4-5d4c-9259-d39b4d9043bd"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 24.12
+                    },
+                    "uuid": "58a50c10-b474-5a8a-8930-860e908f6c92"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2485 mm",
+                    "pos": {
+                        "x": 17.224264,
+                        "y": 23.695736
+                    },
+                    "uuid": "2381c9d0-e0cf-54e0-bcae-30acbbc0bcf5"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.4000 mm",
+                    "pos": {
+                        "x": 17.4,
+                        "y": 23.52
+                    },
+                    "uuid": "8b00178b-32bc-5baf-a737-34cf92d6932b"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 24.12
+                    },
+                    "uuid": "3f264b7d-c263-5490-a93a-06b7c5205258"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2000 mm",
+                    "pos": {
+                        "x": 17.0,
+                        "y": 23.72
+                    },
+                    "uuid": "c874e185-081f-52ac-a5f9-3571bfbf03b7"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.3000 mm; actual 0.2400 mm)",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2828 mm",
+                    "pos": {
+                        "x": 17.8,
+                        "y": 23.52
+                    },
+                    "uuid": "2e8dea58-8f08-592c-9925-b2984c1b92dc"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2343 mm",
+                    "pos": {
+                        "x": 16.2,
+                        "y": 24.52
+                    },
+                    "uuid": "c5f24c35-d348-5433-8b14-e7218a166d9a"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "PTH pad 7 [VCC_5V] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "725d7898-2920-5488-ae09-53dc1114788b"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.7657 mm",
+                    "pos": {
+                        "x": 15.965685,
+                        "y": 24.52
+                    },
+                    "uuid": "35c330bd-f56a-5d63-8a99-1183e1e8b0a1"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                },
+                {
+                    "description": "PTH pad 7 [VCC_5V] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "725d7898-2920-5488-ae09-53dc1114788b"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                },
+                {
+                    "description": "PTH pad 8 [GND] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 21.59
+                    },
+                    "uuid": "7d5f2272-c8cd-5a89-aaee-fbd5c19f0036"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 21.52
+                    },
+                    "uuid": "63b210ab-3ca4-5d4c-9259-d39b4d9043bd"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 24.2,
+                        "y": 24.12
+                    },
+                    "uuid": "36ca544b-b605-59a6-90d3-639b1312fa28"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 10.2,
+                        "y": 21.72
+                    },
+                    "uuid": "139f1f95-4d69-5ee7-a47c-29f66c48fb42"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 28.0,
+                        "y": 24.12
+                    },
+                    "uuid": "2ae5e22f-2c7d-5736-9efc-046eb67fdfa6"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 12.6,
+                        "y": 35.52
+                    },
+                    "uuid": "44d25291-bda6-5772-948c-9e0bf89303b0"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint C1",
+                    "pos": {
+                        "x": 10.12,
+                        "y": 35.6
+                    },
+                    "uuid": "0f694617-3e3e-5a81-8f70-dbc048756a44"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint D1",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 27.98
+                    },
+                    "uuid": "c0e3ac8e-736c-5bf9-a951-cbf87e3534cd"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint K1",
+                    "pos": {
+                        "x": 36.79,
+                        "y": 14.01
+                    },
+                    "uuid": "a24c4b9e-a187-5a32-b1e9-b1d7bb49126f"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint Q1",
+                    "pos": {
+                        "x": 30.44,
+                        "y": 24.17
+                    },
+                    "uuid": "8020027b-5f82-50ee-9653-1970d9d9be60"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint R1",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 31.79
+                    },
+                    "uuid": "d1fdc9a4-4040-56bf-b9a8-8d0f714b73e3"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint R2",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 35.6
+                    },
+                    "uuid": "a8a25ccf-3016-5b96-9b3e-9e0d1e29842b"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint U1",
+                    "pos": {
+                        "x": 20.32,
+                        "y": 22.86
+                    },
+                    "uuid": "f34f28a0-3ce9-510e-8881-c63da78ee6ca"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint U2",
+                    "pos": {
+                        "x": 10.12,
+                        "y": 25.44
+                    },
+                    "uuid": "49d731bf-b5e2-555a-98cf-e16b9dcc2dcc"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        }
+    ]
+}

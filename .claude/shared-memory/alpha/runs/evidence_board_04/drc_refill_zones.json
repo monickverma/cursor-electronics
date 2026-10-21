@@ -1,0 +1,219 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-10-21T23:23:50",
+    "ignored_checks": [
+        {
+            "description": "Footprint has no courtyard defined",
+            "key": "missing_courtyard"
+        },
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "Footprint component type doesn't match footprint pads",
+            "key": "footprint_type_mismatch"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning"
+    ],
+    "kicad_version": "10.0.1",
+    "schematic_parity": [],
+    "source": "probe.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 21.52
+                    },
+                    "uuid": "63b210ab-3ca4-5d4c-9259-d39b4d9043bd"
+                },
+                {
+                    "description": "PTH pad 8 [GND] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 21.59
+                    },
+                    "uuid": "7d5f2272-c8cd-5a89-aaee-fbd5c19f0036"
+                }
+            ],
+            "severity": "warning",
+            "type": "hole_to_hole"
+        },
+        {
+            "description": "Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "PTH pad 22 [GND] of U1",
+                    "pos": {
+                        "x": 24.13,
+                        "y": 24.13
+                    },
+                    "uuid": "08c826c7-0c2f-5c0e-b511-4acdfc01fdbd"
+                },
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 24.2,
+                        "y": 24.12
+                    },
+                    "uuid": "36ca544b-b605-59a6-90d3-639b1312fa28"
+                }
+            ],
+            "severity": "warning",
+            "type": "hole_to_hole"
+        },
+        {
+            "description": "Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 21.52
+                    },
+                    "uuid": "63b210ab-3ca4-5d4c-9259-d39b4d9043bd"
+                },
+                {
+                    "description": "PTH pad 8 [GND] of U1",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 21.59
+                    },
+                    "uuid": "7d5f2272-c8cd-5a89-aaee-fbd5c19f0036"
+                }
+            ],
+            "severity": "warning",
+            "type": "hole_to_hole"
+        },
+        {
+            "description": "Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "PTH pad 22 [GND] of U1",
+                    "pos": {
+                        "x": 24.13,
+                        "y": 24.13
+                    },
+                    "uuid": "08c826c7-0c2f-5c0e-b511-4acdfc01fdbd"
+                },
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 24.2,
+                        "y": 24.12
+                    },
+                    "uuid": "36ca544b-b605-59a6-90d3-639b1312fa28"
+                }
+            ],
+            "severity": "warning",
+            "type": "hole_to_hole"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint C1",
+                    "pos": {
+                        "x": 8.85,
+                        "y": 24.17
+                    },
+                    "uuid": "0f694617-3e3e-5a81-8f70-dbc048756a44"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint D1",
+                    "pos": {
+                        "x": 7.58,
+                        "y": 26.71
+                    },
+                    "uuid": "c0e3ac8e-736c-5bf9-a951-cbf87e3534cd"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint J1",
+                    "pos": {
+                        "x": 12.66,
+                        "y": 25.44
+                    },
+                    "uuid": "114f6ca1-0d30-570f-bab6-adfbf7432b89"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint Q1",
+                    "pos": {
+                        "x": 12.66,
+                        "y": 20.36
+                    },
+                    "uuid": "8020027b-5f82-50ee-9653-1970d9d9be60"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint R1",
+                    "pos": {
+                        "x": 11.39,
+                        "y": 16.55
+                    },
+                    "uuid": "d1fdc9a4-4040-56bf-b9a8-8d0f714b73e3"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint U1",
+                    "pos": {
+                        "x": 20.32,
+                        "y": 22.86
+                    },
+                    "uuid": "f34f28a0-3ce9-510e-8881-c63da78ee6ca"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        }
+    ]
+}

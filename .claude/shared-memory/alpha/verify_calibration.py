@@ -328,7 +328,13 @@ def main() -> int:
         print(f"no calibration set at {FIXTURES}")
         return 1
 
-    cases = sorted(p for p in FIXTURES.iterdir() if p.is_dir())
+    #: A calibration case is a directory that holds a `mutate.py` — the script
+    #: that seeded it. `boards/` holds the staged copies handed to the
+    #: overlooker, `__pycache__` is Python's. Neither is a case, and counting
+    #: them as cases put two permanent FAILs in the report that said nothing
+    #: about the product.
+    cases = sorted(p for p in FIXTURES.iterdir()
+                   if p.is_dir() and (p / "mutate.py").exists())
     results = []
     for case in cases:
         try:

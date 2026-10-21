@@ -1,0 +1,115 @@
+[
+  {
+    "case": "bridged_nets",
+    "folder": "board_01",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "short",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 26,
+      "unconnected_items": 4,
+      "by_type": {
+        "shorting_items": 10,
+        "clearance": 1,
+        "solder_mask_bridge": 2,
+        "via_dangling": 5,
+        "lib_footprint_issues": 8
+      },
+      "severity_error_violations": 13
+    }
+  },
+  {
+    "case": "cut_track",
+    "folder": "board_02",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "open",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 15,
+      "unconnected_items": 5,
+      "by_type": {
+        "track_dangling": 2,
+        "via_dangling": 5,
+        "lib_footprint_issues": 8
+      },
+      "severity_error_violations": 0
+    }
+  },
+  {
+    "case": "deleted_via",
+    "folder": "board_03",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "open",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 15,
+      "unconnected_items": 5,
+      "by_type": {
+        "track_dangling": 2,
+        "via_dangling": 5,
+        "lib_footprint_issues": 8
+      },
+      "severity_error_violations": 0
+    }
+  },
+  {
+    "case": "reversed_diode",
+    "folder": "board_04",
+    "request": "An Arduino Uno drives a 30 mA inductive load through a transistor, with a flyback diode across the load. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "reversed diode",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 10,
+      "unconnected_items": 3,
+      "by_type": {
+        "via_dangling": 4,
+        "lib_footprint_issues": 6
+      },
+      "severity_error_violations": 0
+    }
+  },
+  {
+    "case": "swapped_pins",
+    "folder": "board_05",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "wrong pinout",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 13,
+      "unconnected_items": 4,
+      "by_type": {
+        "via_dangling": 5,
+        "lib_footprint_issues": 8
+      },
+      "severity_error_violations": 0
+    }
+  },
+  {
+    "case": "wrong_cap_value",
+    "folder": "board_06",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable with a 100 nF decoupling capacitor, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "wrong value",
+    "critical": false,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 13,
+      "unconnected_items": 4,
+      "by_type": {
+        "via_dangling": 5,
+        "lib_footprint_issues": 8
+      },
+      "severity_error_violations": 0
+    }
+  }
+]

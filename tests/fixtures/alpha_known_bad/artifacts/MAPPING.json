@@ -1,0 +1,26 @@
+[
+  {
+    "folder": "board_01",
+    "case": "bridged_nets"
+  },
+  {
+    "folder": "board_02",
+    "case": "cut_track"
+  },
+  {
+    "folder": "board_03",
+    "case": "deleted_via"
+  },
+  {
+    "folder": "board_04",
+    "case": "reversed_diode"
+  },
+  {
+    "folder": "board_05",
+    "case": "swapped_pins"
+  },
+  {
+    "folder": "board_06",
+    "case": "wrong_cap_value"
+  }
+]

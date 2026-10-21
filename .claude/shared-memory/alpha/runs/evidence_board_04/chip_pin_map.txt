@@ -1,0 +1,33 @@
+U1 board holes parsed: 28
+reference holes parsed: 28
+
+Board U1 net assignment by hole number (from the .kicad_pcb):
+   hole 'pad 7 ' net=VCC_5V
+   hole 'pad 8 ' net=GND
+   hole 'pad 14' net=SW_CTRL
+   hole 'pad 20' net=VCC_5V
+   hole 'pad 22' net=GND
+
+=== ORIENTATION A: chip notch at the board TOP end (y-min), same end as the reference footprint's pin 1 ===  (max mapping error 0.0000 mm)
+   board hole 'pad N' = the hole the net-list calls pad N; the chip's real pin lands in some hole.
+   chip pin 7   (VCC        ) -> board hole 'pad 8  '  net=GND
+   chip pin 8   (GND        ) -> board hole 'pad 7  '  net=VCC_5V
+   chip pin 14  (PB0        ) -> board hole 'pad 1  '  net=(no net)
+   chip pin 20  (AVCC       ) -> board hole 'pad 23 '  net=(no net)
+   chip pin 22  (GND        ) -> board hole 'pad 21 '  net=(no net)
+   chip pin 1   (~RESET/PC6 ) -> board hole 'pad 14 '  net=SW_CTRL
+   chip pin 9   (XTAL1/PB6  ) -> board hole 'pad 6  '  net=(no net)
+   chip pin 10  (XTAL2/PB7  ) -> board hole 'pad 5  '  net=(no net)
+   chip pin 28  (PC5        ) -> board hole 'pad 15 '  net=(no net)
+
+=== ORIENTATION B: chip notch at the board BOTTOM end (y-max) - the chip turned end-for-end ===  (max mapping error 0.0000 mm)
+   board hole 'pad N' = the hole the net-list calls pad N; the chip's real pin lands in some hole.
+   chip pin 7   (VCC        ) -> board hole 'pad 21 '  net=(no net)
+   chip pin 8   (GND        ) -> board hole 'pad 22 '  net=GND
+   chip pin 14  (PB0        ) -> board hole 'pad 28 '  net=(no net)
+   chip pin 20  (AVCC       ) -> board hole 'pad 6  '  net=(no net)
+   chip pin 22  (GND        ) -> board hole 'pad 8  '  net=GND
+   chip pin 1   (~RESET/PC6 ) -> board hole 'pad 15 '  net=(no net)
+   chip pin 9   (XTAL1/PB6  ) -> board hole 'pad 23 '  net=(no net)
+   chip pin 10  (XTAL2/PB7  ) -> board hole 'pad 24 '  net=(no net)
+   chip pin 28  (PC5        ) -> board hole 'pad 14 '  net=SW_CTRL

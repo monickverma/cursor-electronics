@@ -1,0 +1,7 @@
+=== footprint orientation vs KiCad reference ===
+  SOT-23                 vs ref: NO EXACT MATCH (best rot90 err=0.163)
+        pad 1  ref=-0.94,-0.95        cos=-0.95,1.10
+        pad 2  ref=-0.94,0.95         cos=0.95,1.10
+        pad 3  ref=0.94,0.00          cos=0.00,-1.10
+  SOD-123                vs ref: EXACT identity
+  0402 (R1/C1)           vs ref: EXACT identity

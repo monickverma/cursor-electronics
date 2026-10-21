@@ -156,14 +156,6 @@ CONTACT_TOL = 0.06
 #: gap wider than this is not a fillet that ran; it is a wire someone laid.
 FILLET_SPAN_MAX = 1.3
 
-#: The clearance a fillet is assumed to keep, as a fraction of the gap it
-#: spans. A fillet that wets exactly to the far pad's edge leaves no room,
-#: and a bridge that already touches a third pad is a different defect. The
-#: seed only needs this to decide whether the bridge reaches a neighbour it
-#: must not reach, and it checks that by GEOMETRY rather than by this
-#: constant — see `_bridge_contacts`.
-FILLET_CLEARANCE = 0.0
-
 Board = dict[str, Any]
 
 

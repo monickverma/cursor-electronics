@@ -1,0 +1,38 @@
+[
+  {
+    "file": "board_01.json",
+    "case": "bridged_nets",
+    "defect_class": "short",
+    "critical": true
+  },
+  {
+    "file": "board_02.json",
+    "case": "cut_track",
+    "defect_class": "open",
+    "critical": true
+  },
+  {
+    "file": "board_03.json",
+    "case": "deleted_via",
+    "defect_class": "open",
+    "critical": true
+  },
+  {
+    "file": "board_04.json",
+    "case": "reversed_diode",
+    "defect_class": "reversed diode",
+    "critical": true
+  },
+  {
+    "file": "board_05.json",
+    "case": "swapped_pins",
+    "defect_class": "wrong pinout",
+    "critical": true
+  },
+  {
+    "file": "board_06.json",
+    "case": "wrong_cap_value",
+    "defect_class": "wrong value",
+    "critical": false
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "available": true,
+  "kicad_version": "10.0.1",
+  "violations": 10,
+  "unconnected_items": 3,
+  "by_type": {
+    "via_dangling": 4,
+    "lib_footprint_issues": 6
+  },
+  "severity_error_violations": 0
+}
