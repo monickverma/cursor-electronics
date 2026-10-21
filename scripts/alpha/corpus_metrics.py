@@ -159,6 +159,19 @@ def footprint_pads(fp):
         yield {"number": pad[1], "type": pad[2], "x": fx + rx, "y": fy + ry, "net": net_name}
 
 
+def board_nets(pcb_path: Path) -> dict[str, list[str]]:
+    """Net -> sorted "REF.PAD" list, read from the board's pads. The netlist of
+    the layout as built; the only net truth when the schematic is unreadable."""
+    board = parse_sexpr(pcb_path.read_text(encoding="utf-8"))
+    nets: dict[str, set] = defaultdict(set)
+    for fp in children(board, "footprint"):
+        ref = footprint_ref(fp)
+        for pad in footprint_pads(fp):
+            if pad["net"]:
+                nets[pad["net"]].add(f"{ref}.{pad['number']}")
+    return {n: sorted(v) for n, v in sorted(nets.items())}
+
+
 def board_metrics(pcb_path: Path) -> dict:
     board = parse_sexpr(pcb_path.read_text(encoding="utf-8"))
 
@@ -332,6 +345,9 @@ def main() -> int:
         "netlist": (netlist(None, a.out_dir, a.net) if a.net
                     else netlist(sch, a.out_dir) if sch.exists() else {"error": "no schematic"}),
     }
+    nets = board_nets(a.pcb)
+    (a.out_dir / "board_nets.json").write_text(json.dumps(nets, indent=1), encoding="utf-8")
+    metrics["board_nets"] = {"file": "board_nets.json", "nets": len(nets)}
     (a.out_dir / "reference_metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     b = metrics["board"]
     print(json.dumps({
