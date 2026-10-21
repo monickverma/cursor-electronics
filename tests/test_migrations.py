@@ -37,6 +37,10 @@ class TestEveryStatementIsSafe:
     def test_the_safety_check_refuses_what_it_should(self, statement):
         assert not is_safe(statement)
 
+    def test_a_unique_index_is_allowed(self):
+        """The explanation ledger is unique per design version. [F-0006]"""
+        assert is_safe("CREATE UNIQUE INDEX IF NOT EXISTS idx_x ON t(a, b)")
+
 
 class TestFreshAndMigratedVolumesAgree:
     def _added_columns(self):
@@ -65,6 +69,44 @@ class TestFreshAndMigratedVolumesAgree:
     def test_the_stage_2_columns_are_migrated(self):
         assert ("circuit_designs", "intent_ir") in self._added_columns()
         assert ("circuit_designs", "annotations") in self._added_columns()
+
+
+class TestTheExplanationLedgerIsShippedEverywhere:
+    """[2026-10-21, F-0006] The attempt ledger is a new table. It must exist
+    in all three places or the poll cannot tell a lost task from a slow one:
+    the model, schema.sql (a fresh volume) and the startup migrations (an
+    old volume)."""
+
+    def test_the_model_has_the_table(self):
+        from db.models import ExplanationAttempt
+        columns = set(ExplanationAttempt.__table__.columns.keys())
+        assert {"circuit_id", "version", "attempts", "task_id", "queued_at"} <= columns
+
+    def test_schema_sql_has_the_table(self):
+        schema = SCHEMA_SQL.read_text(encoding="utf-8")
+        assert "CREATE TABLE explanation_attempts" in schema
+        for column in ("attempts", "task_id", "queued_at", "version"):
+            assert column in schema.split("CREATE TABLE explanation_attempts (", 1)[1].split(");", 1)[0]
+
+    def test_the_migrations_create_the_table(self):
+        statements = " ".join(MIGRATIONS)
+        assert "CREATE TABLE IF NOT EXISTS explanation_attempts" in statements
+
+    def test_the_table_is_unique_per_design_version(self):
+        """Two rows for one design version would leave the poll with two
+        answers and no way to say which is the truth."""
+        schema = SCHEMA_SQL.read_text(encoding="utf-8")
+        assert "idx_explanation_attempts_design_version" in schema
+        assert "ON explanation_attempts(circuit_id, version)" in schema
+
+    def test_the_model_and_the_schema_agree_on_the_columns(self):
+        from db.models import ExplanationAttempt
+        schema = SCHEMA_SQL.read_text(encoding="utf-8")
+        block = schema.split("CREATE TABLE explanation_attempts (", 1)[1].split(");", 1)[0]
+        for column in ExplanationAttempt.__table__.columns.keys():
+            if column == "id":
+                continue
+            assert column in block, f"explanation_attempts.{column} is on the model but not in schema.sql"
 
 
 class TestFailureNeverStopsTheApp:

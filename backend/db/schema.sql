@@ -113,6 +113,22 @@ CREATE TABLE generated_outputs (
 
 CREATE INDEX idx_generated_outputs_circuit_id ON generated_outputs(circuit_id);
 
+-- What was queued for a design version's explanation, and when. [2026-10-21, F-0006]
+-- The durable record of what we queued: the only way to tell a lost task from
+-- a slow one. `attempts` is the budget (first attempt plus one retry).
+CREATE TABLE explanation_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    circuit_id VARCHAR(36) NOT NULL REFERENCES circuit_designs(circuit_id) ON DELETE CASCADE,
+    version INTEGER NOT NULL DEFAULT 1,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    task_id VARCHAR(255),
+    queued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX idx_explanation_attempts_design_version
+    ON explanation_attempts(circuit_id, version);
+
 -- One row per request. PHASE_2_PLAN_v2.md §4.5.
 -- No foreign keys on purpose: an analytics log that participates in
 -- referential integrity can be rejected or cascade-deleted, and the rows worth

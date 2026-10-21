@@ -153,6 +153,37 @@ class GeneratedOutput(Base):
     design = relationship("CircuitDesign", back_populates="generated_outputs")
 
 
+class ExplanationAttempt(Base):
+    """
+    What was queued for a design version's explanation, and when. [2026-10-21, F-0006]
+
+    One row per (design, version). It is the durable record of what *we*
+    queued, which is the only way to tell a task that is lost from a task
+    that is merely slow: Celery's own state is PENDING both for a message
+    nobody ever took and for one that is waiting behind other work.
+
+    It also caps the attempts. The route used to re-queue on every poll
+    that landed while the task was running, and because the task id was
+    deterministic each re-queue replaced the attempt in flight — so the
+    result was never seen and the loop never ended. `attempts` is the
+    budget: the first attempt plus one retry, and no more.
+    """
+
+    __tablename__ = "explanation_attempts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    circuit_id = Column(String(36), ForeignKey("circuit_designs.circuit_id", ondelete="CASCADE"), nullable=False)
+    version = Column(Integer, nullable=False, default=1)
+    attempts = Column(Integer, nullable=False, default=0)
+    #: The Celery id of the newest attempt. Each attempt has its own id, so
+    #: a retry never replaces the attempt that is still running.
+    task_id = Column(String(255))
+    queued_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    design = relationship("CircuitDesign")
+
+
 class RequestLog(Base):
     """
     One row per request. PHASE_2_PLAN_v2.md §4.5.

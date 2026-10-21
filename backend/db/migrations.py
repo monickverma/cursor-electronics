@@ -44,13 +44,33 @@ MIGRATIONS: Sequence[str] = (
     " source VARCHAR(20) NOT NULL, part_number VARCHAR(100) NOT NULL,"
     " found BOOLEAN NOT NULL, fetched_at TIMESTAMPTZ NOT NULL, quote JSONB NOT NULL,"
     " PRIMARY KEY (source, part_number))",
+    # [2026-10-21, F-0006] — the explanation's attempt ledger: what was queued
+    # for a design version, and when. Caps the attempts and carries the task id
+    # of the newest one, so a retry never replaces the attempt in flight.
+    "CREATE TABLE IF NOT EXISTS explanation_attempts ("
+    " id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
+    " circuit_id VARCHAR(36) NOT NULL REFERENCES circuit_designs(circuit_id) ON DELETE CASCADE,"
+    " version INTEGER NOT NULL DEFAULT 1,"
+    " attempts INTEGER NOT NULL DEFAULT 0,"
+    " task_id VARCHAR(255),"
+    " queued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),"
+    " updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_explanation_attempts_design_version"
+    " ON explanation_attempts(circuit_id, version)",
 )
 
 
 def is_safe(statement: str) -> bool:
     """Additive and idempotent — the two properties a startup migration needs."""
     s = " ".join(statement.upper().split())
-    additive = ((s.startswith("ALTER TABLE") and " ADD COLUMN " in s) or s.startswith("CREATE INDEX")
+    # CREATE [UNIQUE] INDEX is additive: it constrains nothing that exists and
+    # it names rows it is meant to make unique. The uniqueness is the point of
+    # the index — a plain CREATE INDEX would not stop a second row for the same
+    # design version, and the ledger would then hold two attempts for one
+    # design with no way to say which is the truth.
+    additive = ((s.startswith("ALTER TABLE") and " ADD COLUMN " in s)
+                or s.startswith("CREATE INDEX")
+                or s.startswith("CREATE UNIQUE INDEX")
                 or s.startswith("CREATE TABLE IF NOT EXISTS"))
     return additive and "IF NOT EXISTS" in s and " DROP " not in s and " RENAME " not in s
 

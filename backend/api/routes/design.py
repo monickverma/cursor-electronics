@@ -21,7 +21,7 @@ from api.routes.firmware import firmware_view
 from core.config import settings
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
-from db.crud import list_user_designs, save_design, save_output
+from db.crud import list_user_designs, record_explanation_attempt, save_design, save_output
 from db.models import get_db
 from generators.bom.compiler import BOMCompiler
 from generators.compose import CompositionRefused, compose_intent
@@ -213,7 +213,13 @@ async def generate_design(
     #     and the build first. With no broker to take it, it is written here as
     #     it always was — slower, never absent without a reason.
     try:
-        queue_explanation(ir)
+        task_id = queue_explanation(ir)
+        # The attempt ledger: the durable record of what was queued and when.
+        # Without it the poll cannot tell a lost task from a slow one, and it
+        # re-queues on every poll that lands while the task is running —
+        # which, with a deterministic task id, replaces the attempt in flight
+        # and never ends. [2026-10-21, F-0006]
+        await record_explanation_attempt(db, ir.circuit_id, ir.version, 1, task_id)
     except Exception:  # noqa: BLE001 — no queue: fall back to writing it inline
         try:
             ctx.count_api_call()

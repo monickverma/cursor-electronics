@@ -292,6 +292,38 @@ async def finish_firmware_build(db: AsyncSession, build_hash: str, status: str, 
                      .values(status=status, log=log, seconds=seconds, finished_at=datetime.utcnow()))
 
 
+# ── The explanation's attempt ledger [2026-10-21, F-0006] ───────────────────
+
+async def get_explanation_attempt(db: AsyncSession, circuit_id: str, version: int):
+    """The design version's attempt row, or None if it has never been queued."""
+    from db.models import ExplanationAttempt
+
+    result = await db.execute(
+        select(ExplanationAttempt).where(
+            ExplanationAttempt.circuit_id == circuit_id,
+            ExplanationAttempt.version == version,
+        )
+    )
+    return result.scalars().first()
+
+
+async def record_explanation_attempt(db: AsyncSession, circuit_id: str, version: int,
+                                    attempts: int, task_id: Optional[str]) -> None:
+    """Write the attempt count and the id of the newest attempt. Upsert, in place."""
+    from db.models import ExplanationAttempt
+
+    row = await get_explanation_attempt(db, circuit_id, version)
+    if row is None:
+        row = ExplanationAttempt(circuit_id=circuit_id, version=version, attempts=attempts,
+                                 task_id=task_id, queued_at=datetime.utcnow())
+        db.add(row)
+    else:
+        row.attempts = attempts
+        row.task_id = task_id
+        row.queued_at = datetime.utcnow()
+    await db.flush()
+
+
 # ── [2026-09-25]: the live price cache ───────────────────────────────────────
 
 async def get_price_quotes(db: AsyncSession, source: str, keys: list[str]) -> dict:
