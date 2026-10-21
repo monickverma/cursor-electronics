@@ -1,0 +1,12 @@
+{
+  "id": "cut_track",
+  "defect_class": "open",
+  "rung": "exact",
+  "critical": true,
+  "base_netlist": "backend/pcb_engine/netlist_dht22.json",
+  "expected_check_ids": ["III.1"],
+  "expected_detector": "verify.py",
+  "description": "A routed track is severed mid-run, splitting the RELAY_CTRL net into two pieces of copper and leaving a required connection with no copper path between its pads.",
+  "seed_target": "tracks[25] of board_base.json — the RELAY_CTRL track on F.Cu, 0.3 mm wide, whose segment 4 is 8.202 mm long from (32.0,17.0) to (37.8,11.2). The run was split into two tracks of the same net, layer and width whose facing ends are 0.6 mm apart (a 0.3 mm band of copper removed, five times the 0.06 mm contact tolerance) at the segment midpoint (34.9,14.1). The site was chosen by the rule in mutate.py: among the (track, segment) pairs that (1) carry a net a copper plane does not already satisfy, (2) are long enough to hold the cut with a stub of at least 0.5 mm on each side, (3) have no via within the severed band, and (4) open a required connection when cut, take the one with the LONGEST segment; ties broken by (net, layer, track index, segment index). The result is 40 tracks in the base and 41 in the defective board — one track became two stubs, and nothing else changed.",
+  "notes": "The cut is a sever, not a deletion: the copper is still on the original path with the original width, so the board reads as a trace that stops and starts again rather than as missing copper. No netlist is changed — the two pads are still on the same net, and only the copper between them is gone. board_base.json passes III.1; board_defective.json fails III.1 (1 of 12 required connections have no copper path) and no other check changes."
+}

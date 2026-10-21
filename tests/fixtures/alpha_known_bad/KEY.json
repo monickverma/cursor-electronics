@@ -1,0 +1,253 @@
+{
+  "_comment": [
+    "THE ANSWER KEY. The overlooker NEVER sees this file.",
+    "",
+    "It says, for each seeded defect: what class it is, whether it is critical,",
+    "which check ids catch it, and which words in a finding count as naming it.",
+    "score_overlooker.py is the only thing that reads it.",
+    "",
+    "HOW TO USE IT: each seeded case is presented to the overlooker as a plain",
+    "request, with the defect's location unknown. The overlooker writes",
+    "findings.jsonl. score_overlooker.py reads both and reports recall, near",
+    "misses (flagged) and false passes.",
+    "",
+    "THE CLASSES ARE FROM THE HANDOFF, SECTION 3.2: 'seeded faults (cut track,",
+    "deleted via, bridged nets, swapped pins, reversed diode, mains gap under",
+    "5 mm, wrong cap value)'. The critical classes are named there too: short,",
+    "open, wrong pinout, reversed diode, creepage.",
+    "",
+    "A case that our OWN verifier cannot catch is still in this key, and its",
+    "expected_check_ids is empty. That is not an oversight: those are the cases",
+    "where the product itself has a named false pass (see each case's manifest,",
+    "and alpha/findings.jsonl). A detection there must come from the OVERLOOKER",
+    "reading the artifacts as an engineer would — from KiCad, from the BOM, from",
+    "the datasheet pinout table, from comparing what the product said against",
+    "what the product built. If the overlooker finds one of those, that is the",
+    "strongest result in the whole set."
+  ],
+  "version": 1,
+  "compiled": "2026-10-21",
+  "compiled_by": "master session",
+  "critical_classes": [
+    "short",
+    "open",
+    "wrong pinout",
+    "reversed diode",
+    "creepage"
+  ],
+  "cases": [
+    {
+      "id": "cut_track",
+      "defect_class": "open",
+      "critical": true,
+      "expected_check_ids": [
+        "III.1"
+      ],
+      "detection_keywords": [
+        "cut track",
+        "severed",
+        "open circuit",
+        "open connection",
+        "unrouted",
+        "no copper path",
+        "not connected",
+        "broken trace",
+        "cut trace",
+        "trace is broken",
+        "dht22_data",
+        "relay_ctrl",
+        "no copper joins",
+        "the copper is gone",
+        "pad is not connected"
+      ],
+      "artifact_hint": "cut_track",
+      "how_to_detect": "The copper that joined two pads is gone. III.1 (every required connection is realised in copper) fails. KiCad's DRC reports the unrouted ratsnest.",
+      "prompt_to_present": "Present the board as a plain request. The overlooker must find the severed trace without being told where it is.",
+      "artifact_names": [
+        "board_cut_track.json",
+        "board_cut_track_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_cut_track.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "deleted_via",
+      "defect_class": "open",
+      "critical": true,
+      "expected_check_ids": [
+        "III.1"
+      ],
+      "detection_keywords": [
+        "missing via",
+        "deleted via",
+        "via is gone",
+        "open circuit",
+        "open connection",
+        "unrouted",
+        "no copper path",
+        "not connected",
+        "dht22_data",
+        "layer transition",
+        "no via",
+        "there is no via",
+        "the via is missing"
+      ],
+      "artifact_hint": "deleted_via",
+      "how_to_detect": "A via that carried a net between F.Cu and B.Cu is gone, so the net is two islands. III.1 fails. The ratsnest in KiCad shows the unrouted connection.",
+      "prompt_to_present": "Present the board as a plain request.",
+      "artifact_names": [
+        "board_deleted_via.json",
+        "board_deleted_via_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_deleted_via.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "bridged_nets",
+      "defect_class": "short",
+      "critical": true,
+      "expected_check_ids": [
+        "III.2"
+      ],
+      "detection_keywords": [
+        "short circuit",
+        "is short",
+        "shorted",
+        "shorted together",
+        "bridged",
+        "solder bridge",
+        "shorts two nets",
+        "two nets joined",
+        "joined by copper",
+        "copper group carries more than one net",
+        "short between",
+        "a short on"
+      ],
+      "artifact_hint": "bridged_nets",
+      "how_to_detect": "Two different nets are joined by copper. III.2 (no copper group carries more than one net) fails. KiCad's DRC reports the short.",
+      "prompt_to_present": "Present the board as a plain request.",
+      "artifact_names": [
+        "board_bridged_nets.json",
+        "board_bridged_nets_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_bridged_nets.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "swapped_pins",
+      "defect_class": "wrong pinout",
+      "critical": true,
+      "expected_check_ids": [],
+      "detection_keywords": [
+        "emitter and collector",
+        "collector and emitter",
+        "swapped pins",
+        "transposed",
+        "transistor is backwards",
+        "reverse active",
+        "emitter follower",
+        "wired backwards",
+        "wrong pinout",
+        "pin 1 and pin 3",
+        "e-b-c",
+        "c-b-e",
+        "2n2222a",
+        "relay never actuates",
+        "relay does not actuate"
+      ],
+      "artifact_hint": "swapped_pins",
+      "how_to_detect": "Q1's emitter and collector are transposed, so the relay coil is switched from the emitter. The product's own verifier cannot see it: III.4 compares the board against the netlist it was compiled from, and IV.2 cannot run because part_pinouts.lookup finds no KiCad symbol for 2N2222A. A detection must come from the datasheet pinout table: the 2N2222A in TO-92 is E-B-C, and the board has the collector on pin 1.",
+      "prompt_to_present": "Present the board as a plain request. The overlooker is expected to compare the pinout against the datasheet.",
+      "artifact_names": [
+        "board_swapped_pins.json",
+        "board_swapped_pins_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_swapped_pins.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "reversed_diode",
+      "defect_class": "reversed diode",
+      "critical": true,
+      "expected_check_ids": [],
+      "detection_keywords": [
+        "reversed diode",
+        "diode is reversed",
+        "diode backwards",
+        "wrong way round",
+        "reverse polarity",
+        "cathode on",
+        "anode on",
+        "flyback diode is backwards",
+        "diode conducts",
+        "1n4148",
+        "sod-123",
+        "pad 1 is the cathode",
+        "banded end",
+        "cathode to the rail"
+      ],
+      "artifact_hint": "reversed_diode",
+      "how_to_detect": "D1, the 1N4148W-7-F flyback diode in SOD-123, is fitted the wrong way round: the anode is on the 5 V rail and the cathode on the switched load, so it conducts in the steady state it was meant to block and blocks the flyback it was meant to clamp. The product's own verifier cannot see it: IV.2 DOES run on this board (the symbol resolves) and passes, because it compares the symbol's terminals to the board's pads and never asks which net belongs on which terminal. A detection must come from the datasheet and the circuit: the cathode goes to the rail so the diode is reverse biased in steady state, and the banded end of a 1N4148W is the cathode.",
+      "prompt_to_present": "Present the board as a plain request. The overlooker is expected to compare the diode's polarity against the datasheet and the circuit's intent.",
+      "artifact_names": [
+        "board_reversed_diode.json",
+        "board_reversed_diode_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_reversed_diode.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "mains_gap",
+      "defect_class": "creepage",
+      "critical": true,
+      "expected_check_ids": [],
+      "detection_keywords": [
+        "creepage",
+        "clearance between mains",
+        "mains to selv",
+        "mains-to-selv",
+        "insulation",
+        "reinforced insulation",
+        "basic insulation",
+        "too close",
+        "5 mm",
+        "2.5 mm",
+        "spacing",
+        "mains net is too close",
+        "electrical gap"
+      ],
+      "artifact_hint": "mains_gap",
+      "how_to_detect": "A mains net and a SELV net are closer than the reinforced-insulation creepage figure for mains-to-SELV at 250 V. The product has NO mains template, NO creepage check and NO clearance rule of this kind; the only clearances it has are net-class DRC clearances in millimetres, not insulation ratings. A detection must come from measuring the geometry against the requirement, or from noticing that the product makes no safety claim at all.",
+      "prompt_to_present": "Present the board as a plain request.",
+      "artifact_names": [
+        "board_mains_gap.json",
+        "board_mains_gap_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_mains_gap.json. A finding that names the file it was given is about this board."
+    },
+    {
+      "id": "wrong_cap_value",
+      "defect_class": "wrong value",
+      "critical": false,
+      "expected_check_ids": [],
+      "detection_keywords": [
+        "wrong capacitor value",
+        "capacitor value does not match",
+        "value mismatch",
+        "100nf instead of",
+        "1uf instead of",
+        "wrong value",
+        "value is wrong",
+        "bom does not match",
+        "bom disagrees",
+        "decoupling value",
+        "capacitor is the wrong",
+        "stated value",
+        "does not match the request"
+      ],
+      "artifact_hint": "wrong_cap_value",
+      "how_to_detect": "The decoupling capacitor carries a capacitance other than the one the design states. A detection comes from reading the BOM value against the request — the requirement names a value and the part list says another.",
+      "prompt_to_present": "Present the board as a plain request. The request states the value; the overlooker must compare it against the BOM.",
+      "artifact_names": [
+        "board_wrong_cap_value.json",
+        "board_wrong_cap_value_defective.json"
+      ],
+      "_comment": "The master session hands this board over under the name board_wrong_cap_value.json. A finding that names the file it was given is about this board."
+    }
+  ]
+}

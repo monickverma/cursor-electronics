@@ -1,0 +1,12 @@
+{
+  "id": "deleted_via",
+  "defect_class": "open",
+  "rung": "exact",
+  "critical": true,
+  "base_netlist": "backend/pcb_engine/netlist_dht22.json",
+  "expected_check_ids": ["III.1"],
+  "expected_detector": "verify.py",
+  "description": "A via that carried DHT22_DATA between F.Cu and B.Cu is deleted, splitting the net into two islands of copper and leaving a required connection with no copper path between its pads.",
+  "seed_target": "vias[5] of board_base.json — the DHT22_DATA via at (13.4,16.6), 0.4 mm drill, 0.8 mm diameter. The via was deleted from the vias list. The site was chosen by the rule in mutate.py: among the vias that (1) carry a net whose copper exists on more than one signal layer, so that the via really is a layer transition, and (2) are load-bearing — removing the via opens a required connection that was closed before it was removed — take the one that sorts first on the total order (net, x, y). DHT22_DATA is the only net on this board routed across both layers through a via, and of its two vias only the one at (13.4,16.6) is load-bearing; the other, at (10.2,19.0), is a redundant drop to a through-hole pad that is still reached by the F.Cu track. The result is 7 vias in the base and 6 in the defective board — nothing else changed.",
+  "notes": "The defect lives in the copper, not in the netlist: the two pads it joined are still on DHT22_DATA, and only the piece of copper that made them one thing is gone. board_base.json passes III.1; board_defective.json fails III.1 (1 of 12 required connections have no copper path) and no other check changes."
+}

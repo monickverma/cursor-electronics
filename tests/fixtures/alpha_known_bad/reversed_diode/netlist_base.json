@@ -1,0 +1,80 @@
+{
+  "name": "board_5254ec06",
+  "board": {
+    "width": 63.5,
+    "height": 45.72,
+    "layers": 2
+  },
+  "ground_net": "GND",
+  "power_nets": [
+    "VCC_5V",
+    "GND"
+  ],
+  "components": [
+    {
+      "ref": "U1",
+      "mpn": "ATmega328P-PU",
+      "pins": {
+        "VCC": "VCC_5V",
+        "GND": "GND",
+        "D8": "SW_CTRL"
+      },
+      "package": "DIP-28",
+      "type": "microcontroller"
+    },
+    {
+      "ref": "Q1",
+      "mpn": "MMBT2222ALT1G",
+      "pins": {
+        "B": "SW_BASE",
+        "C": "SW_LOAD",
+        "E": "GND"
+      },
+      "package": "SOT-23",
+      "type": "transistor"
+    },
+    {
+      "ref": "R1",
+      "mpn": "RC0402FR-071K21L",
+      "pins": {
+        "A": "SW_CTRL",
+        "B": "SW_BASE"
+      },
+      "package": "0402",
+      "type": "resistor",
+      "value": "1210"
+    },
+    {
+      "ref": "J1",
+      "mpn": "22-27-2021",
+      "pins": {
+        "1": "VCC_5V",
+        "2": "SW_LOAD"
+      },
+      "package": "THT 2.54 mm, 2-pin",
+      "type": "connector",
+      "value": "166.667"
+    },
+    {
+      "ref": "D1",
+      "mpn": "1N4148W-7-F",
+      "pins": {
+        "A": "SW_LOAD",
+        "K": "VCC_5V"
+      },
+      "package": "SOD-123",
+      "type": "diode"
+    },
+    {
+      "ref": "C1",
+      "mpn": "CL05B104KO5NNNC",
+      "pins": {
+        "+": "VCC_5V",
+        "-": "GND"
+      },
+      "package": "0402",
+      "type": "capacitor",
+      "value": "100nF"
+    }
+  ]
+}

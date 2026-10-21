@@ -1,0 +1,37 @@
+[
+  {
+    "case": "bridged_nets",
+    "file": "board_bridged_nets.json",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "short",
+    "critical": true
+  },
+  {
+    "case": "cut_track",
+    "file": "board_cut_track.json",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "open",
+    "critical": true
+  },
+  {
+    "case": "deleted_via",
+    "file": "board_deleted_via.json",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "open",
+    "critical": true
+  },
+  {
+    "case": "reversed_diode",
+    "file": "board_reversed_diode.json",
+    "request": "An Arduino Uno drives a 30 mA inductive load through a transistor, with a flyback diode across the load. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "reversed diode",
+    "critical": true
+  },
+  {
+    "case": "swapped_pins",
+    "file": "board_swapped_pins.json",
+    "request": "An Arduino Uno reads a DHT22 sensor on a 2 metre cable, drives a relay through a 2N2222A, and lights an LED on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "wrong pinout",
+    "critical": true
+  }
+]
