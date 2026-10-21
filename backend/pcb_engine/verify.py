@@ -656,6 +656,98 @@ def _expected_pins(ref: str, package: str, pins: dict,
     return expected, undetermined, collisions
 
 
+def _check_pours(board: Board, uf, items) -> list[Finding]:
+    """III.1e / III.1f — the pour as realised copper (pour.py, since 2026-10-21),
+    checked with this file's own geometry. III.1c/d above ask whether a pour
+    *could* join the plane pads; these ask whether the one on the board does,
+    and whether it keeps its clearance doing so."""
+    import numpy as np
+
+    findings = []
+    for pour in board.pours:
+        g, half = pour.grid, pour.grid / math.sqrt(2)
+        ny = len(pour.rows)
+        nx = max((r[1] for row in pour.rows for r in row), default=0)
+        mask = np.zeros((ny, max(nx, 1)), dtype=bool)
+        runs = []                                     # (row, j0, j1)
+        for i, row in enumerate(pour.rows):
+            for j0, j1 in row:
+                mask[i, j0:j1] = True
+                runs.append((i, j0, j1))
+        xs, ys = (np.arange(mask.shape[1]) + 0.5) * g, (np.arange(ny) + 0.5) * g
+
+        # III.1e: every cell's whole square keeps clearance (centre >= cl + g/sqrt2).
+        bad: list[str] = []
+        e = EDGE_CLEARANCE + half
+        edge = mask & ~(((ys >= e) & (ys <= board.outline_h - e))[:, None] &
+                        ((xs >= e) & (xs <= board.outline_w - e))[None, :])
+        if edge.any():
+            bad.append(f"{int(edge.sum())} cell(s) closer than {EDGE_CLEARANCE} mm to the edge")
+        pour_cl = board.net_class_for(pour.net).clearance
+        for kind, o in items:
+            if o.net == pour.net or not _reaches(kind, o, pour.layer):
+                continue
+            (x0, y0, x1, y1), dist = _copper_shape(kind, o)
+            m = (max(pour_cl, board.net_class_for(o.net).clearance) if o.net else pour_cl) + half
+            i0, i1 = max(0, int((y0 - m) / g) - 1), min(ny, int((y1 + m) / g) + 2)
+            j0, j1 = max(0, int((x0 - m) / g) - 1), min(mask.shape[1], int((x1 + m) / g) + 2)
+            if i0 >= i1 or j0 >= j1 or not mask[i0:i1, j0:j1].any():
+                continue
+            X, Y = np.meshgrid(xs[j0:j1], ys[i0:i1])
+            hit = mask[i0:i1, j0:j1] & (dist(X, Y) < m)
+            if hit.any():
+                who = f"{o.ref}.{o.pin}" if kind == "pad" else kind
+                bad.append(f"{int(hit.sum())} cell(s) within clearance of {o.net or 'netless'} {who}")
+        findings.append(Finding(
+            "III.1e", f"the {pour.layer} {pour.net} pour keeps clearance from every other net",
+            "sound", "fail" if bad else "pass",
+            "; ".join(bad[:6]) if bad else
+            f"{pour.area_mm2():.0f} mm² of copper, every {g} mm cell clear by its whole "
+            f"square (may fail a good pour, never passes a bad one)"))
+
+        # III.1f: the realised pour joins every pad of its net into one piece.
+        base = len(items)
+        puf = _UF(base + len(runs))
+        for k in range(base):
+            puf.union(uf.find(k), k)
+        by_row: dict[int, list[int]] = defaultdict(list)
+        for r, (i, j0, j1) in enumerate(runs):
+            by_row[i].append(r)
+        for r, (i, j0, j1) in enumerate(runs):
+            for q in by_row.get(i - 1, ()):
+                _, a0, a1 = runs[q]
+                if a0 < j1 and j0 < a1:
+                    puf.union(base + r, base + q)
+        for k, (kind, o) in enumerate(items):
+            if o.net != pour.net or not _reaches(kind, o, pour.layer):
+                continue
+            (x0, y0, x1, y1), dist = _copper_shape(kind, o)
+            i0, i1 = max(0, int(y0 / g)), min(ny, int(y1 / g) + 1)
+            for i in range(i0, i1):
+                for r in by_row.get(i, ()):
+                    _, j0, j1 = runs[r]
+                    lo, hi = max(j0, int(x0 / g)), min(j1, int(x1 / g) + 1)
+                    if lo >= hi:
+                        continue
+                    X, Y = np.meshgrid(xs[lo:hi], ys[i:i + 1])
+                    if (dist(X, Y) <= 0).any():      # a cell centre inside the copper
+                        puf.union(k, base + r)
+        pads = [(k, o) for k, (kind, o) in enumerate(items) if kind == "pad" and o.net == pour.net]
+        roots: dict[int, list[str]] = defaultdict(list)
+        for k, o in pads:
+            roots[puf.find(k)].append(f"{o.ref}.{o.pin}")
+        pieces = sorted(roots.values(), key=len, reverse=True)
+        findings.append(Finding(
+            "III.1f", f"the realised {pour.layer} pour joins every {pour.net} pad into one piece",
+            "sound", "fail" if len(pieces) > 1 else "pass",
+            (f"{len(pieces)} separate pieces; apart from the largest: "
+             + "; ".join(", ".join(p[:4]) for p in pieces[1:5])) if len(pieces) > 1 else
+            f"{len(pads)} pad(s) on one piece of copper (a pad counts as joined only "
+            f"where a cell centre lies inside it)",
+            [x for p in pieces[1:] for x in p][:12]))
+    return findings
+
+
 def _check_footprint_parity(board: Board, netlist: dict | None) -> list[Finding]:
     if not netlist:
         return [Finding("III.3/III.4", "footprint matches the netlist", "unknown",
@@ -1060,6 +1152,7 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += _check_assembly(board)
     findings += _check_connectivity(board, uf, items, pad_index)
     findings += _check_shorts(board, uf, items, pad_index)
+    findings += _check_pours(board, uf, items)
     findings += _check_footprint_parity(board, netlist)
     findings += _check_land_patterns(board, netlist)
     findings += _check_part_pinouts(board, netlist)

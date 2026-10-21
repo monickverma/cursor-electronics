@@ -233,10 +233,28 @@ PLANNED = {
     # decisions.md [2026-10-09] — the independent judge of a compiled board.
     "pcb_engine/verify": {
         "file": "backend/pcb_engine/verify.py",
-        "test_file": "tests/test_pcb_verify.py",
+        "test_file": ["tests/test_pcb_verify.py", "tests/test_pcb_physics.py"],
         "entries": [
             ("verify_board",         "function", "Board IR + netlist → Report; every check carries its rung, unchecked is unknown"),
             ("unrouted_connections", "function", "Required connections with no copper path, by union-find over the copper"),
+        ],
+    },
+    # Physics report build step 1 (2026-10-21) — one stackup, the plane as copper.
+    "pcb_engine/stackup": {
+        "file": "backend/pcb_engine/stackup.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("Stackup",         "class",    "Copper and dielectric layers top to bottom, figures cited; one owner"),
+            ("default_stackup", "function", "1.6 mm FR-4, 1 oz, Er 4.0-4.8 (assumed; no fab named)"),
+            ("two_layer",       "function", "A two-layer stack of a given thickness and copper"),
+        ],
+    },
+    "pcb_engine/pour": {
+        "file": "backend/pcb_engine/pour.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("fill_pour",   "function", "Declared plane → realised copper cells: clearance, min width, no islands"),
+            ("fill_planes", "function", "Fill every declared plane on a board"),
         ],
     },
     "generators/pcb_netlist": {
