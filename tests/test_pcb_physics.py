@@ -206,3 +206,139 @@ class TestPour:
         sc = board_scene(compiled.board)
         assert sc["pours"] and sc["pours"][0]["net"] == compiled.board.pours[0].net
         assert sc["pours"][0]["rects"]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 2 — Quilter-equivalent physics rule checks, constraints from the IR
+# ─────────────────────────────────────────────────────────────────────────────
+import layout_rules
+from board_ir import Component, Pad, Via, NetClass, DiffPair
+from pour import fill_planes
+
+
+def _ic(ref, x, y, pins, kind="microcontroller"):
+    """A part with pads on a 2.54 mm column, pins {num: net}."""
+    pads = [Pad(ref, n, x, y + k * 2.54, 1.0, 1.0, net)
+            for k, (n, net) in enumerate(pins.items())]
+    return Component(ref, x, y, courtyard_w=3, courtyard_h=2.54 * len(pins) + 1,
+                     pads=pads, attrs={"type": kind})
+
+
+def _cap(ref, x, y, a, b):
+    return Component(ref, x, y, courtyard_w=2.0, courtyard_h=1.0, attrs={"type": "capacitor"},
+                     pads=[Pad(ref, "1", x - 0.75, y, 0.8, 0.9, a),
+                           Pad(ref, "2", x + 0.75, y, 0.8, 0.9, b)])
+
+
+NL = {"ground_net": "GND", "power_nets": ["VCC", "GND"]}
+
+
+def _rule_board(cap_x):
+    b = Board(name="rules", outline_w=40, outline_h=20,
+              layers=[Layer("F.Cu"), Layer("B.Cu", plane_net="GND")])
+    b.components = [_ic("U1", 5.0, 5.0, {"1": "VCC", "2": "GND", "3": "SIG"}),
+                    _cap("C1", cap_x, 5.0, "VCC", "GND")]
+    b.net_classes = [NetClass("power", ["VCC", "GND"], track_width=0.5, clearance=0.3, priority=10)]
+    c = b.component("C1")
+    b.tracks.append(Track("F.Cu", "VCC", 0.5, [(5.0, 5.0), (c.pads[0].x, 5.0)]))
+    b.vias += [Via(5.0, 7.54, "GND"), Via(c.pads[1].x, 5.0, "GND")]
+    return b
+
+
+def _rule(findings, check):
+    return next((f for f in findings if f.check == check), None)
+
+
+class TestLayoutRules:
+    def test_thresholds_are_cited_not_bare(self):
+        for name, rule in layout_rules.RULES.items():
+            assert rule.value > 0 and rule.source, name
+
+    def test_close_decoupling_cap_passes(self):
+        f = _rule(layout_rules.check_layout_rules(_rule_board(8.0), NL), "P.1")
+        assert f.rung == "rule check" and f.status == "pass", f.detail
+
+    def test_far_decoupling_cap_fails(self):
+        f = _rule(layout_rules.check_layout_rules(_rule_board(25.0), NL), "P.1")
+        assert f.status == "fail" and "C1" in f.detail
+
+    def test_decap_is_found_by_its_nets_and_type_not_its_name(self):
+        b = _rule_board(25.0)
+        b.component("C1").ref = "X9"
+        for p in b.component("X9").pads:
+            p.ref = "X9"
+        f = _rule(layout_rules.check_layout_rules(b, NL), "P.1")
+        assert f.status == "fail" and "X9" in f.detail
+
+    def test_decap_path_reports_length_and_vias(self):
+        f = _rule(layout_rules.check_layout_rules(_rule_board(8.0), NL), "P.1b")
+        assert f is not None and f.rung == "rule check"
+        assert "mm" in f.detail
+
+    def test_without_part_types_the_rule_says_unknown(self):
+        b = _rule_board(8.0)
+        for c in b.components:
+            c.attrs.pop("type")
+        f = _rule(layout_rules.check_layout_rules(b, NL), "P.1")
+        assert f.status == "unknown" and f.unknown_kind == "checkable, tool named"
+
+    def test_crystal_far_from_its_ic_fails(self):
+        b = _rule_board(8.0)
+        b.components[0].pads.append(Pad("U1", "4", 5.0, 12.62, 1.0, 1.0, "XTAL1"))
+        b.components.append(Component("Y1", 30.0, 10.0, attrs={"type": "crystal"}, pads=[
+            Pad("Y1", "1", 29.0, 10.0, 1.0, 1.0, "XTAL1"),
+            Pad("Y1", "2", 31.0, 10.0, 1.0, 1.0, "XTAL2")]))
+        f = _rule(layout_rules.check_layout_rules(b, NL), "P.2")
+        assert f.status == "fail" and "Y1" in f.detail
+
+    def test_width_span_fails_when_a_net_changes_width(self):
+        b = _rule_board(8.0)
+        b.tracks.append(Track("F.Cu", "VCC", 0.2, [(5.0, 5.0), (5.0, 2.0)]))
+        f = _rule(layout_rules.check_layout_rules(b, NL), "P.3")
+        assert f.status == "fail" and "VCC" in f.detail
+
+    def test_bus_net_over_a_pour_gap_fails_ground_overlap(self):
+        b = _rule_board(8.0)
+        b.tracks.append(Track("F.Cu", "SIG", 0.25, [(5.0, 10.08), (35.0, 10.08)]))
+        b.tracks.append(Track("B.Cu", "VCC", 1.5, [(20.0, 1.0), (20.0, 19.0)]))  # cuts the pour
+        fill_planes(b)
+        nl = {**NL, "net_types": {"SIG": "spi_sck"}}
+        f = _rule(layout_rules.check_layout_rules(b, nl), "P.4")
+        assert f.status == "fail" and "SIG" in f.detail
+
+    def test_bus_net_over_whole_pour_passes(self):
+        b = _rule_board(8.0)
+        b.tracks.append(Track("F.Cu", "SIG", 0.25, [(5.0, 10.08), (35.0, 10.08)]))
+        fill_planes(b)
+        nl = {**NL, "net_types": {"SIG": "spi_sck"}}
+        f = _rule(layout_rules.check_layout_rules(b, nl), "P.4")
+        assert f.status == "pass", f.detail
+
+    def test_diff_pair_spacing_out_of_span_fails(self):
+        b = _rule_board(8.0)
+        b.diff_pairs = [DiffPair("D", "DP", "DN", width=0.2, gap=0.15)]
+        b.tracks += [Track("F.Cu", "DP", 0.2, [(10.0, 15.0), (30.0, 15.0)]),
+                     Track("F.Cu", "DN", 0.2, [(10.0, 15.6), (30.0, 15.6)])]
+        f = _rule(layout_rules.check_layout_rules(b, NL), "P.5")
+        assert f.status == "fail"
+
+    def test_verify_board_runs_the_layout_rules(self):
+        rep = verify_board(_rule_board(25.0), NL)
+        assert _check(rep, "P.1").status == "fail"
+
+    def test_netlist_carries_net_types_from_the_ir(self):
+        from generators.netlist.pcb import PcbNetlistGenerator
+        from core.ir_examples import IR_002
+        nl = PcbNetlistGenerator().generate(IR_002)
+        assert nl["net_types"] and set(nl["net_types"].values()) - {"power", "ground"}
+
+
+def test_a_rule_check_failure_warns_but_does_not_refuse_fab_files():
+    """Rule-check thresholds are proposals until the owner confirms them; a miss
+    is shown and named in the gate, but only a decided failure refuses."""
+    rep = verify_board(_rule_board(25.0), NL)
+    assert _check(rep, "P.1").status == "fail"
+    assert all(f.check != "P.1" for f in rep.failed())
+    assert any(f.check == "P.1" for f in rep.warnings())
+    emit, why = rep.gate()
+    assert "P.1" in why

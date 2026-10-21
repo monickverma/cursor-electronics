@@ -242,6 +242,7 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
         "verified": rep.ok,
         "proven": rep.proven,
         "failed_checks": [f.check for f in rep.failed()],
+        "rule_warnings": [f.check for f in rep.warnings()],
     }
     title = (f"{b.name}   {stats['routed']}/{n} routed   "
              f"{s.errors} DRC errors   {s.vias} vias   {s.length_mm:.0f} mm")

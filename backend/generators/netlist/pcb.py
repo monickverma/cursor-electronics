@@ -60,5 +60,8 @@ class PcbNetlistGenerator:
             },
             "ground_net": ground_net,
             "power_nets": power_nets_dedup,
+            # Each net's IR signal type: the layout rules (pcb_engine/layout_rules.py)
+            # decide which nets are buses or clocks from this, never from the name.
+            "net_types": {n.id: n.type.value for n in ir.nodes},
             "components": components
         }

@@ -120,7 +120,13 @@ class Report:
     findings: list[Finding]
 
     def failed(self) -> list[Finding]:
-        return [f for f in self.findings if f.status == "fail"]
+        """Decided failures. A rule check's miss is a warning instead: its
+        thresholds are published charts or proposals, not a decision on this
+        board, so it is shown and named but does not refuse fab files."""
+        return [f for f in self.findings if f.status == "fail" and f.rung != "rule check"]
+
+    def warnings(self) -> list[Finding]:
+        return [f for f in self.findings if f.status == "fail" and f.rung == "rule check"]
 
     def unknown(self) -> list[Finding]:
         return [f for f in self.findings if f.status == "unknown"]
@@ -143,10 +149,13 @@ class Report:
     def gate(self) -> tuple[bool, str]:
         """Should this board be emitted? A decidable failure is a hard no."""
         bad = self.failed()
+        warn = self.warnings()
+        note = (f"; {len(warn)} rule check(s) missed: " + ", ".join(f.check for f in warn)
+                if warn else "")
         if bad:
-            return False, f"{len(bad)} check(s) failed: " + ", ".join(f.check for f in bad)
+            return False, f"{len(bad)} check(s) failed: " + ", ".join(f.check for f in bad) + note
         return True, ("proven by exact/sound checks" if self.proven
-                      else f"{len(self.unknown())} check(s) unproven (unknown rung)")
+                      else f"{len(self.unknown())} check(s) unproven (unknown rung)") + note
 
     def to_dict(self) -> dict:
         emit, why = self.gate()
@@ -1156,6 +1165,8 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += _check_footprint_parity(board, netlist)
     findings += _check_land_patterns(board, netlist)
     findings += _check_part_pinouts(board, netlist)
+    from layout_rules import check_layout_rules        # it imports Finding from here
+    findings += check_layout_rules(board, netlist)
     findings += _check_out_of_reach(board)
     return Report(board.name, findings)
 

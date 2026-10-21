@@ -257,6 +257,13 @@ PLANNED = {
             ("fill_planes", "function", "Fill every declared plane on a board"),
         ],
     },
+    "pcb_engine/layout_rules": {
+        "file": "backend/pcb_engine/layout_rules.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_layout_rules", "function", "Quilter-style physics rule checks P.1-P.5; part roles from the IR, thresholds cited"),
+        ],
+    },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
         "test_file": "tests/test_pcb_placement.py",
