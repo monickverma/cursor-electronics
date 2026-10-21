@@ -288,11 +288,18 @@ def drc(pcb: Path, out_dir: Path, parity: bool) -> dict:
     }
 
 
-def netlist(sch: Path, out_dir: Path) -> dict:
+def netlist(sch: Path | None, out_dir: Path, shipped: Path | None = None) -> dict:
+    """Export the netlist from the schematic, or take the one the design ships
+    (legacy KiCad 5 schematics, which kicad-cli 10 cannot read)."""
     out = out_dir / "reference.net"
-    proc = run(["sch", "export", "netlist", "--format", "kicadsexpr", "-o", str(out), str(sch)])
-    if not out.exists():
-        return {"error": (proc.stderr or proc.stdout)[-500:]}
+    if shipped is not None:
+        out.write_text(shipped.read_text(encoding="utf-8", errors="replace"), encoding="utf-8")
+        source = f"shipped by the design: {shipped.name}"
+    else:
+        proc = run(["sch", "export", "netlist", "--format", "kicadsexpr", "-o", str(out), str(sch)])
+        if not out.exists():
+            return {"error": (proc.stderr or proc.stdout)[-500:]}
+        source = f"kicad-cli sch export netlist: {sch.name}"
     tree = parse_sexpr(out.read_text(encoding="utf-8"))
     comps = child(tree, "components")
     nets = child(tree, "nets")
@@ -300,6 +307,7 @@ def netlist(sch: Path, out_dir: Path) -> dict:
     sizes = [len(children(n, "node")) for n in net_list]
     return {
         "file": out.name,
+        "source": source,
         "components": len(children(comps, "comp")) if comps else 0,
         "nets": len(net_list),
         "nets_with_2plus_nodes": sum(1 for s in sizes if s >= 2),
@@ -312,6 +320,7 @@ def main() -> int:
     ap.add_argument("pcb", type=Path)
     ap.add_argument("out_dir", type=Path)
     ap.add_argument("--sch", type=Path)
+    ap.add_argument("--net", type=Path, help="use this shipped netlist instead of exporting one")
     a = ap.parse_args()
     a.out_dir.mkdir(parents=True, exist_ok=True)
     sch = a.sch or a.pcb.with_suffix(".kicad_sch")
@@ -320,7 +329,8 @@ def main() -> int:
         "board_file": a.pcb.name,
         "board": board_metrics(a.pcb),
         "drc": drc(a.pcb, a.out_dir, parity=sch.exists()),
-        "netlist": netlist(sch, a.out_dir) if sch.exists() else {"error": "no schematic"},
+        "netlist": (netlist(None, a.out_dir, a.net) if a.net
+                    else netlist(sch, a.out_dir) if sch.exists() else {"error": "no schematic"}),
     }
     (a.out_dir / "reference_metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     b = metrics["board"]
