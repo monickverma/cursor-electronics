@@ -22,8 +22,10 @@ routed with one seed of the shipped router at the shipped grid (0.2 mm).
 """
 import pytest
 
-from pcb_engine import compile_board  # noqa: F401  (puts pcb_engine on sys.path)
-from pcb_engine.compile_board import from_netlist, place_constructive
+# From the package, never `pcb_engine.compile_board`: importing that submodule
+# rebinds the package's `compile_board` (the function) to the module, and every
+# later test that calls `pcb_engine.compile_board(nl)` fails.
+from pcb_engine import from_netlist, place_constructive
 from core import ir_examples
 from generators.netlist.pcb import PcbNetlistGenerator
 from kernel import drc, score
