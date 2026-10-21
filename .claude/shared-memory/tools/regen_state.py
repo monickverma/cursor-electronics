@@ -92,6 +92,8 @@ MODULES = {
     "pcb_engine/stackup":      {"file": "backend/pcb_engine/stackup.py",            "test": "tests/test_pcb_physics.py",        "phase": 3},
     "pcb_engine/pour":         {"file": "backend/pcb_engine/pour.py",               "test": "tests/test_pcb_physics.py",        "phase": 3},
     "pcb_engine/layout_rules": {"file": "backend/pcb_engine/layout_rules.py",       "test": "tests/test_pcb_physics.py",        "phase": 3},
+    "pcb_engine/layout_vi":    {"file": "backend/pcb_engine/layout_vi.py",          "test": "tests/test_pcb_physics.py",        "phase": 3},
+    "pcb_engine/iec60664":     {"file": "backend/pcb_engine/iec60664.py",           "test": "tests/test_pcb_physics.py",        "phase": 3},
     "generators/pcb_netlist":  {"file": "backend/generators/netlist/pcb.py",        "test": "tests/test_pcb_placement.py",                               "phase": 3},
     "api/routes/pcb":          {"file": "backend/api/routes/pcb.py",                "test": "tests/test_pcb_route.py",          "phase": 3},
 

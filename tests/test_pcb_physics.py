@@ -342,3 +342,117 @@ def test_a_rule_check_failure_warns_but_does_not_refuse_fab_files():
     assert any(f.check == "P.1" for f in rep.warnings())
     emit, why = rep.gate()
     assert "P.1" in why
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 3 — layout-level current, and clearance/creepage from the IEC tables
+# ─────────────────────────────────────────────────────────────────────────────
+import iec60664
+import layout_vi
+
+
+def _power_board(width):
+    b = Board(name="vi", outline_w=40, outline_h=20, layers=[Layer("F.Cu"), Layer("B.Cu")])
+    b.components = [_cap("C1", 5.0, 10.0, "VCC", "GND"), _cap("C2", 30.0, 10.0, "VCC", "GND")]
+    b.tracks.append(Track("F.Cu", "VCC", width, [(4.25, 10.0), (29.25, 10.0)]))
+    return b
+
+
+class TestTraceCurrent:
+    def test_ipc2221_width_for_2a_on_1oz_outer(self):
+        # IPC-2221: I = 0.048 dT^0.44 A^0.725 (A in mil^2) -> about 0.78 mm at 2 A, 10 K
+        w = layout_vi.required_width_mm(2.0, 0.035, external=True, rise_k=10)
+        assert 0.70 < w < 0.86
+
+    def test_narrow_trace_for_its_current_fails(self):
+        nl = {**NL, "net_currents_a": {"VCC": 2.0}}
+        f = _rule(layout_vi.check_trace_current(_power_board(0.2), nl), "V.4")
+        assert f.rung == "rule check" and f.status == "fail" and "VCC" in f.detail
+
+    def test_wide_enough_trace_passes(self):
+        nl = {**NL, "net_currents_a": {"VCC": 2.0}}
+        f = _rule(layout_vi.check_trace_current(_power_board(1.0), nl), "V.4")
+        assert f.status == "pass", f.detail
+
+    def test_thicker_copper_from_the_stackup_needs_less_width(self):
+        b = _power_board(0.5)
+        nl = {**NL, "net_currents_a": {"VCC": 2.0}}
+        assert _rule(layout_vi.check_trace_current(b, nl), "V.4").status == "fail"
+        b.stackup = stackup_mod.two_layer(copper_mm=0.070)
+        assert _rule(layout_vi.check_trace_current(b, nl), "V.4").status == "pass"
+
+    def test_without_currents_it_is_unknown_and_names_the_input(self):
+        f = _rule(layout_vi.check_trace_current(_power_board(0.2), NL), "V.4")
+        assert f.status == "unknown" and f.unknown_kind == "checkable, tool named"
+
+    def test_netlist_carries_currents_and_voltages_from_the_ir(self):
+        from generators.netlist.pcb import PcbNetlistGenerator
+        from core.ir_examples import IR_001
+        nl = PcbNetlistGenerator().generate(IR_001)
+        assert nl["net_currents_a"] and all(v > 0 for v in nl["net_currents_a"].values())
+        assert "net_voltages" in nl
+
+
+def _mains_board(gap):
+    """A 230 V pad and a 5 V pad, edge to edge `gap` mm apart on F.Cu."""
+    b = Board(name="mains", outline_w=40, outline_h=20, layers=[Layer("F.Cu"), Layer("B.Cu")])
+    b.components = [
+        Component("J1", 10.0, 10.0, attrs={"type": "connector"},
+                  pads=[Pad("J1", "1", 10.0, 10.0, 2.0, 2.0, "L", shape="th")]),
+        Component("C1", 11.0 + gap + 0.4, 10.0, attrs={"type": "capacitor"},
+                  pads=[Pad("C1", "1", 11.0 + gap + 0.4, 10.0, 0.8, 0.9, "VCC")])]
+    return b
+
+
+MAINS = {"ground_net": "GND", "power_nets": ["VCC", "GND"],
+         "net_voltages": {"L": 230.0, "VCC": 5.0, "GND": 0.0}}
+
+
+class TestInsulation:
+    def test_table_is_cited_and_marked_unverified(self):
+        assert iec60664.SOURCE and iec60664.VERIFIED is False
+        assert iec60664.creepage_mm(250, pollution=2, group="III") == pytest.approx(2.5)
+
+    def test_reinforced_is_derived_from_the_table_not_a_constant(self):
+        basic = iec60664.creepage_mm(250, pollution=2, group="III")
+        assert iec60664.creepage_mm(250, pollution=2, group="III",
+                                    insulation="reinforced") == pytest.approx(2 * basic)
+        # a different material group moves the reinforced figure with it
+        assert iec60664.creepage_mm(250, pollution=2, group="I", insulation="reinforced") \
+            == pytest.approx(2 * iec60664.creepage_mm(250, pollution=2, group="I"))
+
+    def test_clearance_reinforced_uses_the_next_impulse_step(self):
+        assert iec60664.clearance_mm(230, ovc="II", pollution=2) == pytest.approx(1.5)
+        assert iec60664.clearance_mm(230, ovc="II", pollution=2,
+                                     insulation="reinforced") == pytest.approx(3.0)
+
+    def test_mains_to_selv_at_3mm_fails_reinforced(self):
+        f = _rule(layout_vi.check_insulation(_mains_board(3.0), MAINS), "V.6")
+        assert f.status == "fail" and "reinforced" in f.detail
+        assert f.rung == "sound"
+        assert "5.0" in f.detail          # the required figure, from the table
+
+    def test_mains_to_selv_at_6mm_passes(self):
+        f = _rule(layout_vi.check_insulation(_mains_board(6.0), MAINS), "V.6")
+        assert f.status == "pass", f.detail
+        assert "unverified" in f.detail
+
+    def test_a_declared_basic_class_is_honoured(self):
+        nl = {**MAINS, "insulation": [{"a": ["L"], "b": ["VCC"], "class": "basic"}]}
+        assert _rule(layout_vi.check_insulation(_mains_board(3.0), nl), "V.6").status == "pass"
+
+    def test_low_voltage_boards_are_out_of_scope(self):
+        nl = {**MAINS, "net_voltages": {"VCC": 5.0, "GND": 0.0}}
+        f = _rule(layout_vi.check_insulation(_mains_board(0.5), nl), "V.6")
+        assert f.status == "pass" and "50 V" in f.detail
+
+    def test_without_voltages_it_is_unknown(self):
+        f = _rule(layout_vi.check_insulation(_mains_board(3.0), NL), "V.6")
+        assert f.status == "unknown"
+
+    def test_verify_board_runs_v4_and_v6(self):
+        rep = verify_board(_mains_board(3.0), MAINS)
+        assert _check(rep, "V.6").status == "fail"
+        assert _check(rep, "V.4") is not None
+        emit, _ = rep.gate()
+        assert not emit                    # a safety spacing failure refuses fab files

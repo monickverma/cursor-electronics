@@ -1108,7 +1108,7 @@ def _check_out_of_reach(board: Board) -> list[Finding]:
     said all of it needed an EM solver or a bench; that was false for DC drop,
     trace current and clearance, which are arithmetic on copper and tables.
     Each V branch is replaced by its check as the physics report's build table
-    (steps 1-5) lands."""
+    (steps 1-5) lands: V.4 and V.6 live in layout_vi.py since step 3."""
     sim, named, never = ("checkable by simulation, not run", "checkable, tool named",
                          "not checkable")
     return [
@@ -1127,20 +1127,10 @@ def _check_out_of_reach(board: Board) -> list[Finding]:
                 "DC drop is a resistor-mesh solve on the copper (build step 4); AC "
                 "impedance needs loop R(f), L(f) and an ngspice sweep (build step 5)",
                 unknown_kind=named, tool="sparse resistor mesh (scipy.sparse)"),
-        Finding("V.4", "each trace carries its current without overheating",
-                "unknown", "unknown",
-                "trace width against the current the schematic proofs compute, by "
-                "the IPC-2152 charts (build step 3)", unknown_kind=named,
-                tool="IPC-2152 charts"),
         Finding("V.5", "the board passes EMI/EMC", "unknown", "unknown",
                 "no sound software check exists; emission prediction carries "
                 "order-10 dB uncertainty and only a chamber settles it",
                 unknown_kind=never),
-        Finding("V.6", "clearance and creepage hold for each working voltage",
-                "unknown", "unknown",
-                "distances against the IEC 60664-1 / 62368-1 tables for the "
-                "insulation class each pair of nets needs (build step 3)",
-                unknown_kind=named, tool="IEC 60664-1 tables"),
         Finding("VI", "the design itself is electrically correct", "unknown",
                 "unknown",
                 "analog functional correctness is undecidable in general; see "
@@ -1167,6 +1157,8 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += _check_part_pinouts(board, netlist)
     from layout_rules import check_layout_rules        # it imports Finding from here
     findings += check_layout_rules(board, netlist)
+    from layout_vi import check_layout_vi                # V.4 current, V.6 insulation
+    findings += check_layout_vi(board, netlist)
     findings += _check_out_of_reach(board)
     return Report(board.name, findings)
 

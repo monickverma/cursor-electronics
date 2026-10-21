@@ -264,6 +264,23 @@ PLANNED = {
             ("check_layout_rules", "function", "Quilter-style physics rule checks P.1-P.5; part roles from the IR, thresholds cited"),
         ],
     },
+    "pcb_engine/layout_vi": {
+        "file": "backend/pcb_engine/layout_vi.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_trace_current", "function", "V.4 — trace width vs the IR's net current, IPC-2221, stackup copper"),
+            ("check_insulation",    "function", "V.6 — clearance/creepage vs IEC 60664-1; mains-to-SELV reinforced"),
+            ("required_width_mm",   "function", "IPC-2221 width for a current and temperature rise"),
+        ],
+    },
+    "pcb_engine/iec60664": {
+        "file": "backend/pcb_engine/iec60664.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("creepage_mm",  "function", "Table F.4 creepage; reinforced = 2 x basic (unverified transcription)"),
+            ("clearance_mm", "function", "Tables F.1/F.2/A.2 clearance; reinforced = next impulse step"),
+        ],
+    },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
         "test_file": "tests/test_pcb_placement.py",
