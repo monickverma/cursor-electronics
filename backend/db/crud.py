@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select, update
@@ -74,7 +74,7 @@ async def update_design_ir(db: AsyncSession, circuit_id: str, ir: CircuitIR) -> 
             ir_json=ir.model_dump(mode="json"),
             version=ir.version,
             simulation_passed=ir.simulation_passed,
-            updated_at=datetime.utcnow(),
+            updated_at=datetime.now(timezone.utc),
         )
     )
 
@@ -112,7 +112,7 @@ async def update_design_revision(
             intent_ir=intent_ir,
             version=ir.version,
             simulation_passed=ir.simulation_passed,
-            updated_at=datetime.utcnow(),
+            updated_at=datetime.now(timezone.utc),
         )
     )
     return result.rowcount == 1
@@ -122,7 +122,7 @@ async def update_design_annotations(db: AsyncSession, circuit_id: str, annotatio
     await db.execute(
         update(CircuitDesign)
         .where(CircuitDesign.circuit_id == circuit_id)
-        .values(annotations=annotations, updated_at=datetime.utcnow())
+        .values(annotations=annotations, updated_at=datetime.now(timezone.utc))
     )
 
 
@@ -179,9 +179,9 @@ async def update_simulation_run(
     if duration_ms is not None:
         values["duration_ms"] = duration_ms
     if status == "running":
-        values["started_at"] = datetime.utcnow()
+        values["started_at"] = datetime.now(timezone.utc)
     elif status in ("complete", "failed"):
-        values["completed_at"] = datetime.utcnow()
+        values["completed_at"] = datetime.now(timezone.utc)
 
     await db.execute(
         update(SimulationRun)
@@ -272,7 +272,7 @@ async def queue_firmware_build(db: AsyncSession, build_hash: str, target: str) -
     from db.models import FirmwareBuild
 
     await db.execute(insert(FirmwareBuild).values(build_hash=build_hash, target=target, status="queued",
-                                                  created_at=datetime.utcnow())
+                                                  created_at=datetime.now(timezone.utc))
                      .on_conflict_do_nothing(index_elements=["build_hash"]))
 
 
@@ -282,14 +282,14 @@ async def requeue_firmware_build(db: AsyncSession, build_hash: str) -> None:
 
     await db.execute(update(FirmwareBuild)
                      .where(FirmwareBuild.build_hash == build_hash, FirmwareBuild.status == "queued")
-                     .values(created_at=datetime.utcnow()))
+                     .values(created_at=datetime.now(timezone.utc)))
 
 
 async def finish_firmware_build(db: AsyncSession, build_hash: str, status: str, log: str, seconds: float) -> None:
     from db.models import FirmwareBuild
 
     await db.execute(update(FirmwareBuild).where(FirmwareBuild.build_hash == build_hash)
-                     .values(status=status, log=log, seconds=seconds, finished_at=datetime.utcnow()))
+                     .values(status=status, log=log, seconds=seconds, finished_at=datetime.now(timezone.utc)))
 
 
 # ── The explanation's attempt ledger [2026-10-21, F-0006] ───────────────────
@@ -315,12 +315,12 @@ async def record_explanation_attempt(db: AsyncSession, circuit_id: str, version:
     row = await get_explanation_attempt(db, circuit_id, version)
     if row is None:
         row = ExplanationAttempt(circuit_id=circuit_id, version=version, attempts=attempts,
-                                 task_id=task_id, queued_at=datetime.utcnow())
+                                 task_id=task_id, queued_at=datetime.now(timezone.utc))
         db.add(row)
     else:
         row.attempts = attempts
         row.task_id = task_id
-        row.queued_at = datetime.utcnow()
+        row.queued_at = datetime.now(timezone.utc)
     await db.flush()
 
 

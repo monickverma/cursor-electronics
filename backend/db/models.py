@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -17,6 +17,22 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
+def _utcnow() -> datetime:
+    """Now, in UTC, as an AWARE datetime.
+
+    `datetime.utcnow()` returns the UTC wall clock with no tzinfo. asyncpg
+    reads a naive datetime as LOCAL time, so on a host that is not UTC the
+    value lands in the past by the local offset — 5.5 hours on this machine.
+    A `timestamptz` column then says the row was written hours ago, and any
+    age comparison built on it ("is this design stale?") is wrong.
+
+    An aware datetime carries its own offset, so the same value is stored
+    correctly everywhere. Python 3.12 deprecates `utcnow()` for the same
+    reason.
+    """
+    return datetime.now(timezone.utc)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -25,8 +41,8 @@ class User(Base):
     hashed_password = Column(String(255))
     tier = Column(String(20), nullable=False, default="free")
     is_active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     designs = relationship("CircuitDesign", back_populates="user", cascade="all, delete-orphan")
@@ -39,8 +55,8 @@ class Project(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     user = relationship("User", back_populates="projects")
     designs = relationship("CircuitDesign", back_populates="project")
@@ -66,8 +82,8 @@ class CircuitDesign(Base):
     intent_ir = Column(JSONB)
     annotations = Column(JSONB)
     simulation_passed = Column(Boolean)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     user = relationship("User", back_populates="designs")
     project = relationship("Project", back_populates="designs")
@@ -90,7 +106,7 @@ class SimulationRun(Base):
     duration_ms = Column(Integer)
     started_at = Column(DateTime(timezone=True))
     completed_at = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
 
     design = relationship("CircuitDesign", back_populates="simulation_runs")
 
@@ -105,7 +121,7 @@ class FirmwareBuild(Base):
     status = Column(String(20), nullable=False, default="queued")   # queued | passed | failed
     log = Column(Text)
     seconds = Column(Float)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
     finished_at = Column(DateTime(timezone=True))
 
 
@@ -135,7 +151,7 @@ class PatchHistory(Base):
     patch_json = Column(JSONB)
     change_summary = Column(Text)
     prompted_by = Column(Text)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=_utcnow)
 
     design = relationship("CircuitDesign", back_populates="patch_history")
 
@@ -148,7 +164,7 @@ class GeneratedOutput(Base):
     output_type = Column(String(30), nullable=False)
     file_content = Column(Text, nullable=False)
     file_name = Column(String(255))
-    generated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    generated_at = Column(DateTime(timezone=True), default=_utcnow)
 
     design = relationship("CircuitDesign", back_populates="generated_outputs")
 
@@ -178,8 +194,8 @@ class ExplanationAttempt(Base):
     #: The Celery id of the newest attempt. Each attempt has its own id, so
     #: a retry never replaces the attempt that is still running.
     task_id = Column(String(255))
-    queued_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    queued_at = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     design = relationship("CircuitDesign")
 

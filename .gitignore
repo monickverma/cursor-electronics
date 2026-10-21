@@ -15,6 +15,12 @@ _to_delete/
 # requires them committed. Added 2026-10-21 with the Alpha program.
 !.claude/shared-memory/alpha/*.jsonl
 
+# …and the overlooker's own run records, one file per board. These are the
+# evidence for the A1 recall number, so they are program state too, not a
+# runtime sidecar. A gitignore `*` does not cross a `/`, so each level needs
+# its own exception. Added 2026-10-22 with the A1 calibration run.
+!.claude/shared-memory/alpha/runs/*.jsonl
+
 # Python
 __pycache__/
 *.py[cod]
