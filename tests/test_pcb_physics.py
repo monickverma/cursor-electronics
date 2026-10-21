@@ -456,3 +456,116 @@ class TestInsulation:
         assert _check(rep, "V.4") is not None
         emit, _ = rep.gate()
         assert not emit                    # a safety spacing failure refuses fab files
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 4 — DC IR drop on the copper, one engine (numpy); padne blocked
+# ─────────────────────────────────────────────────────────────────────────────
+import dc_drop
+from stackup import COPPER_RESISTIVITY_OHM_M as RHO
+
+
+def _two_part(length, width, amps=1.0, gnd_track=True):
+    """Source J1 at x=2, load U1 at x=2+length; VCC and GND as straight tracks."""
+    b = Board(name="drop", outline_w=length + 8, outline_h=12,
+              layers=[Layer("F.Cu"), Layer("B.Cu")])
+    x0, x1 = 2.0, 2.0 + length
+    b.components = [
+        Component("J1", x0, 6, attrs={"type": "connector"},
+                  pads=[Pad("J1", "1", x0, 4.0, 1.0, 1.0, "VCC"),
+                        Pad("J1", "2", x0, 8.0, 1.0, 1.0, "GND")]),
+        Component("U1", x1, 6, attrs={"type": "sensor", "current_a": amps},
+                  pads=[Pad("U1", "1", x1, 4.0, 1.0, 1.0, "VCC"),
+                        Pad("U1", "2", x1, 8.0, 1.0, 1.0, "GND")])]
+    b.tracks.append(Track("F.Cu", "VCC", width, [(x0, 4.0), (x1, 4.0)]))
+    if gnd_track:
+        b.tracks.append(Track("F.Cu", "GND", width, [(x0, 8.0), (x1, 8.0)]))
+    return b
+
+
+DROP_NL = {"ground_net": "GND", "power_nets": ["VCC", "GND"],
+           "net_voltages": {"VCC": 5.0, "GND": 0.0}}
+
+
+class TestDcDrop:
+    def test_straight_track_matches_rho_l_over_a(self):
+        b = _two_part(20.0, 0.5)
+        r = RHO * 20e-3 / (0.5e-3 * 0.035e-3)
+        drops = dc_drop.rail_drops(b, DROP_NL)
+        d = drops["VCC"]["U1"]
+        assert d["rail_v"] == pytest.approx(r * 1.0, rel=0.01)
+        assert d["ground_v"] == pytest.approx(r * 1.0, rel=0.01)
+        assert d["total_v"] == pytest.approx(2 * r, rel=0.01)
+
+    def test_drop_scales_with_the_stackup_copper(self):
+        b = _two_part(20.0, 0.5)
+        b.stackup = stackup_mod.two_layer(copper_mm=0.070)
+        d = dc_drop.rail_drops(b, DROP_NL)["VCC"]["U1"]
+        assert d["rail_v"] == pytest.approx(RHO * 20e-3 / (0.5e-3 * 0.070e-3), rel=0.01)
+
+    def test_ground_through_the_pour_is_bounded_by_sheet_resistance(self):
+        b = _two_part(18.0, 0.5, gnd_track=False)
+        b.layers = [Layer("F.Cu", plane_net="GND"), Layer("B.Cu")]
+        for c in b.components:
+            g = next(p for p in c.pads if p.net == "GND")
+            g.h = 3.0
+            g.y = 8.5
+        b.outline_h = 11.0
+        fill_planes(b)
+        d = dc_drop.rail_drops(b, DROP_NL)["VCC"]["U1"]
+        # never less than a full-width sheet between the pads; the model only drops copper
+        sheet = RHO / 0.035e-3
+        widest = b.outline_h            # no pour can be wider than the board
+        assert d["ground_v"] >= sheet * 17.0 / widest * 0.99
+        assert d["ground_v"] < sheet * 17.0 / 2.0      # and far below a 2 mm strip
+
+    def test_thin_long_rail_fails_the_budget(self):
+        b = _two_part(60.0, 0.2)
+        f = _rule(dc_drop.check_dc_drop(b, DROP_NL), "V.3")
+        assert f.status == "fail" and f.rung == "simulated" and f.tool
+        assert "U1" in f.detail
+
+    def test_short_wide_rail_passes(self):
+        f = _rule(dc_drop.check_dc_drop(_two_part(10.0, 1.0), DROP_NL), "V.3")
+        assert f.status == "pass", f.detail
+
+    def test_an_unconnected_load_fails(self):
+        b = _two_part(20.0, 0.5)
+        b.tracks = [t for t in b.tracks if t.net != "VCC"]
+        f = _rule(dc_drop.check_dc_drop(b, DROP_NL), "V.3")
+        assert f.status == "fail" and "not connected" in f.detail
+
+    def test_without_a_source_it_is_unknown(self):
+        b = _two_part(20.0, 0.5)
+        b.component("J1").attrs["type"] = "resistor"
+        f = _rule(dc_drop.check_dc_drop(b, DROP_NL), "V.3")
+        assert f.status == "unknown" and f.unknown_kind == "checkable, tool named"
+
+    def test_a_declared_source_overrides(self):
+        b = _two_part(20.0, 0.5)
+        b.component("J1").attrs["type"] = "resistor"
+        f = _rule(dc_drop.check_dc_drop(b, {**DROP_NL, "rail_sources": {"VCC": "J1"}}), "V.3")
+        assert f.status == "pass"
+
+    def test_netlist_carries_per_part_current_onto_the_board(self):
+        from generators.netlist.pcb import PcbNetlistGenerator
+        from core.ir_examples import IR_001
+        from compile_board import from_netlist
+        nl = PcbNetlistGenerator().generate(IR_001)
+        assert any("current_a" in c for c in nl["components"])
+        b, _ = from_netlist(nl)
+        assert any(c.attrs.get("current_a") for c in b.components)
+
+    def test_verify_board_reports_dc_drop_in_v3(self):
+        rep = verify_board(_two_part(60.0, 0.2), DROP_NL)
+        assert _check(rep, "V.3").status == "fail"
+        assert _check(rep, "V.3b") is not None      # AC, separately
+
+
+def test_a_load_with_no_ground_pad_is_judged_on_its_rail_alone():
+    b = _two_part(20.0, 0.5)
+    u = b.component("U1")
+    u.pads = [p for p in u.pads if p.net != "GND"]     # a pull-up: returns through others
+    d = dc_drop.rail_drops(b, DROP_NL)["VCC"]["U1"]
+    assert d["ground_v"] == 0.0 and d["total_v"] == pytest.approx(d["rail_v"])
+    assert _rule(dc_drop.check_dc_drop(b, DROP_NL), "V.3").status == "pass"
