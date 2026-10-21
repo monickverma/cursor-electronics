@@ -30,6 +30,7 @@ from ai.intent_patcher import IntentPatcher, IntentPatchError
 from api.routes.auth import get_current_user
 from api.routes.firmware import firmware_view
 from core.annotations import Annotation, attach, validate_annotations
+from core.config import settings
 from core.intent_ir import IntentIR
 from core.intent_patch import PatchError, PatchOp, apply_patch
 from core.ir_schema import CircuitIR
@@ -160,7 +161,7 @@ def _annotation_view(report) -> dict:
 # ── POST /{circuit_id}/patch ─────────────────────────────────────────────────
 
 @router.post("/{circuit_id}/patch", response_model=PatchResponse)
-@limiter.limit("20/hour")
+@limiter.limit(settings.rate_limit_patch)
 async def patch_design(
     request: Request,
     circuit_id: str,
