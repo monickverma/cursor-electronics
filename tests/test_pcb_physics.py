@@ -569,3 +569,65 @@ def test_a_load_with_no_ground_pad_is_judged_on_its_rail_alone():
     d = dc_drop.rail_drops(b, DROP_NL)["VCC"]["U1"]
     assert d["ground_v"] == 0.0 and d["total_v"] == pytest.approx(d["rail_v"])
     assert _rule(dc_drop.check_dc_drop(b, DROP_NL), "V.3").status == "pass"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 5 (partial) — closed-form lumped PDN loop impedance; PyPEEC blocked
+# ─────────────────────────────────────────────────────────────────────────────
+import pdn
+
+
+class TestPdn:
+    def test_capacitance_values_parse(self):
+        assert pdn.parse_farads("100nF") == pytest.approx(1e-7)
+        assert pdn.parse_farads("0.1uF") == pytest.approx(1e-7)
+        assert pdn.parse_farads("10µF") == pytest.approx(1e-5)
+        assert pdn.parse_farads("100n") == pytest.approx(1e-7)
+        assert pdn.parse_farads("banana") is None
+
+    def test_trace_inductance_grows_with_length_and_height(self):
+        a = pdn.trace_over_plane_h(5.0, 0.5, 1.53)
+        assert a > 0
+        assert pdn.trace_over_plane_h(10.0, 0.5, 1.53) == pytest.approx(2 * a)
+        assert pdn.trace_over_plane_h(5.0, 0.5, 0.2) < a
+
+    def test_via_inductance_goldfarb(self):
+        # Goldfarb & Pucel: L = 0.2 h (ln(4h/d) + 1) nH, h and d in mm
+        h, d = 1.6, 0.4
+        import math
+        assert pdn.via_h(h, d) == pytest.approx(0.2e-9 * h * (math.log(4 * h / d) + 1))
+
+    def test_series_rlc_minimum_is_at_resonance(self):
+        import math
+        L, C, R = 2e-9, 1e-7, 0.02
+        f0 = 1 / (2 * math.pi * math.sqrt(L * C))
+        assert abs(pdn.z_series(f0, R, L, C)) == pytest.approx(R, rel=1e-6)
+
+    def _board(self, cap_x=8.0, value="100nF"):
+        b = _rule_board(cap_x)
+        b.component("C1").attrs["value"] = value
+        b.component("U1").attrs["current_a"] = 0.05
+        fill_planes(b)
+        return b
+
+    def test_without_a_bandwidth_it_is_unknown_but_shows_the_numbers(self):
+        f = _rule(pdn.check_pdn(self._board(), {**NL, "net_voltages": {"VCC": 5.0}}), "V.3b")
+        assert f.status == "unknown" and f.unknown_kind == "checkable, tool named"
+        assert "C1" in f.detail and "nH" in f.detail
+
+    def test_meets_a_generous_target_within_the_band(self):
+        nl = {**NL, "net_voltages": {"VCC": 5.0}, "pdn_bandwidth_hz": {"U1": 10e6}}
+        f = _rule(pdn.check_pdn(self._board(), nl), "V.3b")
+        assert f.status == "pass" and f.rung == "simulated" and f.tool, f.detail
+
+    def test_misses_a_target_when_the_band_is_far_above_resonance(self):
+        b = self._board()
+        b.component("U1").attrs["current_a"] = 5.0                    # tiny target
+        nl = {**NL, "net_voltages": {"VCC": 5.0}, "pdn_bandwidth_hz": {"U1": 500e6}}
+        f = _rule(pdn.check_pdn(b, nl), "V.3b")
+        assert f.status == "fail" and "U1" in f.detail
+
+    def test_verify_board_reports_v3b_from_the_model(self):
+        nl = {**NL, "net_voltages": {"VCC": 5.0}, "pdn_bandwidth_hz": {"U1": 10e6}}
+        rep = verify_board(self._board(), nl)
+        assert _check(rep, "V.3b").rung == "simulated"

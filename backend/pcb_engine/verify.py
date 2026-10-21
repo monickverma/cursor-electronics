@@ -1122,11 +1122,6 @@ def _check_out_of_reach(board: Board) -> list[Finding]:
                 "no net has been screened against t_rise·v/6; flagged nets would "
                 "need 2D RLGC and ngspice TXL (build step 8, not built)",
                 unknown_kind=sim, tool="ngspice TXL/CPL"),
-        Finding("V.3b", "each IC pin's supply impedance stays under its target across "
-                "frequency (AC PDN)", "unknown", "unknown",
-                "decoupling-loop R(f), L(f) from the copper and an ngspice sweep (build "
-                "step 5); PyPEEC awaits the owner's approval",
-                unknown_kind="checkable by simulation, not run", tool="PyPEEC + ngspice"),
         Finding("V.5", "the board passes EMI/EMC", "unknown", "unknown",
                 "no sound software check exists; emission prediction carries "
                 "order-10 dB uncertainty and only a chamber settles it",
@@ -1161,6 +1156,8 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += check_layout_vi(board, netlist)
     from dc_drop import check_dc_drop                    # V.3 DC IR drop
     findings += check_dc_drop(board, netlist)
+    from pdn import check_pdn                            # V.3b AC loop impedance
+    findings += check_pdn(board, netlist)
     findings += _check_out_of_reach(board)
     return Report(board.name, findings)
 

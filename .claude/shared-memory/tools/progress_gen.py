@@ -289,6 +289,16 @@ PLANNED = {
             ("check_dc_drop", "function", "V.3 — DC IR drop vs a budget; simulated, one engine (padne awaits approval)"),
         ],
     },
+    "pcb_engine/pdn": {
+        "file": "backend/pcb_engine/pdn.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_pdn",          "function", "V.3b — decap loop |Z(f)| vs target impedance; closed-form lumped, simulated"),
+            ("trace_over_plane_h", "function", "Trace-over-plane inductance (Wheeler)"),
+            ("via_h",              "function", "Via inductance (Goldfarb & Pucel)"),
+            ("parse_farads",       "function", "Capacitance from a value string"),
+        ],
+    },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
         "test_file": "tests/test_pcb_placement.py",
