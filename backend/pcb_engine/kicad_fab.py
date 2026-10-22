@@ -8,7 +8,10 @@ fabrication files are REFUSED here. "Failed" means any of:
   * verify.py found a decidable fault (Report.ok is False);
   * the writer round trip failed (KiCad could not load the board as written);
   * KiCad's DRC refused it (kicad_drc: sentinel missing, required rule fired,
-    required check skipped, DRC did not run).
+    required check skipped, DRC did not run);
+  * the exported files, read back into copper (readback.py, stage 7), show an
+    open, a short, a pad off copper or a label that disagrees with the IR — or
+    the read-back could not run.
 
 A refusal writes no fab file at all — a half-written fab directory is a set of
 files someone could still upload. Any export command that exits non-zero is a
@@ -34,6 +37,7 @@ from board_ir import Board
 import kicad_cli
 import kicad_drc
 from kicad_export import copper_layers
+from readback import run_readback
 
 FAB_LAYERS_FIXED = ["F.Paste", "B.Paste", "F.SilkS", "B.SilkS",
                     "F.Mask", "B.Mask", "Edge.Cuts"]
@@ -49,6 +53,7 @@ class FabExport:
     files: dict[str, Path] = field(default_factory=dict)
     manifest: dict = field(default_factory=dict)
     drc: dict = field(default_factory=dict)
+    readback: dict = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -57,7 +62,8 @@ class FabExport:
     def to_dict(self) -> dict:
         return {"ok": self.ok, "refusals": self.refusals,
                 "files": {k: str(v) for k, v in self.files.items()},
-                "manifest": self.manifest, "drc": self.drc}
+                "manifest": self.manifest, "drc": self.drc,
+                "readback": self.readback}
 
 
 def _verification_ok(board: Board, verification) -> tuple[bool, list[str]]:
@@ -130,6 +136,17 @@ def export_fab(board: Board, out_dir: str | Path, name: str = "board",
         res.files = {}
         return res
 
+    # Stage 7: the files themselves, read back into copper, against the IR.
+    # A fault only the files carry (a drill hit moved, a track lost in the
+    # plot) is invisible to every check above; this is the one that sees it.
+    rb = run_readback(board, fab)
+    res.readback = rb.to_dict()
+    if not rb.ok:
+        res.refusals += [f"read-back: {r}" for r in rb.refusals]
+        shutil.rmtree(fab, ignore_errors=True)
+        res.files = {}
+        return res
+
     res.manifest = {
         "kicad_version": rt.kicad_version,
         "board_sha256": _sha(pcb),
@@ -142,3 +159,46 @@ def export_fab(board: Board, out_dir: str | Path, name: str = "board",
     (fab / "manifest.json").write_text(json.dumps(res.manifest, indent=2), encoding="utf-8")
     res.files["manifest.json"] = fab / "manifest.json"
     return res
+
+
+def kicad_package(board: Board, verification=None, name: str | None = None) -> dict:
+    """Everything KiCad-side about one board, as text for an API response
+    (finding F-S2-R001-4): the project KiCad re-saved, its DRC and read-back
+    verdicts, and the fab files — the last only when every gate passed.
+
+    The board file is returned for a failed board too: a person fixing it must
+    be able to open it in KiCad. Only the fab files are withheld. Nothing is
+    kept on disk; the work directory is removed before returning."""
+    import tempfile
+    from kicad_export import write_pcb
+
+    name = name or "board"
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)[:60] or "board"
+    if not kicad_cli.available():
+        return {"available": False,
+                "reason": "kicad-cli is not installed on this server; the board file is "
+                          "this writer's text, not re-saved by KiCad, and no fab file is given",
+                "kicad_pcb": write_pcb(board), "fab": {"ok": False, "files": {},
+                "refusals": ["KiCad not available: fab files are not exported unchecked"]}}
+    work = Path(tempfile.mkdtemp(prefix="circuitos_kicad_"))
+    try:
+        res = export_fab(board, work, safe, verification)
+
+        def text(p: Path) -> str | None:
+            return p.read_text(encoding="utf-8") if p.exists() else None
+
+        return {
+            "available": True,
+            "kicad_version": kicad_cli.version(),
+            "name": safe,
+            "kicad_pcb": text(work / f"{safe}.kicad_pcb") or write_pcb(board),
+            "kicad_pro": text(work / f"{safe}.kicad_pro"),
+            "kicad_dru": text(work / f"{safe}.kicad_dru"),
+            "drc": res.drc,
+            "readback": res.readback,
+            "fab": {"ok": res.ok, "refusals": res.refusals, "manifest": res.manifest,
+                    "files": {n: p.read_text(encoding="utf-8", errors="replace")
+                              for n, p in res.files.items()} if res.ok else {}},
+        }
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
