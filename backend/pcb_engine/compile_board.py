@@ -81,8 +81,7 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
         # later KiCad export) reads one answer instead of re-guessing it.
         comp.attrs.update({k: v for k, v in (("package", pkg), ("mpn", mpn),
                                              ("type", c.get("type")),
-                                             ("value", c.get("value")),
-                                             ("current_a", c.get("current_a"))) if v})
+                                             ("value", c.get("value"))) if v})
         b.components.append(comp)
 
     power = [n for n in nl.get("power_nets", [ground]) if n]

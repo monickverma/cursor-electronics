@@ -97,8 +97,6 @@ cursor-electronics/
 │   │   ├── layout_rules.py         # Physics rule checks P.1-P.5 (decap, crystal, width span, ground, pairs); roles from the IR
 │   │   ├── layout_vi.py            # V.4 trace current (IPC-2221) and V.6 clearance/creepage (IEC 60664-1) at layout level
 │   │   ├── iec60664.py             # IEC 60664-1 tables as data, VERIFIED = False until a qualified review
-│   │   ├── dc_drop.py              # V.3 DC IR drop: resistor mesh on tracks, vias and pour; numpy CG, one engine
-│   │   ├── pdn.py                  # V.3b decap loop |Z(f)| vs target, closed-form lumped (PyPEEC awaits approval)
 │   │   └── verify.py               # The independent judge of a compiled board; each check on its rung (2026-10-09)
 │   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
