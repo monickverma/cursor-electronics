@@ -14,6 +14,35 @@ four concrete faults, three of them executed and reproducible on this machine. S
 this is not a menu of possibilities. It is what happened when the checks were
 built and run, and then the ladder that follows from it.
 
+> **Status, 2026-10-17 — the Part 1 faults are fixed in code.** Part 1 below is
+> left as found; this note records what changed.
+>
+> - **Connectivity.** `Board.unrouted()` now delegates to
+>   `kernel.open_connections`: union-find over each net's pads, tracks and vias,
+>   measured copper edge to copper edge at the verifier's 0.06 mm contact
+>   tolerance. It is written separately from `verify.py`, so there are still two
+>   judges. It asks about each connection's own pads (`Board.required_pairs`), not
+>   pads looked up by position, so two pads at one point on opposite layers cannot
+>   read as joined. On the demo board (8 seeds) and `dht22_relay_monitor` (8 seeds) they
+>   return identical sets of open connections. The shipped board now reports
+>   12/12 from the router as well as the judge.
+> - **Selection.** With the old count, the demo board's candidate pool chose a
+>   winner it claimed had 11 open connections; it had 7. With the fixed count, the
+>   same pool chooses one with 6, and claims 6. On the shipped board the same
+>   board wins either way, and the phantom 4 is gone from its score.
+> - **DRC broad phase.** Each box is now grown by half its track's width plus its
+>   class clearance, which can never be less than the pair's requirement.
+> - **DSN bridge.** It now declares a via padstack per net-class via, with
+>   `use_via` in each class; puts an SMD pad on its own layer only; puts a keepout
+>   with no layer on every layer; and writes `(unit um)` coordinates. That last
+>   fault was not in Part 1. The exporter declared `(unit mm)` but scaled by
+>   10000, so every coordinate came out 10⁴ too large (checked against KiCad
+>   10's own Specctra export). The DSN has still not been fed to Freerouting,
+>   because Freerouting is not installed here.
+>
+> `tests/test_pcb_kernel.py` holds the cases; 16 of its 20 tests fail on the code
+> before the fix. The other four are guards that must hold either way.
+
 ## Part 1 — What running the checks actually found
 
 The router's own success metric is wrong, and it is wrong on the board the

@@ -16,7 +16,7 @@ import pytest
 # importable by bare name below.
 from pcb_engine import verify_board
 import board_ir
-from board_ir import Board, Component, Layer, Pad, Track
+from board_ir import Board, Component, Layer, Pad, Track, Via
 import footprints
 
 
@@ -81,20 +81,56 @@ def test_unrouted_connection_is_a_failure():
     assert rep.gate()[0] is False
 
 
-def test_unrouted_check_is_not_fooled_by_near_miss_copper():
-    """The defect unrouted() misses: copper that stops 0.05 mm short of the pad.
-    The union-find judge merges within the contact tolerance, so this is the
-    case where the two judges can disagree — recorded here so the tolerance is
-    a decision, not an accident."""
+def _near_miss_board(gap):
+    """R1 to R2 by one track whose copper edge stops `gap` mm short of the edge
+    of R2's pad — edge to edge, the track's half-width included."""
     b = _single_net_board()
     b.tracks.clear()
     a = b.component("R1").pads[0]
     c = b.component("R2").pads[0]
-    # end the track 0.03 mm short of R2's pad centre: inside the contact tolerance
-    b.tracks.append(Track("F.Cu", "SIG", 0.2,
-                          [(a.x, a.y), (c.x - 0.03, c.y)]))
-    rep = verify_board(b)
+    w = 0.2
+    end_x = c.x - c.w / 2 - w / 2 - gap
+    b.tracks.append(Track("F.Cu", "SIG", w, [(a.x, a.y), (end_x, c.y)]))
+    return b
+
+
+def test_unrouted_check_is_not_fooled_by_near_miss_copper():
+    """The defect unrouted() misses: copper that stops just short of the pad.
+    The union-find judge merges within the contact tolerance, so this is the
+    case where the two judges can disagree — recorded here so the tolerance is
+    a decision, not an accident."""
+    rep = verify_board(_near_miss_board(0.03))
     assert _finding(rep, "III.1").status == "pass"   # merged at 0.06 mm
+
+
+def test_near_miss_merge_is_the_tolerance_not_the_pad(monkeypatch):
+    """The test above must be exercising CONTACT_TOL. With the tolerance at zero
+    the same 0.03 mm gap is open; the 2026-10-12 review found the old version
+    of that test ended inside the pad, so it passed at any tolerance."""
+    monkeypatch.setattr("verify.CONTACT_TOL", 0.0)
+    rep = verify_board(_near_miss_board(0.03))
+    assert _finding(rep, "III.1").status == "fail"
+
+
+def test_gap_wider_than_the_tolerance_is_open():
+    rep = verify_board(_near_miss_board(0.10))
+    assert _finding(rep, "III.1").status == "fail"
+
+
+def test_same_net_tracks_crossing_mid_segment_are_connected():
+    """Two tracks, one from each pad, whose only contact is a crossing in the
+    middle of both segments — no endpoint near the other track."""
+    b = _single_net_board()
+    b.tracks.clear()
+    a = b.component("R1").pads[0]
+    c = b.component("R2").pads[0]
+    mid = (a.x + c.x) / 2
+    b.tracks.append(Track("F.Cu", "SIG", 0.2,
+                          [(a.x, a.y), (a.x, 4.0), (mid, 4.0), (mid, 8.0)]))
+    b.tracks.append(Track("F.Cu", "SIG", 0.2,
+                          [(c.x, c.y), (c.x, 6.0), (mid - 2.0, 6.0)]))
+    rep = verify_board(b)
+    assert _finding(rep, "III.1").status == "pass"
 
 
 # ── III.2 — two nets sharing copper ─────────────────────────────────────────
@@ -109,6 +145,81 @@ def test_two_nets_touching_is_a_short():
     f = _finding(rep, "III.2")
     assert f.status == "fail"
     assert "two or more nets" in f.detail
+
+
+def _iii2(b):
+    return _finding(verify_board(b), "III.2").status
+
+
+def test_crossing_tracks_of_two_nets_are_a_short():
+    """The 2026-10-12 review's case: no endpoint of either track is near the
+    other, so only a crossing test sees the contact."""
+    b = _clean_board()
+    b.tracks.append(Track("F.Cu", "A", 0.2, [(2.0, 2.0), (18.0, 2.0)]))
+    b.tracks.append(Track("F.Cu", "B", 0.2, [(10.0, 0.5), (10.0, 5.0)]))
+    assert _iii2(b) == "fail"
+
+
+def test_crossing_tracks_on_different_layers_are_not_a_short():
+    b = _clean_board()
+    b.tracks.append(Track("F.Cu", "A", 0.2, [(2.0, 2.0), (18.0, 2.0)]))
+    b.tracks.append(Track("B.Cu", "B", 0.2, [(10.0, 0.5), (10.0, 5.0)]))
+    assert _iii2(b) == "pass"
+
+
+def test_wide_tracks_overlapping_by_their_width_are_a_short():
+    """Centrelines 0.5 mm apart, each 0.8 mm wide: 0.3 mm of shared copper."""
+    b = _clean_board()
+    b.tracks.append(Track("F.Cu", "A", 0.8, [(2.0, 2.0), (18.0, 2.0)]))
+    b.tracks.append(Track("F.Cu", "B", 0.8, [(2.0, 2.5), (18.0, 2.5)]))
+    assert _iii2(b) == "fail"
+
+
+def test_wide_tracks_with_a_real_gap_are_not_a_short():
+    b = _clean_board()
+    b.tracks.append(Track("F.Cu", "A", 0.8, [(2.0, 2.0), (18.0, 2.0)]))
+    b.tracks.append(Track("F.Cu", "B", 0.8, [(2.0, 3.0), (18.0, 3.0)]))
+    assert _iii2(b) == "pass"
+
+
+def test_track_running_through_a_foreign_pad_is_a_short():
+    """Both ends of the track lie outside the pad; it crosses the pad's body."""
+    b = _clean_board()
+    b.tracks.clear()                        # so only the pad can be touched
+    p = b.component("R1").pads[0]           # SIG
+    b.tracks.append(Track("F.Cu", "OTHER", 0.2,
+                          [(p.x, p.y - 3.0), (p.x, p.y + 3.0)]))
+    assert _iii2(b) == "fail"
+
+
+def test_via_overlapping_a_foreign_pad_is_a_short():
+    """The via's centre is outside the pad; its 0.8 mm copper reaches 0.1 mm in."""
+    b = _clean_board()
+    b.tracks.clear()
+    p = b.component("R1").pads[0]           # SIG
+    b.vias.append(Via(p.x, p.y + p.h / 2 + 0.3, "OTHER", diameter=0.8))
+    assert _iii2(b) == "fail"
+
+
+def test_via_clear_of_a_foreign_pad_is_not_a_short():
+    b = _clean_board()
+    p = b.component("R1").pads[0]
+    b.vias.append(Via(p.x - p.w / 2 - 0.6, p.y - 3.0, "OTHER", diameter=0.8))
+    assert _iii2(b) == "pass"
+
+
+# ── SOIC land pattern — the pads must not short their neighbours ────────────
+@pytest.mark.parametrize("pkg", ["SOIC-8", "SOIC-14", "SOIC-16"])
+def test_soic_neighbouring_pads_do_not_touch(pkg):
+    n = footprints.pin_count(pkg)
+    comp = footprints.build("U1", pkg, {str(i): f"N{i}" for i in range(1, n + 1)},
+                            x=10.0, y=10.0)
+    comp.attrs["package"] = pkg
+    b = _board([comp])
+    assert _iii2(b) == "pass"
+    pitch = 1.27
+    assert all(p.h < pitch for p in comp.pads)   # narrow along the pitch
+    assert all(p.w > p.h for p in comp.pads)     # long across the row
 
 
 # ── III.3 — a pad the netlist named that came out netless (ghost copper) ─────
@@ -135,23 +246,35 @@ def test_parity_mismatch_is_caught_against_the_netlist():
     assert _finding(rep, "III.4").status == "fail"
 
 
-# ── III.4 — the SOT-23 class: an unrecognised pinout placed by luck ─────────
-def test_undetermined_pinout_is_reported_unknown_not_pass():
-    """A SOT-23 whose labels are not in any PINMAPS entry: build() puts them on
-    free pads in list order. No free tool checks pin numbering, so the honest
-    verdict is 'unknown', never 'pass'."""
+# ── III.4 — the SOT-23 class: a pin no declared pinout places ───────────────
+def test_undetermined_pinout_is_a_failure_not_a_guess():
+    """A SOT-23 whose part number has no pinout: build() used to put its pins on
+    free pads in list order and this said 'unknown'. It now leaves them
+    unconnected, so the board is missing connections the design needs: fail."""
     nl = {"name": "sot", "components": [
         {"ref": "Q1", "mpn": "MYSTERY-SOT", "package": "SOT-23",
          "pins": {"INPUT": "A", "OUTPUT": "B", "CTRL": "C"}}]}
     b = Board(name="sot", outline_w=20, outline_h=20,
               layers=[Layer("F.Cu", "signal")])
+    warnings: list[str] = []
     b.components.append(footprints.build(
-        "Q1", "SOT-23", {"INPUT": "A", "OUTPUT": "B", "CTRL": "C"}, x=10, y=10))
+        "Q1", "SOT-23", {"INPUT": "A", "OUTPUT": "B", "CTRL": "C"}, x=10, y=10,
+        warnings=warnings, mpn="MYSTERY-SOT"))
+    assert all(p.net == "" for p in b.components[0].pads), "a pin was guessed onto a pad"
+    assert any("left unconnected" in w for w in warnings)
     rep = verify_board(b, nl)
     f = _finding(rep, "III.4d")
-    assert f.status == "unknown"
-    assert f.rung == "unknown"
-    assert "arbitrary" in f.detail
+    assert f.status == "fail"
+    assert f.rung == "exact"
+    assert "MYSTERY-SOT" in f.detail
+    assert rep.gate()[0] is False
+
+
+def test_a_package_alone_does_not_decide_a_transistor_pinout():
+    """B/C/E on a SOT-23 with no part number: the package says nothing about
+    the order (39 pin maps share that footprint in the KiCad library)."""
+    q = footprints.build("Q1", "SOT-23", {"B": "BASE", "C": "LOAD", "E": "GND"})
+    assert all(p.net == "" for p in q.pads)
 
 
 def test_pin_collision_is_a_failure():
@@ -163,7 +286,8 @@ def test_pin_collision_is_a_failure():
     b = Board(name="collide", outline_w=40, outline_h=40,
               layers=[Layer("F.Cu", "signal")])
     b.components.append(footprints.build(
-        "U1", "DIP-28", {"VCC": "P5V", "AVCC": "P3V3"}, x=20, y=20))
+        "U1", "DIP-28", {"VCC": "P5V", "AVCC": "P3V3"}, x=20, y=20,
+        mpn="ATMEGA328P-PU"))
     rep = verify_board(b, nl)
     assert _finding(rep, "III.4c").status == "fail"
 
@@ -235,15 +359,36 @@ def test_shipped_dht22_netlist_has_no_decidable_failure():
     assert rep.ok, [f.line() for f in rep.failed()]
 
 
+@pytest.mark.parametrize("name", ["IR_001", "IR_002", "IR_003", "IR_004", "IR_005"])
+def test_template_boards_route_fully_with_no_short_and_no_drc_error(name):
+    """Every template board, end to end. Until 2026-10-17 the RS-485 board
+    (IR_005) routed an RS485_A via 0.035 mm from an RS485_B pad: III.2 failed
+    and the kernel DRC, with no via-to-pad rule, reported zero errors. Fixing
+    the router's via placement then cost the DHT22 board (IR_001) its VCC_5V
+    route into R1, which only a width-aware fallback recovers; and the new
+    rule found the GND stitching via on every small passive too close to the
+    part's other pad."""
+    from core import ir_examples
+    from generators.netlist.pcb import PcbNetlistGenerator
+    from pcb_engine import compile_board
+    nl = PcbNetlistGenerator().generate(getattr(ir_examples, name))
+    result = compile_board(nl)
+    assert result.stats["unrouted"] == 0, result.stats
+    assert result.stats["drc_errors"] == 0, result.violations
+    assert result.ok, result.stats["failed_checks"]
+
+
 def test_generation_reports_the_judges_count_not_the_routers():
-    """The ledger's finding, pinned: the router's own `unrouted()` says 4 on a
-    board that is fully routed. Generation now reports the judge's 0 and keeps
-    the router's number beside it so the gap stays visible."""
+    """The ledger's finding, pinned: the router's own `unrouted()` said 4 on a
+    board that is fully routed, because it matched quantisation cells. Generation
+    reports the judge's count and keeps the router's beside it; since the router
+    counts by connectivity too (2026-10-17) the two must agree, so a gap between
+    them is a bug in one of them."""
     from pcb_engine import compile_board
     result = compile_board(_dht22_netlist())
     assert result.stats["unrouted"] == 0
     assert result.stats["routed"] == result.stats["connections"]
-    assert result.stats["router_unrouted"] == 4
+    assert result.stats["router_unrouted"] == result.stats["unrouted"]
     assert result.ok is True
     assert result.to_dict()["verification"]["ok"] is True
 
@@ -259,3 +404,80 @@ def test_generation_of_a_broken_netlist_refuses_at_the_gate():
     result = compile_board(nl)
     assert result.stats["verified"] is False
     assert "III.4b" in result.stats["failed_checks"]
+
+
+# ── III.1c / III.1d — plane nets (left out of required_connections) ─────────
+def _plane_board(vias=True, wall=False):
+    """Two 0603s whose pad 2 is GND, on a board with a GND pour on B.Cu.
+    With `vias`, each GND pad drops a via; with `wall`, a signal track on B.Cu
+    runs the full height of the board between them and cuts the pour in two."""
+    b = Board(name="plane", outline_w=20, outline_h=20,
+              layers=[Layer("F.Cu", "signal"), Layer("B.Cu", "signal", plane_net="GND")])
+    b.components.extend([_part("R1", 5.0, 10.0, {"1": "SIG", "2": "GND"}),
+                         _part("R2", 15.0, 10.0, {"1": "SIG", "2": "GND"})])
+    if vias:
+        for ref in ("R1", "R2"):
+            p = next(p for p in b.component(ref).pads if p.pin == "2")
+            b.vias.append(Via(p.x + 1.2, p.y, "GND"))
+            b.tracks.append(Track("F.Cu", "GND", 0.3, [(p.x, p.y), (p.x + 1.2, p.y)]))
+    if wall:
+        b.tracks.append(Track("B.Cu", "WALL", 0.3, [(10.0, 0.0), (10.0, 20.0)]))
+    return b
+
+
+def test_plane_pad_with_no_way_down_is_a_failure():
+    rep = verify_board(_plane_board(vias=False))
+    f = _finding(rep, "III.1c")
+    assert f.status == "fail" and f.rung == "exact"
+    assert set(f.subjects) == {"R1.2", "R2.2"}
+
+
+def test_plane_joins_pads_that_drop_vias():
+    rep = verify_board(_plane_board())
+    assert _finding(rep, "III.1c").status == "pass"
+    f = _finding(rep, "III.1d")
+    assert f.status == "pass" and f.rung == "sound"
+    assert "no thermal spokes" in f.detail          # the model is stated
+
+
+def test_a_track_across_the_plane_splits_it():
+    rep = verify_board(_plane_board(wall=True))
+    assert _finding(rep, "III.1c").status == "pass"   # each pad still reaches B.Cu
+    assert _finding(rep, "III.1d").status == "fail"   # but not the same piece of it
+
+
+# ── IV.1 — pitch and row span, not only the pad count ───────────────────────
+def test_land_pattern_pitch_disagreement_is_a_failure(monkeypatch):
+    real = footprints.PACKAGES["0603"]
+    monkeypatch.setitem(footprints.PACKAGES, "0603",
+                        lambda: footprints._chip(1.75, 0.85, 0.95))   # table says 1.55
+    rep = verify_board(_board([_part("R1", 10.0, 10.0, {"1": "A", "2": "B"})]))
+    f = _finding(rep, "IV.1")
+    assert f.status == "fail" and "pitch" in f.detail
+    assert real is not None
+
+
+def test_every_package_matches_its_table_row():
+    """Pitch = smallest distance between consecutive pad numbers; row = pad 1 to
+    pad N. SOT-23's pitch is 2e = 1.90 under that definition."""
+    import json
+    import verify
+    table = json.loads((Path(verify.__file__).with_name("land_patterns.json")).read_text())
+    for pkg in footprints.PACKAGES:
+        row = table[pkg]
+        pitch, span = verify._pitch_and_row(footprints.build("X", pkg, {}))
+        if row["pitch_mm"] is not None:
+            assert abs(pitch - row["pitch_mm"]) <= verify.LAND_TOL, pkg
+        if row["row_mm"] is not None:
+            assert abs(span - row["row_mm"]) <= verify.LAND_TOL, pkg
+
+
+def test_courtyard_against_the_datasheet_is_an_explicit_unknown():
+    rep = verify_board(_clean_board())
+    f = _finding(rep, "IV.3")
+    assert f.status == "unknown" and f.rung == "unknown"
+
+
+def test_report_carries_the_gate():
+    d = verify_board(_plane_board(vias=False)).to_dict()
+    assert d["gate"]["emit"] is False and "III.1c" in d["gate"]["reason"]
