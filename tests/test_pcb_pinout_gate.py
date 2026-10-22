@@ -185,3 +185,55 @@ def test_the_shipped_record_file_is_well_formed():
     for rec in data["records"]:
         assert rec["mpn"] and rec["package"] and rec["pins"]
         assert rec["source"]["page"] and rec["source"]["title"]
+
+
+# ── the shipped records and boards (F-S0-0001 reopened) ─────────────────────
+# The gate blocked every TPL_001 board: nothing confirmed the DHT22's pinout.
+needs_kicad = pytest.mark.skipif(pp.symbol_dir() is None,
+                                 reason="KiCad symbol library not installed")
+
+
+def test_the_dht22_record_is_the_aosong_manuals_table_4():
+    """AM2302 Technical Manual V1.0, p. 4, Table 4: 1 VDD, 2 SDA, 3 NC, 4 GND —
+    the document D7 already cites, by the same SHA-256."""
+    r = pp.lookup("DHT22", "DHT22")
+    assert r.symbol is not None and r.how == "datasheet"
+    assert {k: pp.norm_name(v.split("/")[0]) for k, v in r.symbol.pins.items()} == \
+        {"1": "VDD", "2": "SDA", "3": "NC", "4": "GND"}
+    assert "p. 4" in r.symbol.cite() and "AM2302" in r.symbol.cite()
+
+
+def test_a_dht22_with_data_and_ground_swapped_fails():
+    pins = {"VCC": "VCC_5V", "DATA": "DHT22_DATA", "GND": "GND"}
+    good = verify_board(*_board("U2", "DHT22", "DHT22", pins))
+    assert _f(good, "IV.2").status == "pass"
+    bad = verify_board(*_board("U2", "DHT22", "DHT22", pins,
+                               nets={"1": "VCC_5V", "2": "GND", "4": "DHT22_DATA"}))
+    assert _f(bad, "IV.2").status == "fail" and bad.gate()[0] is False
+
+
+@needs_kicad
+def test_the_tpl_001_board_emits():
+    from core import ir_examples
+    from generators.netlist.pcb import PcbNetlistGenerator
+    from pcb_engine import compile_board
+    result = compile_board(PcbNetlistGenerator().generate(ir_examples.IR_001))
+    assert result.verification["gate"]["emit"] is True, result.verification["gate"]
+
+
+@needs_kicad
+def test_the_shipped_netlist_names_u1_and_d1_by_function():
+    """netlist_dht22.json numbered U1's and D1's pins, so nothing could say
+    which function it meant. By name, both are compared against KiCad; what
+    is left uncompared is the 2N2222A (not one orderable part in TO-92) and
+    the SRD relay (KiCad's symbol names no pin)."""
+    from pcb_engine import compile_board
+    nl = json.loads((Path(pp.__file__).with_name("netlist_dht22.json")).read_text())
+    rep = compile_board(nl).verification
+    iv2 = next(f for f in rep["findings"] if f["check"] == "IV.2")
+    agreed = " ".join(iv2["subjects"])
+    assert iv2["status"] == "pass"
+    for ref in ("U1 (", "U2 (", "D1 ("):
+        assert ref in agreed, iv2["subjects"]
+    left = next(f for f in rep["findings"] if f["check"] == "IV.2b")["subjects"]
+    assert sorted(s.split(" ")[0] for s in left) == ["K1", "Q1"], left

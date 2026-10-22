@@ -382,10 +382,15 @@ def _from_record(d: Path | None, mpn: str, package: str | None, no_symbol: str) 
     if not (rec.get("source") or {}).get("page"):
         return Lookup(mpn, reason=f"the datasheet record for {mpn!r} cites no page")
     pins = {str(k): v for k, v in rec["pins"].items()}
+    # A record keeps the datasheet's own pin names. `aliases` adds the name
+    # the project's netlists use for the same pin ("SDA/DATA" on the DHT22's
+    # single-bus line), stated in the record beside the citation.
+    named_as = {k: v + "".join(f"/{a}" for a in [rec.get("aliases", {}).get(k)] if a)
+                for k, v in pins.items()}
     cite = _record_cite(rec)
     bridge = rec.get("kicad_symbol")
     if not bridge:
-        return Lookup(mpn, symbol=Symbol(rec["mpn"], "datasheet", pins, "",
+        return Lookup(mpn, symbol=Symbol(rec["mpn"], "datasheet", named_as, "",
                                          (rec.get("source") or {}).get("url", ""),
                                          source=cite),
                       how="datasheet", candidates=[cite])
@@ -399,7 +404,7 @@ def _from_record(d: Path | None, mpn: str, package: str | None, no_symbol: str) 
         return Lookup(mpn, candidates=[cite, sym.cite()],
                       reason=f"{cite} and {sym.cite()} disagree: the record gives "
                              f"{pins} in {package}, the symbol {sym.pins} in {sym_pkg}")
-    return Lookup(mpn, symbol=Symbol(rec["mpn"], sym.library, pins, sym.footprint,
+    return Lookup(mpn, symbol=Symbol(rec["mpn"], sym.library, named_as, sym.footprint,
                                      sym.datasheet, sym.chain, sym.sha256,
                                      source=f"{cite}, agreeing with {sym.cite()}"),
                   how="datasheet+kicad", candidates=[cite, sym.cite()])
