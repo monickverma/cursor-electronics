@@ -42,6 +42,8 @@ class PcbNetlistGenerator:
             comp_entry["type"] = comp.type.value
             if comp.value:
                 comp_entry["value"] = comp.value
+            if comp.current_draw_ma:
+                comp_entry["current_a"] = comp.current_draw_ma / 1000.0   # DC drop loads
             components.append(comp_entry)
 
         # 3b. What each net carries, from the IR — the layout V/I checks
