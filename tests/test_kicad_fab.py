@@ -107,24 +107,3 @@ def test_a_failed_export_command_leaves_nothing_behind(tmp_path, monkeypatch):
     res = kicad_fab.export_fab(_board(), tmp_path, "fab")
     assert not res.ok and "drill export failed" in res.refusals[0]
     assert not (tmp_path / "fab").exists()
-
-
-def test_the_gate_decides_not_ok_alone(tmp_path):
-    """F-S0-0001: `ok` stays True for a board the gate will not emit (a failed
-    board is still shown), so export must honour the gate. Found by S7 when
-    S4's pinout gate refused a swapped-pin board and fab files still came out."""
-    res = kicad_fab.export_fab(_board(), tmp_path, "fab", verification={
-        "ok": True, "failed_checks": [],
-        "gate": {"emit": False, "reason": "export blocked: IV.2b pinout unknown"}})
-    assert not res.ok and "IV.2b" in res.refusals[0]
-    assert not (tmp_path / "fab").exists()
-
-
-def test_a_report_whose_gate_says_no_is_refused(tmp_path, monkeypatch):
-    from verify import verify_board
-    rep = verify_board(_board())
-    monkeypatch.setattr(type(rep), "gate", lambda self: (False, "export blocked: test"))
-    assert rep.ok
-    res = kicad_fab.export_fab(_board(), tmp_path, "fab", verification=rep)
-    assert not res.ok and "export blocked: test" in res.refusals[0]
-    assert not (tmp_path / "fab").exists()

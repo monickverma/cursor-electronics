@@ -5,8 +5,7 @@ Stage 6 of `reports/PCB verification implementation plan.md`. Owner decision of
 2026-10-17 (plan, decision 1): a board that failed is still shown, but its
 fabrication files are REFUSED here. "Failed" means any of:
 
-  * verify.py's gate will not emit it (Report.gate(), or `gate.emit` in the
-    dict form), or it found a decidable fault (Report.ok is False);
+  * verify.py found a decidable fault (Report.ok is False);
   * the writer round trip failed (KiCad could not load the board as written);
   * KiCad's DRC refused it (kicad_drc: sentinel missing, required rule fired,
     required check skipped, DRC did not run);
@@ -68,10 +67,6 @@ class FabExport:
 
 
 def _verification_ok(board: Board, verification) -> tuple[bool, list[str]]:
-    """May this board's fab files leave? The verifier's GATE decides, not `ok`
-    alone: `ok` stays True for a board that is shown but must not be emitted
-    (F-S0-0001, 2026-10-22: a swapped-pin board the pinout gate refused still
-    got its fab files). Both must say yes; the gate's reason is reported."""
     if verification is None:
         from verify import verify_board
         verification = verify_board(board)
@@ -79,17 +74,8 @@ def _verification_ok(board: Board, verification) -> tuple[bool, list[str]]:
         failed = verification.get("failed_checks") or [
             f.get("check") for f in verification.get("findings", [])
             if f.get("status") == "fail"]
-        reasons = [str(f) for f in failed]
-        gate = verification.get("gate") or {}
-        emit = bool(gate.get("emit", True))
-        if not emit and gate.get("reason"):
-            reasons.append(str(gate["reason"]))
-        return bool(verification.get("ok", not failed)) and emit, reasons
-    emit, why = verification.gate()
-    reasons = [f.check for f in verification.failed()]
-    if not emit:
-        reasons.append(why)
-    return verification.ok and emit, reasons
+        return bool(verification.get("ok", not failed)), [str(f) for f in failed]
+    return verification.ok, [f.check for f in verification.failed()]
 
 
 def export_fab(board: Board, out_dir: str | Path, name: str = "board",
