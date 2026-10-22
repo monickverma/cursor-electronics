@@ -59,6 +59,23 @@
     }
   },
   {
+    "case": "mains_gap",
+    "folder": "board_07",
+    "request": "An Arduino Uno drives a relay whose contact switches mains, and reads a DHT22 sensor on the same board. Lay the board out and check it before you would send it to a fab.",
+    "defect_class": "creepage",
+    "critical": true,
+    "kicad_drc": {
+      "available": true,
+      "kicad_version": "10.0.1",
+      "violations": 9,
+      "unconnected_items": 4,
+      "by_type": {
+        "lib_footprint_issues": 9
+      },
+      "severity_error_violations": 0
+    }
+  },
+  {
     "case": "reversed_diode",
     "folder": "board_04",
     "request": "An Arduino Uno drives a 30 mA inductive load through a transistor, with a flyback diode across the load. Lay the board out and check it before you would send it to a fab.",

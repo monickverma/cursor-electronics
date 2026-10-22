@@ -1,0 +1,26 @@
+* board_05 Q1 AS BUILT ON THE BOARD
+* Netlist read off board_05.kicad_pcb / board_ir.json:
+*   U1 pin5 (PD3) --TRANSISTOR_BASE-- R2 1k --RELAY_CTRL-- Q1 pin2 (BASE)
+*   Q1 pin1 -> RELAY_COIL_NEG -> K1 pin2 (relay coil) -> K1 pin1 -> VCC_5V
+*   Q1 pin3 -> GND
+*   D1 1N4007: anode = RELAY_COIL_NEG, cathode = VCC_5V
+* 2N2222A TO-92 pinout: 1 = Emitter, 2 = Base, 3 = Collector
+* Relay SRD-05VDC-SL-C coil: 5 V, 70 ohm  -> 71 mA
+* SPICE BJT instance order: Qxxx <collector> <base> <emitter> <model>
+
+VMCU  5  0  DC 5
+RBASE MCU  B  1k
+RL    5  E  70            * relay coil from +5V to the emitter node
+D1    E  5  1N4007        * flyback: anode at coil low side, cathode at +5V
+Q1    0  B  E  2N2222A    * AS BUILT: collector -> GND, emitter -> coil
+
+.model 2N2222A NPN(IS=1.0E-14 BF=250 BR=6 IKF=0.15 IKR=0.03 ISE=2.0E-14 ISC=1.0E-13
++ NE=1.4 NC=1.2 RB=10 RC=1 RE=0 CJE=22p TF=0.4n TR=50n CJC=7p VJE=0.75 VJC=0.75
++ MJE=0.33 MJC=0.33 VAF=100 VAR=25 XTB=1.5 XTI=3)
+.model 1N4007 D(IS=1.0E-9 N=1.6 RS=0.05 CJO=25p)
+
+.control
+op
+print v(b) v(e) v(c) i(vMCU) i(rl)
+.endc
+.end

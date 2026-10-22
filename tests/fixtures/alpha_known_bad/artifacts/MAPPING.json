@@ -12,6 +12,10 @@
     "case": "deleted_via"
   },
   {
+    "folder": "board_07",
+    "case": "mains_gap"
+  },
+  {
     "folder": "board_04",
     "case": "reversed_diode"
   },

@@ -1,0 +1,85 @@
+============================================================================
+ZONES (copper pour state as written in the file)
+  net=GND    layer=B.Cu  outline_pts=4  filled_polygon_pts=0
+  'filled_polygon' token present anywhere in file: False
+============================================================================
+PER-NET COPPER GROUPS
+
+net                    items=27 (pads 26, vias 0, tracks 1)  copper groups=27
+     group: pads=["K1.3.net=''@(44.29,19.01)"] vias=[] tracks=0
+     group: pads=["K1.4.net=''@(44.29,14.01)"] vias=[] tracks=0
+     group: pads=["K1.5.net=''@(44.29,9.01)"] vias=[] tracks=0
+     group: pads=["U1.1.net=''@(16.51,39.37)"] vias=[] tracks=0
+     group: pads=["U1.2.net=''@(16.51,36.83)"] vias=[] tracks=0
+     group: pads=["U1.3.net=''@(16.51,34.29)"] vias=[] tracks=0
+     group: pads=["U1.6.net=''@(16.51,26.67)"] vias=[] tracks=0
+     group: pads=["U1.9.net=''@(16.51,19.05)"] vias=[] tracks=0
+     group: pads=["U1.10.net=''@(16.51,16.51)"] vias=[] tracks=0
+     group: pads=["U1.11.net=''@(16.51,13.97)"] vias=[] tracks=0
+     group: pads=["U1.12.net=''@(16.51,11.43)"] vias=[] tracks=0
+     group: pads=["U1.13.net=''@(16.51,8.89)"] vias=[] tracks=0
+     group: pads=["U1.14.net=''@(16.51,6.35)"] vias=[] tracks=0
+     group: pads=["U1.28.net=''@(24.13,39.37)"] vias=[] tracks=0
+     group: pads=["U1.27.net=''@(24.13,36.83)"] vias=[] tracks=0
+     group: pads=["U1.26.net=''@(24.13,34.29)"] vias=[] tracks=0
+     group: pads=["U1.25.net=''@(24.13,31.75)"] vias=[] tracks=0
+     group: pads=["U1.24.net=''@(24.13,29.21)"] vias=[] tracks=0
+     group: pads=["U1.23.net=''@(24.13,26.67)"] vias=[] tracks=0
+     group: pads=["U1.21.net=''@(24.13,21.59)"] vias=[] tracks=0
+     group: pads=["U1.19.net=''@(24.13,16.51)"] vias=[] tracks=0
+     group: pads=["U1.18.net=''@(24.13,13.97)"] vias=[] tracks=0
+     group: pads=["U1.17.net=''@(24.13,11.43)"] vias=[] tracks=0
+     group: pads=["U1.16.net=''@(24.13,8.89)"] vias=[] tracks=0
+     group: pads=["U1.15.net=''@(24.13,6.35)"] vias=[] tracks=0
+     group: pads=["U2.3.net=''@(10.12,24.17)"] vias=[] tracks=0
+     group: pads=[] vias=[] tracks=1
+     >>> OPEN: 27 isolated copper groups on this net
+
+net DHT22_DATA         items=38 (pads 3, vias 2, tracks 33)  copper groups=1
+     group: pads=["R1.2.net='DHT22_DATA'@(38.06,31.79)", "U1.4.net='DHT22_DATA'@(16.51,31.75)", "U2.2.net='DHT22_DATA'@(10.12,26.71)"] vias=['(13.4,29.12)', '(10.2,26.72)'] tracks=33
+
+net GND                items=10 (pads 5, vias 5, tracks 0)  copper groups=5
+     group: pads=["C1.2.net='GND'@(12.66,35.6)"] vias=['(12.6,35.52)'] tracks=0
+     group: pads=["Q1.1.net='GND'@(27.9,24.17)"] vias=['(28.0,24.12)'] tracks=0
+     group: pads=["U1.8.net='GND'@(16.51,21.59)"] vias=['(16.6,21.52)'] tracks=0
+     group: pads=["U1.22.net='GND'@(24.13,24.13)"] vias=['(24.2,24.12)'] tracks=0
+     group: pads=["U2.4.net='GND'@(10.12,21.63)"] vias=['(10.2,21.72)'] tracks=0
+     >>> OPEN: 5 isolated copper groups on this net
+
+net RELAY_COIL_NEG     items=17 (pads 3, vias 0, tracks 14)  copper groups=1
+     group: pads=["D1.2.net='RELAY_COIL_NEG'@(38.06,27.98)", "K1.2.net='RELAY_COIL_NEG'@(29.29,9.01)", "Q1.3.net='RELAY_COIL_NEG'@(32.98,24.17)"] vias=[] tracks=14
+
+net RELAY_CTRL         items=11 (pads 2, vias 0, tracks 9)  copper groups=1
+     group: pads=["Q1.2.net='RELAY_CTRL'@(30.44,24.17)", "R2.2.net='RELAY_CTRL'@(38.06,35.6)"] vias=[] tracks=9
+
+net TRANSISTOR_BASE    items=14 (pads 2, vias 0, tracks 12)  copper groups=1
+     group: pads=["R2.1.net='TRANSISTOR_BASE'@(27.9,35.6)", "U1.5.net='TRANSISTOR_BASE'@(16.51,29.21)"] vias=[] tracks=12
+
+net VCC_5V             items=49 (pads 7, vias 0, tracks 42)  copper groups=1
+     group: pads=["C1.1.net='VCC_5V'@(7.58,35.6)", "D1.1.net='VCC_5V'@(27.9,27.98)", "K1.1.net='VCC_5V'@(29.29,19.01)", "R1.1.net='VCC_5V'@(27.9,31.79)", "U1.7.net='VCC_5V'@(16.51,24.13)", "U1.20.net='VCC_5V'@(24.13,19.05)", "U2.1.net='VCC_5V'@(10.12,29.25)"] vias=[] tracks=42
+============================================================================
+CROSS-NET COPPER OVERLAP (geometric short check)
+   OVERLAP gap=0.0000 mm  pad U1.7 net='VCC_5V' at (16.510,24.130) TH   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.0000 mm  pad U1.8 net='GND' at (16.510,21.590) TH   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.1140 mm  via net='GND' at (16.600,21.520) drill=0.40   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.0566 mm  track net='VCC_5V' F.Cu w=0.20 (16.600,24.120)->(16.200,24.520)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.4982 mm  track net='VCC_5V' F.Cu w=0.20 (16.200,24.520)->(15.966,24.520)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.6696 mm  track net='VCC_5V' F.Cu w=0.80 (15.966,24.520)->(15.200,24.520)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.2828 mm  track net='VCC_5V' F.Cu w=0.80 (15.200,24.520)->(12.000,27.720)   ||   track net='DHT22_DATA' B.Cu w=0.30 (12.600,28.720)->(11.600,27.720)
+   OVERLAP gap=0.4000 mm  track net='VCC_5V' F.Cu w=0.80 (15.200,24.520)->(12.000,27.720)   ||   track net='DHT22_DATA' B.Cu w=0.30 (11.600,27.720)->(11.200,27.720)
+   OVERLAP gap=0.1414 mm  track net='VCC_5V' F.Cu w=0.80 (12.000,27.720)->(12.000,27.920)   ||   track net='DHT22_DATA' B.Cu w=0.30 (12.600,28.720)->(11.600,27.720)
+   OVERLAP gap=0.4000 mm  track net='VCC_5V' F.Cu w=0.80 (12.000,27.720)->(12.000,27.920)   ||   track net='DHT22_DATA' B.Cu w=0.30 (11.600,27.720)->(11.200,27.720)
+   OVERLAP gap=0.1414 mm  track net='VCC_5V' F.Cu w=0.80 (12.000,27.920)->(11.800,28.120)   ||   track net='DHT22_DATA' B.Cu w=0.30 (12.600,28.720)->(11.600,27.720)
+   OVERLAP gap=0.4243 mm  track net='VCC_5V' F.Cu w=0.80 (12.000,27.920)->(11.800,28.120)   ||   track net='DHT22_DATA' B.Cu w=0.30 (11.600,27.720)->(11.200,27.720)
+   OVERLAP gap=0.1414 mm  track net='VCC_5V' F.Cu w=0.80 (11.800,28.120)->(11.800,28.520)   ||   track net='DHT22_DATA' B.Cu w=0.30 (12.600,28.720)->(11.600,27.720)
+   OVERLAP gap=0.4472 mm  track net='VCC_5V' F.Cu w=0.80 (11.800,28.120)->(11.800,28.520)   ||   track net='DHT22_DATA' B.Cu w=0.30 (11.600,27.720)->(11.200,27.720)
+   OVERLAP gap=0.4243 mm  track net='VCC_5V' F.Cu w=0.80 (11.800,28.520)->(11.000,28.520)   ||   track net='DHT22_DATA' B.Cu w=0.30 (12.600,28.720)->(11.600,27.720)
+   OVERLAP gap=0.0900 mm  track net='VCC_5V' F.Cu w=0.20 (16.600,24.120)->(17.000,23.720)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.4900 mm  track net='VCC_5V' F.Cu w=0.20 (17.000,23.720)->(17.200,23.720)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.6900 mm  track net='VCC_5V' F.Cu w=0.20 (17.200,23.720)->(17.224,23.696)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.7143 mm  track net='VCC_5V' F.Cu w=0.80 (17.224,23.696)->(17.400,23.520)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+   OVERLAP gap=0.8900 mm  track net='VCC_5V' F.Cu w=0.80 (17.400,23.520)->(17.800,23.520)   ||   track net='' F.Cu w=1.30 (16.510,24.130)->(16.510,21.590)
+============================================================================
+TRACK ENDPOINTS THAT TOUCH NOTHING ON THEIR OWN NET
+   net=                   F.Cu w=1.30 endpoint (16.510,24.130) is isolated
+   net=                   F.Cu w=1.30 endpoint (16.510,21.590) is isolated

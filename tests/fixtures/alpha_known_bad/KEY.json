@@ -25,9 +25,67 @@
     "what the product built. If the overlooker finds one of those, that is the",
     "strongest result in the whole set."
   ],
-  "version": 1,
+  "version": 3,
   "compiled": "2026-10-21",
   "compiled_by": "master session",
+  "_revision": [
+    "REVISION 3, 2026-10-22. The key was widened and split, and the reason is",
+    "in the runs it had already been used to score. Nothing here was written",
+    "to make a run look better; every change is either a bug fix in the",
+    "matcher or a phrase taken from the case's own how_to_detect.",
+    "",
+    "1. NEAR-MISS KEYWORDS. A finding that names the PART involved is not a",
+    "   finding of the FAULT. '2n2222a' and 'dht22_data' appear in the",
+    "   detection lists because a fault naming them would be found - but a",
+    "   finding that only says the part's name noticed the right part, not the",
+    "   fault. Those words moved to near_miss_keywords and now score FLAGGED.",
+    "",
+    "2. PHRASES FROM THE CASE'S OWN how_to_detect. cut_track and deleted_via",
+    "   both say in how_to_detect that 'KiCad's DRC reports the unrouted",
+    "   ratsnest' and that the copper 'is gone'. 'ratsnest' was not in the",
+    "   list. 'no copper between', 'broken in mid air' and 'unconnected item'",
+    "   are how an engineer names a severed track. They were added.",
+    "",
+    "3. A VALUE CHECK, for wrong_cap_value. The defect is that the fitted",
+    "   capacitance is not the one the request names. A phrase list cannot",
+    "   catch that in every wording, so the case now declares the specified",
+    "   value (100 nF) and the matcher asks a question that does not depend",
+    "   on the wording: does the finding state the specified value AND a",
+    "   different one? The rule comes from the defect, not from any run.",
+    "",
+    "4. The scorer normalises both sides of the comparison. It always did the",
+    "   text; it did not do the key's words, so a net name written",
+    "   'relay_ctrl' could never match 'RELAY_CTRL' in a finding.",
+    "",
+    "REVISION 4, 2026-10-22. The seventh case, mains_gap, was added and its key",
+    "was written BEFORE the run, so the instrument was not tuned to the answer.",
+    "",
+    "5. THE GAP CASE. A phrase list cannot catch 'mains-to-SELV creepage is 0.35",
+    "   mm' in every wording, the same way it could not catch a wrong",
+    "   capacitance. So mains_gap declares a value_check like wrong_cap_value",
+    "   does, but over LENGTH: a finding that MEASURES a gap and finds it under",
+    "   2 mm has named the fault, whatever words it used. The number has to be a",
+    "   gap and not a feature - a track width is not a clearance, a drill is not",
+    "   a clearance - and a number that belongs to a configured DRC rule ('the",
+    "   0.2 mm clearance rules are set to zero') is a statement about the tool,",
+    "   not a measurement of the board, and does not count.",
+    "",
+    "   The 2 mm floor is deliberately far below every candidate requirement, so",
+    "   the rule holds whichever figure the owner settles on (decision D1). A",
+    "   finding that states the required clearance and the measured one side by",
+    "   side has named it too.",
+    "",
+    "6. The keywords for mains_gap were cut back, not widened. 'clearance",
+    "   between mains', '5 mm', '2.5 mm' and 'spacing' were removed: the first",
+    "   is a phrasing the defect does not require, the numbers are the",
+    "   REQUIREMENT rather than the fault, and 'spacing' is generic enough to",
+    "   match a finding about the wrong thing. '0.35 mm' stays, because naming",
+    "   the measured gap is naming the fault.",
+    "",
+    "7. The case names its own board folder (artifacts/board_07) and the",
+    "   builder's other file names, so the scorer can find the board the",
+    "   findings are about."
+  ],
   "critical_classes": [
     "short",
     "open",
@@ -54,20 +112,29 @@
         "broken trace",
         "cut trace",
         "trace is broken",
-        "dht22_data",
-        "relay_ctrl",
         "no copper joins",
+        "no copper between",
+        "broken in mid air",
+        "in mid air",
+        "unconnected item",
+        "ratsnest",
         "the copper is gone",
         "pad is not connected"
+      ],
+      "near_miss_keywords": [
+        "dht22_data",
+        "relay_ctrl"
       ],
       "artifact_hint": "cut_track",
       "how_to_detect": "The copper that joined two pads is gone. III.1 (every required connection is realised in copper) fails. KiCad's DRC reports the unrouted ratsnest.",
       "prompt_to_present": "Present the board as a plain request. The overlooker must find the severed trace without being told where it is.",
       "artifact_names": [
+        "artifacts/board_02",
         "board_cut_track.json",
         "board_cut_track_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_cut_track.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_cut_track.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_02"
     },
     {
       "id": "deleted_via",
@@ -85,20 +152,26 @@
         "unrouted",
         "no copper path",
         "not connected",
-        "dht22_data",
         "layer transition",
         "no via",
         "there is no via",
-        "the via is missing"
+        "the via is missing",
+        "ratsnest",
+        "two islands"
+      ],
+      "near_miss_keywords": [
+        "dht22_data"
       ],
       "artifact_hint": "deleted_via",
       "how_to_detect": "A via that carried a net between F.Cu and B.Cu is gone, so the net is two islands. III.1 fails. The ratsnest in KiCad shows the unrouted connection.",
       "prompt_to_present": "Present the board as a plain request.",
       "artifact_names": [
+        "artifacts/board_03",
         "board_deleted_via.json",
         "board_deleted_via_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_deleted_via.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_deleted_via.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_03"
     },
     {
       "id": "bridged_nets",
@@ -125,10 +198,12 @@
       "how_to_detect": "Two different nets are joined by copper. III.2 (no copper group carries more than one net) fails. KiCad's DRC reports the short.",
       "prompt_to_present": "Present the board as a plain request.",
       "artifact_names": [
+        "artifacts/board_01",
         "board_bridged_nets.json",
         "board_bridged_nets_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_bridged_nets.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_bridged_nets.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_01"
     },
     {
       "id": "swapped_pins",
@@ -148,18 +223,22 @@
         "pin 1 and pin 3",
         "e-b-c",
         "c-b-e",
-        "2n2222a",
         "relay never actuates",
         "relay does not actuate"
+      ],
+      "near_miss_keywords": [
+        "2n2222a"
       ],
       "artifact_hint": "swapped_pins",
       "how_to_detect": "Q1's emitter and collector are transposed, so the relay coil is switched from the emitter. The product's own verifier cannot see it: III.4 compares the board against the netlist it was compiled from, and IV.2 cannot run because part_pinouts.lookup finds no KiCad symbol for 2N2222A. A detection must come from the datasheet pinout table: the 2N2222A in TO-92 is E-B-C, and the board has the collector on pin 1.",
       "prompt_to_present": "Present the board as a plain request. The overlooker is expected to compare the pinout against the datasheet.",
       "artifact_names": [
+        "artifacts/board_05",
         "board_swapped_pins.json",
         "board_swapped_pins_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_swapped_pins.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_swapped_pins.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_05"
     },
     {
       "id": "reversed_diode",
@@ -176,20 +255,24 @@
         "anode on",
         "flyback diode is backwards",
         "diode conducts",
-        "1n4148",
-        "sod-123",
         "pad 1 is the cathode",
         "banded end",
         "cathode to the rail"
+      ],
+      "near_miss_keywords": [
+        "1n4148",
+        "sod-123"
       ],
       "artifact_hint": "reversed_diode",
       "how_to_detect": "D1, the 1N4148W-7-F flyback diode in SOD-123, is fitted the wrong way round: the anode is on the 5 V rail and the cathode on the switched load, so it conducts in the steady state it was meant to block and blocks the flyback it was meant to clamp. The product's own verifier cannot see it: IV.2 DOES run on this board (the symbol resolves) and passes, because it compares the symbol's terminals to the board's pads and never asks which net belongs on which terminal. A detection must come from the datasheet and the circuit: the cathode goes to the rail so the diode is reverse biased in steady state, and the banded end of a 1N4148W is the cathode.",
       "prompt_to_present": "Present the board as a plain request. The overlooker is expected to compare the diode's polarity against the datasheet and the circuit's intent.",
       "artifact_names": [
+        "artifacts/board_04",
         "board_reversed_diode.json",
         "board_reversed_diode_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_reversed_diode.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_reversed_diode.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_04"
     },
     {
       "id": "mains_gap",
@@ -198,26 +281,46 @@
       "expected_check_ids": [],
       "detection_keywords": [
         "creepage",
-        "clearance between mains",
         "mains to selv",
         "mains-to-selv",
+        "electrical gap",
         "insulation",
         "reinforced insulation",
         "basic insulation",
+        "isolation",
         "too close",
-        "5 mm",
-        "2.5 mm",
-        "spacing",
         "mains net is too close",
-        "electrical gap"
+        "mains clearance",
+        "clearance between",
+        "0.35 mm"
       ],
+      "near_miss_keywords": [
+        "mains l",
+        "dht22 data"
+      ],
+      "value_check": {
+        "quantity": "length",
+        "specified": [
+          "5 mm",
+          "2.5 mm"
+        ],
+        "tolerance_pct": 0,
+        "below": 2.0,
+        "context_words": [
+          "mains",
+          "selv"
+        ],
+        "_comment": "The defect is a clearance, not a phrase. MAINS_L runs 0.35 mm from the DHT22_DATA net, where the reinforced-insulation figure for mains-to-SELV at 250 V is about 5 mm. A finding that MEASURES a gap and finds it under 2 mm has named the fault, whatever words it used. The number has to be a gap and not a feature - a track width is not a clearance - and the 2 mm floor sits far below every candidate requirement, so the rule holds whichever figure the owner settles on (decision D1). A finding that states the required clearance and the measured one side by side has named it too."
+      },
       "artifact_hint": "mains_gap",
       "how_to_detect": "A mains net and a SELV net are closer than the reinforced-insulation creepage figure for mains-to-SELV at 250 V. The product has NO mains template, NO creepage check and NO clearance rule of this kind; the only clearances it has are net-class DRC clearances in millimetres, not insulation ratings. A detection must come from measuring the geometry against the requirement, or from noticing that the product makes no safety claim at all.",
       "prompt_to_present": "Present the board as a plain request.",
       "artifact_names": [
+        "artifacts/board_07",
         "board_mains_gap.json",
         "board_mains_gap_defective.json"
       ],
+      "artifact_folder": "artifacts/board_07",
       "_comment": "The master session hands this board over under the name board_mains_gap.json. A finding that names the file it was given is about this board."
     },
     {
@@ -240,14 +343,23 @@
         "stated value",
         "does not match the request"
       ],
+      "value_check": {
+        "quantity": "capacitance",
+        "specified": "100nF",
+        "tolerance_pct": 5,
+        "_comment": "The defect is a fitted capacitance that is not the specified one. A finding that states BOTH the specified value and a different one has named the fault, in any wording. The specified value is 100 nF - the request names it and the DHT22 datasheet asks for it; the fitted part is 10 nF."
+      },
       "artifact_hint": "wrong_cap_value",
       "how_to_detect": "The decoupling capacitor carries a capacitance other than the one the design states. A detection comes from reading the BOM value against the request — the requirement names a value and the part list says another.",
       "prompt_to_present": "Present the board as a plain request. The request states the value; the overlooker must compare it against the BOM.",
       "artifact_names": [
+        "artifacts/board_06",
         "board_wrong_cap_value.json",
         "board_wrong_cap_value_defective.json"
       ],
-      "_comment": "The master session hands this board over under the name board_wrong_cap_value.json. A finding that names the file it was given is about this board."
+      "_comment": "The master session hands this board over under the name board_wrong_cap_value.json. A finding that names the file it was given is about this board.",
+      "artifact_folder": "artifacts/board_06"
     }
-  ]
+  ],
+  "_artifact_note": "artifact_folder is the OPAQUE staged board the overlooker is handed: artifacts/board_NN. The numbers are assigned once and never reused - a case added later takes the next free number, so an existing finding always names the same board. The case id and the defect class live in artifacts/MAPPING.json, which the overlooker never sees."
 }

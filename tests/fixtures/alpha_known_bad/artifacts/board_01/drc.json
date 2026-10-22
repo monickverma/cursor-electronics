@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-10-21T21:06:41",
+    "date": "2026-10-22T14:08:32",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -130,12 +130,81 @@
             "description": "Items shorting two nets (nets VCC_5V and )",
             "items": [
                 {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 24.12
+                    },
+                    "uuid": "3f264b7d-c263-5490-a93a-06b7c5205258"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
                     "description": "Track [VCC_5V] on F.Cu, length 0.0343 mm",
                     "pos": {
                         "x": 17.2,
                         "y": 23.72
                     },
                     "uuid": "ce8c77ca-2d5b-5eae-bb4a-b949f81b3a57"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2343 mm",
+                    "pos": {
+                        "x": 16.2,
+                        "y": 24.52
+                    },
+                    "uuid": "c5f24c35-d348-5433-8b14-e7218a166d9a"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
+                    "pos": {
+                        "x": 16.6,
+                        "y": 24.12
+                    },
+                    "uuid": "58a50c10-b474-5a8a-8930-860e908f6c92"
                 },
                 {
                     "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
@@ -176,12 +245,35 @@
             "description": "Items shorting two nets (nets VCC_5V and )",
             "items": [
                 {
-                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
+                    "description": "Track [VCC_5V] on F.Cu, length 0.2000 mm",
                     "pos": {
-                        "x": 16.6,
-                        "y": 24.12
+                        "x": 17.0,
+                        "y": 23.72
                     },
-                    "uuid": "58a50c10-b474-5a8a-8930-860e908f6c92"
+                    "uuid": "c874e185-081f-52ac-a5f9-3571bfbf03b7"
+                },
+                {
+                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "pos": {
+                        "x": 16.51,
+                        "y": 24.13
+                    },
+                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets VCC_5V and )",
+            "items": [
+                {
+                    "description": "Track [VCC_5V] on F.Cu, length 0.7657 mm",
+                    "pos": {
+                        "x": 15.965685,
+                        "y": 24.52
+                    },
+                    "uuid": "35c330bd-f56a-5d63-8a99-1183e1e8b0a1"
                 },
                 {
                     "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
@@ -245,35 +337,12 @@
             "description": "Items shorting two nets (nets VCC_5V and )",
             "items": [
                 {
-                    "description": "Track [VCC_5V] on F.Cu, length 0.5657 mm",
-                    "pos": {
-                        "x": 16.6,
-                        "y": 24.12
-                    },
-                    "uuid": "3f264b7d-c263-5490-a93a-06b7c5205258"
-                },
-                {
-                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
+                    "description": "PTH pad 7 [VCC_5V] of U1",
                     "pos": {
                         "x": 16.51,
                         "y": 24.13
                     },
-                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
-                }
-            ],
-            "severity": "error",
-            "type": "shorting_items"
-        },
-        {
-            "description": "Items shorting two nets (nets VCC_5V and )",
-            "items": [
-                {
-                    "description": "Track [VCC_5V] on F.Cu, length 0.2000 mm",
-                    "pos": {
-                        "x": 17.0,
-                        "y": 23.72
-                    },
-                    "uuid": "c874e185-081f-52ac-a5f9-3571bfbf03b7"
+                    "uuid": "725d7898-2920-5488-ae09-53dc1114788b"
                 },
                 {
                     "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
@@ -309,75 +378,6 @@
             ],
             "severity": "error",
             "type": "clearance"
-        },
-        {
-            "description": "Items shorting two nets (nets VCC_5V and )",
-            "items": [
-                {
-                    "description": "Track [VCC_5V] on F.Cu, length 0.2343 mm",
-                    "pos": {
-                        "x": 16.2,
-                        "y": 24.52
-                    },
-                    "uuid": "c5f24c35-d348-5433-8b14-e7218a166d9a"
-                },
-                {
-                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
-                    "pos": {
-                        "x": 16.51,
-                        "y": 24.13
-                    },
-                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
-                }
-            ],
-            "severity": "error",
-            "type": "shorting_items"
-        },
-        {
-            "description": "Items shorting two nets (nets VCC_5V and )",
-            "items": [
-                {
-                    "description": "PTH pad 7 [VCC_5V] of U1",
-                    "pos": {
-                        "x": 16.51,
-                        "y": 24.13
-                    },
-                    "uuid": "725d7898-2920-5488-ae09-53dc1114788b"
-                },
-                {
-                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
-                    "pos": {
-                        "x": 16.51,
-                        "y": 24.13
-                    },
-                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
-                }
-            ],
-            "severity": "error",
-            "type": "shorting_items"
-        },
-        {
-            "description": "Items shorting two nets (nets VCC_5V and )",
-            "items": [
-                {
-                    "description": "Track [VCC_5V] on F.Cu, length 0.7657 mm",
-                    "pos": {
-                        "x": 15.965685,
-                        "y": 24.52
-                    },
-                    "uuid": "35c330bd-f56a-5d63-8a99-1183e1e8b0a1"
-                },
-                {
-                    "description": "Track [<no net>] on F.Cu, length 2.5400 mm",
-                    "pos": {
-                        "x": 16.51,
-                        "y": 24.13
-                    },
-                    "uuid": "d0446c84-a1ad-5524-9131-f25020be71ac"
-                }
-            ],
-            "severity": "error",
-            "type": "shorting_items"
         },
         {
             "description": "Front solder mask aperture bridges items with different nets",

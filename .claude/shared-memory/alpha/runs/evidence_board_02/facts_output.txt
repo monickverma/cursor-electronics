@@ -1,0 +1,99 @@
+### 1. components in the Board IR
+   U1   None                              
+   U2   None                              
+   K1   None                              
+   Q1   None                              
+   D1   None                              
+   R1   None                              
+   R2   None                              
+   C1   None                              
+
+### 2. nets in the Board IR and their pads
+
+### 3. copper-graph components per net (from my own parser)
+   DHT22_DATA         1 component(s)
+        R1.2, U1.4, U2.2, track(10.766,27.286)-(10.200,26.720), track(11.200,27.720)-(10.766,27.286), track(11.600,27.720)-(11.200,27.720), track(12.600,28.720)-(11.600,27.720), track(12.766,28.720)-(12.600,28.720), track(13.000,28.720)-(12.766,28.720) ...
+   GND                5 component(s)
+        C1.2, via(12.60,35.52)
+        Q1.1, via(28.00,24.12)
+        U1.8, via(16.60,21.52)
+        U1.22, via(24.20,24.12)
+        U2.4, via(10.20,21.72)
+   RELAY_COIL_NEG     1 component(s)
+        D1.2, K1.2, Q1.3, track(29.200,8.920)-(29.766,9.486), track(29.766,9.486)-(31.600,11.320), track(31.600,11.320)-(31.600,14.320), track(31.600,14.320)-(31.800,14.520), track(31.800,14.520)-(31.800,19.920), track(31.800,19.920)-(32.800,20.920) ...
+   RELAY_CTRL         2 component(s)
+        Q1.2, track(30.400,24.120)-(30.966,24.686), track(30.966,24.686)-(31.000,24.720), track(31.000,24.720)-(31.000,25.520), track(31.000,25.520)-(32.000,26.520), track(32.000,26.520)-(32.000,28.720), track(32.000,28.720)-(34.688,31.408)
+        R2.2, track(35.112,31.832)-(37.800,34.520), track(37.800,34.520)-(37.800,34.803), track(37.800,34.803)-(37.800,35.320), track(37.800,35.320)-(38.000,35.520)
+   TRANSISTOR_BASE    1 component(s)
+        R2.1, U1.5, track(16.600,29.120)-(17.166,29.686), track(17.166,29.686)-(17.200,29.720), track(17.200,29.720)-(17.600,29.720), track(17.600,29.720)-(21.600,33.720), track(21.600,33.720)-(21.600,39.720), track(21.600,39.720)-(22.600,40.720), track(22.600,40.720)-(22.600,40.920) ...
+   VCC_5V             1 component(s)
+        C1.1, D1.1, K1.1, R1.1, U1.20, U1.7, U2.1, track(10.200,29.320)-(10.200,30.120), track(10.200,30.120)-(8.600,31.720) ...
+
+### 4. the RELAY_CTRL break: every RELAY_CTRL segment, and the gaps
+   seg (30.4000,24.1200)-(30.9657,24.6857) w=0.20 layer=F.Cu
+   seg (30.9657,24.6857)-(31.0000,24.7200) w=0.30 layer=F.Cu
+   seg (31.0000,24.7200)-(31.0000,25.5200) w=0.30 layer=F.Cu
+   seg (31.0000,25.5200)-(32.0000,26.5200) w=0.30 layer=F.Cu
+   seg (32.0000,26.5200)-(32.0000,28.7200) w=0.30 layer=F.Cu
+   seg (32.0000,28.7200)-(34.6879,31.4079) w=0.30 layer=F.Cu
+   seg (35.1121,31.8321)-(37.8000,34.5200) w=0.30 layer=F.Cu
+   seg (37.8000,34.5200)-(37.8000,34.8028) w=0.30 layer=F.Cu
+   seg (37.8000,34.8028)-(37.8000,35.3200) w=0.20 layer=F.Cu
+   seg (37.8000,35.3200)-(38.0000,35.5200) w=0.20 layer=F.Cu
+   GAP 0.000000 mm between (30.4000,24.1200)-(30.9657,24.6857) and (30.9657,24.6857)-(31.0000,24.7200)
+   GAP 0.000000 mm between (30.9657,24.6857)-(31.0000,24.7200) and (31.0000,24.7200)-(31.0000,25.5200)
+   GAP 0.000000 mm between (31.0000,24.7200)-(31.0000,25.5200) and (31.0000,25.5200)-(32.0000,26.5200)
+   GAP 0.000000 mm between (31.0000,25.5200)-(32.0000,26.5200) and (32.0000,26.5200)-(32.0000,28.7200)
+   GAP 0.000000 mm between (32.0000,26.5200)-(32.0000,28.7200) and (32.0000,28.7200)-(34.6879,31.4079)
+   GAP 0.000000 mm between (35.1121,31.8321)-(37.8000,34.5200) and (37.8000,34.5200)-(37.8000,34.8028)
+   GAP 0.000000 mm between (37.8000,34.5200)-(37.8000,34.8028) and (37.8000,34.8028)-(37.8000,35.3200)
+   GAP 0.000000 mm between (37.8000,34.8028)-(37.8000,35.3200) and (37.8000,35.3200)-(38.0000,35.5200)
+
+### 5. track widths per net vs the net class in the .kicad_pro
+   class Default    clearance=0.25 track_width=0.3 patterns=None
+   class power      clearance=0.3 track_width=0.8 patterns=None
+   DHT22_DATA          33 segments, widths [0.2, 0.3], of which 12 are below 0.3 mm
+   RELAY_COIL_NEG      14 segments, widths [0.2, 0.8], of which 5 are below 0.3 mm
+   RELAY_CTRL          10 segments, widths [0.2, 0.3], of which 3 are below 0.3 mm
+   TRANSISTOR_BASE     12 segments, widths [0.2, 0.3], of which 3 are below 0.3 mm
+   VCC_5V              42 segments, widths [0.2, 0.8], of which 16 are below 0.3 mm
+
+### 6. design rules in the .kicad_pro
+   rule_severities: {}
+
+### 7. zone and edge cuts
+   zone net=GND filled_polygon_present=False polygon=[[0.0, 0.0], [63.5, 0.0], [63.5, 45.72], [0.0, 45.72]]
+   zone count in file: 0
+   filled_polygon blocks in file: 0
+
+### 8. search the board for an LED, a connector, a crystal, a header
+   LED        in .kicad_pcb: 0   in board_ir.json: 0
+   led        in .kicad_pcb: 1   in board_ir.json: 0
+   CONN       in .kicad_pcb: 0   in board_ir.json: 0
+   Header     in .kicad_pcb: 0   in board_ir.json: 0
+   Terminal   in .kicad_pcb: 0   in board_ir.json: 0
+   XTAL       in .kicad_pcb: 0   in board_ir.json: 0
+   crystal    in .kicad_pcb: 0   in board_ir.json: 0
+   ICSP       in .kicad_pcb: 0   in board_ir.json: 0
+   Uno        in .kicad_pcb: 0   in board_ir.json: 0
+
+### 9. silkscreen / courtyard / pin-1 markers per footprint
+    CircuitOS:RADIAL-2
+    CircuitOS:DO-41
+    CircuitOS:RELAY-SRD
+    CircuitOS:TO-92
+    CircuitOS:AXIAL
+    CircuitOS:AXIAL
+    CircuitOS:DIP-28
+    CircuitOS:DHT22
+   F.SilkS layer-table occurrences in file: 0
+   F.SilkS layer-table entries: []
+   fp_line/fp_poly/fp_arc blocks on F.SilkS: 0
+   pad shapes used: ['1', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '2', '20', '21', '22', '23', '24', '25', '26', '27', '28', '3', '4', '5', '6', '7', '8', '9']
+
+### 10. holes and annular rings
+Traceback (most recent call last):
+  File "C:\Users\KIIT\cursor-electronics\.claude\shared-memory\alpha\runs\evidence_board_02\facts.py", line 99, in <module>
+    if p["drill"]:
+       ~^^^^^^^^^
+KeyError: 'drill'

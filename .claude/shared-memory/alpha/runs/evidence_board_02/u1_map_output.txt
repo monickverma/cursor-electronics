@@ -1,0 +1,66 @@
+U1 footprint record: [{'ref': 'U1', 'lib': 'CircuitOS:DIP-28', 'x': 20.32, 'y': 22.86, 'rot': 0.0}]
+
+U1 holes, sorted by board position (KiCad board y grows downward):
+  pad 14  x= 16.51 y=  6.35  net=NONE
+  pad 15  x= 24.13 y=  6.35  net=NONE
+  pad 13  x= 16.51 y=  8.89  net=NONE
+  pad 16  x= 24.13 y=  8.89  net=NONE
+  pad 12  x= 16.51 y= 11.43  net=NONE
+  pad 17  x= 24.13 y= 11.43  net=NONE
+  pad 11  x= 16.51 y= 13.97  net=NONE
+  pad 18  x= 24.13 y= 13.97  net=NONE
+  pad 10  x= 16.51 y= 16.51  net=NONE
+  pad 19  x= 24.13 y= 16.51  net=NONE
+  pad 9   x= 16.51 y= 19.05  net=NONE
+  pad 20  x= 24.13 y= 19.05  net=VCC_5V
+  pad 8   x= 16.51 y= 21.59  net=GND
+  pad 21  x= 24.13 y= 21.59  net=NONE
+  pad 7   x= 16.51 y= 24.13  net=VCC_5V
+  pad 22  x= 24.13 y= 24.13  net=GND
+  pad 6   x= 16.51 y= 26.67  net=NONE
+  pad 23  x= 24.13 y= 26.67  net=NONE
+  pad 5   x= 16.51 y= 29.21  net=TRANSISTOR_BASE
+  pad 24  x= 24.13 y= 29.21  net=NONE
+  pad 4   x= 16.51 y= 31.75  net=DHT22_DATA
+  pad 25  x= 24.13 y= 31.75  net=NONE
+  pad 3   x= 16.51 y= 34.29  net=NONE
+  pad 26  x= 24.13 y= 34.29  net=NONE
+  pad 2   x= 16.51 y= 36.83  net=NONE
+  pad 27  x= 24.13 y= 36.83  net=NONE
+  pad 1   x= 16.51 y= 39.37  net=NONE
+  pad 28  x= 24.13 y= 39.37  net=NONE
+
+=== what the die actually sees if the chip is soldered as drawn ===
+  board pad 1  (net NONE            ) <- ATmega pin 28 (PC5)
+  board pad 2  (net NONE            ) <- ATmega pin 27 (PC4)
+  board pad 3  (net NONE            ) <- ATmega pin 26 (PC3)
+  board pad 4  (net DHT22_DATA      ) <- ATmega pin 25 (PC2)
+  board pad 5  (net TRANSISTOR_BASE ) <- ATmega pin 24 (PC1)
+  board pad 6  (net NONE            ) <- ATmega pin 23 (PC0)
+  board pad 7  (net VCC_5V          ) <- ATmega pin 22 (GND)  <<< 5 V on the die's GND pin
+  board pad 8  (net GND             ) <- ATmega pin 21 (AREF)
+  board pad 9  (net NONE            ) <- ATmega pin 20 (AVCC)
+  board pad 10 (net NONE            ) <- ATmega pin 19 (PB5)
+  board pad 11 (net NONE            ) <- ATmega pin 18 (PB4)
+  board pad 12 (net NONE            ) <- ATmega pin 17 (PB3)
+  board pad 13 (net NONE            ) <- ATmega pin 16 (PB2)
+  board pad 14 (net NONE            ) <- ATmega pin 15 (PB1)
+  board pad 15 (net NONE            ) <- ATmega pin 14 (PB0)
+  board pad 16 (net NONE            ) <- ATmega pin 13 (PD7)
+  board pad 17 (net NONE            ) <- ATmega pin 12 (PD6)
+  board pad 18 (net NONE            ) <- ATmega pin 11 (PD5)
+  board pad 19 (net NONE            ) <- ATmega pin 10 (PB7/XTAL2)
+  board pad 20 (net VCC_5V          ) <- ATmega pin 9  (PB6/XTAL1)  <<< net on a crystal pin
+  board pad 21 (net NONE            ) <- ATmega pin 8  (GND)
+  board pad 22 (net GND             ) <- ATmega pin 7  (VCC)  <<< 0 V on the die's VCC pin
+  board pad 23 (net NONE            ) <- ATmega pin 6  (PD5)
+  board pad 24 (net NONE            ) <- ATmega pin 5  (PD4)
+  board pad 25 (net NONE            ) <- ATmega pin 4  (PD3)
+  board pad 26 (net NONE            ) <- ATmega pin 3  (PD2)
+  board pad 27 (net NONE            ) <- ATmega pin 2  (PD1)
+  board pad 28 (net NONE            ) <- ATmega pin 1  (PC6/RESET)
+
+critical miswirings:
+   pad 7  net VCC_5V   -> die pin 22 (GND)
+   pad 20 net VCC_5V   -> die pin 9  (PB6/XTAL1)
+   pad 22 net GND      -> die pin 7  (VCC)

@@ -134,6 +134,35 @@ def _summarise(drc: dict | None) -> dict:
     }
 
 
+def _numbering() -> dict[str, str]:
+    """Case -> the folder number it already has. Numbers are never reused.
+
+    The staged folder is what a finding names, and the key maps a finding back
+    to a case by that name. If the numbering were positional — sorted cases,
+    1, 2, 3 — then adding a case would renumber every case after it, and a
+    finding written against `artifacts/board_03` would suddenly be scored
+    against a different defect. The A1 number would be wrong and nothing
+    would say so.
+
+    So the mapping file is the source of truth: a case keeps the number it
+    was first given, and a new case takes the next free one.
+    """
+    path = OUT / "MAPPING.json"
+    if not path.exists():
+        return {}
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+    out: dict[str, str] = {}
+    for row in rows:
+        folder = str(row.get("folder", ""))
+        case = str(row.get("case", ""))
+        if folder and case:
+            out[case] = folder
+    return out
+
+
 def stage(check: bool = False) -> int:
     try:
         from board_ir import Board
@@ -144,15 +173,31 @@ def stage(check: bool = False) -> int:
         print("they are merged, or hand the overlooker the board JSON.")
         return 1
 
+    previous = _numbering()
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
 
+    # A case that already had a number keeps it; a new one takes the next
+    # free number. Never reuse, never renumber.
+    used = set(previous.values())
+    next_free = 1
+    numbering: dict[str, str] = {}
+    for case in _cases():
+        if case.name in previous:
+            numbering[case.name] = previous[case.name]
+            continue
+        while f"board_{next_free:02d}" in used:
+            next_free += 1
+        numbering[case.name] = f"board_{next_free:02d}"
+        used.add(numbering[case.name])
+        next_free += 1
+
     presentation = []
-    for i, case in enumerate(_cases(), start=1):
+    for case in _cases():
         # The file name carries nothing about the case. The mapping that
         # decodes it stays here and is NOT handed to the overlooker.
-        stem = f"board_{i:02d}"
+        stem = numbering[case.name]
         folder = OUT / stem
         folder.mkdir()
 
@@ -193,6 +238,8 @@ def stage(check: bool = False) -> int:
     print()
     print("The folder names carry no case information. The mapping is in MAPPING.json.")
     print("DO NOT hand MAPPING.json to the overlooker.")
+    print("Numbers are never reused: a case added later takes the next free one,")
+    print("so a finding written against one board always names that board.")
     return 0
 
 

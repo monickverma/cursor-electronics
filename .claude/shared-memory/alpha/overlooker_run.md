@@ -129,24 +129,37 @@ useful finding about the product; it is not a finding that a short exists.
 
 ---
 
-## 4. The calibration set as it stands (2026-10-21)
+## 4. The calibration set as it stands (2026-10-22)
 
-Six cases. Five are critical. Three are caught by the product's own
-verifier; three are declared gaps, where the product does not catch the
+Seven cases. Six are critical. Three are caught by the product's own
+verifier; four are declared gaps, where the product does not catch the
 defect and says so.
 
-| Case | Class | Critical | Our verifier | KiCad DRC | The point |
-|---|---|---|---|---|---|
-| cut_track | open | yes | III.1 fails | 5 unconnected (clean board: 4) | the easy half |
-| deleted_via | open | yes | III.1 fails | 5 unconnected (clean: 4) | the easy half |
-| bridged_nets | short | yes | III.2 fails | 26 violations (clean: 13) | the easy half |
-| swapped_pins | wrong pinout | yes | no check | nothing | the hard half — a transistor with E and C transposed |
-| reversed_diode | reversed diode | yes | no check | nothing | the hard half — and the check that could have caught it RAN and passed |
-| wrong_cap_value | wrong value | no | no check | nothing | not critical — a capacitor ten times too small |
+| Case | Board | Class | Critical | Our verifier | KiCad DRC | The point |
+|---|---|---|---|---|---|---|
+| bridged_nets | board_01 | short | yes | III.2 fails | 26 violations (clean: 13) | the easy half |
+| cut_track | board_02 | open | yes | III.1 fails | 5 unconnected (clean: 4) | the easy half |
+| deleted_via | board_03 | open | yes | III.1 fails | 5 unconnected (clean: 4) | the easy half |
+| reversed_diode | board_04 | reversed diode | yes | no check | nothing | the hard half — and the check that could have caught it RAN and passed |
+| swapped_pins | board_05 | wrong pinout | yes | no check | nothing | the hard half — a transistor with E and C transposed |
+| wrong_cap_value | board_06 | wrong value | no | no check | nothing | not critical — a capacitor ten times too small |
+| mains_gap | board_07 | creepage | yes | no check | nothing | a mains net 0.35 mm from a SELV net |
 
-**`mains_gap` (creepage) is not built yet.** It needs a mains-carrying
-board, and the product has no mains template, so it has to be built by hand.
-Until it exists the set is six cases, not seven.
+The board number comes from `MAPPING.json` and never renumbers. The folder
+name says nothing about the defect.
+
+### The seventh case, `mains_gap` (built 2026-10-22)
+
+The product has no mains template, so this board was laid by hand on top of
+the product's own board: the mains domain added, and the same board with
+MAINS_L moved from 5.85 mm to 0.35 mm away from the DHT22_DATA net.
+
+It is a declared false pass: the product's own verifier returns `ok=True` on
+the defective board, and KiCad's DRC is identical on both boards (9
+violations, 4 unconnected GND pads). Nothing in the product looks at a
+clearance. The 5.0 mm requirement is quoted from IEC 60664-1 Table F.4 and
+is **not qualified by anyone** — see owner decision D1. The geometry itself
+is exact.
 
 ### The two that matter most
 

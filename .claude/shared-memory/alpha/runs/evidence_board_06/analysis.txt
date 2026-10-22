@@ -1,0 +1,124 @@
+==============================================================================
+A. board_06.kicad_pcb  vs  board_ir.json  — do they describe the same board?
+==============================================================================
+ref            pcb (x,y)     board_ir (x,y)  45.72-ir_y    match
+C1         (10.12,35.60)      (10.12,10.12) (10.12,35.60)   MIRROR
+D1         (32.98,27.98)      (32.98,17.74) (32.98,27.98)   MIRROR
+K1         (36.79,14.01)      (36.79,31.71) (36.79,14.01)   MIRROR
+Q1         (30.44,24.17)      (30.44,21.55) (30.44,24.17)   MIRROR
+R1         (32.98,31.79)      (32.98,13.93) (32.98,31.79)   MIRROR
+R2         (32.98,35.60)      (32.98,10.12) (32.98,35.60)   MIRROR
+U1         (20.32,22.86)      (20.32,22.86) (20.32,22.86)   MIRROR
+U2         (10.12,25.44)      (10.12,20.28) (10.12,25.44)   MIRROR
+
+EVERY component position in the .kicad_pcb equals board_ir with y -> 45.72 - y : True
+
+==============================================================================
+B. Footprint pad layouts — is each pad layout also mirrored?
+   (compare pcb footprint local coords with board_ir pad coords, both re-centred)
+==============================================================================
+C1    (CircuitOS:RADIAL-2):  pads mirrored in y = True   identical = True
+D1    (CircuitOS:DO-41):  pads mirrored in y = True   identical = True
+K1    (CircuitOS:RELAY-SRD):  pads mirrored in y = True   identical = False
+Q1    (CircuitOS:TO-92):  pads mirrored in y = True   identical = True
+R1    (CircuitOS:AXIAL):  pads mirrored in y = True   identical = True
+R2    (CircuitOS:AXIAL):  pads mirrored in y = True   identical = True
+U1    (CircuitOS:DIP-28):  pads mirrored in y = True   identical = False
+U2    (CircuitOS:DHT22):  pads mirrored in y = True   identical = False
+
+==============================================================================
+C. U1 DIP-28 footprint vs KiCad stock Package_DIP:DIP-28_W7.62mm
+==============================================================================
+stock footprint body centre: x=0 y=0 (stock pad1 at (-3.81, -16.51), pad14 at (-3.81, 16.51), pad15 at (3.81, 16.51), pad28 at (3.81, -16.51))
+board  footprint U1: pad1 local -3.81,16.51  pad14 -3.81,-16.51  pad15 3.81,16.51  pad28 3.81,-16.51
+
+Where does each BOARD pad sit, in stock-footprint terms?
+  stock pin -> board pad : {'1': '14', '2': '13', '3': '12', '4': '11', '5': '10', '6': '9', '7': '8', '8': '7', '9': '6', '10': '5', '11': '4', '12': '3', '13': '2', '14': '1', '15': '28', '16': '27', '17': '26', '18': '25', '19': '24', '20': '23', '21': '22', '22': '21', '23': '20', '24': '19', '25': '18', '26': '17', '27': '16', '28': '15'}
+  => board pad N sits where stock pin 1->14, 2->13, 3->12, 4->11, 5->10, 6->9, 7->8, 8->7, 9->6, 10->5, 11->4, 12->3, 13->2, 14->1, 15->28, 16->27, 17->26, 18->25, 19->24, 20->23, 21->22, 22->21, 23->20, 24->19, 25->18, 26->17, 27->16, 28->15 sit, i.e. the footprint is the y-MIRROR of a stock DIP-28.
+  => no 180 deg rotation reproduces it (a rotation would put pad1 at x=+3.81).
+
+==============================================================================
+D. Which ATmega328P-PU lead lands in which board pad, for every legal insertion
+   (ATmega328P-PU DIP-28 per Atmel/Microchip doc 8271I: 1 PC6/RESET 2 PD0 3 PD1 4 PD2
+    5 PD3 6 PD4 7 VCC 8 GND 9 PB6/XTAL1 10 PB7/XTAL2 11 PD5 12 PD6/AIN0 13 PD7/AIN1
+    14 PB0 15 PB1 16 PB2/SS 17 PB3/MOSI 18 PB4/MISO 19 PB5/SCK 20 AVCC 21 AREF 22 GND
+    23 PC0/ADC0 24 PC1/ADC1 25 PC2/ADC2 26 PC3/ADC3 27 PC4/ADC4 28 PC5/ADC5)
+==============================================================================
+  --- chip inserted 0 deg (chip pin1 at top-left (standard)) ---
+      chip lead -> board pad -> board net   [board net of the LEAD, not the pad]
+      pin  1 PC6/RESET -> pad 14 net ''
+      pin  4 PD2/D2    -> pad 11 net ''
+      pin  5 PD3/D3    -> pad 10 net ''
+      pin  7 VCC       -> pad 8  net 'GND'
+      pin  8 GND       -> pad 7  net 'VCC_5V'
+      pin 19 PB5/SCK   -> pad 24 net ''
+      pin 20 AVCC      -> pad 23 net ''
+      pin 21 AREF      -> pad 22 net 'GND'
+      pin 22 GND/AGND  -> pad 21 net ''
+      pin 23 PC0/ADC0  -> pad 20 net 'VCC_5V'
+      *** power pins landed on the wrong net: 4
+          chip pin 7 (VCC) -> board pad 8 net GND
+          chip pin 8 (GND) -> board pad 7 net VCC_5V
+          chip pin 21 (AREF) -> board pad 22 net GND
+          chip pin 23 (PC0/ADC0) -> board pad 20 net VCC_5V
+
+  --- chip inserted 180 deg (chip pin1 at bottom-right) ---
+      chip lead -> board pad -> board net   [board net of the LEAD, not the pad]
+      pin  1 PC6/RESET -> pad 28 net ''
+      pin  4 PD2/D2    -> pad 25 net ''
+      pin  5 PD3/D3    -> pad 24 net ''
+      pin  7 VCC       -> pad 22 net 'GND'
+      pin  8 GND       -> pad 21 net ''
+      pin 19 PB5/SCK   -> pad 5  net 'TRANSISTOR_BASE'
+      pin 20 AVCC      -> pad 6  net ''
+      pin 21 AREF      -> pad 7  net 'VCC_5V'
+      pin 22 GND/AGND  -> pad 8  net 'GND'
+      pin 23 PC0/ADC0  -> pad 9  net ''
+      *** power pins landed on the wrong net: 4
+          chip pin 7 (VCC) -> board pad 22 net GND
+          chip pin 9 (PB6/XTAL1) -> board pad 20 net VCC_5V
+          chip pin 21 (AREF) -> board pad 7 net VCC_5V
+          chip pin 22 (GND/AGND) -> board pad 8 net GND
+
+==============================================================================
+E. Every net: which pads carry it, and is there any copper on it?
+==============================================================================
+net              pads                                            segs  vias  F.Cu/B.Cu
+DHT22_DATA       R1.2,U1.4,U2.2                                    33     2  ['B.Cu', 'F.Cu']
+GND              C1.2,Q1.1,U1.8,U1.22,U2.4                          0     5  []
+RELAY_COIL_NEG   D1.2,K1.2,Q1.3                                    14     0  ['F.Cu']
+RELAY_CTRL       Q1.2,R2.2                                          9     0  ['F.Cu']
+TRANSISTOR_BASE  R2.1,U1.5                                         12     0  ['F.Cu']
+VCC_5V           C1.1,D1.1,K1.1,R1.1,U1.7,U1.20,U2.1               42     0  ['F.Cu']
+
+nets with NO track and NO via at all:
+
+F.Cu net VCC_5V / GND track widths seen: [0.2, 0.8]
+GND tracks on F.Cu: 0   GND tracks on B.Cu: 0
+zone blocks: 1   filled_polygon blocks: 0
+
+==============================================================================
+F. Silkscreen / fab content
+==============================================================================
+fp_line / fp_text / fp_circle count in board file: 0 / 0 / 0
+gr_text (board silkscreen text): 0
+F.Silkscreen gerber D-code operations: 0   (see analysis of gerbers/)
+
+==============================================================================
+G. Parts the request asked for, vs parts on the board
+==============================================================================
+  C1   CircuitOS:RADIAL-2     value='10nF' mpn='K103K15X7RF53H5'
+  D1   CircuitOS:DO-41        value='1N4007' mpn='1N4007'
+  K1   CircuitOS:RELAY-SRD    value='SRD-05VDC-SL-C' mpn='SRD-05VDC-SL-C'
+  Q1   CircuitOS:TO-92        value='2N2222A' mpn='2N2222A'
+  R1   CircuitOS:AXIAL        value='CFR-25JB-52-10K' mpn='CFR-25JB-52-10K'
+  R2   CircuitOS:AXIAL        value='CFR-25JB-52-1K' mpn='CFR-25JB-52-1K'
+  U1   CircuitOS:DIP-28       value='ATMEGA328P-PU' mpn='ATMEGA328P-PU'
+  U2   CircuitOS:DHT22        value='DHT22' mpn='DHT22'
+  request: 'reads a DHT22 sensor on a 2 metre cable with a 100 nF decoupling capacitor, drives a relay through a 2N2222A, and lights an LED on the same board'
+  -> LED on the board?       False
+  -> 100 nF cap on board?    False
+  -> C1 value                10nF / mpn K103K15X7RF53H5
+  -> connector / terminal?   False
+  -> relay contact pads with a net: ['K1.p1', 'K1.p2']
+  -> U2 (DHT22) fitted on-board; pads with no net: ['U2.p3']

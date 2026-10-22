@@ -1,0 +1,60 @@
+============================================================
+  symbol ATmega328P-PU not found in MCU_Microchip_ATmega.kicad_sym
+  symbol ATmega328P-PU not found in MCU_Microchip_ATmega.kicad_sym
+  symbol ATmega328P not found in MCU_Microchip_ATmega.kicad_sym
+============================================================
+  symbol 2N2222A not found in Transistor_BJT.kicad_sym
+  symbol 2N2222A_Vishay not found in Transistor_BJT.kicad_sym
+  2N3904 : Transistor_BJT.kicad_sym
+  Q_NPN_CBE : Transistor_BJT.kicad_sym
+     pin 1   C              passive
+     pin 2   B              input
+     pin 3   E              passive
+  Q_NPN_BEC : Transistor_BJT.kicad_sym
+     pin 1   B              input
+     pin 2   E              passive
+     pin 3   C              passive
+============================================================
+  D : Device.kicad_sym
+     pin 1   K              passive
+     pin 2   A              passive
+  D_Zener : Device.kicad_sym
+     pin 1   K              passive
+     pin 2   A              passive
+============================================================
+  symbol Relay_1SPDT not found in Relay.kicad_sym
+============================================================
+Package_DIP.pretty/DIP-28_W7.62mm.kicad_mod -> True
+    ('1', 'thru_hole', 'roundrect', 0.0, 0.0)
+    ('2', 'thru_hole', 'circle', 0.0, 2.54)
+    ('3', 'thru_hole', 'circle', 0.0, 5.08)
+    ('4', 'thru_hole', 'circle', 0.0, 7.62)
+    ('5', 'thru_hole', 'circle', 0.0, 10.16)
+    ('6', 'thru_hole', 'circle', 0.0, 12.7)
+    ('7', 'thru_hole', 'circle', 0.0, 15.24)
+    ('8', 'thru_hole', 'circle', 0.0, 17.78)
+    ('9', 'thru_hole', 'circle', 0.0, 20.32)
+    ('10', 'thru_hole', 'circle', 0.0, 22.86)
+    ('11', 'thru_hole', 'circle', 0.0, 25.4)
+    ('12', 'thru_hole', 'circle', 0.0, 27.94)
+    ('13', 'thru_hole', 'circle', 0.0, 30.48)
+    ('14', 'thru_hole', 'circle', 0.0, 33.02)
+    ('15', 'thru_hole', 'circle', 7.62, 33.02)
+    ('16', 'thru_hole', 'circle', 7.62, 30.48)
+    ('17', 'thru_hole', 'circle', 7.62, 27.94)
+    ('18', 'thru_hole', 'circle', 7.62, 25.4)
+    ('19', 'thru_hole', 'circle', 7.62, 22.86)
+    ('20', 'thru_hole', 'circle', 7.62, 20.32)
+    ('21', 'thru_hole', 'circle', 7.62, 17.78)
+    ('22', 'thru_hole', 'circle', 7.62, 15.24)
+    ('23', 'thru_hole', 'circle', 7.62, 12.7)
+    ('24', 'thru_hole', 'circle', 7.62, 10.16)
+    ('25', 'thru_hole', 'circle', 7.62, 7.62)
+    ('26', 'thru_hole', 'circle', 7.62, 5.08)
+    ('27', 'thru_hole', 'circle', 7.62, 2.54)
+    ('28', 'thru_hole', 'circle', 7.62, 0.0)
+Package_TO_SOT_THT.pretty/TO-92_Inline.kicad_mod -> True
+    ('1', 'thru_hole', 'rect', 0.0, 0.0)
+    ('2', 'thru_hole', 'oval', 1.27, 0.0)
+    ('3', 'thru_hole', 'oval', 2.54, 0.0)
+Package_TO_SOT_THT.pretty/TO-92_Inline_Horizontal.kicad_mod -> False

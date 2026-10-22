@@ -1,0 +1,33 @@
+==============================================================================
+A. AS BUILT ON THE BOARD  (pad1=Emitter->coil, pad3=Collector->GND)
+==============================================================================
+   V(base)            = +0.7318 V
+   V(coil low side)   = +5.0000 V   (emitter floats to the +5 V rail)
+   V_BE               = -4.2682 V   REVERSE biased (2N2222A V_EBO max 5 V)
+   V_BC               = +0.7318 V   forward biased -> base current dumped to GND
+   I(base)            = +4.2682 mA   (=(5-Vb)/R2, all of it through B-C into GND)
+   I(collector)       = -4.2682 mA
+   I(emitter)         = -0.0000 mA   <-- the coil current
+   I(coil)            = -0.0000 mA   (SRD-05VDC-SL-C needs 71.4 mA to pick up)
+   V_EBO stress       = +4.2682 V    (2N2222A V_EBO max = 5 V)
+   VERDICT            = relay DOES NOT PULL IN
+
+   Bound (model-independent): the base current is capped by R2 at 5.0 mA.
+   In this reversed junction configuration the gain is BR (reverse gain, a few
+   to ten for a small-signal NPN), not BF (100-300).  So the coil can see at most
+   BR * I_B = 6 * 4.3 mA = 25.6 mA, against the 71.4 mA the coil needs.
+   The design's function depends on a parameter the datasheet does not specify,
+   and even at BR = 6 the relay still does not pull in.
+
+==============================================================================
+B. SAME PARTS, CORRECT LOW-SIDE WIRING (pad3=Collector->coil, pad1=Emitter->GND)
+==============================================================================
+   I(coil)            = +71.4286 mA   (5 V across 70 ohm)
+   I(base)            = +4.3000 mA   ((5 - 0.7)/1k)
+   forced beta        = 16.6       (2N2222A forced beta is typically 50-100)
+   VERDICT            = relay PULLS IN (transistor saturates)
+
+==============================================================================
+SUMMARY: identical parts, identical netlist except which pad carries the coil.
+As built, the relay coil carries -0.0000 mA.  Correctly wired it carries 71.4 mA.
+==============================================================================

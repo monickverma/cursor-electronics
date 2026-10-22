@@ -1,0 +1,212 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-10-22T11:19:20",
+    "ignored_checks": [
+        {
+            "description": "Footprint has no courtyard defined",
+            "key": "missing_courtyard"
+        },
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "Footprint component type doesn't match footprint pads",
+            "key": "footprint_type_mismatch"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.1",
+    "schematic_parity": [],
+    "source": "scratch_refill.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Track [RELAY_CTRL] on F.Cu, length 3.8012 mm",
+                    "pos": {
+                        "x": 32.0,
+                        "y": 28.72
+                    },
+                    "uuid": "a68b250c-1855-5237-888e-b032a5358952"
+                },
+                {
+                    "description": "Track [RELAY_CTRL] on F.Cu, length 3.8012 mm",
+                    "pos": {
+                        "x": 35.112132,
+                        "y": 31.832132
+                    },
+                    "uuid": "3abb6461-6893-5026-a99c-1fa5fd85100f"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": [
+        {
+            "description": "Track has unconnected end",
+            "items": [
+                {
+                    "description": "Track [RELAY_CTRL] on F.Cu, length 3.8012 mm",
+                    "pos": {
+                        "x": 32.0,
+                        "y": 28.72
+                    },
+                    "uuid": "a68b250c-1855-5237-888e-b032a5358952"
+                }
+            ],
+            "severity": "warning",
+            "type": "track_dangling"
+        },
+        {
+            "description": "Track has unconnected end",
+            "items": [
+                {
+                    "description": "Track [RELAY_CTRL] on F.Cu, length 3.8012 mm",
+                    "pos": {
+                        "x": 35.112132,
+                        "y": 31.832132
+                    },
+                    "uuid": "3abb6461-6893-5026-a99c-1fa5fd85100f"
+                }
+            ],
+            "severity": "warning",
+            "type": "track_dangling"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint C1",
+                    "pos": {
+                        "x": 10.12,
+                        "y": 35.6
+                    },
+                    "uuid": "0f694617-3e3e-5a81-8f70-dbc048756a44"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint D1",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 27.98
+                    },
+                    "uuid": "c0e3ac8e-736c-5bf9-a951-cbf87e3534cd"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint K1",
+                    "pos": {
+                        "x": 36.79,
+                        "y": 14.01
+                    },
+                    "uuid": "a24c4b9e-a187-5a32-b1e9-b1d7bb49126f"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint Q1",
+                    "pos": {
+                        "x": 30.44,
+                        "y": 24.17
+                    },
+                    "uuid": "8020027b-5f82-50ee-9653-1970d9d9be60"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint R1",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 31.79
+                    },
+                    "uuid": "d1fdc9a4-4040-56bf-b9a8-8d0f714b73e3"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint R2",
+                    "pos": {
+                        "x": 32.98,
+                        "y": 35.6
+                    },
+                    "uuid": "a8a25ccf-3016-5b96-9b3e-9e0d1e29842b"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint U1",
+                    "pos": {
+                        "x": 20.32,
+                        "y": 22.86
+                    },
+                    "uuid": "f34f28a0-3ce9-510e-8881-c63da78ee6ca"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        },
+        {
+            "description": "The current configuration does not include the footprint library 'CircuitOS'",
+            "items": [
+                {
+                    "description": "Footprint U2",
+                    "pos": {
+                        "x": 10.12,
+                        "y": 25.44
+                    },
+                    "uuid": "49d731bf-b5e2-555a-98cf-e16b9dcc2dcc"
+                }
+            ],
+            "severity": "warning",
+            "type": "lib_footprint_issues"
+        }
+    ]
+}

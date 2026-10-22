@@ -15,11 +15,22 @@ import os
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
 _LOG_PATH = Path(__file__).parent / "sim_monitor.jsonl"
+
+
+def _utc_stamp() -> str:
+    """Now, in UTC, as the string this file has always written.
+
+    `datetime.utcnow()` is the UTC wall clock with no tzinfo, and Python 3.12
+    deprecates it. It happens to be right here because the "Z" is appended by
+    hand, but the honest form is an aware datetime: `isoformat()` then ends in
+    "+00:00", which the "Z" replaces. The output is byte-for-byte what it was.
+    """
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 @dataclass
@@ -29,7 +40,7 @@ class SimRunLog:
     success: bool
     duration_ms: int
     netlist_line_count: int
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    timestamp: str = field(default_factory=_utc_stamp)
     error: Optional[str] = None
     dc_node_count: int = 0
     ac_point_count: int = 0

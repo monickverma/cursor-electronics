@@ -1,0 +1,14 @@
+The Alpha calibration set is complete: seven cases, seven manifests.
+
+    bridged_nets    short           critical
+    cut_track       open            critical
+    deleted_via     open            critical
+    mains_gap       creepage        critical
+    reversed_diode  reversed diode  critical
+    swapped_pins    wrong pinout    critical
+    wrong_cap_value wrong value
+
+Every case directory here holds a manifest.json and a mutate.py. The master
+session wrote this marker on 2026-10-22, after the seventh case landed. The
+tests use it to stop forgiving a key entry that names a case directory which
+does not exist: from here on, that is a mistake and not a work in progress.
