@@ -631,3 +631,61 @@ class TestPdn:
         nl = {**NL, "net_voltages": {"VCC": 5.0}, "pdn_bandwidth_hz": {"U1": 10e6}}
         rep = verify_board(self._board(), nl)
         assert _check(rep, "V.3b").rung == "simulated"
+
+
+# Regression, S7 2026-10-22 (PHYS-STEP-4 reopened): a relay coil on a two-pin
+# connector J1 {VCC_5V, SW_LOAD} is a load, not the rail's source. V.3 failed a
+# good board as "not connected" because J1 was taken as the source and had no
+# ground pad.
+def _relay_board():
+    b = Board(name="relay", outline_w=40, outline_h=20, layers=[Layer("F.Cu"), Layer("B.Cu")])
+    b.components = [
+        Component("U1", 5, 10, attrs={"type": "microcontroller", "current_a": 0.05},
+                  pads=[Pad("U1", "5V", 5.0, 8.0, 1.0, 1.0, "VCC_5V"),
+                        Pad("U1", "GND", 5.0, 12.0, 1.0, 1.0, "GND"),
+                        Pad("U1", "D7", 5.0, 14.0, 1.0, 1.0, "RELAY_CTRL")]),
+        Component("J1", 30, 10, attrs={"type": "connector"},
+                  pads=[Pad("J1", "1", 30.0, 8.0, 1.0, 1.0, "VCC_5V"),
+                        Pad("J1", "2", 30.0, 12.0, 1.0, 1.0, "SW_LOAD")]),
+        Component("Q1", 20, 14, attrs={"type": "transistor"},
+                  pads=[Pad("Q1", "1", 19.0, 16.0, 0.8, 0.8, "GND"),
+                        Pad("Q1", "2", 20.0, 16.0, 0.8, 0.8, "RELAY_CTRL"),
+                        Pad("Q1", "3", 21.0, 16.0, 0.8, 0.8, "SW_LOAD")]),
+        Component("D1", 25, 10, attrs={"type": "diode"},
+                  pads=[Pad("D1", "1", 24.0, 10.0, 0.8, 0.8, "VCC_5V"),
+                        Pad("D1", "2", 26.0, 10.0, 0.8, 0.8, "SW_LOAD")])]
+    b.tracks += [Track("F.Cu", "VCC_5V", 0.8, [(5.0, 8.0), (30.0, 8.0)]),
+                 Track("F.Cu", "VCC_5V", 0.8, [(24.0, 8.0), (24.0, 10.0)]),
+                 Track("F.Cu", "GND", 0.8, [(5.0, 12.0), (5.0, 17.0), (19.0, 17.0), (19.0, 16.0)])]
+    return b
+
+
+RELAY_NL = {"ground_net": "GND", "power_nets": ["VCC_5V", "GND"],
+            "net_voltages": {"VCC_5V": 5.0, "GND": 0.0}}
+
+
+class TestDcDropSource:
+    def test_a_load_connector_is_never_taken_as_the_source(self):
+        assert dc_drop._source(_relay_board(), RELAY_NL, "VCC_5V") is None
+
+    def test_relay_board_with_no_declared_source_is_unknown_not_a_failure(self):
+        f = _rule(dc_drop.check_dc_drop(_relay_board(), RELAY_NL), "V.3")
+        assert f.status == "unknown", f.detail
+        assert "no rail source declared" in f.detail
+        assert "not connected" not in f.detail
+
+    def test_relay_board_gate_still_emits(self):
+        rep = verify_board(_relay_board(), RELAY_NL)
+        assert _check(rep, "V.3").status == "unknown"
+        assert all(f.check != "V.3" for f in rep.failed())
+
+    def test_a_connector_with_rail_and_ground_pins_is_a_source(self):
+        b = _relay_board()
+        b.component("J1").pads.append(Pad("J1", "3", 30.0, 16.0, 1.0, 1.0, "GND"))
+        assert dc_drop._source(b, RELAY_NL, "VCC_5V").ref == "J1"
+
+    def test_a_declared_source_without_a_ground_pad_leaves_the_ground_unknown(self):
+        nl = {**RELAY_NL, "rail_sources": {"VCC_5V": "J1"}}
+        f = _rule(dc_drop.check_dc_drop(_relay_board(), nl), "V.3")
+        assert f.status == "unknown", f.detail
+        assert "no ground pad" in f.detail and "not connected" not in f.detail

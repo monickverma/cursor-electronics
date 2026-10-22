@@ -248,11 +248,17 @@ class _Net:
 
 
 def _source(board: Board, netlist: dict, rail: str):
+    """The part the rail enters the board through: the one rail_sources names,
+    else the only regulator or connector with both a rail pin and a ground pin.
+    A connector with a rail pin and no ground pin is a load (a relay coil, a
+    fan), never a source — S7 2026-10-22: taking one as the source failed a good
+    board as "not connected"."""
     ref = (netlist.get("rail_sources") or {}).get(rail)
     if ref:
         return board.component(ref)
+    ground = netlist.get("ground_net")
     found = [c for c in board.components if c.attrs.get("type") in SOURCE_TYPES
-             and any(p.net == rail for p in c.pads)]
+             and any(p.net == rail for p in c.pads) and any(p.net == ground for p in c.pads)]
     return found[0] if len(found) == 1 else None
 
 
@@ -265,7 +271,11 @@ def rail_drops(board: Board, netlist: dict) -> dict:
     for rail in rails:
         src = _source(board, netlist, rail)
         if src is None:
-            out[rail] = {"_error": "no source identified"}
+            out[rail] = {"_error": "no rail source declared (no regulator or connector "
+                                   "with both a rail and a ground pin; rail_sources unset)"}
+            continue
+        if not any(p.net == rail for p in src.pads):
+            out[rail] = {"_error": f"declared source {src.ref} has no pad on the rail"}
             continue
         loads = [c for c in board.components if c is not src and c.attrs.get("current_a")
                  and any(p.net == rail for p in c.pads)]
@@ -292,12 +302,16 @@ def rail_drops(board: Board, netlist: dict) -> dict:
                 roots = [net.uf.find(net.pad_node[(c.ref, p.pin)]) for p in pins]
                 if not pins and side == "ground_v":
                     e[side] = 0.0              # returns through other parts; not attributable
-                elif not pins or not s_nodes or any(r not in seen for r in roots):
+                elif not s_nodes:
+                    e[side] = None             # the source has no pad here: not solvable
+                    e["why"] = f"source {src.ref} has no ground pad, so the return is not solvable"
+                elif not pins or any(r not in seen for r in roots):
                     e[side] = math.inf
                 else:
                     e[side] = max(-v[r] for r in roots)
         for e in res.values():
-            e["total_v"] = e.get("rail_v", 0.0) + e.get("ground_v", 0.0)
+            parts = (e.get("rail_v", 0.0), e.get("ground_v", 0.0))
+            e["total_v"] = None if None in parts else sum(parts)
         out[rail] = res
     return out
 
@@ -320,6 +334,8 @@ def check_dc_drop(board: Board, netlist: dict | None) -> list:
         for ref, e in sorted(res.items()):
             if e["residual"] > 1e-6:
                 unknown.append(f"{rail}→{ref}: solve did not converge")
+            elif e["total_v"] is None:
+                unknown.append(f"{rail}→{ref}: {e['why']}")
             elif math.isinf(e["total_v"]):
                 bad.append(f"{rail}→{ref}: not connected to the source through copper")
             elif nominal:
