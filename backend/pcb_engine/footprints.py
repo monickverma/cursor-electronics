@@ -105,17 +105,22 @@ def _dht22():
 
 
 def _soic(npins: int, row: float = 5.40, pitch: float = 1.27,
-          pad_w: float = 0.60, pad_h: float = 1.50):
+          pad_len: float = 1.50, pad_wid: float = 0.60):
     """SOIC, narrow body. Pin order matches _dip: 1..n/2 up the left, then back
-    down the right, so pin 1 and pin n sit on the same row."""
+    down the right, so pin 1 and pin n sit on the same row.
+
+    Pads are long across the row (x) and narrow along the pitch (y). Until the
+    2026-10-12 review they were the other way round: 1.5 mm tall on a 1.27 mm
+    pitch, so neighbouring pads overlapped and every SOIC pin was shorted to the
+    next one."""
     per = npins // 2
     span = (per - 1) * pitch
     out = []
     for i in range(per):
-        out.append((str(i + 1), -row / 2, -span / 2 + i * pitch, pad_w, pad_h))
+        out.append((str(i + 1), -row / 2, -span / 2 + i * pitch, pad_len, pad_wid))
     for i in range(per):
-        out.append((str(npins - i), row / 2, -span / 2 + i * pitch, pad_w, pad_h))
-    return out, row + pad_w + 0.5, span + pad_h + 0.5
+        out.append((str(npins - i), row / 2, -span / 2 + i * pitch, pad_len, pad_wid))
+    return out, row + pad_len + 0.5, span + pad_wid + 0.5
 
 
 PACKAGES = {
@@ -231,8 +236,16 @@ def guess(mpn: str, npins: int | None = None) -> str | None:
     return None
 
 
-PINMAPS = {
-    "DIP-28": {
+# ─────────────────────────────────────────────────────────────────────────────
+# Pin label -> pad. Per part first, per package only where the package decides.
+# ─────────────────────────────────────────────────────────────────────────────
+# A package does not decide a pinout: in the KiCad library one SOT-23 footprint
+# carries 39 pin assignments, TO-92 30, SOIC-8 298 (reports/PCB verification
+# implementation plan.md, stage 1). So three-terminal and multi-pin parts are
+# mapped by part number. Each map below is transcribed by hand from the part's
+# datasheet; verify.py checks it against the KiCad symbol for the same part
+# number, a transcription made by other people (part_pinouts.py).
+_ATMEGA328P_DIP28 = {
         "VCC": ["7", "20"],
         "GND": ["8", "22"],
         "AVCC": ["20"],
@@ -260,29 +273,44 @@ PINMAPS = {
         "RESET": ["1"],
         "XTAL1": ["9"],
         "XTAL2": ["10"],
-    },
-    "TO-92": {
-        "EMITTER": ["1"], "E": ["1"],
-        "BASE": ["2"], "B": ["2"],
-        "COLLECTOR": ["3"], "C": ["3"],
-    },
-    # The standard SOT-23 pinout for a BJT (1 base, 2 emitter, 3 collector; e.g.
-    # MMBT2222A) and a MOSFET (1 gate, 2 source, 3 drain). The names cannot
-    # collide, so one map serves both. A part with a non-standard SOT-23 pinout
-    # needs its own map; without this, B/C/E fell to free-pad assignment and a
-    # switch transistor was wired in whatever order its pins were listed.
-    "SOT-23": {
-        "B": ["1"], "BASE": ["1"], "E": ["2"], "EMITTER": ["2"],
-        "C": ["3"], "COLLECTOR": ["3"],
-        "G": ["1"], "GATE": ["1"], "S": ["2"], "SOURCE": ["2"],
-        "D": ["3"], "DRAIN": ["3"],
-    },
+        "D0_RX": ["2"], "D1_TX": ["3"],
+}
+
+_BJT_EBC = {"E": ["1"], "EMITTER": ["1"], "B": ["2"], "BASE": ["2"],
+            "C": ["3"], "COLLECTOR": ["3"]}
+_BJT_CBE = {"C": ["1"], "COLLECTOR": ["1"], "B": ["2"], "BASE": ["2"],
+            "E": ["3"], "EMITTER": ["3"]}
+_BJT_BEC = {"B": ["1"], "BASE": ["1"], "E": ["2"], "EMITTER": ["2"],
+            "C": ["3"], "COLLECTOR": ["3"]}
+_FET_GSD = {"G": ["1"], "GATE": ["1"], "S": ["2"], "SOURCE": ["2"],
+            "D": ["3"], "DRAIN": ["3"]}
+# MAX481E/MAX483E/MAX485E/MAX487E and MAX3485E share one 8-pin order.
+_RS485_8 = {"RO": ["1"], "RE": ["2"], "~RE": ["2"], "DE": ["3"], "DI": ["4"],
+            "GND": ["5"], "A": ["6"], "B": ["7"], "VCC": ["8"]}
+
+# (part-number pattern, package, map). The package is part of the key: the same
+# die in another package is another pinout (ATmega328P-PU vs -AU).
+PART_PINMAPS: list[tuple[str, str, dict]] = [
+    (r"^ATMEGA328P?-PU?$",                      "DIP-28", _ATMEGA328P_DIP28),
+    (r"^(PN2222A?|2N2222A?|2N3904|2N3906|S8050)", "TO-92", _BJT_EBC),
+    (r"^(BC54[6-9]|BC337|BC327|BC55[6-9])",     "TO-92",  _BJT_CBE),
+    (r"^(MMBT2222A?|MMBT3904|MMBT3906|BC84[6-9]|BC81[78])", "SOT-23", _BJT_BEC),
+    (r"^(2N7002|BSS138|BSS84|AO340[01]A?)",     "SOT-23", _FET_GSD),
+    (r"^MAX(48[1357]E|3485E?)",                 "SOIC-8", _RS485_8),
+    (r"^MAX(48[1357]E|3485E?)",                 "DIP-8",  _RS485_8),
+]
+
+PINMAPS = {
+    # Diodes: pad 1 is the cathode, in every package. That is KiCad's convention
+    # (Diode:1N4148W and Diode:1N4007 both read 1 = K, 2 = A) and JEDEC's for the
+    # banded end. Until 2026-10-17 DO-41 and the chip packages put the anode on
+    # pad 1, which reversed every such diode the moment a board met a KiCad
+    # footprint.
     "SOD-123": {
         "K": ["1"], "CATHODE": ["1"], "A": ["2"], "ANODE": ["2"],
     },
     "DO-41": {
-        "ANODE": ["1"], "A": ["1"],
-        "CATHODE": ["2"], "K": ["2"],
+        "K": ["1"], "CATHODE": ["1"], "A": ["2"], "ANODE": ["2"],
     },
     "RELAY-SRD": {
         "COIL1": ["1"], "COIL_A": ["1"],
@@ -302,66 +330,103 @@ PINMAPS = {
     },
 }
 
-# Two-terminal parts are symmetric, so these names only need to be consistent,
-# not correct in an absolute sense — except for polarised parts, where pad 1 is
-# anode/positive by convention.
+# Two-terminal parts. A resistor's or capacitor's terminals only need names that
+# land consistently; "+" is pad 1 by convention. A diode's or LED's do not: pad 1
+# is the cathode, as above, so a part whose labels name a cathode reads "A" as
+# its anode (pad 2), not as terminal A (pad 1).
 _TWO_TERMINAL = {
     "A": ["1"], "B": ["2"],
     "+": ["1"], "-": ["2"],
     "P": ["1"], "N": ["2"],
-    "ANODE": ["1"], "CATHODE": ["2"], "K": ["2"],
+    "CATHODE": ["1"], "K": ["1"], "ANODE": ["2"],
 }
-for _pkg in ("0402", "0603", "0805", "1206", "1210", "AXIAL", "RADIAL-2"):
+_POLAR_TWO_TERMINAL = {"K": ["1"], "CATHODE": ["1"], "A": ["2"], "ANODE": ["2"]}
+_TWO_TERMINAL_PACKAGES = ("0402", "0603", "0805", "1206", "1210", "AXIAL", "RADIAL-2")
+for _pkg in _TWO_TERMINAL_PACKAGES:
     PINMAPS.setdefault(_pkg, dict(_TWO_TERMINAL))
 
-# NOTE: no PINMAPS entry for SOIC-8. Pin 1 is RO on a MAX485 and an output on an
-# op-amp; there is no package-wide truth. build() falls back to free-pad
-# assignment and warns, which is the honest behaviour this file already chose
-# ("a missing footprint is a question you can ask the user, a wrong footprint is
-# a board that arrives unusable"). Per-part pinmaps are the real fix.
+# NOTE: no package-wide map for SOIC-8, SOT-23 or TO-92. Pin 1 is RO on a MAX485
+# and an output on an op-amp; a SOT-23 is a transistor, a regulator or a diode in
+# four different orders. A part with no map in PART_PINMAPS has no declared
+# pinout, and its named pins are left unconnected rather than guessed.
+
+
+def pin_map(package: str, mpn: str | None = None,
+            labels=()) -> tuple[dict[str, list[str]], str]:
+    """The label -> pads map for one part, and where it came from.
+
+    Returns (map, source): source is "part:<pattern>" for a per-part map,
+    "package:<name>" for a package-wide one, or "" when nothing is declared."""
+    m = (mpn or "").upper().strip()
+    for pat, pkg, mapping in PART_PINMAPS:
+        if pkg == package and m and re.search(pat, m):
+            return mapping, f"part:{pat}"
+    mapping = PINMAPS.get(package)
+    if mapping is None:
+        return {}, ""
+    if package in _TWO_TERMINAL_PACKAGES and \
+            {str(l).upper() for l in labels} & {"K", "CATHODE"}:
+        return _POLAR_TWO_TERMINAL, f"package:{package} (polarised)"
+    return mapping, f"package:{package}"
+
+
+def resolve(package: str, netlist_pins: dict[str, str], mpn: str | None = None
+            ) -> tuple[dict[str, str], list[str], list[str], str]:
+    """Bind netlist pin labels to pads. One function, so the generator and the
+    verifier's parity check cannot drift apart.
+
+    Returns (pad -> net, unresolved labels, collisions, map source). A label is
+    a literal pad number, or a name a declared map gives a pad. Anything else is
+    unresolved: it is NOT placed on a free pad. Until 2026-10-17 it was, in
+    netlist order, which compiled a MAX485 or an unmapped SOT-23 into a board
+    wired by luck (reports/PCB verification implementation plan.md, decision 9).
+    """
+    if package not in PACKAGES:
+        raise KeyError(f"no footprint for package {package!r}")
+    avail = [p[0] for p in PACKAGES[package]()[0]]
+    mapping, source = pin_map(package, mpn, netlist_pins)
+
+    nets: dict[str, str] = {}
+    unresolved: list[str] = []
+    collisions: list[str] = []
+
+    def put(pad: str, net: str, label: str):
+        if pad in nets and nets[pad] != net:
+            collisions.append(f"'{label}' -> pad {pad} already carries "
+                              f"'{nets[pad]}' (now '{net}')")
+        nets[pad] = net
+
+    for label, net in netlist_pins.items():
+        if label in avail:
+            put(label, net, label)
+            continue
+        targets = [t for t in mapping.get(label.upper(), []) if t in avail]
+        if targets:
+            for t in targets:
+                put(t, net, label)
+            continue
+        unresolved.append(label)
+    return nets, unresolved, collisions, source
 
 
 def build(ref: str, package: str, netlist_pins: dict[str, str],
-          x: float = 0.0, y: float = 0.0, warnings: list[str] | None = None) -> Component:
+          x: float = 0.0, y: float = 0.0, warnings: list[str] | None = None,
+          mpn: str | None = None) -> Component:
     """Instantiate a footprint and bind nets to its pins."""
     if warnings is None:
         warnings = []
-    if package not in PACKAGES:
-        raise KeyError(f"no footprint for package {package!r}")
-    pads_rel, cw, ch = PACKAGES[package]()
-    
-    final_nets: dict[str, str] = {}
-    avail_pads = [p[0] for p in pads_rel]
-    unmapped_labels = []
-    
-    mapping = PINMAPS.get(package, {})
-    
-    for label, net in netlist_pins.items():
-        if label in avail_pads:
-            final_nets[label] = net
-            continue
-            
-        label_upper = label.upper()
-        if label_upper in mapping:
-            targets = mapping[label_upper]
-            for t in targets:
-                if t in avail_pads:
-                    final_nets[t] = net
-            if len(targets) > 1:
-                warnings.append(f"{ref} ({package}): {label_upper} -> pins {targets} (both tied)")
-            continue
-            
-        unmapped_labels.append((label, net))
-        
-    for label, net in unmapped_labels:
-        used = set(final_nets.keys())
-        free = [p for p in avail_pads if p not in used]
-        if free:
-            assigned = free[0]
-            final_nets[assigned] = net
-            warnings.append(f"{ref} ({package}): assigned unknown pin '{label}' to free pad {assigned}")
-        else:
-            warnings.append(f"{ref} ({package}): nowhere to connect pin '{label}'")
+    pads_rel, cw, ch = PACKAGES[package]() if package in PACKAGES else (None, 0, 0)
+    final_nets, unresolved, collisions, _ = resolve(package, netlist_pins, mpn)
+    mapping, _ = pin_map(package, mpn, netlist_pins)
+    for label in netlist_pins:
+        targets = mapping.get(label.upper(), [])
+        if label not in final_nets and len(targets) > 1:
+            warnings.append(f"{ref} ({package}): {label.upper()} -> pins {targets} (both tied)")
+    for label in unresolved:
+        warnings.append(f"{ref} ({package}{', ' + mpn if mpn else ''}): no declared "
+                        f"pinout for pin '{label}' — left unconnected, not guessed")
+    for c in collisions:
+        warnings.append(f"{ref} ({package}): {c}")
 
     shape = "rect" if package in SMD_PACKAGES else "th"
     pads = [Pad(ref, pin, x + px, y + py, pw, ph,
