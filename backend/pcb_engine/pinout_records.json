@@ -1,4 +1,0 @@
-{
-  "_about": "Datasheet pinout records (F-S0-0001). Read by part_pinouts.lookup when KiCad names no symbol for a part. Matched on the whole orderable part number AND the package, never a similar name. Each record cites the page of its pin table; an optional kicad_symbol must agree pin for pin and on package or the part is refused. Written by an agent, these are evidence (T2 source), not a person's verification. Empty until a record is extracted from a datasheet the project can cite: 2N2222A is refused until then.",
-  "records": []
-}

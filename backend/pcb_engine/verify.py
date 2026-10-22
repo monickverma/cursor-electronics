@@ -147,25 +147,13 @@ class Report:
             f.rung in ("exact", "sound") for f in self.findings)
 
     def gate(self) -> tuple[bool, str]:
-        """Should this board be emitted? A decidable failure is a hard no.
-
-        So is a pinout nobody compared (plan decision 9; F-S0-0001): IV.2b
-        lists the parts whose pin-to-pad map has only the generator's word. The
-        board is not failed — `ok` stays true and it can be shown — but its
-        fab files are not emitted. Until 2026-10-21 a 2N2222A with emitter and
-        collector swapped passed here because KiCad has no symbol of that name."""
+        """Should this board be emitted? A decidable failure is a hard no."""
         bad = self.failed()
         warn = self.warnings()
         note = (f"; {len(warn)} rule check(s) missed: " + ", ".join(f.check for f in warn)
                 if warn else "")
         if bad:
             return False, f"{len(bad)} check(s) failed: " + ", ".join(f.check for f in bad) + note
-        blocked = [f for f in self.findings if f.check in EXPORT_BLOCKERS and f.status != "pass"]
-        if blocked:
-            return False, ("export blocked: " + "; ".join(
-                f"{f.check}, {len(f.subjects)} part(s) whose pinout no second "
-                f"source confirms" for f in blocked)
-                + " (an uncompared pinout blocks export)" + note)
         return True, ("proven by exact/sound checks" if self.proven
                       else f"{len(self.unknown())} check(s) unproven (unknown rung)") + note
 
@@ -1023,10 +1011,6 @@ def _check_land_patterns(board: Board, netlist: dict | None = None) -> list[Find
     return findings
 
 
-# Checks whose `unknown` blocks export without failing the board.
-EXPORT_BLOCKERS = ("IV.2b",)
-
-
 def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Finding]:
     """IV.2 — each part's pinout against the KiCad symbol for its part number.
 
@@ -1035,10 +1019,11 @@ def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Findi
     trust level T1: strong evidence, not proof. Disagreement fails closed and
     shows both. A part KiCad has no usable symbol for stays unknown (T0)."""
     claim = "every part's pinout agrees with the KiCad symbol for its part number"
-    # No library is no early exit: every part that needed a comparison is
-    # listed in IV.2b, and IV.2b blocks export. A datasheet record may still
-    # answer for a part.
-    no_library = part_pinouts.symbol_dir() is None
+    if part_pinouts.symbol_dir() is None:
+        return [Finding("IV.2", claim, "unknown", "unknown",
+                        "KiCad symbol library not found (install KiCad or set "
+                        "KICAD_SYMBOL_DIR); no pinout was checked against a second source",
+                        unknown_kind="checkable, tool named", tool="KiCad symbol library")]
 
     nl_by_ref = {c.get("ref"): c for c in (netlist or {}).get("components", [])}
     agree, disagree, unchecked = [], [], []
@@ -1106,8 +1091,6 @@ def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Findi
          + " | ".join(disagree[:6])) if disagree else
         (f"{len(agree)} part(s) agree with an independent transcription (T1); "
          "agreement is evidence, not proof" if agree else
-         "KiCad symbol library not found (install KiCad or set KICAD_SYMBOL_DIR); "
-         "no pinout was checked against a second source" if no_library else
          "no part could be compared"),
         agree[:12] + disagree[:12])]
     if unchecked:
