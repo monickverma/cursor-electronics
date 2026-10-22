@@ -33,13 +33,6 @@ Symbols named with a package tag ("LM7805_TO220") match on the name before it.
 Nothing found is None, never a guess. Two candidates with different pinouts is
 an ambiguity, reported as such.
 
-When KiCad names no symbol for the part, a datasheet pinout record may answer
-(`pinout_records.json`, F-S0-0001): matched on the WHOLE orderable part number
-and the package, never on a similar name. PN2222A is E-B-C; a TO-92 part sold
-as 2N2222A can be C-B-E. A record cites the page its pin table is on. A record
-may name the KiCad symbol it bridges to; the two must then agree pin for pin
-and on the package, or the part is refused with both citations shown.
-
     KICAD_SYMBOL_DIR   the symbols folder, when it is not in a standard place
 """
 from __future__ import annotations
@@ -210,11 +203,8 @@ class Symbol:
     datasheet: str
     chain: tuple = ()             # the extends chain, child first
     sha256: str = ""              # of the library file the pins were read from
-    source: str = ""              # a datasheet record's page citation, if from one
 
     def cite(self) -> str:
-        if self.source:
-            return self.source
         via = f" (extends {' -> '.join(self.chain[1:])})" if len(self.chain) > 1 else ""
         return f"KiCad {self.library.removesuffix('.kicad_sym')}:{self.name}{via}"
 
@@ -309,8 +299,8 @@ def lookup(mpn: str, package: str | None = None) -> Lookup:
         return Lookup(mpn, reason="no part number")
     d = symbol_dir()
     if d is None:
-        return _from_record(None, mpn, package, "KiCad symbol library not found "
-                                                "(install KiCad or set KICAD_SYMBOL_DIR)")
+        return Lookup(mpn, reason="KiCad symbol library not found "
+                                  "(install KiCad or set KICAD_SYMBOL_DIR)")
     exact_names, wild_pats, bases = _matchers(d)
     want = _norm_mpn(mpn)
 
@@ -327,8 +317,7 @@ def lookup(mpn: str, package: str | None = None) -> Lookup:
         longest = max(len(_norm_mpn(_base(n))) for n in prefix)
         return _choose(d, mpn, [n for n in prefix
                                 if len(_norm_mpn(_base(n))) == longest], "prefix", package)
-    return _from_record(d, mpn, package,
-                        f"no KiCad symbol is named for {mpn!r}")
+    return Lookup(mpn, reason=f"no KiCad symbol is named for {mpn!r}")
 
 
 def _choose(d: Path, mpn: str, names: list[str], how: str,
@@ -345,64 +334,6 @@ def _choose(d: Path, mpn: str, names: list[str], how: str,
                       reason=f"{len(syms)} KiCad symbols match {mpn!r} with "
                              f"different pinouts: " + ", ".join(s.name for s in syms))
     return Lookup(mpn, symbol=syms[0], how=how, candidates=[s.cite() for s in syms])
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Part number -> datasheet record (F-S0-0001)
-# ─────────────────────────────────────────────────────────────────────────────
-RECORDS_FILE = Path(__file__).with_name("pinout_records.json")
-
-
-def _records() -> list[dict]:
-    try:
-        return json.loads(RECORDS_FILE.read_text(encoding="utf-8")).get("records", [])
-    except (OSError, ValueError):
-        return []
-
-
-def _record_cite(rec: dict) -> str:
-    src = rec.get("source") or {}
-    return (f"{rec.get('maker', '?')} {src.get('title', '?')}, p. {src.get('page')} "
-            f"(datasheet record for {rec['mpn']} in {rec['package']})")
-
-
-def _from_record(d: Path | None, mpn: str, package: str | None, no_symbol: str) -> Lookup:
-    """The pinout a datasheet record gives this exact part number in this
-    package, or why there is none. `no_symbol` says why KiCad did not answer."""
-    want = _norm_mpn(mpn)
-    mine = [r for r in _records() if _norm_mpn(r.get("mpn", "")) == want]
-    if not mine:
-        return Lookup(mpn, reason=f"{no_symbol}, and no datasheet record is kept for it")
-    fits = [r for r in mine if r.get("package") == package]
-    if not fits:
-        return Lookup(mpn, reason=f"the datasheet record for {mpn!r} is for "
-                                  f"{', '.join(sorted(r.get('package', '?') for r in mine))}; "
-                                  f"the board builds {package or 'no named package'}")
-    rec = fits[0]
-    if not (rec.get("source") or {}).get("page"):
-        return Lookup(mpn, reason=f"the datasheet record for {mpn!r} cites no page")
-    pins = {str(k): v for k, v in rec["pins"].items()}
-    cite = _record_cite(rec)
-    bridge = rec.get("kicad_symbol")
-    if not bridge:
-        return Lookup(mpn, symbol=Symbol(rec["mpn"], "datasheet", pins, "",
-                                         (rec.get("source") or {}).get("url", ""),
-                                         source=cite),
-                      how="datasheet", candidates=[cite])
-    sym = _load(d, bridge) if d is not None else None
-    if sym is None:
-        return Lookup(mpn, reason=f"{cite} names KiCad symbol {bridge!r}, which the "
-                                  f"library does not have")
-    sym_pkg = footprint_package(sym.footprint)
-    named = {k: norm_name(v) for k, v in sym.pins.items()}
-    if named != {k: norm_name(v) for k, v in pins.items()} or sym_pkg != package:
-        return Lookup(mpn, candidates=[cite, sym.cite()],
-                      reason=f"{cite} and {sym.cite()} disagree: the record gives "
-                             f"{pins} in {package}, the symbol {sym.pins} in {sym_pkg}")
-    return Lookup(mpn, symbol=Symbol(rec["mpn"], sym.library, pins, sym.footprint,
-                                     sym.datasheet, sym.chain, sym.sha256,
-                                     source=f"{cite}, agreeing with {sym.cite()}"),
-                  how="datasheet+kicad", candidates=[cite, sym.cite()])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
