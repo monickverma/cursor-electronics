@@ -1,0 +1,197 @@
+EVIDENCE — board_07 (artifact: artifacts/board_07)
+Source under review (read-only):
+  tests/fixtures/alpha_known_bad/artifacts/board_07/board_07.kicad_pcb
+  tests/fixtures/alpha_known_bad/artifacts/board_07/board_07.kicad_pro
+  tests/fixtures/alpha_known_bad/artifacts/board_07/board_ir.json
+  tests/fixtures/alpha_known_bad/artifacts/board_07/drc.json
+  tests/fixtures/alpha_known_bad/artifacts/board_07/drc_summary.json
+KiCad: C:\Program Files\KiCad\10.0\bin\kicad-cli.exe  (10.0.1)
+
+Coordinate note (derived, not assumed): the .kicad_pcb is the board_ir.json reflected
+in y:  pcb_y = 45.72 - ir_y  for every component, pad and track (checked on U1, U2,
+K1, Q1, D1, R1, R2, C1, J1 and on all 21 tracks).  x is unchanged.  The circuit is
+identical in both artifacts; the numbers below are given in the .kicad_pcb (fab) frame.
+
+================================================================================
+1. MAINS_L COPPER — the whole mains net is three F.Cu track segments
+================================================================================
+  (segment (start 44.29 19.01) (end 40.5 19.01)  (width 0.8) (layer "F.Cu") (net "MAINS_L"))
+  (segment (start 40.5 19.01)  (end 40.5 40.99)  (width 0.8) (layer "F.Cu") (net "MAINS_L"))
+  (segment (start 40.5 40.99)  (end 49.0 40.99)  (width 0.8) (layer "F.Cu") (net "MAINS_L"))
+  pads: K1.3 at (44.29, 19.01) r=0.80 ; J1.1 at (49.00, 40.99) r=0.75
+
+================================================================================
+2. THE CLOSEST SELV COPPER — 0.350 mm copper-to-copper, same layer
+================================================================================
+  (segment (start 39.6 37.12) (end 39.6 34.12) (width 0.3) (layer "F.Cu") (net "DHT22_DATA"))
+  (segment (start 39.6 34.12) (end 38.4 32.92) (width 0.3) (layer "F.Cu") (net "DHT22_DATA"))
+
+  The DHT22_DATA run at x = 39.600 lies inside the y-span of the MAINS_L run at
+  x = 40.500 (y 19.010 .. 40.990), so this is a parallel gap, not a corner.
+
+  centre-to-centre = 40.500 - 39.600              = 0.900 mm
+  copper-to-copper = 0.900 - 0.800/2 - 0.300/2    = 0.350 mm
+
+  Requirement at 250 V RMS (rubric parameter 8):
+    basic insulation, IEC 60664-1 / IPC-2221 : >= 1.5 mm clearance (>= 2.5 mm creepage)
+    reinforced insulation (the figure the rubric quotes for mains-to-SELV at 250 V)
+                                                : ~ 5 mm
+  Measured 0.350 mm.  Fails basic by 1.15 mm, reinforced by ~4.65 mm.
+
+  Independent confirmation: KiCad's own DRC with the mains net class set to a
+  3.2 mm clearance (my_drc_mains3p2.json) reports 14 mains-related clearance
+  violations, e.g.
+    "Clearance violation ( clearance 3.2000 mm; actual 1.6000 mm)"
+       Track [DHT22_DATA] on F.Cu ...  Track [MAINS_L] on F.Cu ...
+
+================================================================================
+3. EVERY OTHER NET, MEASURED COPPER-TO-COPPER FROM MAINS_L (my own geometry,
+   clearance_probe.py -> clearance_report.txt)
+================================================================================
+    0.350 mm   track DHT22_DATA @F.Cu   <->  track MAINS_L @F.Cu
+    1.040 mm   pad J1.2 [no net]         <->  pad J1.1 [MAINS_L]   (both layers)
+    1.390 mm   pad D1.2 [RELAY_COIL_NEG] <->  track MAINS_L @F.Cu
+    1.390 mm   pad R1.2 [DHT22_DATA]     <->  track MAINS_L @F.Cu
+    1.390 mm   pad R2.2 [RELAY_CTRL]     <->  track MAINS_L @F.Cu
+    1.390 mm   pad J1.2 [no net]         <->  track MAINS_L @F.Cu
+    2.000 mm   track RELAY_COIL_NEG @F.Cu<->  track MAINS_L @F.Cu
+    2.000 mm   track RELAY_CTRL @F.Cu    <->  track MAINS_L @F.Cu
+    3.400 mm   pad K1.4 [no net]         <->  pad K1.3 [MAINS_L]
+    3.800 mm   pad K1.4 [no net]         <->  track MAINS_L @F.Cu
+  Every SELV item on F.Cu is under 2.1 mm from the live conductor.
+
+================================================================================
+4. MAINS_L vs THE B.Cu GROUND POUR
+================================================================================
+  The product's own "mains corridor" rule area:
+    (zone (layers "B.Cu") (name "keepout mains corridor: keep the ground pour
+     clear of the mains run")
+     (keepout (tracks not_allowed) (vias allowed) (pads allowed)
+              (copperpour not_allowed) (footprints allowed))
+     (polygon (pts (xy 39 5.72) (xy 52 5.72) (xy 52 44.72) (xy 39 44.72))))
+  The GND pour is (zone (net "GND") (layer "B.Cu") ... polygon over the whole board).
+  The mains copper edge is at x = 40.1 ; the pour is only excluded for x >= 39.0,
+  so the nearest possible B.Cu ground copper is 1.100 mm from the live conductor.
+  (The corridor is 1.1 mm wide of protection, not 3.2 or 5.)
+  The rule area is B.Cu-only, so the F.Cu SELV track at x = 39.6 runs INSIDE the
+  corridor the product itself declared, without violating it.
+
+================================================================================
+5. THE MAINS CIRCUIT IS NOT A CIRCUIT
+================================================================================
+  Pads that carry no net and have no copper attached (from clearance_report.txt):
+    J1 pin 2  at (49.00, 38.45)   <-- second terminal of the 2-pin mains connector
+    K1 pin 4  at (44.29, 14.01)   <-- relay contact terminal
+    K1 pin 5  at (44.29,  9.01)   <-- relay contact terminal
+  MAINS_L is the only mains net in the design (see board_ir.json net_classes:
+  nets are GND, VCC_5V, RELAY_COIL_NEG, RELAY_CTRL, TRANSISTOR_BASE, DHT22_DATA,
+  MAINS_L).  There is no MAINS_N.  The relay's switched contact has no copper and
+  the mains connector's second leg is dead.
+  J1.1 and J1.2 are 2.54 mm apart centre-to-centre = 1.04 mm of copper between
+  them; if J1.2 is the intended neutral, that is under the 1.5 mm basic clearance
+  for 250 V.
+
+================================================================================
+6. THE GROUND PLANE IS NOT IN THE FAB DATA
+================================================================================
+  The delivered .kicad_pcb contains 0 occurrences of "filled_polygon".
+  A gerber exported from the delivered file (gerb/board_07_copy-B_Cu.gbl) contains
+  0 region fills (G36) — only 52 pad/via flashes and 7 draws (the DHT22_DATA
+  B.Cu track).  There is no B.Cu copper pour in the fab data.
+  Consequence, confirmed by two independent KiCad DRC runs (the product's own
+  drc.json and my my_drc.json): 4 unconnected items, all GND —
+    U1.8 [GND], U1.22 [GND], U2.4 [GND], C1.2 [GND], Q1.1 [GND]
+  The GND net exists only as a zone with no fill.
+
+================================================================================
+7. THE DESIGN RULES CONTAIN NO MAINS RULE
+================================================================================
+  board_07.kicad_pro:
+    "rules": { "min_clearance": 0.0, "min_track_width": 0.0, "min_via_diameter": 0.0,
+               "min_through_hole_diameter": 0.0, "min_via_annular_width": 0.0,
+               "min_copper_edge_clearance": 0.0, "min_hole_clearance": 0.0,
+               "min_hole_to_hole": 0.0 }
+  net class "power" (VCC_5V, GND, RELAY_COIL_NEG, MAINS_L): clearance 0.30 mm.
+  No (stackup) block in the .kicad_pcb, so no dielectric thickness is declared.
+  Consequence: the DRC that reported "0 errors" was incapable of flagging any
+  mains violation, and the 0.350 mm gap above passes the 0.30 mm rule with
+  0.05 mm to spare.
+
+================================================================================
+8. RELAY FOOTPRINT GEOMETRY — K1
+================================================================================
+  CircuitOS:RELAY-SRD, K1 at (36.79, 14.01), courtyard 20.00 x 16.00 mm:
+    pad 1 at (-7.5,  5)   pad 2 at (-7.5, -5)   pad 3 at ( 7.5, 5)
+    pad 4 at ( 7.5,  0)   pad 5 at ( 7.5, -5)
+  => two pin rows 15.00 mm apart, 5.00 mm pitch, pin rectangle 15.00 x 10.00 mm.
+  The SRD-05VDC-SL-C datasheet draws a 7.62 mm row-to-row spacing and a
+  7.62 x 10.16 mm pin rectangle in a 19.0 x 15.4 x 15.5 mm body.
+  The pins of a real SRD-05VDC-SL-C cannot land on these pads (the rows are
+  15.00 mm apart, not 7.62 mm).  The body outline (courtyard) is right; the pin
+  positions are not.
+
+================================================================================
+9. DHT22 BODY vs COURTYARD — U2
+================================================================================
+  CircuitOS:DHT22, U2 at (10.12, 25.44), courtyard 8.20 x 15.60 mm, 4 pads on a
+  2.54 mm pitch in one row (pins 1 VCC, 2 DATA, 3 NC, 4 GND — correct for the
+  AOSONG DHT22).
+  The AOSONG DHT22 body is 25.1 x 15.1 x 8.1 mm.  The courtyard is 8.2 mm wide
+  where the body is 25.1 mm, so the body overhangs its own courtyard by ~17 mm.
+  At x = 10.12 the sensor body therefore either runs off the board edge (x < 0)
+  or overlaps U1 (courtyard x 14.81..25.83), Q1, D1, R1, R2 and K1.
+
+================================================================================
+10. NO SILKSCREEN
+================================================================================
+  The .kicad_pcb contains exactly one occurrence of "F.SilkS" — the layer
+  declaration.  No fp_text, no fp_line on F.SilkS.  The exported
+  F_Silkscreen.gto contains 0 draw/flash objects (474 bytes of header).
+  There are no reference designators, no pin-1 markers, no diode cathode band,
+  no pin-1 chamfer, no polarity marks and no mains marking on the fab data.
+  The DHT22's pin-1/orientation, D1's cathode and U1's pin 1 are therefore all
+  undecidable from what would be sent to the fab.
+
+================================================================================
+11. NO POWER INPUT, NO UNO INTERFACE
+================================================================================
+  Components in board_ir.json: U1 (ATMEGA328P-PU), U2 (DHT22), K1 (SRD-05VDC-SL-C),
+  Q1 (2N2222A), D1 (1N4007), R1 (10k), R2 (1k), C1 (100 nF), J1 (22-27-2021).
+  There is no regulator, no power connector, no USB, no ICSP, no crystal
+  (U1 pins 9 and 10 are unconnected), no reset circuit and no Arduino header.
+  The only connector on the board is the 2-pin mains terminal J1, whose second
+  leg has no net.  VCC_5V has no source anywhere on the board.
+  The request was for an Arduino Uno on the same board as the relay and the
+  DHT22.  What is laid out is a bare ATmega328P-PU in a DIP-28 socket footprint
+  with no way to be powered, programmed or connected to an Uno.
+  The MCU pin choices are otherwise consistent with an Uno:
+    U1.4 = PD2 (Arduino D2) -> DHT22_DATA ; U1.5 = PD3 (Arduino D3) -> relay base.
+
+================================================================================
+12. NO DECOUPLING AT THE MCU; D1 ORIENTATION NOT DECIDABLE
+================================================================================
+  There is no capacitor on U1 pin 7 (VCC) / pin 8 (GND).  The only capacitor is
+  C1 (100 nF, code "104"), 6.84 mm from the DHT22's own VCC pad (7.58,35.60) ->
+  (10.12,29.25).  No bulk capacitance for the relay coil either.
+  U1 pin 21 (AVCC, the analog supply) has no net and no copper.
+  U1 pin 20 (AREF) is tied directly to VCC_5V with no filter; U1 pin 22 (ADC6)
+  is strapped to GND.
+  D1 (1N4007, DO-41): pad 1 = VCC_5V, pad 2 = RELAY_COIL_NEG.  Under the KiCad
+  convention (Device:D pin 1 = cathode) that is the correct polarity for a
+  flyback diode across the coil.  But the CircuitOS footprint library is not
+  shipped with the board and there is no cathode band, so the polarity cannot be
+  confirmed from the fab data.  If pin 1 were the anode, D1 would be a direct
+  short across the 5 V rail through Q1.
+
+================================================================================
+13. THE PRODUCT'S OWN DRC SUMMARY
+================================================================================
+  drc_summary.json:  { "violations": 9, "unconnected_items": 4,
+                        "by_type": {"lib_footprint_issues": 9},
+                        "severity_error_violations": 0 }
+  drc.json:          the same 4 unconnected items are each "severity": "error".
+  I re-ran KiCad 10.0.1's own DRC on the delivered board (my_drc.json):
+  "Found 9 violations / Found 4 unconnected items" — identical.
+  So the summary a user reads reports zero error violations on a board whose own
+  DRC contains four connectivity errors, and says nothing about clearance,
+  creepage, fusing or current.

@@ -58,6 +58,18 @@ RUNS = {
                  "collector transposed, and the coil current it computes is zero"),
     "board_06": (None, 109, None, 15,
                  "wrong_cap_value found: F-06-006 names 10 nF against the requested 100 nF"),
+    "board_07": (None, 42, 1036140, 16,
+                 "mains_gap found: F-07-001 measures 0.350 mm between MAINS_L and "
+                 "DHT22_DATA on F.Cu and states the requirement it fails, measured "
+                 "from the copper and not from the tool"),
+}
+
+#: The harness's own figure for an agent as a whole, where the task
+#: notification carried one. A different unit again from the transcript
+#: count: this is what the run consumed, not what the context re-sending
+#: cost.
+REPORTED = {
+    "board_07": 161227,
 }
 
 #: What the transcript of the run was worth, where the transcript survived
@@ -73,6 +85,38 @@ MEASURED = {
 
 #: The milestone rows for the work that was not an overlooker run.
 MILESTONES = [
+    {
+        "stage": "A1", "by": "master",
+        "milestone": "the token figures, counted from the transcripts that survived",
+        "agents": 0, "tool_calls": 0,
+        "tokens_in": None, "tokens_out": None, "usd": 0.0,
+        "result": ("Three of the seven overlooker transcripts were still on disk when the "
+                   "cost was counted, and each was counted the same way: every message the "
+                   "harness logged, with the input tokens of each turn. board_02 "
+                   "4,011,347 over 96 tool uses; board_05 5,915,369 over 198; board_06 "
+                   "4,149,685 over 119. The context is re-sent every turn, so these count "
+                   "the same context many times over: they are a measure of EFFORT, not of "
+                   "cost, and they are not comparable with the self-reported figures in "
+                   "tokens_in (913,389 over the four runs that gave one). The board_01, "
+                   "board_03 and board_04 transcripts were cleaned up by the harness before "
+                   "they could be counted. The run rows written before this milestone "
+                   "carry no token_source field: a row with a number in tokens_in is a "
+                   "self-report, and a row with none is counted from the transcript or "
+                   "reported by the harness, which is what token_source says."),
+    },
+    {
+        "stage": "A1", "by": "master",
+        "milestone": "the A1 gate: 7 of 7 seeded defects detected, 0 false passes",
+        "agents": 0, "tool_calls": 0,
+        "tokens_in": None, "tokens_out": None, "usd": 0.0,
+        "result": ("All seven cases DETECTED, none flagged, none missed, and no board the "
+                   "overlooker passed clean. Critical recall 6 of 6. The gate that was "
+                   "BLOCKED at 6 of 7 is open. What it measures is the DETECTOR, not the "
+                   "product: four of the seven defects are ones the product's own verifier "
+                   "passes, and the mains case is one the product has no rule for at all. "
+                   "The set is seven boards, so the 90% figure is 7 of 7 or nothing - a "
+                   "single miss would have blocked the stage, and one nearly did."),
+    },
     {
         "stage": "A1", "by": "master",
         "milestone": "the A1 scorer had two defects, and both of them moved the number",
@@ -128,14 +172,23 @@ def main() -> int:
     rows = []
     for board, (tokens, tools, ms, findings, note) in RUNS.items():
         measured = MEASURED.get(board)
+        reported = REPORTED.get(board)
+        if tokens is not None:
+            source = "agent_self_report"
+        elif measured is not None:
+            source = "transcript_measurement"
+        elif reported is not None:
+            source = "harness_report"
+        else:
+            source = "unavailable"
         rows.append({
             "ts": now, "stage": "A1", "by": "master",
             "milestone": f"the A1 overlooker run: {board} ({findings} findings)",
             "agents": 1, "tool_calls": tools,
             "tokens_in": tokens, "tokens_out": None,
             "tokens_measured": measured,
-            "token_source": "agent_self_report" if tokens is not None
-                            else ("transcript_measurement" if measured else "unavailable"),
+            "tokens_reported": reported,
+            "token_source": source,
             "usd": 0.0,
             "duration_ms": ms,
             "result": note,

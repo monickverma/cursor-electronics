@@ -1,0 +1,104 @@
+==============================================================================
+BOARD: C:/Users/KIIT/cursor-electronics/tests/fixtures/alpha_known_bad/artifacts/board_07/board_07.kicad_pcb
+Edge.Cuts rect: (0.0, 0.0, 63.5, 45.72)
+Zones (pours):
+   net=GND      layers=['B.Cu']  pts=[(0.0, 0.0), (63.5, 0.0), (63.5, 45.72), (0.0, 45.72)]  has_saved_fill=False
+Keepout rule areas:
+   layers=['B.Cu'] rect=(39.0, 5.72, 52.0, 44.72) reason-ok
+
+MAINS_L copper items:
+   track F.Cu? F.Cu w=0.80  (44.290,19.010)->(40.500,19.010)
+   track F.Cu? F.Cu w=0.80  (40.500,19.010)->(40.500,40.990)
+   track F.Cu? F.Cu w=0.80  (40.500,40.990)->(49.000,40.990)
+   pad J1.1 at (49.00,40.99) r=0.75
+   pad K1.3 at (44.29,19.01) r=0.80
+
+==============================================================================
+MINIMUM COPPER CLEARANCE: MAINS_L  vs  every other net
+==============================================================================
+    0.350 mm   track:DHT22_DATA@F.Cu         <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.040 mm   pad:J1.2[]                    <->  pad:J1.1[MAINS_L]             (B.Cu)
+    1.390 mm   pad:D1.2[RELAY_COIL_NEG]      <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.390 mm   pad:R1.2[DHT22_DATA]          <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.390 mm   pad:R2.2[RELAY_CTRL]          <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.390 mm   pad:J1.2[]                    <->  track:MAINS_L@F.Cu            (F.Cu)
+    2.000 mm   track:RELAY_COIL_NEG@F.Cu     <->  track:MAINS_L@F.Cu            (F.Cu)
+    2.000 mm   track:RELAY_CTRL@F.Cu         <->  track:MAINS_L@F.Cu            (F.Cu)
+    3.400 mm   pad:K1.4[]                    <->  pad:K1.3[MAINS_L]             (B.Cu)
+    3.800 mm   pad:K1.4[]                    <->  track:MAINS_L@F.Cu            (F.Cu)
+
+  --- worst 8 mains-to-other-net clearances, closest first ---
+    0.350 mm   track:DHT22_DATA@F.Cu         <->  track:MAINS_L@F.Cu            (F.Cu)
+    0.350 mm   track:DHT22_DATA@F.Cu         <->  track:MAINS_L@F.Cu            (F.Cu)
+    0.350 mm   track:DHT22_DATA@F.Cu         <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.040 mm   pad:J1.2[]                    <->  pad:J1.1[MAINS_L]             (B.Cu)
+    1.040 mm   pad:J1.2[]                    <->  pad:J1.1[MAINS_L]             (F.Cu)
+    1.390 mm   pad:D1.2[RELAY_COIL_NEG]      <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.390 mm   pad:R1.2[DHT22_DATA]          <->  track:MAINS_L@F.Cu            (F.Cu)
+    1.390 mm   pad:R2.2[RELAY_CTRL]          <->  track:MAINS_L@F.Cu            (F.Cu)
+
+==============================================================================
+MAINS_L  vs  B.Cu GND POUR (pour extent bounded by the keepout rule area)
+==============================================================================
+  mains track (44.290,19.010)->(40.500,19.010) w=0.80  ->  nearest B.Cu pour edge (pour is excluded inside x>=39.0):  1.100 mm
+  mains track (40.500,19.010)->(40.500,40.990) w=0.80  ->  nearest B.Cu pour edge (pour is excluded inside x>=39.0):  1.100 mm
+  mains track (40.500,40.990)->(49.000,40.990) w=0.80  ->  nearest B.Cu pour edge (pour is excluded inside x>=39.0):  1.100 mm
+
+==============================================================================
+EXACT GEOMETRY OF THE CLOSEST MAINS PAIR
+==============================================================================
+  DHT22_DATA track: (39.600,37.120)->(39.600,34.120)  width 0.30  layer F.Cu
+  DHT22_DATA track: (39.600,34.120)->(38.400,32.920)  width 0.30  layer F.Cu
+  MAINS_L    track: (40.500,19.010)->(40.500,40.990)  width 0.80  layer F.Cu
+  centre-to-centre  = 40.500 - 39.600 = 0.900 mm
+  copper-to-copper  = 0.900 - 0.800/2 - 0.300/2 = 0.350 mm
+  the DHT22_DATA run at x=39.6 lies INSIDE the product's own mains-corridor rule area
+  (rect x 39.0..52.0) but that rule area is defined on B.Cu only, so it does not
+  constrain an F.Cu track.
+
+==============================================================================
+MINIMUM CLEARANCE between all other net pairs (< 0.30 mm shown)
+==============================================================================
+  none below 0.30 mm
+
+==============================================================================
+PADS WITH NO NET (no copper attached)
+==============================================================================
+   J1 pin 2   at (49.00, 38.45)
+   K1 pin 4   at (44.29, 14.01)
+   K1 pin 5   at (44.29, 9.01)
+   U1 pin 1   at (16.51, 39.37)
+   U1 pin 10  at (16.51, 16.51)
+   U1 pin 11  at (16.51, 13.97)
+   U1 pin 12  at (16.51, 11.43)
+   U1 pin 13  at (16.51, 8.89)
+   U1 pin 14  at (16.51, 6.35)
+   U1 pin 15  at (24.13, 6.35)
+   U1 pin 16  at (24.13, 8.89)
+   U1 pin 17  at (24.13, 11.43)
+   U1 pin 18  at (24.13, 13.97)
+   U1 pin 19  at (24.13, 16.51)
+   U1 pin 2   at (16.51, 36.83)
+   U1 pin 21  at (24.13, 21.59)
+   U1 pin 23  at (24.13, 26.67)
+   U1 pin 24  at (24.13, 29.21)
+   U1 pin 25  at (24.13, 31.75)
+   U1 pin 26  at (24.13, 34.29)
+   U1 pin 27  at (24.13, 36.83)
+   U1 pin 28  at (24.13, 39.37)
+   U1 pin 3   at (16.51, 34.29)
+   U1 pin 6   at (16.51, 26.67)
+   U1 pin 9   at (16.51, 19.05)
+   U2 pin 3   at (10.12, 24.17)
+
+==============================================================================
+NET -> pads
+==============================================================================
+   <no net>         J1.2, K1.4, K1.5, U1.1, U1.2, U1.3, U1.6, U1.9, U1.10, U1.11, U1.12, U1.13, U1.14, U1.28, U1.27, U1.26, U1.25, U1.24, U1.23, U1.21, U1.19, U1.18, U1.17, U1.16, U1.15, U2.3
+   DHT22_DATA       R1.2, U1.4, U2.2
+   GND              C1.2, Q1.1, U1.8, U1.22, U2.4
+   MAINS_L          J1.1, K1.3
+   RELAY_COIL_NEG   D1.2, K1.2, Q1.3
+   RELAY_CTRL       Q1.2, R2.2
+   TRANSISTOR_BASE  R2.1, U1.5
+   VCC_5V           C1.1, D1.1, K1.1, R1.1, U1.7, U1.20, U2.1

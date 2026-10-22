@@ -69,8 +69,9 @@ def row_key(row: dict, kind: str) -> str:
 def head_lines(path: Path) -> list[str]:
     rel = path.relative_to(REPO).as_posix()
     proc = subprocess.run(["git", "show", f"HEAD:{rel}"],
-                          cwd=REPO, capture_output=True, text=True)
-    if proc.returncode != 0:
+                          cwd=REPO, capture_output=True, encoding="utf-8",
+                          errors="replace")
+    if proc.returncode != 0 or proc.stdout is None:
         return []
     return [ln for ln in proc.stdout.splitlines() if ln.strip()]
 
