@@ -281,6 +281,24 @@ PLANNED = {
             ("clearance_mm", "function", "Tables F.1/F.2/A.2 clearance; reinforced = next impulse step"),
         ],
     },
+    "pcb_engine/dc_drop": {
+        "file": "backend/pcb_engine/dc_drop.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("rail_drops",    "function", "Rail + ground resistor mesh (tracks, vias, pour) solved by numpy CG: drop per load"),
+            ("check_dc_drop", "function", "V.3 — DC IR drop vs a budget; simulated, one engine (padne awaits approval)"),
+        ],
+    },
+    "pcb_engine/pdn": {
+        "file": "backend/pcb_engine/pdn.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_pdn",          "function", "V.3b — decap loop |Z(f)| vs target impedance; closed-form lumped, simulated"),
+            ("trace_over_plane_h", "function", "Trace-over-plane inductance (Wheeler)"),
+            ("via_h",              "function", "Via inductance (Goldfarb & Pucel)"),
+            ("parse_farads",       "function", "Capacitance from a value string"),
+        ],
+    },
     "generators/pcb_netlist": {
         "file": "backend/generators/netlist/pcb.py",
         "test_file": "tests/test_pcb_placement.py",

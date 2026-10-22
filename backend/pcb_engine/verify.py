@@ -1122,11 +1122,6 @@ def _check_out_of_reach(board: Board) -> list[Finding]:
                 "no net has been screened against t_rise·v/6; flagged nets would "
                 "need 2D RLGC and ngspice TXL (build step 8, not built)",
                 unknown_kind=sim, tool="ngspice TXL/CPL"),
-        Finding("V.3", "the supply rails hold at every pin (DC IR drop, PDN impedance)",
-                "unknown", "unknown",
-                "DC drop is a resistor-mesh solve on the copper (build step 4); AC "
-                "impedance needs loop R(f), L(f) and an ngspice sweep (build step 5)",
-                unknown_kind=named, tool="sparse resistor mesh (scipy.sparse)"),
         Finding("V.5", "the board passes EMI/EMC", "unknown", "unknown",
                 "no sound software check exists; emission prediction carries "
                 "order-10 dB uncertainty and only a chamber settles it",
@@ -1159,6 +1154,10 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += check_layout_rules(board, netlist)
     from layout_vi import check_layout_vi                # V.4 current, V.6 insulation
     findings += check_layout_vi(board, netlist)
+    from dc_drop import check_dc_drop                    # V.3 DC IR drop
+    findings += check_dc_drop(board, netlist)
+    from pdn import check_pdn                            # V.3b AC loop impedance
+    findings += check_pdn(board, netlist)
     findings += _check_out_of_reach(board)
     return Report(board.name, findings)
 
