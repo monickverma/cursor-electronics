@@ -25,6 +25,8 @@ import math
 from dataclasses import dataclass, field, asdict
 from typing import Literal
 
+from stackup import Stackup, default_stackup
+
 Point = tuple[float, float]
 LayerType = Literal["signal", "power", "mixed"]
 
@@ -37,8 +39,9 @@ class Layer:
     name: str
     type: LayerType = "signal"
     plane_net: str | None = None          # copper pour net, None = no pour
-    thickness_mm: float = 0.035
-    dielectric_below_mm: float = 0.48     # to the NEXT layer down
+    # Thickness and dielectric live on Board.stackup (stackup.py), one owner.
+    # Until 2026-10-21 each Layer had its own 0.48 mm dielectric that nothing
+    # read, against the 1.6 mm board scene3d drew.
 
 
 @dataclass
@@ -147,6 +150,54 @@ class Connection:
 # The board
 # ─────────────────────────────────────────────────────────────────────────────
 @dataclass
+class Pour:
+    """A copper pour as realised copper, not a declaration: cells of `grid` mm
+    on the board's grid, stored per row as half-open column runs [j0, j1). Row i
+    spans y in [i*grid, (i+1)*grid). Filled by pour.fill_pour after routing;
+    any later change to the copper makes it stale, so it is re-filled, never
+    patched."""
+    layer: str
+    net: str
+    grid: float
+    rows: list[list[list[int]]] = field(default_factory=list)
+
+    def area_mm2(self) -> float:
+        return sum(j1 - j0 for row in self.rows for j0, j1 in row) * self.grid ** 2
+
+    def cell_of(self, x: float, y: float) -> tuple[int, int]:
+        return int(math.floor(y / self.grid)), int(math.floor(x / self.grid))
+
+    def has_cell(self, i: int, j: int) -> bool:
+        return 0 <= i < len(self.rows) and any(j0 <= j < j1 for j0, j1 in self.rows[i])
+
+    def add_cell(self, i: int, j: int) -> None:
+        if self.has_cell(i, j):
+            return
+        runs = sorted(self.rows[i] + [[j, j + 1]])
+        merged: list[list[int]] = []
+        for r in runs:
+            if merged and r[0] <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], r[1])
+            else:
+                merged.append(list(r))
+        self.rows[i] = merged
+
+    def rects(self) -> list[tuple[float, float, float, float]]:
+        """The pour as rectangles (x0, y0, x1, y1): each run, merged downward
+        while the next row repeats it exactly."""
+        g, out, open_ = self.grid, [], {}
+        for i, row in enumerate(self.rows + [[]]):
+            cur = {tuple(r) for r in row}
+            for run in list(open_):
+                if run not in cur:
+                    i0 = open_.pop(run)
+                    out.append((run[0] * g, i0 * g, run[1] * g, i * g))
+            for run in cur:
+                open_.setdefault(run, i)
+        return out
+
+
+@dataclass
 class Board:
     name: str = "board"
     outline_w: float = 40.0
@@ -158,6 +209,12 @@ class Board:
     keepouts: list[Keepout] = field(default_factory=list)
     net_classes: list[NetClass] = field(default_factory=list)
     diff_pairs: list[DiffPair] = field(default_factory=list)
+    stackup: Stackup | None = None        # None: the default for these layers
+    pours: list[Pour] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.stackup is None and self.layers:
+            self.stackup = default_stackup([l.name for l in self.layers])
 
     # ── queries the agent leans on ──
     def pads(self) -> list[Pad]:
@@ -248,9 +305,14 @@ class Board:
     def from_json(s: str) -> "Board":
         d = json.loads(s)
         nested = ("layers", "components", "tracks", "vias",
-                  "keepouts", "net_classes", "diff_pairs")
+                  "keepouts", "net_classes", "diff_pairs", "stackup", "pours")
         b = Board(**{k: v for k, v in d.items() if k not in nested})
-        b.layers = [Layer(**x) for x in d.get("layers", [])]
+        legacy = ("thickness_mm", "dielectric_below_mm")      # before 2026-10-21
+        b.layers = [Layer(**{k: v for k, v in x.items() if k not in legacy})
+                    for x in d.get("layers", [])]
+        b.stackup = (Stackup.from_dict(d["stackup"]) if d.get("stackup") else
+                     default_stackup([l.name for l in b.layers]) if b.layers else None)
+        b.pours = [Pour(**p) for p in d.get("pours", [])]
         b.components = [
             Component(**{**c, "pads": [Pad(**p) for p in c.get("pads", [])]})
             for c in d.get("components", [])]

@@ -44,6 +44,24 @@ class PcbNetlistGenerator:
                 comp_entry["value"] = comp.value
             components.append(comp_entry)
 
+        # 3b. What each net carries, from the IR — the layout V/I checks
+        # (pcb_engine/layout_vi.py) read these, never the net names. A rail's
+        # current is the sum of the declared draws of the parts on it; ground
+        # returns all of them. Undeclared draws are left out, not guessed.
+        net_voltages = {n.id: n.voltage_nominal for n in ir.nodes if n.voltage_nominal is not None}
+        draw = {c.id: c.current_draw_ma for c in ir.components if c.current_draw_ma}
+        net_currents: Dict[str, float] = {}
+        for n in ir.nodes:
+            if n.type == SignalType.POWER:
+                on = {c.component_id for c in ir.connections if c.node_id == n.id}
+                total = sum(draw.get(cid, 0.0) for cid in on)
+            elif n.type == SignalType.GROUND:
+                total = sum(draw.values())
+            else:
+                continue
+            if total:
+                net_currents[n.id] = round(total / 1000.0, 6)
+
         # 4. Board dimensions heuristic based on component count
         num_comps = len(ir.components)
         width = max(63.5, round(20.0 + num_comps * 6.0, 2))
@@ -60,5 +78,10 @@ class PcbNetlistGenerator:
             },
             "ground_net": ground_net,
             "power_nets": power_nets_dedup,
+            # Each net's IR signal type: the layout rules (pcb_engine/layout_rules.py)
+            # decide which nets are buses or clocks from this, never from the name.
+            "net_types": {n.id: n.type.value for n in ir.nodes},
+            "net_voltages": net_voltages,
+            "net_currents_a": net_currents,
             "components": components
         }

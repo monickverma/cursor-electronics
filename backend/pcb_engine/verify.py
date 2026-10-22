@@ -28,8 +28,16 @@ it stands on:
     exact     decided by arithmetic on the IR. No tolerance beyond the one named.
     sound     an over-approximation: may say "fine" too rarely, never too often.
     bounded   verified up to a stated bound, not globally.
+    simulated a physics solver's result on a named model, with the tool and its
+              version named. Its model error is not validated against hardware
+              until a coupon measurement calibrates it.
+    rule check a published rule or chart applied with cited thresholds (IPC-2152,
+              IEC 60664-1). The rule's own model error is not bounded.
     evidence  a figure to inspect, not a proof.
-    unknown   not checked, and said so.
+    unknown   not checked, and said so — in one of three kinds:
+                not checkable                     no software check exists
+                checkable by simulation, not run  a solver could, and why it did not
+                checkable, tool named             the missing tool or input is named
 
 A check that cannot decide reports `unknown` and names the missing tool. It does
 not report `pass`. That is the whole discipline: an unchecked thing is never a
@@ -63,7 +71,9 @@ import part_pinouts
 # so a gap this small is not a gap a board house can make.
 CONTACT_TOL = 0.06
 
-RUNGS = ("exact", "sound", "bounded", "evidence", "unknown")
+RUNGS = ("exact", "sound", "bounded", "simulated", "rule check", "evidence", "unknown")
+UNKNOWN_KINDS = ("not checkable", "checkable by simulation, not run",
+                 "checkable, tool named")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -78,6 +88,18 @@ class Finding:
     status: str                   # "pass" | "fail" | "unknown"
     detail: str = ""
     subjects: list = field(default_factory=list)
+    unknown_kind: str | None = None   # one of UNKNOWN_KINDS when rung == "unknown"
+    tool: str = ""                    # the solver (simulated) or the missing tool
+
+    def __post_init__(self) -> None:
+        if self.rung not in RUNGS:
+            raise ValueError(f"{self.check}: rung {self.rung!r} is not on the ladder")
+        if self.status not in ("pass", "fail", "unknown"):
+            raise ValueError(f"{self.check}: status {self.status!r}")
+        if self.rung == "unknown" and self.unknown_kind not in UNKNOWN_KINDS:
+            raise ValueError(f"{self.check}: an unknown must say which kind it is")
+        if self.rung == "simulated" and not self.tool:
+            raise ValueError(f"{self.check}: a simulated result must name its tool")
 
     @property
     def failed(self) -> bool:
@@ -86,7 +108,9 @@ class Finding:
     def line(self) -> str:
         mark = {"pass": "ok  ", "fail": "FAIL", "unknown": "?   "}[self.status]
         rung = f"[{self.rung}]"
-        head = f"{mark} {self.check:<5} {rung:<10} {self.claim}"
+        head = f"{mark} {self.check:<5} {rung:<12} {self.claim}"
+        if self.unknown_kind:
+            head += f"  ({self.unknown_kind}{': ' + self.tool if self.tool else ''})"
         return f"{head}\n           {self.detail}" if self.detail else head
 
 
@@ -96,7 +120,13 @@ class Report:
     findings: list[Finding]
 
     def failed(self) -> list[Finding]:
-        return [f for f in self.findings if f.status == "fail"]
+        """Decided failures. A rule check's miss is a warning instead: its
+        thresholds are published charts or proposals, not a decision on this
+        board, so it is shown and named but does not refuse fab files."""
+        return [f for f in self.findings if f.status == "fail" and f.rung != "rule check"]
+
+    def warnings(self) -> list[Finding]:
+        return [f for f in self.findings if f.status == "fail" and f.rung == "rule check"]
 
     def unknown(self) -> list[Finding]:
         return [f for f in self.findings if f.status == "unknown"]
@@ -119,17 +149,28 @@ class Report:
     def gate(self) -> tuple[bool, str]:
         """Should this board be emitted? A decidable failure is a hard no."""
         bad = self.failed()
+        warn = self.warnings()
+        note = (f"; {len(warn)} rule check(s) missed: " + ", ".join(f.check for f in warn)
+                if warn else "")
         if bad:
-            return False, f"{len(bad)} check(s) failed: " + ", ".join(f.check for f in bad)
+            return False, f"{len(bad)} check(s) failed: " + ", ".join(f.check for f in bad) + note
         return True, ("proven by exact/sound checks" if self.proven
-                      else f"{len(self.unknown())} check(s) unproven (unknown rung)")
+                      else f"{len(self.unknown())} check(s) unproven (unknown rung)") + note
 
     def to_dict(self) -> dict:
         emit, why = self.gate()
         return {"board": self.board_name,
                 "ok": self.ok, "proven": self.proven,
                 "gate": {"emit": emit, "reason": why},
+                "unknowns": self.unknown_kinds(),
                 "findings": [f.__dict__ for f in self.findings]}
+
+    def unknown_kinds(self) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for f in self.findings:
+            if f.rung == "unknown":
+                out[f.unknown_kind] = out.get(f.unknown_kind, 0) + 1
+        return out
 
     def render(self) -> str:
         out = [f"verification — {self.board_name}",
@@ -550,7 +591,8 @@ def _check_planes(board: Board, uf, items) -> list[Finding]:
         except ImportError:
             findings.append(Finding(
                 "III.1d", f"the {layer} pour joins every {net} pad into one piece",
-                "unknown", "unknown", "numpy is not installed; the pour was not modelled"))
+                "unknown", "unknown", "numpy is not installed; the pour was not modelled",
+                unknown_kind="checkable, tool named", tool="numpy"))
             continue
         ruf, rows = _label_runs(pour)
         groups = sorted({uf.find(i) for i in range(len(items))})
@@ -623,11 +665,104 @@ def _expected_pins(ref: str, package: str, pins: dict,
     return expected, undetermined, collisions
 
 
+def _check_pours(board: Board, uf, items) -> list[Finding]:
+    """III.1e / III.1f — the pour as realised copper (pour.py, since 2026-10-21),
+    checked with this file's own geometry. III.1c/d above ask whether a pour
+    *could* join the plane pads; these ask whether the one on the board does,
+    and whether it keeps its clearance doing so."""
+    import numpy as np
+
+    findings = []
+    for pour in board.pours:
+        g, half = pour.grid, pour.grid / math.sqrt(2)
+        ny = len(pour.rows)
+        nx = max((r[1] for row in pour.rows for r in row), default=0)
+        mask = np.zeros((ny, max(nx, 1)), dtype=bool)
+        runs = []                                     # (row, j0, j1)
+        for i, row in enumerate(pour.rows):
+            for j0, j1 in row:
+                mask[i, j0:j1] = True
+                runs.append((i, j0, j1))
+        xs, ys = (np.arange(mask.shape[1]) + 0.5) * g, (np.arange(ny) + 0.5) * g
+
+        # III.1e: every cell's whole square keeps clearance (centre >= cl + g/sqrt2).
+        bad: list[str] = []
+        e = EDGE_CLEARANCE + half
+        edge = mask & ~(((ys >= e) & (ys <= board.outline_h - e))[:, None] &
+                        ((xs >= e) & (xs <= board.outline_w - e))[None, :])
+        if edge.any():
+            bad.append(f"{int(edge.sum())} cell(s) closer than {EDGE_CLEARANCE} mm to the edge")
+        pour_cl = board.net_class_for(pour.net).clearance
+        for kind, o in items:
+            if o.net == pour.net or not _reaches(kind, o, pour.layer):
+                continue
+            (x0, y0, x1, y1), dist = _copper_shape(kind, o)
+            m = (max(pour_cl, board.net_class_for(o.net).clearance) if o.net else pour_cl) + half
+            i0, i1 = max(0, int((y0 - m) / g) - 1), min(ny, int((y1 + m) / g) + 2)
+            j0, j1 = max(0, int((x0 - m) / g) - 1), min(mask.shape[1], int((x1 + m) / g) + 2)
+            if i0 >= i1 or j0 >= j1 or not mask[i0:i1, j0:j1].any():
+                continue
+            X, Y = np.meshgrid(xs[j0:j1], ys[i0:i1])
+            hit = mask[i0:i1, j0:j1] & (dist(X, Y) < m)
+            if hit.any():
+                who = f"{o.ref}.{o.pin}" if kind == "pad" else kind
+                bad.append(f"{int(hit.sum())} cell(s) within clearance of {o.net or 'netless'} {who}")
+        findings.append(Finding(
+            "III.1e", f"the {pour.layer} {pour.net} pour keeps clearance from every other net",
+            "sound", "fail" if bad else "pass",
+            "; ".join(bad[:6]) if bad else
+            f"{pour.area_mm2():.0f} mm² of copper, every {g} mm cell clear by its whole "
+            f"square (may fail a good pour, never passes a bad one)"))
+
+        # III.1f: the realised pour joins every pad of its net into one piece.
+        base = len(items)
+        puf = _UF(base + len(runs))
+        for k in range(base):
+            puf.union(uf.find(k), k)
+        by_row: dict[int, list[int]] = defaultdict(list)
+        for r, (i, j0, j1) in enumerate(runs):
+            by_row[i].append(r)
+        for r, (i, j0, j1) in enumerate(runs):
+            for q in by_row.get(i - 1, ()):
+                _, a0, a1 = runs[q]
+                if a0 < j1 and j0 < a1:
+                    puf.union(base + r, base + q)
+        for k, (kind, o) in enumerate(items):
+            if o.net != pour.net or not _reaches(kind, o, pour.layer):
+                continue
+            (x0, y0, x1, y1), dist = _copper_shape(kind, o)
+            i0, i1 = max(0, int(y0 / g)), min(ny, int(y1 / g) + 1)
+            for i in range(i0, i1):
+                for r in by_row.get(i, ()):
+                    _, j0, j1 = runs[r]
+                    lo, hi = max(j0, int(x0 / g)), min(j1, int(x1 / g) + 1)
+                    if lo >= hi:
+                        continue
+                    X, Y = np.meshgrid(xs[lo:hi], ys[i:i + 1])
+                    if (dist(X, Y) <= 0).any():      # a cell centre inside the copper
+                        puf.union(k, base + r)
+        pads = [(k, o) for k, (kind, o) in enumerate(items) if kind == "pad" and o.net == pour.net]
+        roots: dict[int, list[str]] = defaultdict(list)
+        for k, o in pads:
+            roots[puf.find(k)].append(f"{o.ref}.{o.pin}")
+        pieces = sorted(roots.values(), key=len, reverse=True)
+        findings.append(Finding(
+            "III.1f", f"the realised {pour.layer} pour joins every {pour.net} pad into one piece",
+            "sound", "fail" if len(pieces) > 1 else "pass",
+            (f"{len(pieces)} separate pieces; apart from the largest: "
+             + "; ".join(", ".join(p[:4]) for p in pieces[1:5])) if len(pieces) > 1 else
+            f"{len(pads)} pad(s) on one piece of copper (a pad counts as joined only "
+            f"where a cell centre lies inside it)",
+            [x for p in pieces[1:] for x in p][:12]))
+    return findings
+
+
 def _check_footprint_parity(board: Board, netlist: dict | None) -> list[Finding]:
     if not netlist:
         return [Finding("III.3/III.4", "footprint matches the netlist", "unknown",
                         "unknown",
-                        "no netlist supplied — pin assignment is not checked")]
+                        "no netlist supplied — pin assignment is not checked",
+                        unknown_kind="checkable, tool named", tool="the design's netlist")]
 
     nl_by_ref = {c.get("ref"): c for c in netlist.get("components", [])}
     netlist_named_netless = []
@@ -718,7 +853,7 @@ def _check_footprint_parity(board: Board, netlist: dict | None) -> list[Finding]
             "III.4d", "every pin is placed by a declared pinout, not by luck",
             "unknown", "unknown",
             f"{len(missing_pkg)} component(s) carry no package on the IR: "
-            + ", ".join(missing_pkg[:6])))
+            + ", ".join(missing_pkg[:6]), unknown_kind="checkable, tool named", tool="a package on each component"))
     else:
         findings.append(Finding(
             "III.4d", "every pin is placed by a declared pinout, not by luck",
@@ -781,7 +916,9 @@ def _check_assembly(board: Board) -> list[Finding]:
         Finding("II.3b", "neither end of a two-terminal part will lift in reflow",
                 "unknown", "unknown",
                 "the reflow thermal model (paste volume, pad-to-plane thermal "
-                "relief, part mass) is not carried by the Board IR"),
+                "relief, part mass) is not carried by the Board IR",
+                unknown_kind="checkable by simulation, not run",
+                tool="a reflow thermal model (not built)"),
     ]
 
 
@@ -812,7 +949,8 @@ def _check_land_patterns(board: Board, netlist: dict | None = None) -> list[Find
     except Exception as e:                                    # noqa: BLE001
         return [Finding("IV.1", "land pattern matches an external figure",
                         "unknown", "unknown",
-                        f"land_patterns.json unreadable ({e})")]
+                        f"land_patterns.json unreadable ({e})",
+                        unknown_kind="checkable, tool named", tool="land_patterns.json")]
 
     nl_by_ref = {c.get("ref"): c for c in (netlist or {}).get("components", [])}
     mismatch, unlisted, unverified = [], [], set()
@@ -851,13 +989,15 @@ def _check_land_patterns(board: Board, netlist: dict | None = None) -> list[Find
         findings.append(Finding(
             "IV.1b", "every package has an entry in the land-pattern table",
             "unknown", "unknown",
-            f"{len(unlisted)} package(s) not in the table: " + ", ".join(unlisted[:8])))
+            f"{len(unlisted)} package(s) not in the table: " + ", ".join(unlisted[:8]),
+            unknown_kind="checkable, tool named", tool="a land_patterns.json entry per package"))
 
     findings.append(Finding(
         "IV.3", "courtyard and body match the part's datasheet outline", "unknown",
         "unknown",
         "no datasheet package outline is recorded; courtyards are footprints.py's "
-        "own numbers and are compared with nothing"))
+        "own numbers and are compared with nothing",
+        unknown_kind="checkable, tool named", tool="a datasheet package outline per part"))
 
     findings.append(Finding(
         "IV.1c", "the land-pattern figures themselves are externally verified",
@@ -882,7 +1022,8 @@ def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Findi
     if part_pinouts.symbol_dir() is None:
         return [Finding("IV.2", claim, "unknown", "unknown",
                         "KiCad symbol library not found (install KiCad or set "
-                        "KICAD_SYMBOL_DIR); no pinout was checked against a second source")]
+                        "KICAD_SYMBOL_DIR); no pinout was checked against a second source",
+                        unknown_kind="checkable, tool named", tool="KiCad symbol library")]
 
     nl_by_ref = {c.get("ref"): c for c in (netlist or {}).get("components", [])}
     agree, disagree, unchecked = [], [], []
@@ -956,24 +1097,47 @@ def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Findi
         findings.append(Finding(
             "IV.2b", "every part's pinout has a second source", "unknown", "unknown",
             f"{len(unchecked)} part(s) have only the generator's word for their "
-            f"pinout (T0): " + "; ".join(unchecked[:6]), unchecked[:12]))
+            f"pinout (T0): " + "; ".join(unchecked[:6]), unchecked[:12],
+            unknown_kind="checkable, tool named", tool="pin function names in the netlist"))
     return findings
 
 
 def _check_out_of_reach(board: Board) -> list[Finding]:
-    """Checks the tree names that live entirely outside this IR, stated so the
-    harness cannot be mistaken for having covered them."""
+    """Checks the tree names that this file does not yet decide, each with the
+    kind of unknown it is. Branch V was one blanket unknown until 2026-10-21 and
+    said all of it needed an EM solver or a bench; that was false for DC drop,
+    trace current and clearance, which are arithmetic on copper and tables.
+    Each V branch is replaced by its check as the physics report's build table
+    (steps 1-5) lands: V.4 and V.6 live in layout_vi.py since step 3."""
+    sim, named, never = ("checkable by simulation, not run", "checkable, tool named",
+                         "not checkable")
     return [
-        Finding("V", "as-built electrical behaviour matches the design", "unknown",
-                "unknown",
-                "parasitics, signal integrity, PDN and EMC need an EM solver or a "
-                "bench measurement; the IR carries no field data"),
+        Finding("V.1", "board parasitics keep the graded quantities in tolerance",
+                "unknown", "unknown",
+                "trace R is arithmetic on the stackup's copper (build step 7); node "
+                "capacitance needs an extractor", unknown_kind=named,
+                tool="trace R into the z3 prover; FasterCap for node C"),
+        Finding("V.2", "signal integrity is a non-issue at this speed and length",
+                "unknown", "unknown",
+                "no net has been screened against t_rise·v/6; flagged nets would "
+                "need 2D RLGC and ngspice TXL (build step 8, not built)",
+                unknown_kind=sim, tool="ngspice TXL/CPL"),
+        Finding("V.3", "the supply rails hold at every pin (DC IR drop, PDN impedance)",
+                "unknown", "unknown",
+                "DC drop is a resistor-mesh solve on the copper (build step 4); AC "
+                "impedance needs loop R(f), L(f) and an ngspice sweep (build step 5)",
+                unknown_kind=named, tool="sparse resistor mesh (scipy.sparse)"),
+        Finding("V.5", "the board passes EMI/EMC", "unknown", "unknown",
+                "no sound software check exists; emission prediction carries "
+                "order-10 dB uncertainty and only a chamber settles it",
+                unknown_kind=never),
         Finding("VI", "the design itself is electrically correct", "unknown",
                 "unknown",
                 "analog functional correctness is undecidable in general; see "
-                "reports/Analog circuit formal verification.md"),
+                "reports/Analog circuit formal verification.md", unknown_kind=never),
         Finding("VII", "the board works in its environment", "unknown", "unknown",
-                "cables, supply, firmware and enclosure are outside the Board IR"),
+                "cables, supply, firmware and enclosure are outside the Board IR",
+                unknown_kind=never),
     ]
 
 
@@ -987,9 +1151,14 @@ def verify_board(board: Board, netlist: dict | None = None) -> Report:
     findings += _check_assembly(board)
     findings += _check_connectivity(board, uf, items, pad_index)
     findings += _check_shorts(board, uf, items, pad_index)
+    findings += _check_pours(board, uf, items)
     findings += _check_footprint_parity(board, netlist)
     findings += _check_land_patterns(board, netlist)
     findings += _check_part_pinouts(board, netlist)
+    from layout_rules import check_layout_rules        # it imports Finding from here
+    findings += check_layout_rules(board, netlist)
+    from layout_vi import check_layout_vi                # V.4 current, V.6 insulation
+    findings += check_layout_vi(board, netlist)
     findings += _check_out_of_reach(board)
     return Report(board.name, findings)
 

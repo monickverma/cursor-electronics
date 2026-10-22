@@ -32,6 +32,8 @@ from dataclasses import dataclass, field
 
 from board_ir import Board, Layer, NetClass
 import footprints
+from pour import fill_planes
+from stackup import default_stackup
 from kernel import drc, score
 from router import AStarRouter, generate_candidates
 from render_pretty import to_svg
@@ -52,7 +54,8 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
               outline_w=bd.get("width", 60.0),
               outline_h=bd.get("height", 45.0),
               layers=[Layer("F.Cu", "signal"),
-                      Layer("B.Cu", "signal", plane_net=ground)])
+                      Layer("B.Cu", "signal", plane_net=ground)],
+              stackup=default_stackup(["F.Cu", "B.Cu"]))
 
     for c in nl["components"]:
         ref, mpn = c["ref"], c.get("mpn", "")
@@ -213,6 +216,8 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
     else:
         s = score(b)
 
+    # The declared plane becomes copper only now, after the last track moved.
+    fill_planes(b)
     vs = drc(b)
     # The completion count is the independent judge's, not the router's own.
     # `router_unrouted` is the router's (kernel.open_connections), kept visible
@@ -237,6 +242,7 @@ def compile_board(netlist: dict, candidates: int = 4, theme: str = "green",
         "verified": rep.ok,
         "proven": rep.proven,
         "failed_checks": [f.check for f in rep.failed()],
+        "rule_warnings": [f.check for f in rep.warnings()],
     }
     title = (f"{b.name}   {stats['routed']}/{n} routed   "
              f"{s.errors} DRC errors   {s.vias} vias   {s.length_mm:.0f} mm")
