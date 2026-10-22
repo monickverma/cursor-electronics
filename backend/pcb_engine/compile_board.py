@@ -132,15 +132,98 @@ def _added_wirelength(b: Board, i: int, x: float, y: float) -> float:
     return total
 
 
+def _decoupling(b: Board) -> dict[int, tuple[int, str]]:
+    """Which capacitor decouples which IC supply pad: cap index -> (IC index,
+    pad pin).
+
+    A decoupling cap is a two-pad capacitor between one rail and ground. It
+    serves the largest part (six pads or more) with a pad on that rail, at the
+    first of that part's rail pads no earlier cap took — so two caps on an
+    ATmega go to VCC and AVCC, not both to whichever is nearer. A cap between
+    two signals (an RC filter's) is not one and is placed by wirelength."""
+    grounds = b.plane_nets() or {"GND"}
+    ics = sorted((j for j, c in enumerate(b.components) if len(c.pads) >= 6),
+                 key=lambda j: -len(b.components[j].pads))
+    taken: dict[tuple[int, str], int] = {}
+    out: dict[int, tuple[int, str]] = {}
+    for i, c in enumerate(b.components):
+        nets = {p.net for p in c.pads}
+        if c.attrs.get("type") != "capacitor" or len(c.pads) != 2 or len(nets) != 2:
+            continue
+        rails = [n for n in nets if n and n not in grounds]
+        if len(rails) != 1 or not (nets - set(rails)) <= grounds:
+            continue
+        for j in ics:
+            pins = sorted((p.pin for p in b.components[j].pads if p.net == rails[0]),
+                          key=lambda s: (len(s), s))
+            if pins:
+                pin = min(pins, key=lambda s: taken.get((j, s), 0))
+                taken[(j, pin)] = taken.get((j, pin), 0) + 1
+                out[i] = (j, pin)
+                break
+    return out
+
+
+def _beside(b: Board, i: int, target: tuple[int, str], margin: float,
+            reach: float = 6.0, fine: float = 0.25) -> tuple[float, float] | None:
+    """The legal position and turn (0 or 180 degrees), on a `fine` grid within
+    `reach` mm of the supply pad, that puts cap i's rail pad nearest it; ties
+    go to less wirelength. The half turn lets the rail pad face the pin instead
+    of its ground pad. None when nothing within reach is legal (the caller
+    falls back to wirelength)."""
+    c = b.components[i]
+    j, pin = target
+    pad = next(p for p in b.components[j].pads if p.pin == pin)
+    rail = next(p for p in c.pads if p.net == pad.net)
+    best, best_cost = None, (float("inf"), float("inf"))
+    n = int(reach / fine)
+    for turn in (0, 180):
+        _turn(c, turn)
+        ox, oy = rail.x - c.x, rail.y - c.y
+        for dy in range(-n, n + 1):
+            for dx in range(-n, n + 1):
+                # where the part's centre goes so that its rail pad lands here
+                x = round(pad.x + dx * fine - ox, 4)
+                y = round(pad.y + dy * fine - oy, 4)
+                d = math.hypot(dx * fine, dy * fine)
+                if d > reach or not _legal(b, i, x, y, margin):
+                    continue
+                cost = (round(d, 6), _added_wirelength(b, i, x, y))
+                if cost < best_cost:
+                    best, best_cost = (x, y, turn), cost
+        _turn(c, -turn)
+    return best
+
+
+def _turn(c, degrees: int) -> None:
+    """Turn a part by a half turn (or back) about its centre, pads with it."""
+    if degrees % 360 == 0:
+        return
+    for p in c.pads:
+        p.x, p.y = 2 * c.x - p.x, 2 * c.y - p.y
+    c.rotation = (c.rotation + degrees) % 360
+
+
 def place_constructive(b: Board, margin: float = 2.5, step: float = 1.27) -> Board:
     """Seed with the largest package, then insert each part at the legal grid
     position that adds the least wirelength.
 
     Greedy and unglamorous, but every intermediate state is legal by
     construction, so it cannot produce the dense unroutable clump that
-    wirelength-only gradient descent converges to."""
-    order = sorted(range(len(b.components)),
-                   key=lambda i: -len(b.components[i].pads))
+    wirelength-only gradient descent converges to.
+
+    A decoupling cap is the exception (F-S2-R001-6). Wirelength put a 100 nF
+    cap next to whichever rail pad was nearest — 5 mm from the ATmega's AVCC,
+    11 mm from its VCC, where the reference board has 1.65 mm. Each one is now
+    placed right after its IC, on a fine grid around the supply pad it serves,
+    at the legal spot nearest that pad."""
+    decap = _decoupling(b)
+    by_size = sorted((i for i in range(len(b.components)) if i not in decap),
+                     key=lambda i: -len(b.components[i].pads))
+    order = []
+    for i in by_size:
+        order.append(i)
+        order += [k for k, (j, _) in sorted(decap.items()) if j == i]
     if not order:
         return b
 
@@ -160,6 +243,12 @@ def place_constructive(b: Board, margin: float = 2.5, step: float = 1.27) -> Boa
 
     for i in order[1:]:
         best, best_cost = None, float("inf")
+        if i in decap:
+            spot = _beside(b, i, decap[i], margin)
+            if spot:
+                _turn(b.components[i], spot[2])
+                move(i, spot[0], spot[1])
+                continue
         for x in xs:
             for y in ys:
                 if not _legal(b, i, x, y, margin):
