@@ -683,6 +683,20 @@ def _check_footprint_parity(board: Board, netlist: dict | None) -> list[Finding]
                 netlist_named_netless.append(f"{comp.ref} pin {pin} ({expected[pin]})")
 
     findings = []
+    # III.4a (F-S2-R005-2): a part the board left out — no footprint for its
+    # package, so from_netlist warned and went on — is invisible to every
+    # other check, which visit the parts that are there. Its nets then end at
+    # the parts that remain and read as complete.
+    on_board = {c.ref for c in board.components}
+    missing = [f"{ref} ({c.get('package') or 'no package'}, {c.get('mpn') or 'no part number'})"
+               for ref, c in nl_by_ref.items() if ref and ref not in on_board]
+    findings.append(Finding(
+        "III.4a", "every part in the netlist is on the board", "exact",
+        "fail" if missing else "pass",
+        (f"{len(missing)} netlist part(s) are not on the board, so their nets "
+         f"end open where they should meet them: " + "; ".join(missing[:6]))
+        if missing else f"all {len(nl_by_ref)} netlist part(s) are placed",
+        missing[:12]))
     findings.append(Finding(
         "III.4", "the board's pin-to-net map is the netlist's", "exact",
         "fail" if parity_mismatch else "pass",
