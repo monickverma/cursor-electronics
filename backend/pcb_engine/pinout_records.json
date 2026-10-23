@@ -1,0 +1,32 @@
+{
+  "_about": "Datasheet pinout records (F-S0-0001). Read by part_pinouts.lookup when KiCad names no symbol for a part. Matched on the whole orderable part number AND the package, never a similar name. Each record cites the page of its pin table; an optional kicad_symbol must agree pin for pin and on package or the part is refused. Written by an agent, these are evidence (T2 source), not a person's verification. 2N2222A is refused: in TO-92 it is not one orderable part (makers differ, E-B-C vs C-B-E); the netlist must carry the orderable number.",
+  "records": [
+    {
+      "mpn": "DHT22",
+      "maker": "Aosong (ASAIR)",
+      "package": "DHT22",
+      "pins": {
+        "1": "VDD",
+        "2": "SDA",
+        "3": "NC",
+        "4": "GND"
+      },
+      "aliases": {
+        "2": "DATA"
+      },
+      "source": {
+        "title": "AM2302 Technical Manual V1.0",
+        "table": "Table 4 Interface definition description",
+        "page": 4,
+        "url": "https://www.aosong.com/uploadfiles/2025/04/20250417105409216.pdf",
+        "sha256": "a8f321e5f91420d78c6282e17c8913a85c89f265991a20c5d8e6111b10f600fd",
+        "retrieved": "2026-10-22"
+      },
+      "kicad_symbol": null,
+      "identity": "DHT22 is Aosong's earlier name for the AM2302 (their 2013 manual is titled 'AM2302/DHT22'); the V1.0 manual prints only AM2302. The project already reads DHT22 figures from this document (data/figures.py _DHT, D7 document aosong-am2302-v1.0, same SHA-256). A name identity the maker states, not a similar-name match.",
+      "alias_note": "Table 4 names pin 2 SDA; section 3.2 describes it as the single-bus data line. The netlists call it DATA.",
+      "checks": "Agrees with an independent reference board read by S2 (VDD, DATA, GND on pins 1, 2, 4).",
+      "recorded_by": "S4 agent, 2026-10-22, read from the rendered page 4. Evidence, not a person's verification."
+    }
+  ]
+}

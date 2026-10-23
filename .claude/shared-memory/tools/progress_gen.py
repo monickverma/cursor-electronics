@@ -198,7 +198,7 @@ PLANNED = {
         "test_file": None,
         "entries": [
             ("drc",              "function", "Design rule check → list of Violation"),
-            ("score",            "function", "Physics scorecard for a candidate layout"),
+            ("score",            "function", "Layout cost score (unrouted, DRC, vias, length, layers, skew; no physics term)"),
             ("diff_pair_skew",   "function", "Differential pair length skew"),
             ("seg_seg_dist",     "function", "Segment-to-segment clearance primitive"),
         ],
@@ -233,10 +233,70 @@ PLANNED = {
     # decisions.md [2026-10-09] — the independent judge of a compiled board.
     "pcb_engine/verify": {
         "file": "backend/pcb_engine/verify.py",
-        "test_file": "tests/test_pcb_verify.py",
+        "test_file": ["tests/test_pcb_verify.py", "tests/test_pcb_physics.py"],
         "entries": [
             ("verify_board",         "function", "Board IR + netlist → Report; every check carries its rung, unchecked is unknown"),
             ("unrouted_connections", "function", "Required connections with no copper path, by union-find over the copper"),
+        ],
+    },
+    # Physics report build step 1 (2026-10-21) — one stackup, the plane as copper.
+    "pcb_engine/stackup": {
+        "file": "backend/pcb_engine/stackup.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("Stackup",         "class",    "Copper and dielectric layers top to bottom, figures cited; one owner"),
+            ("default_stackup", "function", "1.6 mm FR-4, 1 oz, Er 4.0-4.8 (assumed; no fab named)"),
+            ("two_layer",       "function", "A two-layer stack of a given thickness and copper"),
+        ],
+    },
+    "pcb_engine/pour": {
+        "file": "backend/pcb_engine/pour.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("fill_pour",   "function", "Declared plane → realised copper cells: clearance, min width, no islands"),
+            ("fill_planes", "function", "Fill every declared plane on a board"),
+        ],
+    },
+    "pcb_engine/layout_rules": {
+        "file": "backend/pcb_engine/layout_rules.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_layout_rules", "function", "Quilter-style physics rule checks P.1-P.5; part roles from the IR, thresholds cited"),
+        ],
+    },
+    "pcb_engine/layout_vi": {
+        "file": "backend/pcb_engine/layout_vi.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_trace_current", "function", "V.4 — trace width vs the IR's net current, IPC-2221, stackup copper"),
+            ("check_insulation",    "function", "V.6 — clearance/creepage vs IEC 60664-1; mains-to-SELV reinforced"),
+            ("required_width_mm",   "function", "IPC-2221 width for a current and temperature rise"),
+        ],
+    },
+    "pcb_engine/iec60664": {
+        "file": "backend/pcb_engine/iec60664.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("creepage_mm",  "function", "Table F.4 creepage; reinforced = 2 x basic (unverified transcription)"),
+            ("clearance_mm", "function", "Tables F.1/F.2/A.2 clearance; reinforced = next impulse step"),
+        ],
+    },
+    "pcb_engine/dc_drop": {
+        "file": "backend/pcb_engine/dc_drop.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("rail_drops",    "function", "Rail + ground resistor mesh (tracks, vias, pour) solved by numpy CG: drop per load"),
+            ("check_dc_drop", "function", "V.3 — DC IR drop vs a budget; simulated, one engine (padne awaits approval)"),
+        ],
+    },
+    "pcb_engine/pdn": {
+        "file": "backend/pcb_engine/pdn.py",
+        "test_file": "tests/test_pcb_physics.py",
+        "entries": [
+            ("check_pdn",          "function", "V.3b — decap loop |Z(f)| vs target impedance; closed-form lumped, simulated"),
+            ("trace_over_plane_h", "function", "Trace-over-plane inductance (Wheeler)"),
+            ("via_h",              "function", "Via inductance (Goldfarb & Pucel)"),
+            ("parse_farads",       "function", "Capacitance from a value string"),
         ],
     },
     "generators/pcb_netlist": {

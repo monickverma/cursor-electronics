@@ -175,23 +175,43 @@ class TestFootprintLibrary:
         assert {p.pin: p.net for p in c.pads} == {"1": "NET_P", "2": "NET_M"}
         assert warnings == [], f"unexpected fallback: {warnings}"
 
-    def test_soic8_pinout_is_a_known_gap(self):
-        """Documented limitation, asserted so it cannot regress quietly.
-
-        Pin 1 is RO on a MAX485 and an output on an op-amp — there is no
-        package-wide truth, so build() falls back to free-pad assignment and
-        warns. IR_005's MAX485 therefore has arbitrary pin positions. The fix is
-        per-part pinmaps, not a per-package guess. Until then the warning is the
-        contract: it must keep being emitted.
-        """
+    def test_max485_is_wired_by_its_part_number(self):
+        """The SOIC-8 gap, closed by a per-part map: RO 1, ~RE 2, DE 3, DI 4,
+        GND 5, A 6, B 7, VCC 8 (MAX481E-MAX491E datasheet; KiCad
+        Interface_UART:MAX485E agrees — tests/test_part_pinouts.py)."""
         warnings: list[str] = []
-        footprints.build("U2", "SOIC-8",
-                         {"RO": "n1", "DI": "n2", "VCC": "v", "GND": "g"},
-                         warnings=warnings)
-        assert any("assigned unknown pin" in w for w in warnings), (
-            "SOIC-8 pin assignment became silent — if per-part pinmaps landed, "
-            "delete this test; if not, the warning must stay."
-        )
+        u = footprints.build("U2", "SOIC-8",
+                             {"RO": "rx", "RE": "en", "DE": "en", "DI": "tx",
+                              "GND": "g", "A": "a", "B": "b", "VCC": "v"},
+                             warnings=warnings, mpn="MAX485ECSA+T")
+        assert {p.pin: p.net for p in u.pads} == {
+            "1": "rx", "2": "en", "3": "en", "4": "tx",
+            "5": "g", "6": "a", "7": "b", "8": "v"}
+        assert warnings == []
+
+    def test_unknown_soic8_part_is_left_unconnected_not_guessed(self):
+        """Until 2026-10-17 build() put these on free pads in list order. A
+        SOIC-8 has 298 pinouts in the KiCad library; a guess is a dead board."""
+        warnings: list[str] = []
+        u = footprints.build("U2", "SOIC-8",
+                             {"RO": "n1", "DI": "n2", "VCC": "v", "GND": "g"},
+                             warnings=warnings, mpn="SOME-OPAMP")
+        assert all(p.net == "" for p in u.pads)
+        assert sum("left unconnected" in w for w in warnings) == 4
+
+    def test_diode_cathode_is_pad_one_in_every_package(self):
+        """KiCad's convention (Diode:1N4007, Diode:1N4148W: 1 = K, 2 = A). DO-41
+        and the chip packages put the anode on pad 1 until 2026-10-17."""
+        for pkg in ("DO-41", "SOD-123", "0805", "0603"):
+            d = footprints.build("D1", pkg, {"A": "an", "K": "cat"})
+            assert {p.pin: p.net for p in d.pads} == {"1": "cat", "2": "an"}, pkg
+        led = footprints.build("LED1", "0805", {"ANODE": "an", "CATHODE": "cat"})
+        assert {p.pin: p.net for p in led.pads} == {"1": "cat", "2": "an"}
+
+    def test_resistor_terminal_a_stays_pad_one(self):
+        """"A" means anode only on a part that also names a cathode."""
+        r = footprints.build("R1", "0603", {"A": "x", "B": "y"})
+        assert {p.pin: p.net for p in r.pads} == {"1": "x", "2": "y"}
 
 
 # ── Placement invariants ─────────────────────────────────────────────────────

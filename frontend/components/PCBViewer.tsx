@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { compilePCB, PCBCompileResponse } from '@/lib/api'
+import BoardVerification from '@/components/BoardVerification'
 
 // three.js needs the browser (WebGL, document): never server-render it — the
 // same rule as the kicanvas schematic viewer.
@@ -201,6 +202,12 @@ export default function PCBViewer({ netlist, token }: Props) {
           />
         )}
       </div>
+
+      {/* The verifier's findings. The board stays on screen when they fail
+          (owner's decision 2026-10-17); refusal belongs at fab-file export. */}
+      {data?.verification?.findings && !loading && (
+        <BoardVerification report={data.verification} />
+      )}
 
       {/* Warnings footer — open by default. A warning here means the board on
           screen is not the board that was asked for; collapsed, that reads as

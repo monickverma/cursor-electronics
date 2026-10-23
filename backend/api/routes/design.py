@@ -72,7 +72,7 @@ class GenerateResponse(BaseModel):
 
 
 @router.post("/generate", response_model=GenerateResponse, status_code=201)
-@limiter.limit("10/hour")
+@limiter.limit(settings.rate_limit_generate)
 async def generate_design(
     request: Request,
     body: GenerateRequest,
