@@ -237,3 +237,15 @@ def test_the_shipped_netlist_names_u1_and_d1_by_function():
         assert ref in agreed, iv2["subjects"]
     left = next(f for f in rep["findings"] if f["check"] == "IV.2b")["subjects"]
     assert sorted(s.split(" ")[0] for s in left) == ["K1", "Q1"], left
+
+
+@needs_kicad
+def test_the_board_alone_keeps_the_netlists_pin_names():
+    """The fab exporter verifies the Board IR without the netlist. The IR must
+    carry each part's pin labels, or every named pin falls back to a pad number
+    and nothing can be compared."""
+    from pcb_engine import compile_board
+    nl = json.loads((Path(pp.__file__).with_name("netlist_dht22.json")).read_text())
+    rep = verify_board(compile_board(nl).board)
+    left = _f(rep, "IV.2b").subjects
+    assert sorted(s.split(" ")[0] for s in left) == ["K1", "Q1"], left

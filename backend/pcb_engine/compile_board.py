@@ -76,9 +76,12 @@ def from_netlist(nl: dict) -> tuple[Board, list[str]]:
             continue
         # What the part is, carried on the IR so every consumer (3D scene, a
         # later KiCad export) reads one answer instead of re-guessing it.
+        # The pin labels too: IV.2 compares a label's function with the part's
+        # datasheet, and a board verified without its netlist has only these.
         comp.attrs.update({k: v for k, v in (("package", pkg), ("mpn", mpn),
                                              ("type", c.get("type")),
-                                             ("value", c.get("value"))) if v})
+                                             ("value", c.get("value")),
+                                             ("pins", dict(pins))) if v})
         b.components.append(comp)
 
     power = [n for n in nl.get("power_nets", [ground]) if n]
