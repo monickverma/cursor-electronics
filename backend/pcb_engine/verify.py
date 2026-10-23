@@ -1047,7 +1047,12 @@ def _check_part_pinouts(board: Board, netlist: dict | None = None) -> list[Findi
         pkg = _package_of(comp, nl)
         mpn = _mpn_of(comp, nl)
         pads = {p.pin for p in comp.pads}
-        pins = {str(k): v for k, v in ((nl or {}).get("pins") or {}).items()} or             {p.pin: p.net for p in comp.pads if p.net}
+        # The netlist's pin labels; without the netlist, the ones compile_board
+        # kept on the part (the fab exporter verifies the board alone); last,
+        # the pad numbers, which name no function.
+        pins = ({str(k): v for k, v in ((nl or {}).get("pins") or {}).items()}
+                or dict(comp.attrs.get("pins") or {})
+                or {p.pin: p.net for p in comp.pads if p.net})
         named = {l: n for l, n in pins.items() if l not in pads}
         # A resistor's or plain capacitor's two ends cannot be the wrong way round;
         # a two-pad part is checked only when its symbol says its ends differ.
