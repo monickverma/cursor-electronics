@@ -181,3 +181,71 @@ class TestHealthAdvertisesTheFlag:
 
         assert res.status_code == 200
         assert "pcb_engine_enabled" in res.json()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Finding F-S2-R001-4: the response carries the board as KiCad sees it.
+# ─────────────────────────────────────────────────────────────────────────────
+import pcb_engine  # noqa: E402,F401  — engine directory on sys.path
+import kicad_cli  # noqa: E402
+import readback  # noqa: E402
+
+_ROUTED = {"name": "kicad route", "board": {"width": 30, "height": 20},
+           "components": [
+               {"ref": "R1", "mpn": "RC0603", "package": "0603", "pins": {"1": "A", "2": "B"}},
+               {"ref": "R2", "mpn": "RC0603", "package": "0603", "pins": {"1": "A", "2": "B"}}]}
+
+requires_export = pytest.mark.skipif(not (kicad_cli.available() and readback.available()),
+                                     reason="kicad-cli or the read-back env missing")
+
+
+@requires_export
+class TestKiCadInTheResponse:
+    def test_a_passing_board_comes_with_its_kicad_project_and_fab_files(self, client, monkeypatch):
+        monkeypatch.setattr(settings, "pcb_engine_enabled", True)
+        res = client.post("/pcb/compile", json=_ROUTED)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        assert body["verification"]["ok"], body["verification"]
+        k = body["kicad"]
+        assert k["available"] and k["kicad_version"] == "10.0.1"
+        assert k["kicad_pcb"].startswith("(kicad_pcb") and '"pcbnew"' in k["kicad_pcb"]
+        assert "circuitos_sentinel" in k["kicad_dru"]
+        assert k["drc"]["ran"] and k["readback"]["ok"]
+        assert k["fab"]["ok"], k["fab"]["refusals"]
+        names = set(k["fab"]["files"])
+        assert {"kicad_route-F_Cu.gtl", "kicad_route-PTH.drl", "manifest.json"} <= names
+
+    def test_a_failed_board_is_shown_but_its_fab_files_are_refused(self, client, monkeypatch):
+        """Owner decision 2026-10-17."""
+        import api.routes.pcb as route
+        real = route.compile_board
+
+        def failed(netlist, *a, **kw):
+            r = real(netlist, *a, **kw)
+            r.verification = {**r.verification, "ok": False, "failed_checks": ["III.2"]}
+            return r
+        monkeypatch.setattr(settings, "pcb_engine_enabled", True)
+        monkeypatch.setattr(route, "compile_board", failed)
+        body = client.post("/pcb/compile", json=_ROUTED).json()
+        k = body["kicad"]
+        assert body["svg"] and body["board"]
+        assert k["kicad_pcb"].startswith("(kicad_pcb")       # still there to open in KiCad
+        assert not k["fab"]["ok"] and k["fab"]["files"] == {}
+        assert "III.2" in k["fab"]["refusals"][0]
+
+    def test_kicad_can_be_left_out(self, client, monkeypatch):
+        monkeypatch.setattr(settings, "pcb_engine_enabled", True)
+        body = client.post("/pcb/compile", json={**_ROUTED, "kicad": False}).json()
+        assert body["kicad"] == {}
+
+
+def test_a_server_without_kicad_gives_the_board_and_no_fab_files(monkeypatch):
+    """The deployed backend has no KiCad: the board file is still useful,
+    but nothing unchecked is offered for fabrication."""
+    from board_ir import demo_board
+    import kicad_fab
+    monkeypatch.setattr(kicad_cli, "available", lambda: False)
+    k = kicad_fab.kicad_package(demo_board(), {"ok": True})
+    assert k["available"] is False and k["kicad_pcb"].startswith("(kicad_pcb")
+    assert k["fab"]["files"] == {} and not k["fab"]["ok"]
