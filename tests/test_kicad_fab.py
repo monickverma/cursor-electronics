@@ -54,12 +54,26 @@ def test_a_clean_board_gets_every_fab_file_with_hashes(tmp_path):
 
 
 def test_the_plane_is_poured_in_the_gerber(tmp_path):
+    """TPL_001's board, which passes IV.2b. netlist_dht22.json is refused by it
+    on purpose (Q1 is not one orderable part, K1 names no pins), so its plane
+    can no longer be checked through the fab gate."""
+    from core import ir_examples
+    from generators.netlist.pcb import PcbNetlistGenerator
     from compile_board import compile_board
-    b = compile_board(json.loads(NETLIST.read_text())).board
-    res = kicad_fab.export_fab(b, tmp_path, "dht22")
+    result = compile_board(PcbNetlistGenerator().generate(ir_examples.IR_001))
+    assert [l.plane_net for l in result.board.layers if l.name == "B.Cu"] == ["GND"]
+    res = kicad_fab.export_fab(result.board, tmp_path, "tpl001", result.verification)
     assert res.ok, res.refusals
     # A zone KiCad never filled exports as nothing; the plane must be a region.
-    assert "G36*" in (tmp_path / "fab" / "dht22-B_Cu.gbl").read_text()
+    assert "G36*" in (tmp_path / "fab" / "tpl001-B_Cu.gbl").read_text()
+
+
+def test_the_dht22_netlist_is_refused_by_the_pinout_gate(tmp_path):
+    from compile_board import compile_board
+    result = compile_board(json.loads(NETLIST.read_text()))
+    res = kicad_fab.export_fab(result.board, tmp_path, "dht22", result.verification)
+    assert not res.ok and "IV.2b" in res.refusals[0], res.refusals
+    assert not (tmp_path / "fab").exists()
 
 
 def test_a_board_that_failed_verification_gets_no_fab_files(tmp_path):
