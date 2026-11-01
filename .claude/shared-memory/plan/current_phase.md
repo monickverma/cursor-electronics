@@ -49,8 +49,10 @@ research are in `reports/Is the board correct - a software-only verification tre
 Part 5 are built: `pcb_engine/verify.py`, `pcb_engine/land_patterns.json`, `tests/test_pcb_verify.py`, and
 `/pcb/compile` returns the report as `verification`.
 
-**For the owner:** (1) should `/pcb/compile` refuse a board whose report failed, or keep showing it with the
-failure; (2) Gerber export moved forward, with Gerbonara, for step 5; (3) PyPEEC for step 6. Open without a
+**Owner's answers, 2026-10-17** (`brain/decisions.md` [2026-10-17]): (1) show a failed board, refuse its
+fabrication files; (2) minimal Gerber export moves forward via kicad-cli 10.0.1 (own `.kicad_pcb` writer,
+KiCad also the second DRC engine); (3) Gerbonara approved, read-back only, in a separate Python 3.12 stage.
+**Still for the owner:** PyPEEC for step 6 (the implementation plan recommends closed-form intervals instead). Open without a
 decision: every `land_patterns.json` entry is unverified, and no pinout is checked against a datasheet.
 
 ## The board in 3D — opened 2026-10-06 by the owner (`brain/decisions.md` [2026-10-06])
@@ -82,7 +84,8 @@ room-monitor connections; the rest are drawn as ratsnest.
 
 ## Before Phase 3 opens — the owner's calls (none is a Jev question)
 
-1. **Gerber and fab in Phase 3 or 4?** The Phase 3 KPI is "prompt-to-ordered-PCB within one business day",
+1. **Gerber and fab in Phase 3 or 4?** *Answered 2026-10-17: minimal Gerber export moves forward via
+   kicad-cli; the KPI's "ordered PCB" is files the user hands to a fab; fab APIs stay Phase 4.* The Phase 3 KPI is "prompt-to-ordered-PCB within one business day",
    but Gerber, fab APIs and DFM sit in Phase 4 (PRODUCT_MASTER.md). Either move minimal Gerber forward, or
    restate the KPI as "a routed KiCad board, handed to the fab by the user".
 2. **Which standard family heads the industrial layer?** UL 508A covers the *panel*. Controller boards fall

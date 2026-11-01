@@ -390,6 +390,24 @@ export async function patchDesign(circuitId: string, command: string, token: str
   return apiPost(`/design/${circuitId}/patch`, { command }, token)
 }
 
+/** One check from the board verifier (backend/pcb_engine/verify.py). */
+export interface BoardFinding {
+  check: string                     // tree id, e.g. "III.1"
+  claim: string
+  rung: 'exact' | 'sound' | 'bounded' | 'evidence' | 'unknown'
+  status: 'pass' | 'fail' | 'unknown'
+  detail: string
+  subjects: string[]
+}
+
+export interface BoardVerification {
+  board: string
+  ok: boolean                       // no decidable check failed
+  proven: boolean                   // every check passed on an exact or sound rung
+  gate?: { emit: boolean; reason: string }
+  findings: BoardFinding[]
+}
+
 export interface PCBCompileResponse {
   svg: string
   stats: {
@@ -407,6 +425,8 @@ export interface PCBCompileResponse {
   }
   warnings: string[]
   violations: string[]
+  /** The verifier's report: every check, its rung, and whether fab files may be emitted. */
+  verification?: BoardVerification
   /** The routed Board IR — the layout's source of truth (backend/pcb_engine/board_ir.py). */
   board?: Record<string, unknown>
   /** The 3D scene derived from it (backend/pcb_engine/scene3d.py). */

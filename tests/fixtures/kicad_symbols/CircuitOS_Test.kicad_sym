@@ -1,0 +1,445 @@
+(kicad_symbol_lib
+	(version 20251024)
+	(generator "circuit_os_test")
+	(symbol "XCVR8_BASE"
+		(property "Value" "XCVR8_BASE"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/XCVR8_BASE.pdf"
+			(at 0 0 0)
+		)
+		(symbol "XCVR8_BASE_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "RO"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "~{RE}"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "DE"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "DI"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "A"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "B"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "7"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "8"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "XCVR8_MID"
+		(extends "XCVR8_BASE")
+		(property "Value" "XCVR8_MID"
+			(at 0 0 0)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/XCVR8_MID.pdf"
+			(at 0 0 0)
+		)
+	)
+	(symbol "XCVR485A"
+		(extends "XCVR8_MID")
+		(property "Value" "XCVR485A"
+			(at 0 0 0)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/XCVR485A.pdf"
+			(at 0 0 0)
+		)
+	)
+	(symbol "REG17x-33xxTT"
+		(property "Value" "REG17x-33xxTT"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/REG17x-33xxTT.pdf"
+			(at 0 0 0)
+		)
+		(symbol "REG17x-33xxTT_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VO"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VI"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "QBEC1234"
+		(property "Value" "QBEC1234"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/QBEC1234.pdf"
+			(at 0 0 0)
+		)
+		(symbol "QBEC1234_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "B"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "E"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "C"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "QEBC5678"
+		(property "Value" "QEBC5678"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/QEBC5678.pdf"
+			(at 0 0 0)
+		)
+		(symbol "QEBC5678_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "E"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "B"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "C"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "RELAYX12"
+		(property "Value" "RELAYX12"
+			(at 0 0 0)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/RELAYX12.pdf"
+			(at 0 0 0)
+		)
+		(symbol "RELAYX12_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name ""
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name ""
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name ""
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "R"
+		(property "Value" "R"
+			(at 0 0 0)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/R.pdf"
+			(at 0 0 0)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "~"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "~"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "REGA100_TO92"
+		(property "Value" "REGA100_TO92"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/REGA100_TO92.pdf"
+			(at 0 0 0)
+		)
+		(symbol "REGA100_TO92_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VO"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VI"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "REGA100_SOT23"
+		(property "Value" "REGA100_SOT23"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/REGA100_SOT23.pdf"
+			(at 0 0 0)
+		)
+		(symbol "REGA100_SOT23_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VO"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "VI"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+	(symbol "DIODE4007X"
+		(property "Value" "DIODE4007X"
+			(at 0 0 0)
+		)
+		(property "Footprint" "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal"
+			(at 0 0 0)
+		)
+		(property "Datasheet" "https://example.invalid/DIODE4007X.pdf"
+			(at 0 0 0)
+		)
+		(symbol "DIODE4007X_1_1"
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "K"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 0)
+				(length 2.54)
+				(name "A"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+	)
+)

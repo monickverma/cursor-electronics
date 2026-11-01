@@ -2767,3 +2767,78 @@ needs PyPEEC and a capacitance extractor. New dependencies are approved by the o
 **Not claimed.** Nothing here is checked against a manufactured board. The verifier and the generator share
 the Board IR and `footprints.PINMAPS`: a wrong pinout declared there is wrong in both and passes.
 
+
+## [2026-10-17] Board verifier: three owner calls answered — decided by the owner
+
+The three calls left open in [2026-10-09], answered against `reports/PCB verification implementation plan.md`
+(its decisions 1–3).
+
+1. **A failed board is shown, its fabrication files are refused.** `/pcb/compile` keeps returning the board
+   with its failing report, so the person can see and fix it. `Report.gate()` is applied at export: no
+   Gerber, drill or placement file for a board whose report failed. The harm is ordering it, so the refusal
+   sits there.
+2. **Minimal Gerber export moves forward from Phase 4, through kicad-cli.** Circuit OS writes its own
+   `.kicad_pcb` / `.kicad_pro` / `.kicad_dru` from the Board IR (round-tripped through
+   `kicad-cli pcb upgrade --force`) and calls kicad-cli 10.0.1 as a pinned subprocess, both as the exporter
+   and as a second DRC engine. KiCad becomes a runtime dependency; its version is recorded in every report.
+   This settles Phase 3 call 1 in `plan/current_phase.md`: the KPI's "ordered PCB" means files the user hands
+   to a fab. Fab APIs and ordering stay Phase 4.
+3. **Gerbonara is approved, for read-back only, in its own Python 3.12 stage.** It does not install on 3.11;
+   the backend stays on 3.11 and the read-back runs as a separate interpreter or container, called as a
+   subprocess. That separation is also the independence from the generator the plan wants. It is not used
+   to write Gerbers.
+
+**Still open:** PyPEEC (step 6 of the 2026-10-09 report). The implementation plan recommends against it for
+now (closed-form intervals instead); not yet put to the owner.
+
+## [2026-10-17] Pinouts by part number; diode pad 1 is the cathode; no free-pad guessing
+
+Step 1 of `reports/PCB verification implementation plan.md` (part truth), the pinout half.
+
+1. **`pcb_engine/part_pinouts.py` reads the KiCad symbol library by orderable part number** — exact name,
+   then KiCad wildcard names (`MCP1700x-330xxTT`), then the longest symbol name that prefixes the part
+   number without running into a digit (`MMBT2222ALT1G` → `MMBT2222A`). `extends` chains are followed
+   (MAX485E → MAX481E → LTC2850xS8); a derived symbol's empty footprint is its own, not its parent's.
+   Generic symbols (R, C, D, LED) never match. Two candidates with different pinouts is an ambiguity
+   unless the board's package picks one. The library is read in place (`KICAD_SYMBOL_DIR` or the
+   standard install path); only a name→offset index is cached, in the user's cache directory.
+2. **`footprints.PART_PINMAPS` — per-part maps, hand-transcribed**: ATmega328P DIP-28, MAX485E/MAX3485
+   (SOIC-8, DIP-8), EBC / CBE TO-92 BJTs, BEC SOT-23 BJTs, GSD SOT-23 FETs. The package-wide TO-92,
+   SOT-23 and DIP-28 maps are gone. `footprints.resolve()` is the one label→pad binder, used by
+   `build()` and by the verifier's parity check.
+3. **An unresolved pin is left unconnected and fails the board** (III.4d, exact, was unknown). The
+   free-pad fallback is removed (plan decision 9). Before this, IR_005's MAX485 was wired in list order.
+4. **Diode pad 1 = cathode everywhere** (DO-41 and the chip packages flipped; SOD-123 already was), as in
+   KiCad. A two-terminal part that names a cathode reads "A" as anode; a resistor's "A" stays pad 1.
+   `netlist_dht22.json` D1 swapped to match.
+5. **New check IV.2** — the board's pin→net map against the KiCad symbol for the part number: package
+   agreement, pad numbers, and every named pin. Agreement = T1 (rung `evidence`); disagreement fails;
+   no symbol / blank names / numbered pins = IV.2b unknown (T0), with KiCad's pin names shown for numbered
+   pins. No library installed = unknown, never pass.
+
+**Found on the way, not fixed:** with the MAX485 now on its real pads, IR_005 (modbus) routes RS485_A
+into RS485_B. `verify.py` III.2 reports the short; the router's kernel DRC reports no violation. That
+is the router's / kernel's to fix.
+
+**Not done in step 1:** footprint geometry comparison (the G ladder and the mirror test), the datasheet
+pinout records (T2), and per-part maps for the DHT22 module and SRD relay (no KiCad symbol; KiCad's
+relay symbols have blank pin names).
+
+## [2026-10-17] Board verifier: plane nets, land-pattern geometry, findings on screen
+
+Four gaps between "Is the board correct" Part 5 and the code, raised by the "PCB verification tree" session.
+
+1. **Plane nets are checked.** III.1c (exact): every plane-net pad's piece of copper reaches the plane
+   layer (via, TH pad, or copper on that layer). III.1d (sound): the pour rasterised with numpy on a 0.1 mm
+   grid — a cell counts only if a full pour at net-class clearance fills its whole square, inside the
+   0.3 mm edge clearance — opened by the 0.25 mm minimum width, labelled by run-length union-find
+   (4-connected), joined with the copper groups; all plane-net pads must be one piece. Model stated in the
+   finding (solid connect, no thermal spokes). It can fail a board that is fine; that is what "sound" means.
+2. **IV.1 compares pitch and row span**, not only pad count. Pitch = the smallest distance between
+   consecutively numbered pads; row = pad 1 to pad N (DIP/SOIC). SOT-23's table pitch changed 0.95 → 1.90
+   (2e) under that definition. **IV.3** (courtyard/body vs datasheet) is emitted as an explicit unknown.
+3. **The findings are shown**: `frontend/components/BoardVerification.tsx` under the board in PCBViewer,
+   open when anything failed; `Report.to_dict()` carries `gate: {emit, reason}`. The board stays visible;
+   the panel says fab files "would be refused" (owner's decision 1, 2026-10-17).
+4. **The report is corrected** (`reports/Is the board correct …` Part 5): nothing refuses; 12/12 vs 8/12
+   kept as history; IV.1 registry and IV.3 not built stated; plane-net checks recorded.

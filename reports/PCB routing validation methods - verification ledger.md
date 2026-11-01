@@ -30,8 +30,12 @@ These were listed in the report as unverified. They are now measured.
 
 ### Second pass — executed against the router itself
 
-Recorded in `reports/Validating the router in software.md`; the harness is the set of
-scripts in the scratch `router_check/` directory.
+Recorded in `reports/Validating the router in software.md`. The harness was a set of
+scripts in a scratch `router_check/` directory under the system temp folder. By
+2026-10-17 that directory was empty, so the scripts are gone. The rows marked REFUTED
+for `unrouted()`, the shipped board's count, the DRC broad phase and `to_dsn()` are
+now regression tests in `tests/test_pcb_kernel.py`, and each is fixed in code: see the
+status note at the top of the report.
 
 | Claim | Result |
 |---|---|

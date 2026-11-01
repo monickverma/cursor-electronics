@@ -274,25 +274,37 @@ Stated plainly, because a verification layer that hides these is worse than none
 The architecture follows the One Rule and the analog report's propose/dispose split: **the LLM never
 writes the verification obligation; a deterministic compiler derives each check from the IR and the
 Board IR, and every result carries its rung.** Concretely, a verification layer that runs at generation
-time and refuses to emit a board that fails an *exact* or *sound* check.
+time and judges every board.
+
+> **Corrected 2026-10-17 — what the layer does with a failed board.** This section first said the layer
+> "refuses to emit a board that fails an exact or sound check". Nothing refuses. `Report.gate()` computes
+> the verdict, `POST /pcb/compile` returns it as `verification`, and the board is returned and shown either
+> way. The owner decided on 2026-10-17 (`brain/decisions.md` [2026-10-17]) that this is right: a failed
+> board stays on screen so a person can fix it, and the refusal belongs at fabrication-file export, which
+> does not exist yet. The frontend shows the findings beside the board (`components/BoardVerification.tsx`).
 
 Build order — cheapest, highest-evidence first:
 
 1. ~~**Wire the exact connectivity judge into generation.**~~ **Built.** `pcb_engine/verify.py`
-   (`unrouted_connections`) replaces the count `Board.unrouted()` feeds the product with the union-find
-   judge; `compile_board` now reports the judge's number and keeps `stats["router_unrouted"]` beside it.
-   On the shipped `dht22_relay_monitor` this reads **12/12 routed**, where the router's own count says
-   8/12 — the phantom-unrouted mis-report, now a number in the payload instead of a rumour.
+   (`unrouted_connections`) is the union-find judge over copper geometry; `compile_board` reports its
+   number and keeps `stats["router_unrouted"]` beside it. *History:* when this was written the shipped
+   `dht22_relay_monitor` read 12/12 by the judge and 8/12 by the router's own count (the phantom-unrouted
+   mis-report). Since the `kernel.open_connections` fix (2026-10-17) both read 12/12; the judge stays as
+   the independent second opinion.
 2. ~~**Add the netless-pad and pin-count/order checks (III.3, III.4).**~~ **Built.** `verify.py`
-   re-derives every pin's net from the netlist and the declared `PINMAPS`, and reports the SOT-23 class:
-   a label with no declared pinout is **unknown** (arbitrary free-pad assignment, unchecked against the
-   real part), a pin collision or a named-but-netless pad is an **exact failure**.
-3. ~~**Add the land-pattern gate against an external ground truth (IV.1, IV.3).**~~ **Built, as a
-   registry — deliberately not as `sound`.** `pcb_engine/land_patterns.json` is a figure table written
-   outside the generator; `verify.py` fails when the generated footprint's pad count disagrees with it,
-   and reports **evidence / unknown** for every entry whose `verified` flag is false. Every entry ships
-   false: the table can disagree with `footprints.py`, nothing yet makes it right. Filling it from
-   datasheets is the work IV.1 still needs.
+   re-derives every pin's net from the netlist through `footprints.resolve()`. Since 2026-10-17 a pin no
+   declared pinout places is left unconnected by the generator and is an **exact failure** (III.4d; it was
+   an *unknown* free-pad guess before). Pinouts are keyed by part number (`footprints.PART_PINMAPS`), and
+   IV.2 checks each against the KiCad symbol for the same part number (`pcb_engine/part_pinouts.py`):
+   agreement is **evidence** (trust level T1), disagreement fails. A pin collision or a named-but-netless
+   pad is an **exact failure**.
+3. ~~**Add the land-pattern gate against an external ground truth (IV.1, IV.3).**~~ **Built for IV.1 as a
+   registry; IV.3 not built.** `pcb_engine/land_patterns.json` is a figure table written outside the
+   generator. `verify.py` compares pad count, pitch (the smallest distance between consecutively numbered
+   pads) and row span (pad 1 to pad N on DIP and SOIC) and fails on a disagreement; until 2026-10-17 it
+   compared the pad count only. Every entry is `verified: false`, so IV.1c reports **evidence / unknown**:
+   the table can disagree with `footprints.py`, nothing yet makes it right. **IV.3** (courtyard and body
+   against the datasheet outline) is checked nowhere and is emitted as an explicit **unknown**.
 4. ~~**Add the assembly rules (II.3 tombstoning, courtyard).**~~ **Built.** Courtyard containment and
    overlap are **exact** (II.1, II.2); equal pad copper on two-terminal SMD parts is an **exact**
    tombstoning *precondition* (II.3); the reflow thermal model that decides the rest is a stated
@@ -305,11 +317,24 @@ Build order — cheapest, highest-evidence first:
    recorded — a stated unknown, never a silent pass. **Done** — V, VI and VII are emitted as unknowns by
    every `verify_board` call.
 
+**Plane nets — missing from this list, added 2026-10-17.** A net with a copper plane (GND on B.Cu from
+`compile_board.from_netlist`) is left out of `required_connections`, because the pour is meant to join it,
+so its connectivity was only ever reported *unknown*. Two checks now cover it: **III.1c (exact)** — every
+plane-net pad's piece of copper reaches the plane layer through a via, a through-hole pad, or copper on that
+layer; **III.1d (sound)** — the pour is rasterised (numpy, 0.1 mm grid), keeping only cells whose whole
+square a full pour at net-class clearance would fill, opened by the 0.25 mm minimum pour width, then
+labelled and joined with the copper groups; every plane-net pad must land in one piece. The model is stated
+in the finding: full pour, solid pad connection (no thermal spokes), under-approximated. Signal tracks on
+the plane layer can split the pour, so III.1d can fail a real board, and as a *sound* check it can also
+fail a board that is fine.
+
 Steps 1–4 are the harness, and they are in the tree (`backend/pcb_engine/verify.py`,
-`land_patterns.json`) with tests in `tests/test_pcb_verify.py`. Steps 5–6 need new dependencies and are
-the next build. One deviation from the sketch above: the layer is a flat module, not a `verify/`
-package — `pcb_engine` imports its siblings by bare name and adds its own directory to `sys.path`, so a
-subpackage would fight that convention. The seam is `verify_board(board, netlist) -> Report` either way.
+`land_patterns.json`, `part_pinouts.py`) with tests in `tests/test_pcb_verify.py` and
+`tests/test_part_pinouts.py`. Steps 5–6 are the next build; the owner approved Gerbonara (in its own Python
+3.12 stage) and Gerber export through kicad-cli on 2026-10-17. One deviation from the sketch above: the
+layer is a flat module, not a `verify/` package — `pcb_engine` imports its siblings by bare name and adds
+its own directory to `sys.path`, so a subpackage would fight that convention. The seam is
+`verify_board(board, netlist) -> Report` either way.
 
 ---
 

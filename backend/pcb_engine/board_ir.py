@@ -202,8 +202,17 @@ class Board:
         traces anyway is what produces the tell-tale bad-autorouter look: a fat
         ground net looping around the board perimeter, consuming the space the
         signals needed."""
+        return [Connection(a.net, a.center, b.center)
+                for a, b in self.required_pairs()]
+
+    def required_pairs(self) -> list[tuple[Pad, Pad]]:
+        """The pads each of `required_connections()` joins, in the same order.
+
+        A Connection carries only coordinates, and two pads of one net can sit
+        at the same point on different layers; anything that has to ask "are
+        THESE pads joined" needs the pads, not a lookup by position."""
         planes = self.plane_nets()
-        conns: list[Connection] = []
+        pairs: list[tuple[Pad, Pad]] = []
         for net, pads in self.pads_by_net().items():
             if len(pads) < 2 or net in planes:
                 continue
@@ -215,23 +224,21 @@ class Board:
                      for i, a in enumerate(inside)
                      for j, b in enumerate(outside)),
                     key=lambda t: t[2])
-                conns.append(Connection(net, inside[i].center, outside[j].center))
+                pairs.append((inside[i], outside[j]))
                 inside.append(outside.pop(j))
-        return conns
+        return pairs
 
-    def unrouted(self, tol: float = 0.35) -> list[Connection]:
-        """Connections with no copper joining their endpoints.
+    def unrouted(self, tol: float | None = None) -> list[Connection]:
+        """Connections with no copper joining their endpoints: union-find over
+        pads, tracks and vias, copper edge to copper edge, within `tol` mm
+        (kernel.CONTACT_TOL by default). See kernel.open_connections.
 
-        Deliberately naive endpoint matching — good enough to drive the loop,
-        and exactly the check you later replace with union-find over
-        track/via/pad connectivity."""
-        ends: set[tuple[int, int]] = set()
-        q = lambda p: (round(p[0] / tol), round(p[1] / tol))
-        for t in self.tracks:
-            ends.add(q(t.points[0]))
-            ends.add(q(t.points[-1]))
-        return [c for c in self.required_connections()
-                if not (q(c.a) in ends and q(c.b) in ends)]
+        Until 2026-10-17 this matched track endpoints to pad centres by 0.35 mm
+        quantisation cell, which is not a distance: a track ending 0.13 mm from
+        the centre, well inside the pad, read as open whenever the two points
+        rounded into different cells."""
+        from kernel import CONTACT_TOL, open_connections   # kernel imports this module
+        return open_connections(self, CONTACT_TOL if tol is None else tol)
 
     # ── serialisation ──
     def to_json(self, indent: int | None = 2) -> str:

@@ -14,7 +14,7 @@
     { "ref": "Q1", "mpn": "2N2222A",
       "pins": { "1": "GND", "2": "RELAY_CTRL", "3": "RELAY_COIL_NEG" } },
     { "ref": "D1", "mpn": "1N4007",
-      "pins": { "1": "RELAY_COIL_NEG", "2": "VCC_5V" } },
+      "pins": { "1": "VCC_5V", "2": "RELAY_COIL_NEG" } },
     { "ref": "R1", "mpn": "CFR-25JB-52-10K",
       "pins": { "1": "VCC_5V", "2": "DHT22_DATA" } },
     { "ref": "R2", "mpn": "CFR-25JB-52-1K",
