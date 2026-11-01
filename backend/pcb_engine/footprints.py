@@ -28,6 +28,14 @@ from board_ir import Component, Pad
 
 MM = 2.54
 TH_PAD = 1.3          # 0.8 mm drill + 0.25 mm annular ring — see circuit_os_board
+TH_RING = 0.25        # every through-hole pad here is its drill plus this ring
+
+
+def th_drill(w: float, h: float) -> float:
+    """The finished hole of a through-hole pad, by the convention every
+    generator in this file follows: pad = drill + 2 x TH_RING. The Board IR
+    carries no drill, so the KiCad writer asks here rather than guessing."""
+    return round(min(w, h) - 2 * TH_RING, 4)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

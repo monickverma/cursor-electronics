@@ -35,10 +35,11 @@ import re
 
 from board_ir import Board, Component, Pad
 from kernel import drc
+from stackup import default_stackup
 
 SCENE_VERSION = "1.0.0"
 
-BOARD_THICKNESS_MM = 1.6
+BOARD_THICKNESS_MM = 1.6        # the default stackup's; the board's own Stackup wins
 ANNULAR_RING_MM = 0.25          # footprints.TH_PAD = 0.8 mm drill + 2 x 0.25 mm ring
 MIN_DRILL_MM = 0.3
 
@@ -185,8 +186,9 @@ def _r(v: float) -> float:
 
 
 def board_scene(board: Board) -> dict:
-    t = BOARD_THICKNESS_MM
-    layer_z = {"F.Cu": t, "B.Cu": 0.0}
+    st = board.stackup or default_stackup([l.name for l in board.layers] or 2)
+    t = _r(st.total_mm)
+    layer_z = {c.name: _r(st.z_of(c.name)) for c in st.copper}
 
     components, pads, holes = [], [], []
     for c in sorted(board.components, key=lambda c: c.ref):
@@ -236,6 +238,10 @@ def board_scene(board: Board) -> dict:
 
     planes = [{"layer": l.name, "net": l.plane_net, "z": layer_z.get(l.name, 0.0)}
               for l in board.layers if l.plane_net]
+    pours = [{"layer": p.layer, "net": p.net, "z": layer_z.get(p.layer, 0.0),
+              "area_mm2": _r(p.area_mm2()),
+              "rects": [[_r(v) for v in r] for r in p.rects()]}
+             for p in board.pours]
 
     return {
         "version": SCENE_VERSION,
@@ -243,12 +249,14 @@ def board_scene(board: Board) -> dict:
         "axes": "x right, y up (board plane), z out of the top copper",
         "name": board.name,
         "board": {"w": _r(board.outline_w), "h": _r(board.outline_h),
-                  "thickness": t, "copper": 0.035,
+                  "thickness": _r(t), "copper": _r(st.copper[0].thickness_mm),
+                  "stackup": st.name,
                   "soldermask": "#1f6b3a", "silkscreen": "#f4f4ee",
                   "finish": "#d4b26a"},
         "layers": [{"name": l.name, "type": l.type, "z": layer_z.get(l.name)}
                    for l in board.layers],
         "planes": planes,
+        "pours": pours,
         "components": components,
         "pads": pads,
         "holes": holes,

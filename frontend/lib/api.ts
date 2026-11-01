@@ -394,10 +394,14 @@ export async function patchDesign(circuitId: string, command: string, token: str
 export interface BoardFinding {
   check: string                     // tree id, e.g. "III.1"
   claim: string
-  rung: 'exact' | 'sound' | 'bounded' | 'evidence' | 'unknown'
+  rung: 'exact' | 'sound' | 'bounded' | 'simulated' | 'rule check' | 'evidence' | 'unknown'
   status: 'pass' | 'fail' | 'unknown'
   detail: string
   subjects: string[]
+  /** Set when rung is "unknown": why nothing was decided. */
+  unknown_kind?: 'not checkable' | 'checkable by simulation, not run' | 'checkable, tool named' | null
+  /** The solver behind a simulated result, or the tool an unknown is missing. */
+  tool?: string
 }
 
 export interface BoardVerification {
@@ -405,6 +409,7 @@ export interface BoardVerification {
   ok: boolean                       // no decidable check failed
   proven: boolean                   // every check passed on an exact or sound rung
   gate?: { emit: boolean; reason: string }
+  unknowns?: Record<string, number> // unknown findings counted by kind
   findings: BoardFinding[]
 }
 

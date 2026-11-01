@@ -234,6 +234,36 @@ def drc(board: Board, edge_clearance: float = 0.3) -> list[Violation]:
                     f"via {via.net} vs via {other.net}",
                     (via.x, via.y), (via.net, other.net), d, need))
 
+    # ── 3c. pad ↔ pad, different nets, layers that meet ──
+    # Until 2026-10-21 (F-0002) there was no rule here: two parts whose pads
+    # touched, or a through-hole pad over a bottom-side SMD pad, scored zero DRC
+    # errors while verify.py's III.2 failed the short. Contact is a short for
+    # any pair. Below the clearance only pads of two different parts are
+    # reported: the gap inside one footprint is its land pattern's pitch, not a
+    # choice placement or routing made.
+    for i, p in enumerate(pads):
+        for q in pads[i + 1:]:
+            if p.net == q.net:
+                continue
+            if p.shape != "th" and q.shape != "th" and p.layer != q.layer:
+                continue
+            d = _pad_pad_gap(p, q)
+            if d <= CONTACT_TOL:
+                v.append(Violation(
+                    "short.pad_pad", "error",
+                    f"pad {p.ref}.{p.pin} ({p.net}) touches pad {q.ref}.{q.pin} ({q.net})",
+                    p.center, (p.net, q.net), d, CONTACT_TOL))
+                continue
+            if p.ref == q.ref:
+                continue
+            need = max(board.net_class_for(p.net).clearance,
+                       board.net_class_for(q.net).clearance)
+            if d < need:
+                v.append(Violation(
+                    "clearance.pad_pad", "error",
+                    f"pad {p.ref}.{p.pin} ({p.net}) vs pad {q.ref}.{q.pin} ({q.net})",
+                    p.center, (p.net, q.net), d, need))
+
     # ── 4. keepout intrusion ──
     for k in board.keepouts:
         rect = (k.x, k.y, k.x + k.w, k.y + k.h)
