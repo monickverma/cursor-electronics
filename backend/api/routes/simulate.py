@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from middleware.rate_limit import limiter
 
 from api.routes.auth import get_current_user
+from core.config import settings
 from core.ir_schema import CircuitIR
 from core.ir_validator import validate_ir
 from db.crud import get_design, save_output, update_design_ir
@@ -35,7 +36,7 @@ class SimulationStatusResponse(BaseModel):
 
 
 @router.get("/{circuit_id}/simulation/{job_id}", response_model=SimulationStatusResponse)
-@limiter.limit("100/hour")
+@limiter.limit(settings.rate_limit_simulation)
 async def get_simulation_status(
     request: Request,
     circuit_id: str,

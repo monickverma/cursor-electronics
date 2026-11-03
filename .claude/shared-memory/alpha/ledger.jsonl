@@ -1,0 +1,1 @@
+{"ts":"2026-10-21T00:00:00Z","stage":"A1","milestone":"A1.0 bootstrap: branch alpha-program, docker up, backend+worker up, product verified end-to-end (auth, generate RC/LED/composition, pcb netlist emitted)","agents":1,"tool_calls":42,"tokens_in":0,"tokens_out":0,"usd":0.0,"result":"product runs; 3 sub-agents dispatched (research x3, builders x3, competitor x1)"}
