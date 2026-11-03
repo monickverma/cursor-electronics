@@ -64,7 +64,7 @@ class CompileResponse(BaseModel):
 
 
 @router.post("/compile", response_model=CompileResponse)
-@limiter.limit("60/hour")
+@limiter.limit(settings.rate_limit_pcb)
 async def compile_pcb(
     request: Request,
     body: CompileRequest,
