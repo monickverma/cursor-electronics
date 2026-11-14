@@ -1,4 +1,4 @@
-// v2 — PCB tab included
+// v3 — the workbench: numbered sheets, title block, requirement panel (spec 2026-11-13 §5)
 'use client'
 
 import dynamic from 'next/dynamic'
@@ -10,27 +10,31 @@ import SimulationResults from '@/components/SimulationResults'
 import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
 import PCBViewer from '@/components/PCBViewer'
-import { GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth } from '@/lib/api'
+import {
+  AuthFrame, DemoNotice, EmptySheet, OverviewSheet, RequirementPanel, SHEETS, SheetHost, SheetTabs,
+  StatusBar, TopBar, Workbench, designFacts, useMediaQuery, useWorkbenchShortcuts,
+  BP_COMPACT, BP_DRAWER, SHEET_BY_ID, type SheetId,
+} from '@/components/workbench'
+import { FirmwareBuild, GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth } from '@/lib/api'
 import { DEMO_MODE, REPO_URL } from '@/lib/demo'
 
 const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
 
-type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation'
+type Tab = SheetId
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'schematic',  label: 'Schematic' },
-  { id: 'pcb',        label: 'PCB (experimental)' },
-  { id: 'firmware',   label: 'Firmware' },
-  { id: 'simulation', label: 'Simulation' },
-  { id: 'bom',        label: 'BOM' },
-  { id: 'validation', label: 'Validation' },
-]
+const PANEL_ID = 'requirement-panel'
 
 export default function Home() {
   const [result, setResult] = useState<GenerateResponse | PatchResponse | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('schematic')
+  const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [token, setToken] = useState<string>('')
   const [showApp, setShowApp] = useState(false)
+  // The wordmark returns to the landing page without discarding the session or the design.
+  const [atLanding, setAtLanding] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(true)
+
+  const drawer = useMediaQuery(BP_DRAWER)
+  const compact = useMediaQuery(BP_COMPACT)
 
   // The PCB engine is experimental and off in production, where /pcb/compile
   // returns 501. Ask the backend which build this is rather than rendering a
@@ -47,19 +51,22 @@ export default function Home() {
     return () => { cancelled = true }
   }, [])
 
-  const visibleTabs = TABS.filter(t => t.id !== 'pcb' || pcbEnabled)
+  const visibleTabs = SHEETS.filter(t => t.id !== 'pcb' || pcbEnabled)
 
   // If the engine is disabled while the PCB tab is somehow selected (it is the
   // initial tab for nobody, but a stale state or a future default could get
   // here), fall back rather than render a panel with no tab.
   useEffect(() => {
-    if (!pcbEnabled && activeTab === 'pcb') setActiveTab('schematic')
+    if (!pcbEnabled && activeTab === 'pcb') setActiveTab('overview')
   }, [pcbEnabled, activeTab])
 
+  // A new design or revision opens on the Overview sheet: the compile report.
+  // In the drawer layout the drawer closes so the report is visible.
   const handleResult = useCallback((res: GenerateResponse | PatchResponse) => {
     setResult(res)
-    setActiveTab('schematic')
-  }, [])
+    setActiveTab('overview')
+    if (drawer) setPanelOpen(false)
+  }, [drawer])
 
   // A substitute from the BOM tab is a patch: take the new revision, stay on the tab.
   const handleBomPatched = useCallback((res: PatchResponse) => {
@@ -71,285 +78,159 @@ export default function Home() {
     setResult(r => (r ? { ...r, validation_coverage: coverage } : r))
   }, [])
 
+  // The firmware sheet polls the compile gate; what it learns is the design's build state,
+  // so the status bar and the Overview stop saying "compiling" once it has compiled.
+  const handleFirmwareBuild = useCallback((build: FirmwareBuild) => {
+    setResult(r => (r ? { ...r, firmware_build: build, firmware: build.firmware ?? r.firmware } : r))
+  }, [])
+
+  const togglePanel = useCallback(() => setPanelOpen(o => !o), [])
+  const closePanel = useCallback(() => setPanelOpen(false), [])
+  const openSheetNumber = useCallback((n: number) => {
+    const sheet = SHEETS.find(s => Number(s.number) === n)
+    if (sheet && (sheet.id !== 'pcb' || pcbEnabled)) setActiveTab(sheet.id)
+  }, [pcbEnabled])
+
+  const goHome = useCallback(() => setAtLanding(true), [])
+  const signOut = useCallback(() => {
+    setToken('')
+    setResult(null)
+    setActiveTab('overview')
+    setAtLanding(false)
+    setShowApp(false)
+  }, [])
+
+  const inWorkbench = !atLanding && (!!token || showApp)
+  useWorkbenchShortcuts(inWorkbench && !!token, togglePanel, openSheetNumber)
+
   const errorCount = result?.validation?.errors?.length ?? 0
+  const facts = result ? designFacts(result) : null
 
   // Show marketing page until user explicitly clicks "Get started" or is already logged in
-  if (!token && !showApp) {
+  if ((!token && !showApp) || atLanding) {
     // Demo mode has no accounts to sign in to: straight to the examples.
-    return <LandingPage onGetStarted={() => { setShowApp(true); if (DEMO_MODE) setToken('demo') }} />
+    return (
+      <LandingPage
+        onGetStarted={() => {
+          setAtLanding(false)
+          setShowApp(true)
+          if (DEMO_MODE && !token) setToken('demo')
+        }}
+      />
+    )
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--lumen)' }}>
+  const chat = (
+    <ChatPanel
+      onResult={handleResult}
+      token={token}
+      onTokenChange={setToken}
+      currentCircuitId={(result as GenerateResponse)?.circuit_id}
+    />
+  )
 
-      {/* ── Left panel — cream / chat ───────────────────────── */}
-      <div
-        className="flex flex-col scroll-light"
-        style={{
-          width: 420,
-          minWidth: 320,
-          background: 'var(--lumen)',
-          borderRight: '1px solid var(--border-light)',
-        }}
+  // Live mode, no session yet: the sign-in panel, in the workbench frame.
+  if (!token) {
+    return (
+      <Workbench
+        top={<TopBar facts={null} demo={DEMO_MODE} repoUrl={REPO_URL} onHome={goHome} compact={compact} drawer={drawer} />}
+        status={<StatusBar facts={null} demo={DEMO_MODE} />}
       >
-        {/* Header */}
-        <div
-          style={{
-            padding: '1.25rem 1.5rem 1rem',
-            borderBottom: '1px solid var(--border-light)',
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'var(--h4)',
-              color: 'var(--vast)',
-              fontStyle: 'italic',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Circuit OS
-          </h1>
-          <p style={{ fontSize: 'var(--body-xs)', color: 'var(--text-muted-light)', marginTop: 2 }}>
-            AI hardware compiler
-          </p>
-          {DEMO_MODE && <DemoBadge />}
-        </div>
+        <AuthFrame>{chat}</AuthFrame>
+      </Workbench>
+    )
+  }
 
-        {/* Chat */}
-        <ChatPanel
-          onResult={handleResult}
-          token={token}
-          onTokenChange={setToken}
-          currentCircuitId={(result as GenerateResponse)?.circuit_id}
+  const sheet = SHEET_BY_ID[activeTab]
+
+  return (
+    <Workbench
+      top={
+        <TopBar
+          facts={facts}
+          demo={DEMO_MODE}
+          repoUrl={REPO_URL}
+          onHome={goHome}
+          panelOpen={panelOpen}
+          onTogglePanel={togglePanel}
+          panelId={PANEL_ID}
+          onSignOut={DEMO_MODE ? undefined : signOut}
+          compact={compact}
+          drawer={drawer}
         />
-      </div>
-
-      {/* ── Right panel — dark / output ─────────────────────── */}
-      <div
-        className="flex flex-col flex-1 min-w-0"
-        style={{ background: 'var(--vast)' }}
-      >
-        {/* Tab bar */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 2,
-            padding: '0 1.25rem',
-            borderBottom: '1px solid var(--border-dark)',
-            background: '#111',
-            height: 44,
-          }}
+      }
+      panel={
+        <RequirementPanel
+          id={PANEL_ID}
+          open={panelOpen}
+          onClose={closePanel}
+          drawer={drawer}
+          headMeta={facts?.version !== undefined ? `editing v${facts.version}` : undefined}
+          notice={DEMO_MODE ? <DemoNotice repoUrl={REPO_URL} designOpen={!!result} /> : undefined}
         >
-          {visibleTabs.map(tab => {
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={isActive ? 'tab-active' : ''}
-                style={{
-                  padding: '0 14px',
-                  fontSize: 'var(--body-xs)',
-                  fontFamily: 'var(--font-body)',
-                  fontWeight: isActive ? 500 : 400,
-                  color: isActive ? 'var(--lumen)' : 'var(--text-muted-dark)',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.15s',
-                  position: 'relative',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--lumen)' }}
-                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--text-muted-dark)' }}
-              >
-                {tab.label}
-                {tab.id === 'validation' && errorCount > 0 && (
-                  <span
-                    style={{
-                      marginLeft: 5,
-                      fontSize: 10,
-                      background: '#7f1d1d',
-                      color: '#fca5a5',
-                      padding: '1px 5px',
-                      borderRadius: 8,
-                    }}
-                  >
-                    {errorCount}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-          {DEMO_MODE && (
-            <span
-              style={{
-                marginLeft: 'auto',
-                alignSelf: 'center',
-                fontSize: 11,
-                color: '#f5c26b',
-                border: '1px solid #f5c26b',
-                borderRadius: 100,
-                padding: '2px 10px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Demo mode — recorded results
-            </span>
-          )}
-        </div>
-
-        {/* Output content */}
-        <div className="flex-1 overflow-hidden">
-          {!result ? (
-            <EmptyState />
-          ) : (
-            <>
-              {activeTab === 'schematic'  && <SchematicViewer schematic={result.schematic} />}
-              {activeTab === 'pcb'        && <PCBViewer netlist={result.pcb_netlist} token={token} />}
-              {activeTab === 'firmware'   && (
-                <FirmwareViewer
-                  circuitId={result.circuit_id}
-                  token={token}
-                  firmware={result.firmware}
-                  build={result.firmware_build}
-                />
-              )}
-              {activeTab === 'simulation' && (
-                <SimulationResults
-                  circuitId={(result as GenerateResponse).circuit_id}
-                  jobId={(result as GenerateResponse).simulation_job_id || null}
-                  token={token}
-                />
-              )}
-              {activeTab === 'bom'        && (
-                <BOMTable
-                  rows={(result as GenerateResponse).bom || []}
-                  circuitId={result.circuit_id}
-                  version={(result as PatchResponse).version}
-                  token={token}
-                  onPatched={handleBomPatched}
-                />
-              )}
-              {activeTab === 'validation' && (
-                <ValidationReport
-                  validation={result.validation}
-                  coverage={result.validation_coverage}
-                  explanation={(result as GenerateResponse).explanation}
-                  explanationError={(result as GenerateResponse).explanation_error}
-                  explanationStatus={(result as GenerateResponse).explanation_status}
-                  circuitId={result.circuit_id}
-                  token={token}
-                  onCoverage={handleCoverage}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function DemoBadge() {
-  return (
-    <div
-      role="status"
-      style={{
-        marginTop: 10,
-        padding: '8px 10px',
-        borderRadius: 'var(--r-sm)',
-        background: '#fff7e6',
-        border: '1px solid #f5c26b',
-        fontSize: 'var(--body-xs)',
-        color: '#7a4b00',
-        lineHeight: 1.5,
-      }}
+          {chat}
+        </RequirementPanel>
+      }
+      tabs={
+        <SheetTabs
+          sheets={visibleTabs}
+          active={activeTab}
+          onSelect={setActiveTab}
+          validationErrors={errorCount}
+        />
+      }
+      status={<StatusBar facts={facts} demo={DEMO_MODE} />}
     >
-      <strong style={{ fontWeight: 600 }}>Demo mode — recorded results.</strong>{' '}
-      No backend is attached to this deployment. The examples below are real outputs of the
-      deterministic pipeline (generator, ngspice, PlatformIO, BOM), recorded locally; the
-      requirement was entered through the form, not the LLM.{' '}
-      <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>
-        Run it locally
-      </a>{' '}
-      to describe your own circuit.
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div
-      className="h-full flex items-center justify-center"
-      style={{ background: 'var(--vast)' }}
-    >
-      <div style={{ textAlign: 'center', maxWidth: 380, padding: '0 2rem' }}>
-        {/* Teal badge */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: 'var(--fathom)',
-            color: 'var(--lumen)',
-            fontSize: 'var(--body-xs)',
-            padding: '6px 14px',
-            borderRadius: 100,
-            marginBottom: '1.5rem',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            fontWeight: 500,
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--glow)', display: 'inline-block' }} />
-          {DEMO_MODE ? 'Demo mode — recorded results' : 'Ready'}
-        </div>
-
-        <h2
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 'var(--h3)',
-            color: 'var(--lumen)',
-            fontStyle: 'italic',
-            marginBottom: '0.75rem',
-          }}
-        >
-          Describe your circuit
-        </h2>
-        <p
-          style={{
-            fontSize: 'var(--body-sm)',
-            color: 'var(--text-muted-dark)',
-            lineHeight: 1.7,
-            marginBottom: '2rem',
-          }}
-        >
-          {DEMO_MODE
-            ? 'Pick an example in the chat panel to open its recorded schematic, firmware, SPICE simulation, BOM and validation.'
-            : 'Type a description in the chat panel. Circuit OS generates a validated schematic, firmware, SPICE simulation, and BOM.'}
-        </p>
-
-        {/* Feature pills */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-          {['Schematic', 'Firmware', 'Simulation', 'BOM', 'Explanation'].map(f => (
-            <span
-              key={f}
-              style={{
-                fontSize: 'var(--body-xs)',
-                color: 'var(--text-muted-dark)',
-                border: '1px solid var(--border-dark)',
-                borderRadius: 100,
-                padding: '4px 12px',
-              }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
+      <SheetHost key={activeTab} sheet={sheet}>
+        {!result ? (
+          <EmptySheet sheets={visibleTabs} active={activeTab} demo={DEMO_MODE} />
+        ) : (
+          <>
+            {activeTab === 'overview'   && (
+              <OverviewSheet result={result} token={token} onOpenSheet={setActiveTab} />
+            )}
+            {activeTab === 'schematic'  && <SchematicViewer schematic={result.schematic} />}
+            {activeTab === 'pcb'        && <PCBViewer netlist={result.pcb_netlist} token={token} />}
+            {activeTab === 'firmware'   && (
+              <FirmwareViewer
+                circuitId={result.circuit_id}
+                token={token}
+                firmware={result.firmware}
+                build={result.firmware_build}
+                onBuild={handleFirmwareBuild}
+              />
+            )}
+            {activeTab === 'simulation' && (
+              <SimulationResults
+                circuitId={(result as GenerateResponse).circuit_id}
+                jobId={(result as GenerateResponse).simulation_job_id || null}
+                token={token}
+              />
+            )}
+            {activeTab === 'bom'        && (
+              <BOMTable
+                rows={(result as GenerateResponse).bom || []}
+                circuitId={result.circuit_id}
+                version={(result as PatchResponse).version}
+                token={token}
+                onPatched={handleBomPatched}
+              />
+            )}
+            {activeTab === 'validation' && (
+              <ValidationReport
+                validation={result.validation}
+                coverage={result.validation_coverage}
+                explanation={(result as GenerateResponse).explanation}
+                explanationError={(result as GenerateResponse).explanation_error}
+                explanationStatus={(result as GenerateResponse).explanation_status}
+                circuitId={result.circuit_id}
+                token={token}
+                onCoverage={handleCoverage}
+              />
+            )}
+          </>
+        )}
+      </SheetHost>
+    </Workbench>
   )
 }

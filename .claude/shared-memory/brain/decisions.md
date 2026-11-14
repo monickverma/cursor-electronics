@@ -2842,3 +2842,38 @@ Four gaps between "Is the board correct" Part 5 and the code, raised by the "PCB
    the panel says fab files "would be refused" (owner's decision 1, 2026-10-17).
 4. **The report is corrected** (`reports/Is the board correct …` Part 5): nothing refuses; 12/12 vs 8/12
    kept as history; IV.1 registry and IV.3 not built stated; plane-net checks recorded.
+
+## [2026-11-13] One design system for the landing page and the app — "Drawing Set" — decided by the owner's brief
+
+**Asked.** The owner: the home page and the app look like two different products, and the app "feels kind
+of not so good"; remake the UI start to end as "serious pro software", the design left to the agent.
+
+**Found.** The landing page (black and white, Inter Tight, no radii) and the app (cream chat panel,
+EB Garamond italic, amber buttons, rounded bubbles) shared nothing. The app had no design identity,
+revision or status anywhere and printed raw markdown into chat bubbles. Every e2e spec began by clicking
+a `Get started` button the landing page no longer had, so the suite was failing on `master`.
+
+**Decided.**
+1. One system, owned by `frontend/app/globals.css`: the UI is a drawing set — numbered sheets, a title
+   block (status bar) always visible, hairlines, zero radius, no shadows.
+2. **Monochrome; colour only ever means a verdict** (holds / holds, defeasible / fails / not assessed).
+   An unknown price or an informational note is grey. This is the product's one claim — graded evidence —
+   made the visual rule.
+3. A new `00 Overview` sheet is the compile report and the sheet a new design opens on. It, the top bar
+   and the status bar show only values present in the response; missing data is omitted, never zero.
+4. The explanation moves from the Validation sheet to the Overview; the chat panel becomes a console for
+   the requirement and no longer pastes the explanation.
+5. Archivo (width axis) + JetBrains Mono through `next/font`; EB Garamond, Figtree and Inter Tight removed.
+6. The landing keeps the scroll behaviour the owner chose (Lenis + GSAP), takes the shared tokens, and
+   its figures now come from the recorded examples — several template panels had shown invented values.
+
+**Not changed.** Data flow, API calls, polling, the demo-mode logic, kicanvas and the 3D board as
+`ssr: false` imports. No test assertion was weakened; no spec file was edited.
+
+**Checked.** Type-check, production build, and the Playwright suite (18 of 18) on 2026-11-14.
+**Not checked.** Nothing was verified against the live backend — demo recordings and mocked responses only.
+
+**Tooling added.** `NEXT_DIST_DIR` in `next.config.js` so the e2e suite and a preview server can run in
+one checkout; `frontend-demo` and `frontend-mocklive` in `.claude/launch.json`.
+
+Rule file: `.claude/rules/frontend/react-style.md` (Design System).

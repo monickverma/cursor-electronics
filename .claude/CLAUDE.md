@@ -99,8 +99,11 @@ cursor-electronics/
 │   │                               # explain_task.py (the explanation, read back by GET /design/{id}/explanation)
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/
-│   ├── app/page.tsx                # Two-panel layout
-│   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.
+│   ├── app/page.tsx                # State + the workbench: requirement panel | numbered sheets (2026-11-13)
+│   ├── app/globals.css             # THE design tokens and component classes — one owner
+│   ├── components/ui/              # Primitives: Button, VerdictBadge, SheetFrame, Section, Callout, Prose…
+│   ├── components/workbench/       # Shell: TopBar, SheetTabs, StatusBar (title block), OverviewSheet
+│   ├── components/                 # One panel per sheet: ChatPanel, SchematicViewer, FirmwareViewer, etc.
 │   └── lib/api.ts                  # Typed API client
 ├── scripts/                        # capture_explanation.py, review_panel.py, verify_figures.py (D7),
 │                                   # bench_template.py (D1), export_ui_fixtures.py,

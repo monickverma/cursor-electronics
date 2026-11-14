@@ -64,11 +64,13 @@ For direct API calls in `lib/api.ts`, use the `NEXT_PUBLIC_API_URL` env var — 
 
 | Component | What it does | Key constraint |
 |---|---|---|
-| `ChatPanel.tsx` | Auth form + chat input + message history | Handles both first-generate and follow-up-patch |
+| `ChatPanel.tsx` | Sign-in + the requirement console (tagged transcript, composer) | Handles both first-generate and follow-up-patch |
 | `SchematicViewer.tsx` | Renders `.kicad_sch` via kicanvas | Must be `dynamic import`, `ssr: false` |
 | `SimulationResults.tsx` | Polls simulation status every 3s | Clears interval on component unmount |
 | `BOMTable.tsx` | Displays component list, CSV export | Each price shows its source, currency and date; one total per currency, never converted (2026-09-25) |
-| `ValidationReport.tsx` | Error/warning list + explanation text | Shows explanation from `ExplanationEngine` |
+| `ValidationReport.tsx` | Rules, claims, proved properties | The explanation lives on the Overview sheet (`workbench/OverviewSheet.tsx`) since 2026-11-13 |
+| `workbench/*` | Top bar, sheet tabs, status bar (title block), Overview sheet | Shows only values present in the response; a cell with no data is omitted |
+| `ui/*` | Primitives: `Button`, `VerdictBadge`, `SheetFrame`, `Section`, `Callout`, `Prose`… | Panels use these; no panel defines its own colours or buttons |
 | `FirmwareViewer.tsx` | Code display + `.ino` download | Returns null message for passive circuits |
 
 ---
@@ -95,32 +97,48 @@ The interval is cleared in the cleanup function. If the component unmounts while
 
 ---
 
-## Design System (Flow-Inspired)
+## Design System — "Drawing Set"
 
-CSS variables defined in `app/globals.css`:
+> **Replaced 2026-11-13** (`brain/decisions.md` [2026-11-13]). The cream / lavender "Flow" system and its
+> serif headings are gone. The landing page and the app now share one system.
 
-```css
---cream: #ffffeb;       /* primary text on dark backgrounds */
---dark: #1a1a1a;        /* page background */
---surface: #242424;     /* panel backgrounds */
---surface-2: #2e2e2e;   /* hover states */
---border: #383838;      /* borders, dividers */
---lavender: #f0d7ff;    /* accent — buttons, links, highlights */
---lavender-dim: #d8b8f5; /* hover state for lavender */
---muted: #888888;       /* secondary text */
-```
+The app is a drawing set: numbered sheets (`00 Overview` … `06 Validation`), a title block that is always
+visible (the status bar), hairlines, zero radius, no shadows. **Monochrome — colour only ever means a
+verdict.**
 
-Typography:
-- Headings: `EB Garamond` (serif, weights 400/500/600)
-- Body: `Figtree` (sans, weights 300/400/500)
-- Code/values: `JetBrains Mono` (monospace)
+Tokens are owned by `frontend/app/globals.css` (`:root`) and mirrored in `tailwind.config.ts`. Read them
+there; do not restate the values in another file.
 
-Tailwind classes map directly to these vars (configured in `tailwind.config.ts`):
+| Group | Tokens | Use |
+|---|---|---|
+| Bench (dark) | `--bench-0…4`, `--line`, `--line-2`, `--fg`, `--fg-2`, `--fg-3` | The app, the landing hero and footer. `--fg-3` is the darkest grey allowed for text |
+| Paper (light) | `--paper`, `--paper-2`, `--ink`, `--ink-2`, `--ink-3`, `--paper-line` | Landing body sections only |
+| Verdicts | `--pass`, `--warn`, `--fail`, `--none` (+ `-bg`) | Holds / holds, defeasible / fails / not assessed. Nothing else is coloured |
+| Type | `--font-sans` (Archivo, width axis), `--font-mono` (JetBrains Mono) | Loaded with `next/font` in `app/layout.tsx` |
+
+Type classes: `.t-label` (condensed uppercase lettering), `.t-ui` (13px), `.t-small`, `.t-data` (mono,
+tabular), `.t-title`, `.t-display`. Tables: `.dt`. The root font size is 16px, so Tailwind spacing lands
+on the 4px grid; body text is 13px.
+
 ```tsx
-<h1 className="text-lavender">        // --lavender accent
-<p className="text-muted">            // --muted secondary text
-<div className="bg-surface border border-border">  // panel
+// CORRECT — a verdict is the only thing that carries colour, and never colour alone
+<VerdictBadge verdict={claim.verdict} />          // glyph + word + token
+<Button variant="primary">Send</Button>           // white on black
+
+// WRONG — decoration, or an unknown value dressed as a warning
+<span className="text-warn">unknown</span>        // an unknown price is grey, not a verdict
+<button style={{ backgroundColor: '#ffa946' }}>   // no hex colours, no amber buttons
 ```
+
+Rules that follow:
+
+- A sheet-level panel renders its own `SheetFrame`; the workbench supplies the sheet number and title.
+- The shell and the Overview show only what the API response carries. No zeros or dashes for missing data.
+- Sheet tabs are buttons whose accessible names are exactly `Overview`, `Schematic`, `PCB (experimental)`,
+  `Firmware`, `Simulation`, `BOM`, `Validation` — the e2e suite opens them by name.
+- The landing page keeps a button named `Get started` first in the DOM: every e2e test starts there.
+- Motion in the app is 120ms colour fades and a blinking cursor for work in progress; the landing keeps
+  its Lenis + GSAP scroll. Both respect `prefers-reduced-motion`.
 
 ---
 
@@ -145,17 +163,16 @@ No global auth context, no localStorage persistence — Phase 1 simplicity. Phas
 
 ## Tailwind: Using Design Tokens
 
-Always use Tailwind classes mapped to the design system rather than arbitrary values:
+Use the component classes and primitives first, then Tailwind classes mapped to the tokens
+(`bg-bench-2`, `text-fg-2`, `border-line`, `text-pass`). Never arbitrary colour values:
 
 ```tsx
-// CORRECT — uses design tokens
-<button className="bg-lavender text-dark hover:bg-lavender-dim">
+// CORRECT — design tokens
+<div className="bg-bench-2 border border-line text-fg-2">
 
 // WRONG — arbitrary values bypass the design system
-<button style={{ backgroundColor: '#f0d7ff' }}>
+<div style={{ backgroundColor: '#242424' }}>
 ```
 
-The only exception is inline styles for dynamic values (e.g., animation delays):
-```tsx
-style={{ animationDelay: `${i * 200}ms` }}
-```
+The only exception is inline styles for dynamic values (a measured width, an animation delay), and the
+3D board's scene materials in `Board3DView.tsx`, which are the board's own colours, not the UI's.

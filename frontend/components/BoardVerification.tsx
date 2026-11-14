@@ -1,18 +1,13 @@
 'use client'
 
 import { BoardVerification as Report, BoardFinding } from '@/lib/api'
+import { Section, VerdictBadge, type Tone } from '@/components/ui'
 
 // The board verifier's report (backend/pcb_engine/verify.py), shown beside the
 // board. Owner's decision 2026-10-17: a board whose checks fail stays on screen
 // so it can be fixed; what is refused is its fabrication files. So this panel
 // never hides the board — it says what was proven, what was only tested, what
 // failed, and what nobody checked.
-
-const STATUS: Record<BoardFinding['status'], { mark: string; color: string; label: string }> = {
-  fail: { mark: '✕', color: '#f87171', label: 'Failed' },
-  unknown: { mark: '?', color: '#fbbf24', label: 'Not checked' },
-  pass: { mark: '✓', color: '#4ade80', label: 'Passed' },
-}
 
 // What each rung means, said once so a pass on "evidence" never reads as proof.
 const RUNG: Record<BoardFinding['rung'], string> = {
@@ -23,67 +18,92 @@ const RUNG: Record<BoardFinding['rung'], string> = {
   unknown: 'not checked',
 }
 
+// A finding's status → verdict. A pass is a proof only on an exact or sound rung
+// (that is what `proven` means in the report); a pass on a bounded or evidence
+// rung holds with an open doubt. A check that was not run is grey and dashed.
+function findingVerdict(f: BoardFinding): { tone: Tone; glyph: string; label: string } {
+  if (f.status === 'fail') return { tone: 'fail', glyph: '✕', label: 'failed' }
+  if (f.status === 'unknown') return { tone: 'none', glyph: '–', label: 'not checked' }
+  if (f.rung === 'exact' || f.rung === 'sound') return { tone: 'pass', glyph: '✓', label: 'passed' }
+  return { tone: 'warn', glyph: '~', label: 'passed, not proven' }
+}
+
 const ORDER: BoardFinding['status'][] = ['fail', 'unknown', 'pass']
 
 export default function BoardVerification({ report }: { report: Report }) {
-  const counts = ORDER.map(s => [s, report.findings.filter(f => f.status === s).length] as const)
+  const count = (s: BoardFinding['status']) => report.findings.filter(f => f.status === s).length
+  const failed = count('fail'), unchecked = count('unknown'), passed = count('pass')
   const emit = report.gate?.emit ?? report.ok
+  const rows = ORDER.flatMap(s => report.findings.filter(f => f.status === s))
+
+  const overall: { tone: Tone; label: string } = !report.ok
+    ? { tone: 'fail', label: 'a check failed' }
+    : report.proven
+      ? { tone: 'pass', label: 'proven on exact/sound checks' }
+      : { tone: 'warn', label: 'no check failed · not proven' }
 
   return (
-    <details open={!report.ok} className="border-t border-border-dark" style={{ background: '#141414' }}>
-      <summary
-        className="px-4 py-2 text-xs cursor-pointer select-none flex flex-wrap gap-x-4 gap-y-1"
-        style={{ color: 'var(--lumen-dim)' }}
-      >
-        <span style={{ color: 'var(--lumen)' }}>Board verification</span>
-        {counts.map(([s, n]) => (
-          <span key={s} style={{ color: n ? STATUS[s].color : 'var(--text-muted-dark)' }}>
-            {STATUS[s].mark} {n} {STATUS[s].label.toLowerCase()}
-          </span>
-        ))}
-        <span style={{ color: emit ? '#4ade80' : '#f87171' }}>
-          Fab files: {emit ? 'may be emitted' : 'would be refused'}
+    <Section label="Independent board verifier" count={report.findings.length} id="board-verification">
+      <div className="bv-summary">
+        <VerdictBadge tone={overall.tone} label={overall.label} />
+        <span className="t-data">
+          <span className={failed ? 'c-fail' : 'c-fg-3'}>✕ {failed} failed</span>
+          <span className="c-fg-3"> · </span>
+          <span className={unchecked ? 'c-fg-2' : 'c-fg-3'}>– {unchecked} not checked</span>
+          <span className="c-fg-3"> · </span>
+          <span className={passed ? 'c-pass' : 'c-fg-3'}>✓ {passed} passed</span>
         </span>
-        <span style={{ color: 'var(--text-muted-dark)' }}>
-          {report.proven ? 'proven on exact/sound checks' : 'not proven'}
-          {' · '}not built or measured
+        <span className="t-small">
+          <span className="c-fg-3">Fab files </span>
+          <span className={emit ? 'c-pass' : 'c-fail'}>{emit ? 'may be emitted' : 'would be refused'}</span>
         </span>
-      </summary>
-
-      <div className="px-4 pb-3 max-h-64 overflow-auto">
-        {report.gate?.reason && (
-          <p className="text-xs mb-2" style={{ color: 'var(--text-muted-dark)' }}>
-            {report.gate.reason}
-          </p>
-        )}
-        <ul className="space-y-1.5">
-          {ORDER.flatMap(s => report.findings.filter(f => f.status === s)).map((f, i) => (
-            <li key={`${f.check}-${i}`} className="text-xs leading-relaxed">
-              <div className="flex gap-2 items-baseline">
-                <span style={{ color: STATUS[f.status].color, minWidth: 12 }} aria-label={STATUS[f.status].label}>
-                  {STATUS[f.status].mark}
-                </span>
-                <span className="font-mono" style={{ color: 'var(--text-muted-dark)', minWidth: 44 }}>
-                  {f.check}
-                </span>
-                <span style={{ color: 'var(--lumen)' }}>{f.claim}</span>
-                <span
-                  className="font-mono shrink-0"
-                  title={RUNG[f.rung]}
-                  style={{ color: 'var(--text-muted-dark)', border: '1px solid var(--border-dark)', borderRadius: 4, padding: '0 4px' }}
-                >
-                  {f.rung}
-                </span>
-              </div>
-              {f.detail && (
-                <p className="ml-14" style={{ color: 'var(--lumen-dim)', overflowWrap: 'anywhere' }}>
-                  {f.detail}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
+        <span className="t-small c-fg-3">not built or measured</span>
       </div>
-    </details>
+      {report.gate?.reason && <p className="t-small c-fg-2 bv-reason">{report.gate.reason}</p>}
+
+      <div className="dt-wrap">
+        <table className="dt bv-table">
+          <thead>
+            <tr>
+              <th style={{ width: 144 }}>Status</th>
+              <th style={{ width: 72 }}>Check</th>
+              <th>Finding</th>
+              <th style={{ width: 96 }}>Rung</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((f, i) => {
+              const v = findingVerdict(f)
+              return (
+                <tr key={`${f.check}-${i}`} data-status={f.status}>
+                  <td>
+                    <VerdictBadge tone={v.tone} glyph={v.glyph} label={v.label} plain />
+                  </td>
+                  <td className="mono muted">{f.check}</td>
+                  <td className="bv-finding">
+                    <div>{f.claim}</div>
+                    {f.detail && <div className="t-small c-fg-2 bv-detail">{f.detail}</div>}
+                  </td>
+                  <td>
+                    <span className={`chip chip-mono ${f.rung === 'unknown' ? 'chip-none' : ''}`} title={RUNG[f.rung]}>
+                      {f.rung}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <style>{CSS}</style>
+    </Section>
   )
 }
+
+const CSS = `
+.bv-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 8px; }
+.bv-reason { margin-bottom: 8px; max-width: 78ch; }
+.bv-table { min-width: 600px; }
+.bv-finding { padding-top: 6px; padding-bottom: 6px; }
+.bv-detail { margin-top: 2px; overflow-wrap: anywhere; max-width: 78ch; }
+`
