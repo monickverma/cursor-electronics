@@ -186,7 +186,7 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
           {unpriced.length === 0 ? 'Estimated total: ' : 'Partial total: '}
           <span className="text-lavender" data-testid="bom-total">{totalsText(totals)}</span>
           {unpriced.length > 0 && (
-            <span className="text-amber-400">
+            <span className="text-warn">
               {' '}· {unpriced.length} unpriced ({unpriced.map(r => r.id).join(', ')})
             </span>
           )}
@@ -229,10 +229,10 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
                     )}
                   </td>
                   <td className="px-3 py-2 text-xs text-right font-mono text-cream-dim" title={priceTitle(row)}>
-                    {price ? money(price.price, price.currency) : <span className="text-amber-400">unknown</span>}
+                    {price ? money(price.price, price.currency) : <span className="text-warn">unknown</span>}
                   </td>
                   <td className="px-3 py-2 text-xs text-right font-mono text-cream">
-                    {price ? money(price.price * row.quantity, price.currency) : <span className="text-amber-400">unknown</span>}
+                    {price ? money(price.price * row.quantity, price.currency) : <span className="text-warn">unknown</span>}
                   </td>
                   <td className="px-3 py-2 text-xs text-muted font-mono whitespace-nowrap" title={priceTitle(row)}>
                     {asOf(row)}
@@ -280,9 +280,9 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
               patch to the requirement: a new version, and a signed design must be signed again.
             </p>
             {loading && <p className="text-xs text-muted">Checking substitutes…</p>}
-            {error && <p className="text-xs text-amber-400">{error}</p>}
+            {error && <p className="text-xs text-warn">{error}</p>}
             {view?.substitutes_unavailable && (
-              <p className="text-xs text-amber-400">{view.substitutes_unavailable}</p>
+              <p className="text-xs text-warn">{view.substitutes_unavailable}</p>
             )}
             {view && !view.substitutes_unavailable && byComponent.size === 0 && !loading && (
               <p className="text-xs text-muted">No catalogue part passes the original&apos;s checks for any line.</p>

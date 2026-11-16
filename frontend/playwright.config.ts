@@ -30,6 +30,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     timeout: 180_000,
     reuseExistingServer: false,
-    env: { NEXT_PUBLIC_API_URL: API },
+    env: { NEXT_PUBLIC_API_URL: API, NEXT_DIST_DIR: '.next-e2e' },
   },
 })

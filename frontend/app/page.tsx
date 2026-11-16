@@ -1,8 +1,7 @@
-// v2 — PCB tab included
+// v3 — the flow desktop: the requirement as the headline, each output a window on live water
 'use client'
 
-import dynamic from 'next/dynamic'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, ReactNode } from 'react'
 import ChatPanel from '@/components/ChatPanel'
 import ValidationReport from '@/components/ValidationReport'
 import FirmwareViewer from '@/components/FirmwareViewer'
@@ -10,33 +9,187 @@ import SimulationResults from '@/components/SimulationResults'
 import BOMTable from '@/components/BOMTable'
 import LandingPage from '@/components/LandingPage'
 import PCBViewer from '@/components/PCBViewer'
-import { GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth } from '@/lib/api'
+import FlowBackground from '@/components/FlowBackground'
+import FloatWindow from '@/components/FloatWindow'
+import SchematicPanel from '@/components/SchematicPanel'
+import PartsSheet from '@/components/PartsSheet'
+import Library from '@/components/Library'
+import type { Message } from '@/components/ChatPanel'
+import {
+  GenerateResponse, PatchResponse, ValidationCoverage, fetchHealth,
+  getHistory, openDesign, whoAmI, type DesignHistory, type DesignView,
+} from '@/lib/api'
 import { DEMO_MODE, REPO_URL } from '@/lib/demo'
 
-const SchematicViewer = dynamic(() => import('@/components/SchematicViewer'), { ssr: false })
+const TOKEN_KEY = 'circuitos.token'
+const LIBRARY_KEY = 'circuitos.library'
 
-type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation'
+// Storage can be blocked (private windows, site-data settings): the app then
+// works exactly as before, it just does not remember the session.
+function readStored(key: string): string | null {
+  try { return window.localStorage.getItem(key) } catch { return null }
+}
+function writeStored(key: string, value: string | null): void {
+  try {
+    if (value === null) window.localStorage.removeItem(key)
+    else window.localStorage.setItem(key, value)
+  } catch { /* not remembered */ }
+}
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'schematic',  label: 'Schematic' },
-  { id: 'pcb',        label: 'PCB (experimental)' },
-  { id: 'firmware',   label: 'Firmware' },
-  { id: 'simulation', label: 'Simulation' },
-  { id: 'bom',        label: 'BOM' },
-  { id: 'validation', label: 'Validation' },
+/**
+ * The conversation behind a saved design, rebuilt from what was stored: the
+ * requirement as recorded, then each change that was asked for and what it did.
+ * The model's own first reply is not stored, so it is not invented here.
+ */
+function conversationOf(view: DesignView, history: DesignHistory | null): Message[] {
+  const at = (iso: string | null) => (iso ? new Date(iso) : new Date())
+  const messages: Message[] = [{ role: 'user', text: view.intent, timestamp: at(view.created_at) }]
+  for (const entry of history?.entries ?? []) {
+    const changes = Array.isArray(entry.changes) ? entry.changes.filter(c => typeof c === 'string') : []
+    messages.push({
+      role: 'user',
+      text: entry.prompted_by || 'A change made from the parts list',
+      timestamp: at(entry.created_at),
+    })
+    messages.push({
+      role: 'assistant',
+      text: `Requirement changed${changes.length ? ` — ${changes.join('; ')}` : ''}. Design became v${entry.to_version}.`
+        + (entry.predict_delta?.length ? `\n\nPredicted: ${entry.predict_delta.join('; ')}` : ''),
+      timestamp: at(entry.created_at),
+    })
+  }
+  messages.push({
+    role: 'assistant',
+    text: `Opened from your library at v${view.version}. ${view.patchable
+      ? 'Ask for a change to carry on from here.'
+      : 'It was saved before requirements were stored, so it can be read but not changed.'}`,
+    timestamp: at(view.updated_at),
+  })
+  return messages
+}
+
+type Tab = 'schematic' | 'pcb' | 'firmware' | 'simulation' | 'bom' | 'validation' | 'parts'
+
+// `label` is the dock button, and the name the UI tests open an output by.
+const OUTPUTS: { id: Tab; label: string; title: string; column: 'left' | 'right'; height: number; tone?: 'screen' }[] = [
+  // The board in 3D comes first, on the owner's instruction (2026-11-15): first in the
+  // dock, open when a design arrives, and the largest window. Still experimental.
+  { id: 'pcb',        label: 'PCB (experimental)', title: 'Board in 3D (experimental)', column: 'left',  height: 640, tone: 'screen' },
+  { id: 'schematic',  label: 'Schematic',          title: 'Schematic',            column: 'left',  height: 580 },
+  { id: 'firmware',   label: 'Firmware',           title: 'Firmware',             column: 'right', height: 400 },
+  { id: 'simulation', label: 'Simulation',         title: 'Simulation',           column: 'left',  height: 440 },
+  { id: 'bom',        label: 'BOM',                title: 'Bill of materials',    column: 'right', height: 460 },
+  { id: 'validation', label: 'Validation',         title: 'Claims and checks',    column: 'right', height: 640 },
+  { id: 'parts',      label: 'Parts',              title: 'Parts sheet',          column: 'left',  height: 560 },
 ]
+
+// What is on the desktop when a design arrives: the board (where the engine is on),
+// the schematic and the claims. The rest open from the dock, so nothing polls or
+// fetches (simulation, firmware build, BOM prices) unasked.
+const OPEN_AT_START: Record<Tab, boolean> = {
+  pcb: true, schematic: true, validation: true, firmware: false, simulation: false, bom: false, parts: false,
+}
 
 export default function Home() {
   const [result, setResult] = useState<GenerateResponse | PatchResponse | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('schematic')
+  // The requirement as recorded, shown as the headline. A patch changes the
+  // requirement but its response carries no sentence, so the first one stays.
+  const [requirement, setRequirement] = useState('')
+  const [open, setOpen] = useState<Record<Tab, boolean>>(OPEN_AT_START)
+  const [focus, setFocus] = useState<Record<Tab, number>>({
+    schematic: 0, validation: 0, pcb: 0, firmware: 0, simulation: 0, bom: 0, parts: 0,
+  })
   const [token, setToken] = useState<string>('')
   const [showApp, setShowApp] = useState(false)
 
+  // ── The session and the library ──────────────────────────────────────────
+  // The token is kept in this browser so a reload does not sign the person out
+  // (amended 2026-11-16; it used to live in memory only). It is checked against
+  // /auth/me before it is trusted, and dropped if the backend refuses it.
+  const [restoring, setRestoring] = useState(true)
+  const [email, setEmail] = useState<string | undefined>(undefined)
+  const [libraryOpen, setLibraryOpen] = useState(false)
+  const [libraryVersion, setLibraryVersion] = useState(0)
+  const [thread, setThread] = useState<{ key: string; messages: Message[] }>({ key: 'new', messages: [] })
+  const [openError, setOpenError] = useState('')
+  const [seed, setSeed] = useState('')
+
+  useEffect(() => {
+    if (DEMO_MODE) { setRestoring(false); return }
+    let cancelled = false
+    const stored = readStored(TOKEN_KEY)
+    setLibraryOpen(readStored(LIBRARY_KEY) !== '0' && window.innerWidth >= 1100)
+    if (!stored) { setRestoring(false); return }
+    whoAmI(stored)
+      .then(me => {
+        if (cancelled) return
+        setToken(stored)
+        setEmail(me.email)
+        setShowApp(true)
+      })
+      .catch(() => writeStored(TOKEN_KEY, null))
+      .finally(() => { if (!cancelled) setRestoring(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  const signedIn = useCallback((t: string) => {
+    setToken(t)
+    if (DEMO_MODE || !t) return
+    writeStored(TOKEN_KEY, t)
+    whoAmI(t).then(me => setEmail(me.email)).catch(() => {})
+  }, [])
+
+  const newDesign = useCallback(() => {
+    setResult(null)
+    setRequirement('')
+    setOpenError('')
+    setOpen(OPEN_AT_START)
+    setThread({ key: `new:${Date.now()}`, messages: [] })
+    window.scrollTo({ top: 0 })
+  }, [])
+
+  const signOut = useCallback(() => {
+    writeStored(TOKEN_KEY, null)
+    setToken('')
+    setEmail(undefined)
+    setShowApp(false)
+    setResult(null)
+    setRequirement('')
+    setThread({ key: `new:${Date.now()}`, messages: [] })
+  }, [])
+
+  const toggleLibrary = useCallback(() => {
+    setLibraryOpen(o => {
+      writeStored(LIBRARY_KEY, o ? '0' : '1')
+      return !o
+    })
+  }, [])
+
+  // Open a saved design: the design re-derived from its stored IR, and the
+  // conversation rebuilt from the requirement and its patch history.
+  const openSaved = useCallback(async (circuitId: string) => {
+    setOpenError('')
+    try {
+      const [view, history] = await Promise.all([
+        openDesign(circuitId, token),
+        getHistory(circuitId, token).catch(() => null),
+      ])
+      setResult(view)
+      setRequirement(view.intent)
+      setOpen(OPEN_AT_START)
+      setThread({ key: `${circuitId}:${Date.now()}`, messages: conversationOf(view, history) })
+      if (window.innerWidth < 1100) setLibraryOpen(false)
+      window.scrollTo({ top: 0 })
+    } catch (e) {
+      setOpenError(e instanceof Error ? e.message : 'That design could not be opened.')
+    }
+  }, [token])
+
   // The PCB engine is experimental and off in production, where /pcb/compile
   // returns 501. Ask the backend which build this is rather than rendering a
-  // tab whose every click is an error. Starts false so the tab never flashes
-  // in before the answer arrives, and stays false if /health is unreachable —
-  // an unreachable backend is the same dead click as a disabled route.
+  // button whose every click is an error. Starts false so the button never
+  // flashes in before the answer arrives, and stays false if /health is
+  // unreachable — an unreachable backend is the same dead click as a disabled route.
   const [pcbEnabled, setPcbEnabled] = useState(false)
 
   useEffect(() => {
@@ -47,23 +200,20 @@ export default function Home() {
     return () => { cancelled = true }
   }, [])
 
-  const visibleTabs = TABS.filter(t => t.id !== 'pcb' || pcbEnabled)
-
-  // If the engine is disabled while the PCB tab is somehow selected (it is the
-  // initial tab for nobody, but a stale state or a future default could get
-  // here), fall back rather than render a panel with no tab.
-  useEffect(() => {
-    if (!pcbEnabled && activeTab === 'pcb') setActiveTab('schematic')
-  }, [pcbEnabled, activeTab])
+  const outputs = OUTPUTS.filter(o => o.id !== 'pcb' || pcbEnabled)
 
   const handleResult = useCallback((res: GenerateResponse | PatchResponse) => {
     setResult(res)
-    setActiveTab('schematic')
+    const intent = (res as GenerateResponse).intent
+    if (intent) setRequirement(intent)
+    setOpen(o => ({ ...o, schematic: true }))
+    setLibraryVersion(n => n + 1)
   }, [])
 
-  // A substitute from the BOM tab is a patch: take the new revision, stay on the tab.
+  // A substitute from the BOM window is a patch: take the new revision, change nothing else.
   const handleBomPatched = useCallback((res: PatchResponse) => {
     setResult(res)
+    setLibraryVersion(n => n + 1)
   }, [])
 
   // Sign-off changes what is claimed, never the design: only the coverage moves.
@@ -71,183 +221,239 @@ export default function Home() {
     setResult(r => (r ? { ...r, validation_coverage: coverage } : r))
   }, [])
 
+  // A dock button opens its window and brings it forward. It never closes one:
+  // a window is hidden from its own title bar.
+  const show = useCallback((id: Tab) => {
+    setOpen(o => ({ ...o, [id]: true }))
+    setFocus(f => ({ ...f, [id]: f[id] + 1 }))
+  }, [])
+  const hide = useCallback((id: Tab) => {
+    setOpen(o => ({ ...o, [id]: false }))
+  }, [])
+
   const errorCount = result?.validation?.errors?.length ?? 0
+
+  // While a stored session is being checked, show the ground and nothing else:
+  // neither the landing page nor the sign-in window should flash past.
+  if (restoring) return <div className="flow-app" aria-busy="true" />
 
   // Show marketing page until user explicitly clicks "Get started" or is already logged in
   if (!token && !showApp) {
     // Demo mode has no accounts to sign in to: straight to the examples.
-    return <LandingPage onGetStarted={() => { setShowApp(true); if (DEMO_MODE) setToken('demo') }} />
+    return (
+      <LandingPage
+        onGetStarted={prompt => {
+          // A template on the front page hands over its request, ready to send.
+          // (Demo mode opens recordings by exact prompt, so it takes none.)
+          if (prompt && !DEMO_MODE) setSeed(prompt)
+          setShowApp(true)
+          if (DEMO_MODE) setToken('demo')
+        }}
+      />
+    )
   }
 
+  const hasLibrary = !!token && !DEMO_MODE
+
+  function body(id: Tab): ReactNode {
+    if (!result) return null
+    switch (id) {
+      case 'schematic':
+        return (
+          <SchematicPanel
+            schematic={result.schematic}
+            ir={result.ir}
+            findings={[...(result.validation?.errors ?? []), ...(result.validation?.warnings ?? [])]}
+          />
+        )
+      case 'pcb':
+        return <PCBViewer netlist={result.pcb_netlist} token={token} />
+      case 'firmware':
+        return (
+          <FirmwareViewer
+            circuitId={result.circuit_id}
+            token={token}
+            firmware={result.firmware}
+            build={result.firmware_build}
+          />
+        )
+      case 'simulation':
+        return (
+          <SimulationResults
+            circuitId={(result as GenerateResponse).circuit_id}
+            jobId={(result as GenerateResponse).simulation_job_id || null}
+            token={token}
+          />
+        )
+      case 'bom':
+        return (
+          <BOMTable
+            rows={(result as GenerateResponse).bom || []}
+            circuitId={result.circuit_id}
+            version={(result as PatchResponse).version}
+            token={token}
+            onPatched={handleBomPatched}
+          />
+        )
+      case 'parts':
+        return (
+          <PartsSheet
+            ir={result.ir}
+            token={token}
+            onAsk={request => { setSeed(request); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+          />
+        )
+      case 'validation':
+        return (
+          <ValidationReport
+            validation={result.validation}
+            coverage={result.validation_coverage}
+            explanation={(result as GenerateResponse).explanation}
+            explanationError={(result as GenerateResponse).explanation_error}
+            explanationStatus={(result as GenerateResponse).explanation_status}
+            circuitId={result.circuit_id}
+            token={token}
+            onCoverage={handleCoverage}
+          />
+        )
+    }
+  }
+
+  function meta(id: Tab): string | undefined {
+    if (!result) return undefined
+    if (id === 'schematic') return `v${result.version}`
+    if (id === 'validation') {
+      const floor = result.validation_coverage?.grade_floor
+      return floor ? `floor ${floor}` : undefined
+    }
+    return undefined
+  }
+
+  const column = (side: 'left' | 'right') => outputs.filter(o => o.column === side && open[o.id])
+  const left = column('left')
+  const right = column('right')
+
+  const headline = requirement || 'Describe Your Circuit'
+  // Before there is a design the headline is the page. Once there is one, the
+  // windows are, so the top folds down and they start within the first screen.
+  const sizes = result
+    ? ['clamp(24px, 3vw, 42px)', 'clamp(20px, 2.2vw, 32px)', 'clamp(17px, 1.7vw, 24px)']
+    : ['clamp(38px, 6vw, 84px)', 'clamp(30px, 4.2vw, 56px)', 'clamp(24px, 3vw, 40px)']
+  const headlineSize = sizes[headline.length <= 60 ? 0 : headline.length <= 130 ? 1 : 2]
+
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--lumen)' }}>
+    <div className="flow-app">
+      <FlowBackground />
 
-      {/* ── Left panel — cream / chat ───────────────────────── */}
-      <div
-        className="flex flex-col scroll-light"
-        style={{
-          width: 420,
-          minWidth: 320,
-          background: 'var(--lumen)',
-          borderRight: '1px solid var(--border-light)',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            padding: '1.25rem 1.5rem 1rem',
-            borderBottom: '1px solid var(--border-light)',
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'var(--h4)',
-              color: 'var(--vast)',
-              fontStyle: 'italic',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Circuit OS
-          </h1>
-          <p style={{ fontSize: 'var(--body-xs)', color: 'var(--text-muted-light)', marginTop: 2 }}>
-            AI hardware compiler
-          </p>
-          {DEMO_MODE && <DemoBadge />}
-        </div>
-
-        {/* Chat */}
-        <ChatPanel
-          onResult={handleResult}
+      {hasLibrary && (
+        <Library
           token={token}
-          onTokenChange={setToken}
-          currentCircuitId={(result as GenerateResponse)?.circuit_id}
+          email={email}
+          activeId={result?.circuit_id}
+          refreshKey={libraryVersion}
+          open={libraryOpen}
+          onToggle={toggleLibrary}
+          onOpenDesign={openSaved}
+          onNewDesign={newDesign}
+          onSignOut={signOut}
         />
-      </div>
+      )}
 
-      {/* ── Right panel — dark / output ─────────────────────── */}
-      <div
-        className="flex flex-col flex-1 min-w-0"
-        style={{ background: 'var(--vast)' }}
-      >
-        {/* Tab bar */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 2,
-            padding: '0 1.25rem',
-            borderBottom: '1px solid var(--border-dark)',
-            background: '#111',
-            height: 44,
-          }}
-        >
-          {visibleTabs.map(tab => {
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={isActive ? 'tab-active' : ''}
-                style={{
-                  padding: '0 14px',
-                  fontSize: 'var(--body-xs)',
-                  fontFamily: 'var(--font-body)',
-                  fontWeight: isActive ? 500 : 400,
-                  color: isActive ? 'var(--lumen)' : 'var(--text-muted-dark)',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.15s',
-                  position: 'relative',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--lumen)' }}
-                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--text-muted-dark)' }}
-              >
-                {tab.label}
-                {tab.id === 'validation' && errorCount > 0 && (
-                  <span
-                    style={{
-                      marginLeft: 5,
-                      fontSize: 10,
-                      background: '#7f1d1d',
-                      color: '#fca5a5',
-                      padding: '1px 5px',
-                      borderRadius: 8,
-                    }}
-                  >
-                    {errorCount}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+      <div className={`relative z-10 flex flex-col min-h-screen ${hasLibrary && libraryOpen ? 'min-[1100px]:pl-[288px]' : ''}`}>
+        <header className="flex flex-wrap items-stretch justify-between gap-2 min-h-[44px]">
+          <span className={`flex items-center min-h-[44px] px-3.5 bg-paper text-ink font-pixel text-2xl tracking-wider ${
+            hasLibrary && libraryOpen ? 'min-[1100px]:invisible' : ''}`}>
+            CIRCUIT OS
+          </span>
           {DEMO_MODE && (
-            <span
-              style={{
-                marginLeft: 'auto',
-                alignSelf: 'center',
-                fontSize: 11,
-                color: '#f5c26b',
-                border: '1px solid #f5c26b',
-                borderRadius: 100,
-                padding: '2px 10px',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span className="flex items-center min-h-[44px] px-3.5 border-[1.5px] border-paper text-paper text-xs">
               Demo mode — recorded results
             </span>
           )}
-        </div>
+        </header>
 
-        {/* Output content */}
-        <div className="flex-1 overflow-hidden">
-          {!result ? (
-            <EmptyState />
-          ) : (
-            <>
-              {activeTab === 'schematic'  && <SchematicViewer schematic={result.schematic} />}
-              {activeTab === 'pcb'        && <PCBViewer netlist={result.pcb_netlist} token={token} />}
-              {activeTab === 'firmware'   && (
-                <FirmwareViewer
-                  circuitId={result.circuit_id}
-                  token={token}
-                  firmware={result.firmware}
-                  build={result.firmware_build}
-                />
-              )}
-              {activeTab === 'simulation' && (
-                <SimulationResults
-                  circuitId={(result as GenerateResponse).circuit_id}
-                  jobId={(result as GenerateResponse).simulation_job_id || null}
-                  token={token}
-                />
-              )}
-              {activeTab === 'bom'        && (
-                <BOMTable
-                  rows={(result as GenerateResponse).bom || []}
-                  circuitId={result.circuit_id}
-                  version={(result as PatchResponse).version}
-                  token={token}
-                  onPatched={handleBomPatched}
-                />
-              )}
-              {activeTab === 'validation' && (
-                <ValidationReport
-                  validation={result.validation}
-                  coverage={result.validation_coverage}
-                  explanation={(result as GenerateResponse).explanation}
-                  explanationError={(result as GenerateResponse).explanation_error}
-                  explanationStatus={(result as GenerateResponse).explanation_status}
-                  circuitId={result.circuit_id}
-                  token={token}
-                  onCoverage={handleCoverage}
-                />
-              )}
-            </>
+        <section className={`flex flex-col items-center px-6 text-center ${result ? 'gap-3 pt-3 pb-4' : 'gap-5 pt-10 pb-7'}`}>
+          <p className={result ? 'text-xs' : 'text-sm'}>
+            {result ? `version ${result.version} ...... you asked for` : 'AI hardware compiler'}
+          </p>
+          <h1 className="flow-headline max-w-[1180px]" style={{ fontSize: headlineSize }}>
+            {headline}
+          </h1>
+          {!result && (
+            <p className="max-w-[60ch] text-sm">
+              {DEMO_MODE
+                ? 'Pick an example below to open its recorded schematic, firmware, SPICE simulation, BOM and validation.'
+                : 'Type a description below. Circuit OS generates a validated schematic, firmware, SPICE simulation, and BOM.'}
+            </p>
           )}
-        </div>
+
+          {DEMO_MODE && !result && <DemoBadge />}
+
+          {openError && (
+            <p role="alert" className="paper max-w-[760px] px-4 py-2 border-[1.5px] border-ink text-sm text-bad">
+              {openError}
+            </p>
+          )}
+
+          <ChatPanel
+            onResult={handleResult}
+            token={token}
+            onTokenChange={signedIn}
+            currentCircuitId={(result as GenerateResponse)?.circuit_id}
+            threadKey={thread.key}
+            initialMessages={thread.messages}
+            seedPrompt={seed}
+          />
+        </section>
+
+        {result && (
+          <>
+            <nav aria-label="Outputs" className="flex flex-wrap justify-center gap-2 px-6 pb-5">
+              {outputs.map(o => (
+                <button
+                  key={o.id}
+                  type="button"
+                  className="flow-btn"
+                  aria-pressed={open[o.id]}
+                  onClick={() => show(o.id)}
+                >
+                  {o.label}
+                  {o.id === 'validation' && errorCount > 0 && (
+                    <span className="ml-2 px-1.5 py-px bg-[#b3261e] text-paper font-mono text-xs">
+                      {errorCount}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            <div className="flex flex-wrap items-start gap-7 px-6 pb-20">
+              {left.length > 0 && (
+                <div className="flex-[7_1_520px] min-w-0 flex flex-col gap-7">
+                  {left.map(o => (
+                    <FloatWindow key={o.id} id={o.id} title={o.title} meta={meta(o.id)} tone={o.tone}
+                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)}>
+                      {body(o.id)}
+                    </FloatWindow>
+                  ))}
+                </div>
+              )}
+              {right.length > 0 && (
+                <div className="flex-[5_1_420px] min-w-0 flex flex-col gap-7">
+                  {right.map(o => (
+                    <FloatWindow key={o.id} id={o.id} title={o.title} meta={meta(o.id)} tone={o.tone}
+                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)}>
+                      {body(o.id)}
+                    </FloatWindow>
+                  ))}
+                </div>
+              )}
+              {left.length === 0 && right.length === 0 && (
+                <p className="w-full text-center text-sm">Every window is hidden. Open one from the row above.</p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -255,101 +461,15 @@ export default function Home() {
 
 function DemoBadge() {
   return (
-    <div
-      role="status"
-      style={{
-        marginTop: 10,
-        padding: '8px 10px',
-        borderRadius: 'var(--r-sm)',
-        background: '#fff7e6',
-        border: '1px solid #f5c26b',
-        fontSize: 'var(--body-xs)',
-        color: '#7a4b00',
-        lineHeight: 1.5,
-      }}
-    >
-      <strong style={{ fontWeight: 600 }}>Demo mode — recorded results.</strong>{' '}
+    <div role="status" className="paper max-w-[760px] px-4 py-3 border-[1.5px] border-ink text-left text-sm leading-relaxed">
+      <strong className="font-semibold">Demo mode — recorded results.</strong>{' '}
       No backend is attached to this deployment. The examples below are real outputs of the
       deterministic pipeline (generator, ngspice, PlatformIO, BOM), recorded locally; the
       requirement was entered through the form, not the LLM.{' '}
-      <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>
+      <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" className="underline">
         Run it locally
       </a>{' '}
       to describe your own circuit.
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div
-      className="h-full flex items-center justify-center"
-      style={{ background: 'var(--vast)' }}
-    >
-      <div style={{ textAlign: 'center', maxWidth: 380, padding: '0 2rem' }}>
-        {/* Teal badge */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: 'var(--fathom)',
-            color: 'var(--lumen)',
-            fontSize: 'var(--body-xs)',
-            padding: '6px 14px',
-            borderRadius: 100,
-            marginBottom: '1.5rem',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            fontWeight: 500,
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--glow)', display: 'inline-block' }} />
-          {DEMO_MODE ? 'Demo mode — recorded results' : 'Ready'}
-        </div>
-
-        <h2
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 'var(--h3)',
-            color: 'var(--lumen)',
-            fontStyle: 'italic',
-            marginBottom: '0.75rem',
-          }}
-        >
-          Describe your circuit
-        </h2>
-        <p
-          style={{
-            fontSize: 'var(--body-sm)',
-            color: 'var(--text-muted-dark)',
-            lineHeight: 1.7,
-            marginBottom: '2rem',
-          }}
-        >
-          {DEMO_MODE
-            ? 'Pick an example in the chat panel to open its recorded schematic, firmware, SPICE simulation, BOM and validation.'
-            : 'Type a description in the chat panel. Circuit OS generates a validated schematic, firmware, SPICE simulation, and BOM.'}
-        </p>
-
-        {/* Feature pills */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-          {['Schematic', 'Firmware', 'Simulation', 'BOM', 'Explanation'].map(f => (
-            <span
-              key={f}
-              style={{
-                fontSize: 'var(--body-xs)',
-                color: 'var(--text-muted-dark)',
-                border: '1px solid var(--border-dark)',
-                borderRadius: 100,
-                padding: '4px 12px',
-              }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

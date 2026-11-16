@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { pollSimulation, SimulationStatus } from '@/lib/api'
+import { DEMO_MODE, pollSimulation, startSimulation, SimulationStatus } from '@/lib/api'
 import WaveformChart, { si } from '@/components/WaveformChart'
 
 interface Props {
@@ -10,7 +10,28 @@ interface Props {
   token: string
 }
 
-export default function SimulationResults({ circuitId, jobId, token }: Props) {
+export default function SimulationResults({ circuitId, jobId: givenJob, token }: Props) {
+  // A design opened from the library arrives without a job: its last run is not
+  // kept. The person can queue a fresh one from here.
+  const [ownJob, setOwnJob] = useState<string | null>(null)
+  const [startError, setStartError] = useState('')
+  const [starting, setStarting] = useState(false)
+  useEffect(() => { setOwnJob(null); setStartError('') }, [circuitId, givenJob])
+  const jobId = givenJob ?? ownJob
+
+  async function runNow() {
+    if (!circuitId || !token || starting) return
+    setStarting(true)
+    setStartError('')
+    try {
+      setOwnJob((await startSimulation(circuitId, token)).job_id)
+    } catch (e) {
+      setStartError(e instanceof Error ? e.message : 'The simulation could not be queued.')
+    } finally {
+      setStarting(false)
+    }
+  }
+
   const [status, setStatus] = useState<SimulationStatus | null>(null)
   const [polling, setPolling] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -42,8 +63,15 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
 
   if (!jobId) {
     return (
-      <div className="h-full flex items-center justify-center text-muted text-sm">
-        No simulation started for this design.
+      <div className="h-full flex flex-col items-center justify-center gap-3 p-5 text-center text-muted text-sm">
+        <p>No simulation started for this design.</p>
+        {circuitId && token && !DEMO_MODE && (
+          <button type="button" onClick={runNow} disabled={starting}
+                  className="min-h-[44px] px-4 bg-lavender text-dark font-medium disabled:opacity-60">
+            {starting ? 'Queuing…' : 'Run the simulation'}
+          </button>
+        )}
+        {startError && <p className="text-bad">{startError}</p>}
       </div>
     )
   }
@@ -76,14 +104,14 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
 
       {/* Grade */}
       {status.grade && (
-        <div className={`rounded border p-4 ${status.grade.passed ? 'border-green-700 bg-green-900/20' : 'border-red-700 bg-red-900/20'}`}>
-          <p className={`text-sm font-medium mb-2 ${status.grade.passed ? 'text-green-400' : 'text-red-400'}`}>
+        <div className={`rounded border p-4 ${status.grade.passed ? 'border-ok bg-ok/10' : 'border-bad bg-bad/10'}`}>
+          <p className={`text-sm font-medium mb-2 ${status.grade.passed ? 'text-ok' : 'text-bad'}`}>
             {status.grade.passed ? '✓ Simulation PASS' : '✗ Simulation FAIL'}
           </p>
           {status.grade.failures.length > 0 && (
             <ul className="space-y-1">
               {status.grade.failures.map((f, i) => (
-                <li key={i} className="text-xs text-red-300">• {f}</li>
+                <li key={i} className="text-xs text-bad">• {f}</li>
               ))}
             </ul>
           )}
@@ -148,8 +176,8 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
 
       {/* Error */}
       {status.error && (
-        <div className="rounded border border-red-800 bg-red-900/20 p-3">
-          <p className="text-xs text-red-300 font-mono">{status.error}</p>
+        <div className="rounded border border-bad bg-bad/10 p-3">
+          <p className="text-xs text-bad font-mono">{status.error}</p>
         </div>
       )}
     </div>
@@ -158,10 +186,10 @@ export default function SimulationResults({ circuitId, jobId, token }: Props) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    queued:   { label: 'Queued',    cls: 'bg-amber-900/30 text-amber-300 border-amber-700' },
-    running:  { label: 'Running',   cls: 'bg-blue-900/30 text-blue-300 border-blue-700' },
-    complete: { label: 'Complete',  cls: 'bg-green-900/30 text-green-300 border-green-700' },
-    failed:   { label: 'Failed',    cls: 'bg-red-900/30 text-red-300 border-red-700' },
+    queued:   { label: 'Queued',    cls: 'bg-warn/10 text-warn border-warn' },
+    running:  { label: 'Running',   cls: 'bg-info/10 text-info border-info' },
+    complete: { label: 'Complete',  cls: 'bg-ok/10 text-ok border-ok' },
+    failed:   { label: 'Failed',    cls: 'bg-bad/10 text-bad border-bad' },
   }
   const s = map[status] || { label: status, cls: 'bg-surface text-muted border-border' }
   return (

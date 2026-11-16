@@ -754,6 +754,33 @@ PLANNED = {
             ("get_bom",  "function", "GET /design/{id}/bom"),
         ],
     },
+    "api/routes/library": {
+        "file": "backend/api/routes/library.py",
+        "test_file": "tests/test_design_harness.py",
+        "entries": [
+            ("open_design", "function", "GET /design/{id} — every output recompiled from the stored IR; no model"),
+            ("file_design", "function", "PUT /design/{id}/project — filing changes nothing else"),
+        ],
+    },
+    "api/routes/projects": {
+        "file": "backend/api/routes/projects.py",
+        "test_file": "tests/test_design_harness.py",
+        "entries": [
+            ("list_projects",      "function", "GET /projects — the caller's own"),
+            ("new_project",        "function", "POST /projects — a name and an owner"),
+            ("name_project",       "function", "PUT /projects/{id} — rename, owner only"),
+            ("load_owned_project", "function", "404 / 403 gate shared with PUT /design/{id}/project"),
+        ],
+    },
+    "api/routes/parts": {
+        "file": "backend/api/routes/parts.py",
+        "test_file": "tests/test_parts_route.py",
+        "entries": [
+            ("catalogue",  "function", "component_db.json, read once"),
+            ("search",     "function", "Every word must match; part-number matches first"),
+            ("find_parts", "function", "GET /parts — a lookup; adds a part to nothing"),
+        ],
+    },
     "validation/bench": {
         "file": "backend/validation/bench.py",
         "test_file": ["tests/test_bench.py", "tests/test_bench_rc_method.py"],

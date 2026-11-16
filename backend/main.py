@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from api.routes import auth, bom, design, explanation, firmware, patch, pcb, simulate
+from api.routes import auth, bom, design, explanation, firmware, library, parts, patch, pcb, projects, simulate
 from core.config import settings
 from middleware.instrumentation import RequestLogMiddleware
 from middleware.rate_limit import limiter
@@ -91,7 +91,11 @@ app.include_router(patch.router, prefix="/design", tags=["patch"])
 app.include_router(firmware.router, prefix="/design", tags=["firmware"])
 app.include_router(explanation.router, prefix="/design", tags=["explanation"])
 app.include_router(bom.router, prefix="/design", tags=["bom"])
+# After design.router: GET /design/list must match before GET /design/{circuit_id}.
+app.include_router(library.router, prefix="/design", tags=["library"])
 app.include_router(pcb.router, prefix="/pcb", tags=["pcb"])
+app.include_router(projects.router, prefix="/projects", tags=["projects"])
+app.include_router(parts.router, prefix="/parts", tags=["parts"])
 
 
 @app.get("/health")

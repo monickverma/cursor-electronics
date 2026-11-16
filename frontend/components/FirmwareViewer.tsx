@@ -81,7 +81,7 @@ export default function FirmwareViewer({ circuitId, token, firmware, build }: Pr
       <div className="h-full flex flex-col">
         <div className="px-4 py-3 border-b border-border bg-surface">
           <div className="text-xs font-mono text-muted">{view.board ?? view.target ?? 'firmware'}</div>
-          <p className={`text-sm mt-1 ${view.status === 'failed' ? 'text-red-300' : 'text-cream'}`}>
+          <p className={`text-sm mt-1 ${view.status === 'failed' ? 'text-bad' : 'text-cream'}`}>
             {view.status === 'compiling' && (
               <span className="inline-block w-2 h-2 rounded-full bg-lavender animate-pulse mr-2" />
             )}

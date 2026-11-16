@@ -27,6 +27,45 @@ interface Props {
 // `localhost:8001` resolves to the *visitor's* computer, and an http:// call
 // from an https:// page is blocked as mixed content regardless.
 
+/**
+ * What is shown while the board compiles. The compile is one request, so there
+ * is no real progress to report and none is faked: this says what the engine
+ * does, how long it has been, and how long it usually takes.
+ */
+function Compiling({ netlist }: { netlist?: Record<string, any> }) {
+  const [seconds, setSeconds] = useState(0)
+  useEffect(() => {
+    const started = Date.now()
+    const timer = setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 500)
+    return () => clearInterval(timer)
+  }, [])
+  const parts = Array.isArray(netlist?.components) ? netlist!.components.length : null
+  const nets = Array.isArray(netlist?.nets) ? netlist!.nets.length : null
+  return (
+    <div role="status" aria-live="polite" data-testid="board-compiling"
+         className="flex flex-col items-center gap-4 max-w-[420px] text-center">
+      <svg viewBox="0 0 200 130" className="w-[200px]" aria-hidden="true">
+        <rect x="6" y="6" width="188" height="118" rx="8" fill="none" className="stroke-warn"
+              strokeWidth="2" strokeDasharray="10 8">
+          <animate attributeName="stroke-dashoffset" from="0" to="-36" dur="1.2s" repeatCount="indefinite" />
+        </rect>
+        <rect x="30" y="32" width="64" height="22" fill="none" className="stroke-muted" strokeWidth="1.5" />
+        <rect x="118" y="30" width="46" height="46" fill="none" className="stroke-muted" strokeWidth="1.5" />
+        <rect x="34" y="78" width="26" height="12" fill="none" className="stroke-muted" strokeWidth="1.5" />
+        <rect x="72" y="78" width="26" height="12" fill="none" className="stroke-muted" strokeWidth="1.5" />
+      </svg>
+      <p className="text-sm text-warn">
+        Compiling the board{parts !== null ? `: placing ${parts} part${parts === 1 ? '' : 's'}` : ''}
+        {nets !== null ? `, routing ${nets} net${nets === 1 ? '' : 's'}` : ', routing them'}, then checking it.
+      </p>
+      <p className="font-mono text-xs text-muted">
+        {seconds} s so far. The five template boards take 1 to 11 s.
+        {seconds > 25 && ' This one is taking longer than any of them did.'}
+      </p>
+    </div>
+  )
+}
+
 export default function PCBViewer({ netlist, token }: Props) {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<PCBCompileResponse | null>(null)
@@ -134,12 +173,7 @@ export default function PCBViewer({ netlist, token }: Props) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col items-center justify-center relative overflow-auto p-4">
-        {loading && (
-          <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--glow)' }}>
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-            Compiling PCB layout...
-          </div>
-        )}
+        {loading && <Compiling netlist={netlist} />}
 
         {error && !loading && (
           <div
@@ -214,10 +248,10 @@ export default function PCBViewer({ netlist, token }: Props) {
           no warning at all. */}
       {data?.warnings && data.warnings.length > 0 && (
         <details open className="border-t border-border-dark" style={{ background: '#141414' }}>
-          <summary className="px-4 py-2 text-xs text-amber-400 cursor-pointer hover:text-amber-300 select-none">
+          <summary className="px-4 py-2 text-xs text-warn cursor-pointer hover:text-warn select-none">
             PCB Engine Warnings ({data.warnings.length})
           </summary>
-          <ul className="px-6 py-2 text-xs font-mono text-amber-200 list-disc space-y-1 max-h-32 overflow-auto">
+          <ul className="px-6 py-2 text-xs font-mono text-warn list-disc space-y-1 max-h-32 overflow-auto">
             {data.warnings.map((w, idx) => (
               <li key={idx}>{w}</li>
             ))}

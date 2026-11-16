@@ -26,6 +26,7 @@ htmlcov/
 # Node
 node_modules/
 .next/
+.next-e2e/
 out/
 *.log
 npm-debug.log*

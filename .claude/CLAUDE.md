@@ -93,14 +93,23 @@ cursor-electronics/
 │   │   ├── board_ir.py             # THE layout contract — the board's source of truth
 │   │   ├── scene3d.py              # Board IR → 3D scene (bodies per package, DRC, ratsnest)
 │   │   └── verify.py               # The independent judge of a compiled board; each check on its rung (2026-10-09)
-│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py
+│   ├── api/routes/                 # design.py, simulate.py, patch.py (+ sign-off), firmware.py, bom.py, auth.py,
+│   │                               # library.py (reopen a saved design, file it; reaches no model),
+│   │                               # projects.py, parts.py (catalogue search)
 │   ├── db/                         # models.py, crud.py, schema.sql, migrations.py (startup DDL)
 │   ├── tasks/                      # Celery: simulation_task.py, firmware_task.py (compile gate),
 │   │                               # explain_task.py (the explanation, read back by GET /design/{id}/explanation)
 │   └── middleware/rate_limit.py    # slowapi
 ├── frontend/
-│   ├── app/page.tsx                # Two-panel layout
-│   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.
+│   ├── app/page.tsx                # The flow desktop: requirement as headline, each output a window (2026-11-15)
+│   ├── components/                 # ChatPanel, SchematicViewer, FirmwareViewer, etc.;
+│   │                               # FlowBackground (WebGL 2 water), FloatWindow (draggable window),
+│   │                               # SchematicPanel → SchematicDrawing (from the IR) | SchematicViewer (kicanvas),
+│   │                               # Markdown (the explanation as formatted text, never injected HTML),
+│   │                               # Library (saved designs filed by project), PartsSheet (ratings beside
+│   │                               # nets, catalogue search), LandingPage (the same water and windows)
+│   ├── lib/flow.ts                 # Splat queue between windows, pointer and the water
+│   ├── lib/schematicLayout.ts      # CircuitIR → where each part, pin and net label is drawn; places, never decides
 │   └── lib/api.ts                  # Typed API client
 ├── scripts/                        # capture_explanation.py, review_panel.py, verify_figures.py (D7),
 │                                   # bench_template.py (D1), export_ui_fixtures.py,

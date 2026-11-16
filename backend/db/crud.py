@@ -10,7 +10,60 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.ir_schema import CircuitIR
-from db.models import CircuitDesign, GeneratedOutput, PatchHistory, SimulationRun, User
+from db.models import CircuitDesign, GeneratedOutput, PatchHistory, Project, SimulationRun, User
+
+
+# ── Projects: the folders a person keeps their designs in ─────────────────────
+
+async def list_user_projects(db: AsyncSession, user_id: str) -> list[Project]:
+    result = await db.execute(
+        select(Project)
+        .where(Project.user_id == uuid.UUID(user_id))
+        .order_by(Project.created_at.asc())
+    )
+    return list(result.scalars().all())
+
+
+async def create_project(db: AsyncSession, user_id: str, name: str) -> Project:
+    project = Project(user_id=uuid.UUID(user_id), name=name)
+    db.add(project)
+    await db.flush()
+    return project
+
+
+async def get_project(db: AsyncSession, project_id: str) -> Optional[Project]:
+    try:
+        key = uuid.UUID(project_id)
+    except (ValueError, AttributeError, TypeError):
+        return None
+    result = await db.execute(select(Project).where(Project.id == key))
+    return result.scalar_one_or_none()
+
+
+async def rename_project(db: AsyncSession, project_id: str, name: str) -> None:
+    await db.execute(
+        update(Project).where(Project.id == uuid.UUID(project_id))
+        .values(name=name, updated_at=datetime.utcnow())
+    )
+
+
+async def set_design_project(db: AsyncSession, circuit_id: str, project_id: Optional[str]) -> None:
+    """File a design under a project, or under none. The design itself is untouched."""
+    await db.execute(
+        update(CircuitDesign).where(CircuitDesign.circuit_id == circuit_id)
+        .values(project_id=uuid.UUID(project_id) if project_id else None)
+    )
+
+
+async def latest_simulation_job(db: AsyncSession, circuit_id: str) -> Optional[str]:
+    """The task id of the design's most recent simulation run, if one was recorded."""
+    result = await db.execute(
+        select(SimulationRun.celery_task_id)
+        .where(SimulationRun.circuit_id == circuit_id)
+        .order_by(SimulationRun.created_at.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
 
 
 # ── User ─────────────────────────────────────────────────────────────────────
