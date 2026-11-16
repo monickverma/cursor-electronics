@@ -1,4 +1,5 @@
 import { DEMO_MODE, demoRequest } from './demo'
+import { missingValuesMessage } from './questions'
 
 // localhost only in `next dev`: in a deployed page it is the visitor's machine.
 // A production build with no API URL runs in demo mode (lib/demo.ts) instead.
@@ -52,9 +53,7 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
       } else if (detail.error === 'underdetermined' && Array.isArray(detail.questions)) {
         // An unanswered question is put back to the user: name what is missing.
         underdetermined = true
-        message = `${detail.message ?? 'The request does not pin these down.'}\n` +
-          (detail.questions as string[]).map(q => `  - ${q}`).join('\n') +
-          '\nReply with the missing values and I will add them to your request.'
+        message = missingValuesMessage(detail.questions as string[])
       } else if (typeof detail.message === 'string') {
         message = detail.message
       } else {
@@ -514,11 +513,17 @@ export async function compilePCB(
 
 export async function login(email: string, password: string): Promise<{ access_token: string }> {
   if (DEMO_MODE) return demoRequest('POST', '/auth/login')
-  const res = await fetch(`${BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ username: email, password }),
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username: email, password }),
+    })
+  } catch {
+    // The browser's own words for this are "Failed to fetch", which tells a person nothing.
+    throw new Error('The server could not be reached. Check that the backend is running, then try again.')
+  }
   if (!res.ok) throw new Error('Invalid credentials')
   return res.json()
 }
@@ -542,3 +547,97 @@ export async function fetchHealth(): Promise<HealthResponse> {
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`)
   return res.json()
 }
+
+// ── The library: saved designs, the projects they are filed under ───────────
+// None of these is called in demo mode: there is no account to keep a library for.
+
+export interface DesignSummary {
+  circuit_id: string
+  intent: string
+  application_class: string | null
+  version: number
+  simulation_passed: boolean | null
+  created_at: string | null
+  updated_at: string | null
+  target_mcu: string | null
+  project_id: string | null
+}
+
+/** A saved design, opened again: the generate response's shape, re-derived from the stored IR. */
+export interface DesignView extends GenerateResponse {
+  project_id: string | null
+  created_at: string | null
+  updated_at: string | null
+  /** False for a design saved before requirements were stored: it can be read, not patched. */
+  patchable: boolean
+}
+
+export interface Project { id: string; name: string; created_at: string | null }
+
+export interface HistoryEntry {
+  from_version: number
+  to_version: number
+  kind: string
+  changes: string[] | null
+  predict_delta: string[]
+  prompted_by: string | null
+  created_at: string | null
+}
+export interface DesignHistory {
+  circuit_id: string
+  current_version: number
+  patchable: boolean
+  entries: HistoryEntry[]
+}
+
+async function apiSend<T>(method: 'PUT' | 'POST', path: string, body: unknown, token: string): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method, headers: authHeaders(token), body: JSON.stringify(body) })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    const detail = err.detail
+    throw new Error(Array.isArray(detail)
+      ? detail.map((d: { msg?: string }) => d.msg).join('; ')
+      : typeof detail === 'string' ? detail : `HTTP ${res.status}`)
+  }
+  return res.json()
+}
+
+export const listDesigns = (token: string) => apiGet<DesignSummary[]>('/design/list', token)
+export const openDesign = (circuitId: string, token: string) => apiGet<DesignView>(`/design/${circuitId}`, token)
+export const getHistory = (circuitId: string, token: string) =>
+  apiGet<DesignHistory>(`/design/${circuitId}/history`, token)
+export const listProjects = (token: string) => apiGet<Project[]>('/projects', token)
+export const createProject = (name: string, token: string) => apiSend<Project>('POST', '/projects', { name }, token)
+export const fileDesign = (circuitId: string, projectId: string | null, token: string) =>
+  apiSend<{ circuit_id: string; project_id: string | null }>('PUT', `/design/${circuitId}/project`, { project_id: projectId }, token)
+
+/** Who a stored token belongs to. Throws when it has expired or was never valid. */
+export const whoAmI = (token: string) => apiGet<{ id: string; email: string }>('/auth/me', token)
+
+// ── The parts catalogue ─────────────────────────────────────────────────────
+
+export interface CataloguePart {
+  part_number: string
+  manufacturer: string | null
+  category: string | null
+  package: string | null
+  value: string | null
+  description: string | null
+  supply_voltage_min: number | null
+  supply_voltage_max: number | null
+  current_draw_ma: number | null
+  unit_price_usd: number | null
+  price_asof: string | null
+  price_source: string | null
+  lcsc_pn: string | null
+  digikey_pn: string | null
+}
+export interface PartSearch { query: string; results: CataloguePart[]; catalogue_size: number; categories: string[] }
+
+/** Search the catalogue as someone types. A lookup only: finding a part adds it to nothing. */
+export const searchParts = (query: string, token: string) =>
+  apiGet<PartSearch>(`/parts?q=${encodeURIComponent(query)}&limit=8`, token)
+
+/** Queue a fresh simulation of a stored design. Returns the job to poll. */
+export const startSimulation = (circuitId: string, token: string) =>
+  apiSend<{ job_id: string; status: string }>('POST', `/design/${circuitId}/simulation/start`, {}, token)

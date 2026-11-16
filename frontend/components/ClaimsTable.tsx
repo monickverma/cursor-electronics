@@ -17,10 +17,10 @@
 import type { Claim, ValidationCoverage, Verdict } from '@/lib/api'
 
 const VERDICT: Record<Verdict, { label: string; cls: string; rank: number }> = {
-  fails:            { label: 'fails',              cls: 'text-red-300 border-red-700 bg-red-900/20',          rank: 0 },
+  fails:            { label: 'fails',              cls: 'text-bad border-bad bg-bad/10',          rank: 0 },
   not_assessed:     { label: 'not assessed',       cls: 'text-glow border-glow/60 bg-glow/10',                rank: 1 },
   holds_defeasible: { label: 'holds, defeasible',  cls: 'text-lavender border-lavender/50 bg-lavender/10',    rank: 2 },
-  holds:            { label: 'holds',              cls: 'text-green-300 border-green-700 bg-green-900/20',    rank: 3 },
+  holds:            { label: 'holds',              cls: 'text-ok border-ok bg-ok/10',    rank: 3 },
   not_applicable:   { label: 'not applicable',     cls: 'text-muted border-border bg-surface',                rank: 4 },
   out_of_scope:     { label: 'out of scope',       cls: 'text-muted border-border bg-surface',                rank: 5 },
 }
@@ -39,7 +39,7 @@ export default function ClaimsTable({ coverage }: { coverage: ValidationCoverage
 
   return (
     <section aria-label="Design claims">
-      <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'EB Garamond, serif' }}>
+      <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
         What this design is claimed to do
       </h3>
 
@@ -53,7 +53,7 @@ export default function ClaimsTable({ coverage }: { coverage: ValidationCoverage
       </div>
 
       {failing > 0 && (
-        <p className="text-sm text-red-300 mb-3">{failing} claim(s) fail — read those rows first.</p>
+        <p className="text-sm text-bad mb-3">{failing} claim(s) fail — read those rows first.</p>
       )}
       {coverage.not_assessed.length > 0 && (
         <p className="text-sm text-glow mb-3">

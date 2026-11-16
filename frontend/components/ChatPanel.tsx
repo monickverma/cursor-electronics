@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { generateDesign, patchDesign, login, register, UnderdeterminedError, GenerateResponse, PatchResponse } from '@/lib/api'
 import { DEMO_MODE, DEMO_PROMPTS } from '@/lib/demo'
+import FloatWindow from '@/components/FloatWindow'
+import Markdown, { excerpt } from '@/components/Markdown'
 
-interface Message {
+export interface Message {
   role: 'user' | 'assistant' | 'error'
   text: string
   timestamp: Date
@@ -15,11 +17,21 @@ interface Props {
   token: string
   onTokenChange: (t: string) => void
   currentCircuitId?: string
+  /** Which conversation this is. When it changes, the log is replaced by `initialMessages`. */
+  threadKey?: string
+  /** The conversation so far, when a saved design is opened from the library. */
+  initialMessages?: Message[]
+  /** A request to place in the prompt bar, ready to send (a template chosen on the front page). */
+  seedPrompt?: string
 }
 
 type AuthMode = 'login' | 'register'
 
-export default function ChatPanel({ onResult, token, onTokenChange, currentCircuitId }: Props) {
+/**
+ * The prompt bar under the headline, and the conversation that hangs below it.
+ * Before sign-in it is the sign-in window instead.
+ */
+export default function ChatPanel({ onResult, token, onTokenChange, currentCircuitId, threadKey, initialMessages, seedPrompt }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,12 +41,34 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
   const [email, setEmail] = useState('test@circuitos.dev')
   const [password, setPassword] = useState('TestPass123!')
   const [authError, setAuthError] = useState('')
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const logRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // A different conversation (a design opened from the library, or a new one):
+  // start from its messages, and drop anything half-asked in the old one.
+  const startWith = useRef(initialMessages)
+  startWith.current = initialMessages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (threadKey === undefined) return
+    setMessages(startWith.current ?? [])
+    setPendingPrompt(null)
+    setInput('')
+  }, [threadKey])
+
+  // A template picked on the front page: written into the bar once the person is
+  // signed in, and left for them to send.
+  useEffect(() => {
+    if (seedPrompt && token) setInput(seedPrompt)
+  }, [seedPrompt, token])
+
+  // Bring the latest exchange to the top of the log, so a reply is read from its
+  // first line. Only the log scrolls; the page itself does not jump.
+  useEffect(() => {
+    const log = logRef.current
+    if (!log) return
+    const asked = Array.from(log.querySelectorAll<HTMLElement>('[data-role="user"]')).pop()
+    log.scrollTop = asked ? asked.offsetTop : log.scrollHeight
+  }, [messages, loading])
 
   useEffect(() => {
     const el = textareaRef.current
@@ -77,7 +111,12 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
         res = await generateDesign(prompt, token)
         setPendingPrompt(null)
         const g = res as GenerateResponse
-        const summary = `Generated ${g.application_class}${g.target_mcu ? ` on ${g.target_mcu}` : ''} — v${g.version}.\n\n${g.explanation ? `${g.explanation.slice(0, 360)}…` : 'The explanation is being written; it appears under Validation in about a minute.'}`
+        // The opening of the explanation, cut between paragraphs; the whole of it is under Validation.
+        const opening = g.explanation ? excerpt(g.explanation, 360) : null
+        const summary = `Generated ${g.application_class}${g.target_mcu ? ` on ${g.target_mcu}` : ''} — v${g.version}.\n\n${
+          opening
+            ? `${opening.text}${opening.cut ? '\n\nThe rest is under Validation.' : ''}`
+            : 'The explanation is being written; it appears under Validation in about a minute.'}`
         setMessages(prev => [...prev, { role: 'assistant', text: summary, timestamp: new Date() }])
       }
       onResult(res)
@@ -94,314 +133,160 @@ export default function ChatPanel({ onResult, token, onTokenChange, currentCircu
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  /* ── Auth screen ───────────────────────────────────────────── */
+  /* ── Sign-in window ────────────────────────────────────────── */
   if (!token) {
     return (
-      <div
-        className="flex-1 flex items-center justify-center"
-        style={{ padding: '2rem 1.5rem', background: 'var(--lumen)' }}
-      >
-        <div style={{ width: '100%', maxWidth: 320 }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'var(--h4)',
-              color: 'var(--vast)',
-              fontStyle: 'italic',
-              textAlign: 'center',
-              marginBottom: '1.75rem',
-            }}
-          >
-            {authMode === 'login' ? 'Welcome back' : 'Get started'}
-          </h2>
-
-          <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              className="input-light"
-              style={{ padding: '10px 14px', width: '100%' }}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className="input-light"
-              style={{ padding: '10px 14px', width: '100%' }}
-            />
-            {authError && (
-              <p style={{ fontSize: 'var(--body-xs)', color: '#dc2626' }}>{authError}</p>
-            )}
-            <button
-              type="submit"
-              className="btn-amber"
-              style={{ padding: '11px 0', width: '100%', marginTop: 4 }}
-            >
-              {authMode === 'login' ? 'Sign in' : 'Create account'}
-            </button>
-          </form>
-
+      <FloatWindow id="auth" title={authMode === 'login' ? 'Welcome back' : 'Get started'} className="w-full max-w-[380px] text-left">
+        <form onSubmit={handleAuth} className="flex flex-col gap-3 p-5">
+          <input
+            type="email"
+            placeholder="Email address"
+            aria-label="Email address"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="flow-field"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            aria-label="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            className="flow-field"
+          />
+          {authError && <p className="text-sm text-bad">{authError}</p>}
+          <button type="submit" className="flow-btn !bg-ink !text-paper mt-1">
+            {authMode === 'login' ? 'Sign in' : 'Create account'}
+          </button>
           <button
+            type="button"
             onClick={() => setAuthMode(m => m === 'login' ? 'register' : 'login')}
-            style={{
-              display: 'block',
-              width: '100%',
-              marginTop: 12,
-              textAlign: 'center',
-              fontSize: 'var(--body-xs)',
-              color: 'var(--text-muted-light)',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--vast)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-muted-light)'}
+            className="min-h-[44px] font-mono text-xs text-muted underline underline-offset-4 hover:text-cream"
           >
             {authMode === 'login' ? 'No account? Register →' : '← Back to sign in'}
           </button>
-        </div>
-      </div>
+        </form>
+      </FloatWindow>
     )
   }
 
-  /* ── Chat screen ───────────────────────────────────────────── */
+  /* ── Prompt bar and conversation ───────────────────────────── */
   return (
-    <div className="flex-1 flex flex-col min-h-0" style={{ background: 'var(--lumen)' }}>
-
-      {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto scroll-light"
-        style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: 10 }}
-      >
-        {messages.length === 0 && (
-          <div style={{ paddingTop: '0.5rem' }}>
-            <p style={{ fontSize: 'var(--body-xs)', color: 'var(--text-muted-light)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>
-              {DEMO_MODE ? 'Recorded examples — click to open' : 'Try an example'}
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {EXAMPLES.map((ex, i) => (
-                <button
-                  key={i}
-                  // In demo mode an example is a recording: open it at once.
-                  onClick={() => (DEMO_MODE ? handleSend(ex) : setInput(ex))}
-                  style={{
-                    textAlign: 'left',
-                    fontSize: 'var(--body-xs)',
-                    color: 'var(--text-muted-light)',
-                    background: 'white',
-                    border: '1px solid var(--border-light)',
-                    borderRadius: 'var(--r-sm)',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    transition: 'border-color 0.15s, color 0.15s',
-                    lineHeight: 1.5,
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.borderColor = 'var(--vast)'
-                    el.style.color = 'var(--vast)'
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.borderColor = 'var(--border-light)'
-                    el.style.color = 'var(--text-muted-light)'
-                  }}
-                >
-                  {ex}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {messages.map((msg, i) => (
-          <MessageBubble key={i} msg={msg} />
-        ))}
-
-        {loading && <TypingIndicator />}
-        <div ref={bottomRef} />
+    <div className="w-full max-w-[760px] flex flex-col gap-3 text-left">
+      <div className="flex flex-wrap items-stretch border-[1.5px] border-ink bg-paper shadow-[5px_5px_0_rgba(254,254,254,0.3)]">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder={DEMO_MODE ? 'Pick a recorded example…' : currentCircuitId ? 'Request a change…' : 'Describe your circuit…'}
+          rows={1}
+          disabled={loading}
+          className="flow-field !border-0 flex-[999_1_240px] min-w-0 resize-none leading-normal"
+        />
+        <button
+          type="button"
+          onClick={() => handleSend()}
+          disabled={loading || !input.trim()}
+          className="flex-[1_1_auto] min-h-[44px] px-6 bg-ink text-paper font-sans text-base font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {loading ? '…' : currentCircuitId ? 'Rebuild' : 'Build'}
+        </button>
       </div>
 
-      {/* Input */}
-      <div
-        style={{
-          borderTop: '1px solid var(--border-light)',
-          padding: '0.875rem 1.25rem',
-          background: 'var(--lumen)',
-        }}
-      >
-        {DEMO_MODE && messages.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+      {/* The key hint is for a first visit; with a design open it only pushes the windows down. */}
+      {(DEMO_MODE || !currentCircuitId) && (
+        <p className="text-xs text-center text-paper">
+          {DEMO_MODE
+            ? 'Demo mode: only the recorded examples can be opened.'
+            : 'Enter to send · Shift+Enter for newline'}
+        </p>
+      )}
+
+      {(messages.length === 0 || DEMO_MODE) && (
+        <div className="flex flex-col gap-2">
+          {messages.length === 0 && (
+            <p className="font-pixel text-lg leading-none text-center text-paper">
+              {DEMO_MODE ? 'Recorded examples — click to open' : 'Try an example'}
+            </p>
+          )}
+          <div className="flex flex-wrap justify-center gap-2">
             {EXAMPLES.map((ex, i) => (
               <button
                 key={i}
-                onClick={() => handleSend(ex)}
+                type="button"
+                // In demo mode an example is a recording: open it at once.
+                onClick={() => (DEMO_MODE ? handleSend(ex) : setInput(ex))}
                 disabled={loading}
                 title={ex}
-                style={{
-                  fontSize: 11,
-                  color: 'var(--text-muted-light)',
-                  background: 'white',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 100,
-                  padding: '3px 10px',
-                  cursor: 'pointer',
-                  maxWidth: '100%',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
+                className="min-h-[44px] max-w-full px-3 py-2 bg-paper text-ink border-[1.5px] border-ink font-mono text-xs text-left hover:bg-ink hover:text-paper hover:border-paper disabled:opacity-50"
               >
-                {ex.length > 42 ? `${ex.slice(0, 40)}…` : ex}
+                {messages.length > 0 && ex.length > 42 ? `${ex.slice(0, 40)}…` : ex}
               </button>
             ))}
           </div>
-        )}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder={DEMO_MODE ? 'Pick a recorded example…' : currentCircuitId ? 'Request a change…' : 'Describe your circuit…'}
-            rows={1}
-            disabled={loading}
-            className="input-light"
-            style={{
-              flex: 1,
-              padding: '9px 13px',
-              resize: 'none',
-              lineHeight: 1.5,
-            }}
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={loading || !input.trim()}
-            className="btn-amber"
-            style={{ padding: '9px 16px', flexShrink: 0 }}
-          >
-            {loading ? '…' : '→'}
-          </button>
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted-light)', marginTop: 6 }}>
-          {DEMO_MODE
-            ? 'Demo mode: only the recorded examples above can be opened.'
-            : 'Enter to send · Shift+Enter for newline'}
+      )}
+
+      {(messages.length > 0 || loading) && (
+        <div
+          ref={logRef}
+          role="log"
+          aria-label="Conversation"
+          className={`paper relative overflow-y-auto border-[1.5px] border-ink shadow-[5px_5px_0_rgba(254,254,254,0.3)] divide-y divide-border/20 ${
+            // With a design on the desktop the log gives way to it; it still scrolls.
+            currentCircuitId ? 'max-h-[128px]' : 'max-h-[260px]'}`}
+        >
+          {messages.map((msg, i) => (
+            <MessageRow key={i} msg={msg} />
+          ))}
+          {loading && (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <span className="font-pixel text-lg leading-none w-24 shrink-0">CIRCUIT OS</span>
+              <span className="flex items-center gap-1" aria-label="Working">
+                {[0, 1, 2].map(i => (
+                  <span key={i} className={`dot-${i + 1} inline-block w-1.5 h-1.5 bg-cream`} />
+                ))}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── One line of the conversation ──────────────────────────────── */
+function MessageRow({ msg }: { msg: Message }) {
+  const who = msg.role === 'user' ? 'YOU' : msg.role === 'error' ? 'NOT BUILT' : 'CIRCUIT OS'
+  return (
+    <div data-role={msg.role} className="fade-up flex flex-wrap gap-x-3 gap-y-1 px-4 py-3">
+      <span className={`font-pixel text-lg leading-none w-24 shrink-0 pt-0.5 ${msg.role === 'error' ? 'text-bad' : 'text-cream'}`}>
+        {who}
+      </span>
+      {msg.role === 'assistant' ? (
+        <Markdown text={msg.text} className="flex-[1_1_240px] min-w-0" />
+      ) : (
+        <p className={`flex-[1_1_240px] min-w-0 text-sm leading-relaxed whitespace-pre-wrap ${
+          msg.role === 'error' ? 'text-bad' : 'font-medium text-cream'
+        }`}>
+          {msg.text}
         </p>
-      </div>
+      )}
     </div>
   )
 }
 
-/* ── Message bubble ────────────────────────────────────────────── */
-function MessageBubble({ msg }: { msg: Message }) {
-  const isUser = msg.role === 'user'
-  const isError = msg.role === 'error'
-
-  if (isUser) {
-    return (
-      <div className="fade-up" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <div
-          style={{
-            maxWidth: '82%',
-            background: 'var(--vast)',
-            color: 'var(--lumen)',
-            borderRadius: 'var(--r-md) var(--r-md) 4px var(--r-md)',
-            padding: '9px 14px',
-            fontSize: 'var(--body-sm)',
-            lineHeight: 1.6,
-          }}
-        >
-          {msg.text}
-        </div>
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className="fade-up" style={{ display: 'flex', justifyContent: 'flex-start' }}>
-        <div
-          style={{
-            maxWidth: '88%',
-            background: '#fff0f0',
-            border: '1px solid #fecaca',
-            borderRadius: 'var(--r-md) var(--r-md) var(--r-md) 4px',
-            padding: '9px 14px',
-            fontSize: 'var(--body-xs)',
-            color: '#dc2626',
-            lineHeight: 1.6,
-          }}
-        >
-          {msg.text}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="fade-up" style={{ display: 'flex', justifyContent: 'flex-start' }}>
-      <div
-        style={{
-          maxWidth: '88%',
-          background: 'white',
-          border: '1px solid var(--border-light)',
-          borderRadius: 'var(--r-md) var(--r-md) var(--r-md) 4px',
-          padding: '10px 14px',
-          fontSize: 'var(--body-sm)',
-          color: 'var(--vast)',
-          lineHeight: 1.7,
-          whiteSpace: 'pre-wrap',
-        }}
-      >
-        {msg.text}
-      </div>
-    </div>
-  )
-}
-
-/* ── Typing indicator ──────────────────────────────────────────── */
-function TypingIndicator() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-      <div
-        style={{
-          background: 'white',
-          border: '1px solid var(--border-light)',
-          borderRadius: 'var(--r-md) var(--r-md) var(--r-md) 4px',
-          padding: '12px 16px',
-          display: 'flex',
-          gap: 4,
-          alignItems: 'center',
-        }}
-      >
-        {[0, 1, 2].map(i => (
-          <div
-            key={i}
-            className={`dot-${i + 1}`}
-            style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: 'var(--text-muted-light)',
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
+// Each of these states every value its generator needs, so it builds as written
+// instead of coming back with questions. Checked against the live backend 2026-11-15.
 const LIVE_EXAMPLES = [
-  'Temperature sensor with DHT22, alert relay above 40°C',
-  'Arduino + MAX485 RS-485 Modbus RTU master, 9600 baud',
-  'LED blink with current-limiting resistor',
-  'RC low-pass filter with 1kHz cutoff',
-  'Voltage divider stepping 12V down to 5V',
+  'Room monitor: an Uno reads a DHT22 on a 2 m cable, sounds a 30 mA buzzer above 30 °C, and lights a status LED at 10 mA',
+  'Arduino Uno + MAX485 RS-485 Modbus RTU master at 9600 baud on a 5 V supply',
+  'Arduino Uno driving a status LED at 10 mA from a 5 V supply',
+  'RC low-pass filter with a 1 kHz cutoff on a 5 V supply',
+  'Voltage divider stepping 5 V down to 3.3 V',
 ]
 
 // Demo mode offers exactly the prompts that have recordings (lib/demo/prompts.json).

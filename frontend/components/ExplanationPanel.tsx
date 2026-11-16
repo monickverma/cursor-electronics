@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { getExplanation, type ExplanationView } from '@/lib/api'
+import Markdown from '@/components/Markdown'
 
 interface Props {
   circuitId?: string
@@ -66,11 +67,11 @@ export default function ExplanationPanel({ circuitId, token, explanation, status
   }
   return (
     <section>
-      <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'EB Garamond, serif' }}>
+      <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
         Design Explanation
       </h3>
-      <div className="text-sm text-cream-dim leading-relaxed whitespace-pre-wrap bg-surface border border-border rounded p-4">
-        {view.explanation}
+      <div className="bg-surface border border-border rounded p-4" data-testid="explanation">
+        <Markdown text={view.explanation} />
       </div>
     </section>
   )

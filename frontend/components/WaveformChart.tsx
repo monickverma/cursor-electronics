@@ -15,7 +15,7 @@ const W = 640
 const H = 260
 const PAD = { left: 56, right: 16, top: 12, bottom: 36 }
 const STROKES = ['stroke-lavender', 'stroke-glow', 'stroke-cream', 'stroke-green-400', 'stroke-sky-400', 'stroke-rose-400']
-const SWATCH = ['bg-lavender', 'bg-glow', 'bg-cream', 'bg-green-400', 'bg-sky-400', 'bg-rose-400']
+const SWATCH = ['bg-lavender', 'bg-glow', 'bg-cream', 'bg-ok', 'bg-sky-400', 'bg-rose-400']
 
 const PREFIXES: Array<[number, string]> = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n']]
 

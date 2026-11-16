@@ -1,22 +1,23 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Inter_Tight } from 'next/font/google'
-import Lenis from 'lenis'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import styles from './LandingPage.module.css'
+/**
+ * The front page, in the same world as the app: the live water, windows you can
+ * drag, and a real design to poke at before signing in.
+ *
+ * The schematic on this page is the app's own SchematicDrawing, fed the recorded
+ * output for one prompt (lib/landingExample.ts). Nothing on it is drawn for show.
+ */
 
-// One family, three weights — the study site uses GT Standard (licensed); Inter Tight is the free stand-in.
-const landingFont = Inter_Tight({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  display: 'block',
-  variable: '--font-landing',
-})
+import { useEffect, useState } from 'react'
+import FlowBackground from '@/components/FlowBackground'
+import FloatWindow from '@/components/FloatWindow'
+import SchematicDrawing from '@/components/SchematicDrawing'
+import { LANDING_IR, LANDING_PROMPT } from '@/lib/landingExample'
+import { prefersCalm } from '@/lib/flow'
 
 interface Props {
-  onGetStarted: () => void
+  /** Open the app. A prompt, when given, is placed in the prompt bar ready to send. */
+  onGetStarted: (prompt?: string) => void
 }
 
 const DEMO_URL =
@@ -24,46 +25,37 @@ const DEMO_URL =
 const REPO_URL = 'https://github.com/monickverma/cursor-electronics'
 const DOCS_URL = `${REPO_URL}#readme`
 
+// Each prompt states every value its generator needs, so it builds as written.
 const TEMPLATES = [
   {
-    label: 'DHT22 Sensor',
-    desc: 'Temperature & humidity monitoring with relay alert above configurable threshold.',
-    outputs: ['Schematic', 'Firmware', 'Simulation', 'BOM'],
-    simLines: ['VCC    5.0000V  ✓', 'GND    0.0000V  ✓', 'DATA   3.3000V  ✓'],
-    grade: 'DC operating point — PASS',
-    ratio: '5 / 4',
+    label: 'Room monitor',
+    desc: 'Several blocks on one board: a DHT22, a buzzer through a transistor switch, a status LED.',
+    outputs: ['Board', 'Schematic', 'Firmware', 'Simulation', 'BOM'],
+    prompt: 'Room monitor: an Uno reads a DHT22 on a 2 m cable, sounds a 30 mA buzzer above 30 °C, and lights a status LED at 10 mA',
   },
   {
     label: 'RS-485 Modbus',
-    desc: 'MAX485 transceiver, Modbus RTU master, 9600 baud. Bias + termination resistors included.',
-    outputs: ['Schematic', 'Firmware', 'Simulation', 'BOM'],
-    simLines: ['RS485_A  2.5000V  ✓', 'RS485_B  2.5000V  ✓', 'DE_RE    5.0000V  ✓'],
-    grade: 'RS-485 termination — PASS',
-    ratio: '4 / 3',
+    desc: 'MAX485 transceiver as a Modbus RTU master, with bias and termination resistors.',
+    outputs: ['Board', 'Schematic', 'Firmware', 'Simulation', 'BOM'],
+    prompt: 'Arduino Uno + MAX485 RS-485 Modbus RTU master at 9600 baud on a 5 V supply',
   },
   {
-    label: 'LED Control',
-    desc: 'Current-limiting resistor for GPIO-driven LED. Arduino Uno PWM or digital output.',
-    outputs: ['Schematic', 'Firmware', 'Simulation', 'BOM'],
-    simLines: ['LED_A   4.3500V  ✓', 'LED_K   0.0000V  ✓', 'I_LED   18.2mA  ✓'],
-    grade: 'DC operating point — PASS',
-    ratio: '1 / 1',
+    label: 'LED indicator',
+    desc: 'A current-limiting resistor sized for a GPIO-driven LED, proved over part tolerances.',
+    outputs: ['Board', 'Schematic', 'Firmware', 'Simulation', 'BOM'],
+    prompt: 'Arduino Uno driving a status LED at 10 mA from a 5 V supply',
   },
   {
-    label: 'RC Filter',
-    desc: '1590Ω + 100nF → 1kHz low-pass cutoff. ngspice AC sweep validates -3dB point.',
+    label: 'RC low-pass filter',
+    desc: 'R and C picked from standard values for the cutoff you ask for; ngspice checks the −3 dB point.',
     outputs: ['Schematic', 'Simulation', 'BOM'],
-    simLines: ['f=1001Hz  Vout=0.707V  ✓', 'f=500Hz   Vout=0.894V  ✓', 'f=2kHz    Vout=0.447V  ✓'],
-    grade: 'AC sweep -3dB @ 1001 Hz — PASS',
-    ratio: '5 / 4',
+    prompt: 'RC low-pass filter with a 1 kHz cutoff on a 5 V supply',
   },
   {
-    label: 'Voltage Divider',
-    desc: '12V → 5V output. DC operating point analysis confirms node voltages within 15%.',
+    label: 'Voltage divider',
+    desc: 'Two standard resistors for the ratio you ask for; the DC operating point is simulated.',
     outputs: ['Schematic', 'Simulation', 'BOM'],
-    simLines: ['VIN   12.0000V  ✓', 'VOUT   5.0400V  ✓', 'GND    0.0000V  ✓'],
-    grade: 'DC operating point — PASS',
-    ratio: '1 / 1',
+    prompt: 'Voltage divider stepping 5 V down to 3.3 V',
   },
 ]
 
@@ -73,439 +65,213 @@ const FEATURES = [
     desc: 'ngspice AC/DC analysis runs on every design. A 15% tolerance gate stops a bad design before you order parts.',
   },
   {
-    title: 'KiCad schematic',
-    desc: 'Net-label .kicad_sch output you can open immediately in KiCad. No manual net assignment.',
+    title: 'The board in 3D',
+    desc: 'Parts placed on a board you can orbit, with design-rule checks listed beside it. Experimental: routing is not finished, and it says so.',
   },
   {
-    title: 'Arduino firmware',
-    desc: 'Deterministic Jinja2 templates, built with PlatformIO. Firmware is shown only once it compiles.',
+    title: 'KiCad schematic',
+    desc: 'A drawing you can trace net by net, and the net-label .kicad_sch file that opens in KiCad.',
+  },
+  {
+    title: 'Firmware that compiled',
+    desc: 'Deterministic templates, built with PlatformIO. Firmware is shown only once it compiles.',
   },
   {
     title: 'Component BOM',
     desc: 'Every row matches the design. Prices are dated catalogue prices, or a live Mouser quote when configured — a price never gates a validation.',
   },
   {
-    title: 'AI explanation',
-    desc: 'Every component explained with the consequences of changing it: "If you change R1 from 10k to 4.7k, here is what breaks."',
-  },
-  {
-    title: 'Patch & edit',
+    title: 'Patch and edit',
     desc: 'Change a value in plain English. The requirement is edited and the design re-derived through the same checks; a change that cannot be justified is refused and the previous version is kept.',
   },
 ]
 
 const PIPELINE = [
-  { step: 'Parsing intent via tool_use', done: true },
-  { step: 'Requirement → IntentIR', done: true },
-  { step: 'Structural validation', done: true },
-  { step: 'SPICE netlist compiler', done: true },
-  { step: 'Arduino firmware (Jinja2)', done: true },
-  { step: 'KiCad schematic (net labels)', done: true },
-  { step: 'BOM compiler', done: true },
-  { step: 'Simulation queued → Celery', done: false },
+  'Parsing intent via tool_use',
+  'Requirement → IntentIR',
+  'Structural validation',
+  'SPICE netlist compiler',
+  'Arduino firmware (Jinja2)',
+  'KiCad schematic (net labels)',
+  'BOM compiler',
+  'Simulation queued → Celery',
 ]
 
-export default function LandingPage({ onGetStarted }: Props) {
-  const rootRef = useRef<HTMLDivElement>(null)
-  const navRef = useRef<HTMLElement>(null)
-  const heroRef = useRef<HTMLElement>(null)
-  const zoomRef = useRef<HTMLDivElement>(null)
-  const mainRef = useRef<HTMLElement>(null)
-  const footerRef = useRef<HTMLElement>(null)
-  const tipRef = useRef<HTMLSpanElement>(null)
-
+/** The pipeline's steps, ticking through once and resting on the queued simulation. */
+function Pipeline() {
+  const [done, setDone] = useState(PIPELINE.length)
   useEffect(() => {
-    const root = rootRef.current
-    const nav = navRef.current
-    const hero = heroRef.current
-    const zoom = zoomRef.current
-    const main = mainRef.current
-    const footer = footerRef.current
-    const tip = tipRef.current
-    if (!root || !nav || !hero || !zoom || !main || !footer || !tip) return
-
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const html = document.documentElement
-    const prev = {
-      gutter: html.style.scrollbarGutter,
-      overscroll: html.style.overscrollBehavior,
-      bg: document.body.style.background,
-      restoration: history.scrollRestoration,
-    }
-    html.style.scrollbarGutter = 'stable'
-    html.style.overscrollBehavior = 'none'
-    document.body.style.background = '#000'
-    history.scrollRestoration = 'manual'
-    window.scrollTo(0, 0)
-
-    gsap.registerPlugin(ScrollTrigger)
-
-    // Smooth scroll with inertia: Lenis defaults (lerp 0.1), driven by the GSAP clock
-    // so scroll and every scrubbed animation share one timer.
-    let lenis: Lenis | null = null
-    let raf: ((t: number) => void) | null = null
-    if (!reduce) {
-      lenis = new Lenis()
-      raf = (t: number) => lenis!.raf(t * 1000)
-      gsap.ticker.add(raf)
-      gsap.ticker.lagSmoothing(0)
-      lenis.on('scroll', ScrollTrigger.update)
-    }
-
-    // Menu: starts vertically centred and scrolls away with the page, then sticks to the top.
-    // After the hero it blends with `difference` so it reads on both black and white.
-    const placeNav = () => {
-      const y = window.scrollY
-      const wide = window.innerWidth >= 1024
-      const off = wide ? Math.max(0, window.innerHeight / 2 - nav.offsetHeight / 2 - y) : 0
-      nav.style.transform = `translate3d(0, ${off}px, 0)`
-      nav.classList.toggle(styles.navBlend, y > window.innerHeight * 0.5)
-    }
-    placeNav()
-    window.addEventListener('scroll', placeNav, { passive: true })
-    window.addEventListener('resize', placeNav)
-
-    // Cursor label over [data-tooltip] elements.
-    let px = -100
-    let py = -100
-    const updateTip = () => {
-      const hit = document.elementFromPoint(px, py)?.closest<HTMLElement>('[data-tooltip]')
-      if (hit) {
-        tip.textContent = hit.dataset.tooltip ?? ''
-        tip.style.opacity = '1'
-      } else {
-        tip.style.opacity = '0'
-      }
-      tip.style.transform = `translate3d(${px + 16}px, ${py + 16}px, 0)`
-    }
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return
-      px = e.clientX
-      py = e.clientY
-      updateTip()
-    }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    window.addEventListener('scroll', updateTip, { passive: true })
-
-    const ctx = gsap.context(() => {
-      const reveals = gsap.utils.toArray<HTMLElement>('[data-reveal]', root)
-      const rules = gsap.utils.toArray<HTMLElement>('[data-rule] > i', root)
-      const zooms = gsap.utils.toArray<HTMLElement>('[data-zoom]', root)
-
-      if (reduce) {
-        gsap.set(reveals, { opacity: 1, y: 0 })
-        gsap.set(rules, { xPercent: 0 })
-        return
-      }
-
-      // Hero: grows and fades while it scrolls away; plays backward on the way up.
-      gsap.set(zoom, { willChange: 'transform, opacity' })
-      gsap.fromTo(
-        zoom,
-        { scale: 1, opacity: 1 },
-        {
-          scale: 2,
-          opacity: 0,
-          ease: 'none',
-          immediateRender: false,
-          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
-        },
-      )
-
-      // Footer: starts 80% of its height below and rises as the white page ends.
-      gsap.fromTo(
-        footer,
-        { yPercent: 80 },
-        {
-          yPercent: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: main,
-            start: 'bottom bottom',
-            end: () => `+=${footer.offsetHeight}`,
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        },
-      )
-
-      // Entry reveal: 20px up, fade in.
-      gsap.set(reveals, { y: 20 })
-      ScrollTrigger.batch(reveals, {
-        start: 'top 92%',
-        once: true,
-        onEnter: (els) =>
-          gsap.to(els, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', stagger: 0.08, overwrite: true }),
+    if (prefersCalm()) return
+    setDone(0)
+    const timer = setInterval(() => {
+      setDone(n => {
+        if (n >= PIPELINE.length) { clearInterval(timer); return n }
+        return n + 1
       })
-
-      // Panels settle from 1.2 → 1 once, as they enter.
-      zooms.forEach((el) => {
-        const inner = el.firstElementChild as HTMLElement | null
-        if (!inner) return
-        gsap.set(inner, { scale: 1.2 })
-        ScrollTrigger.create({
-          trigger: el,
-          start: 'top 92%',
-          once: true,
-          onEnter: () => {
-            inner.style.willChange = 'transform'
-            gsap.to(inner, {
-              scale: 1,
-              duration: 2.5,
-              ease: 'power2.out',
-              onComplete: () => {
-                inner.style.willChange = 'auto'
-              },
-            })
-          },
-        })
-      })
-
-      // Thin rules draw in from the left.
-      rules.forEach((line) => {
-        ScrollTrigger.create({
-          trigger: line.parentElement,
-          start: 'top 95%',
-          once: true,
-          onEnter: () => gsap.to(line, { xPercent: 101, duration: 1.2, ease: 'power4.inOut' }),
-        })
-      })
-    }, root)
-
-    ScrollTrigger.refresh()
-
-    return () => {
-      ctx.revert()
-      window.removeEventListener('scroll', placeNav)
-      window.removeEventListener('resize', placeNav)
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('scroll', updateTip)
-      if (raf) gsap.ticker.remove(raf)
-      gsap.ticker.lagSmoothing(500, 33)
-      lenis?.destroy()
-      html.style.scrollbarGutter = prev.gutter
-      html.style.overscrollBehavior = prev.overscroll
-      document.body.style.background = prev.bg
-      history.scrollRestoration = prev.restoration
-    }
+    }, 520)
+    return () => clearInterval(timer)
   }, [])
-
   return (
-    <div ref={rootRef} className={`${landingFont.variable} ${styles.root}`}>
-      {/* ── Nav ───────────────────────────────────────────── */}
-      <nav ref={navRef} className={styles.nav} aria-label="Primary">
-        <span className={styles.navBrand}>circuit os</span>
-        <span className={styles.navGroup}>
-          <a href="#templates" className={styles.ulink}>templates</a>
-          <a href="#included" className={styles.ulink}>included</a>
-          <a href="#explanation" className={styles.ulink}>explanation</a>
-          <a href={DOCS_URL} className={styles.ulink} target="_blank" rel="noopener noreferrer">docs</a>
-          <a href={REPO_URL} className={styles.ulink} target="_blank" rel="noopener noreferrer">github</a>
-        </span>
-        <span className={styles.navTag}>ai hardware compiler</span>
-        <span className={styles.navCta}>
-          <button type="button" className={`${styles.navButton} ${styles.ulink}`} onClick={onGetStarted}>
-            open app
-          </button>
-        </span>
-      </nav>
+    <div className="p-4 font-mono text-[13px] leading-7">
+      <p className="text-muted">$ describe &quot;{LANDING_PROMPT}&quot;</p>
+      <ol>
+        {PIPELINE.map((step, i) => {
+          const last = i === PIPELINE.length - 1
+          const reached = i < done
+          return (
+            <li key={step} className={reached ? 'text-cream' : 'text-muted/50'}>
+              <span aria-hidden="true" className="inline-block w-6">{!reached ? '·' : last ? '⟳' : '✓'}</span>
+              {i + 1}. {step}
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
 
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section ref={heroRef} className={styles.hero}>
-        <div ref={zoomRef} className={styles.heroZoom}>
-          <div className={`${styles.heroTerminal} ${styles.mono}`} aria-hidden="true">
-            <div>$ describe &quot;DHT22 alert above 30°C&quot;</div>
-            {PIPELINE.map((p, i) => (
-              <div key={p.step} className={p.done ? styles.done : styles.live}>
-                {p.done ? '✓' : '⟳'} {i + 1}. {p.step}
-              </div>
-            ))}
-          </div>
+export default function LandingPage({ onGetStarted }: Props) {
+  return (
+    <div className="flow-app">
+      <FlowBackground />
 
-          <div className={styles.heroBottom}>
-            <div className={`${styles.heroMeta} ${styles.small}`}>
-              <span>AI hardware compiler</span>
-              <span>Plain English in. Schematic, firmware, simulation and BOM out.</span>
-            </div>
-            <h1 className={styles.heroTitle}>
-              Don&apos;t draw,
-              <br />
-              just describe.
-            </h1>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Main (white) ──────────────────────────────────── */}
-      <main ref={mainRef} className={styles.main}>
-        <section className={styles.statement}>
-          <span className={`${styles.statementLabel} ${styles.small} ${styles.reveal}`} data-reveal>
-            AI hardware compiler
+      <div className="relative z-10">
+        <header className="flex flex-wrap items-stretch justify-between gap-2">
+          <span className="flex items-center min-h-[44px] px-3.5 bg-paper text-ink font-pixel text-2xl tracking-wider">
+            CIRCUIT OS
           </span>
-          <p className={`${styles.statementText} ${styles.big} ${styles.reveal}`} data-reveal>
-            Circuit OS turns a plain-English description into a validated schematic, firmware that
-            compiles, a SPICE simulation and a bill of materials — before a single part is ordered.
+          <nav aria-label="Primary" className="flex flex-wrap items-stretch gap-1">
+            <a href="#try" className="flex items-center min-h-[44px] px-3 text-sm underline underline-offset-4 hover:bg-paper hover:text-ink">try it</a>
+            <a href="#included" className="flex items-center min-h-[44px] px-3 text-sm underline underline-offset-4 hover:bg-paper hover:text-ink">included</a>
+            <a href="#templates" className="flex items-center min-h-[44px] px-3 text-sm underline underline-offset-4 hover:bg-paper hover:text-ink">templates</a>
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="flex items-center min-h-[44px] px-3 text-sm underline underline-offset-4 hover:bg-paper hover:text-ink">docs</a>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="flex items-center min-h-[44px] px-3 text-sm underline underline-offset-4 hover:bg-paper hover:text-ink">github</a>
+            <button type="button" className="flow-btn" onClick={() => onGetStarted()}>Open app</button>
+          </nav>
+        </header>
+
+        {/* ── Hero ─────────────────────────────────────────────── */}
+        <section className="flex flex-col items-center gap-6 px-6 pt-16 pb-14 text-center">
+          <p className="text-sm">AI hardware compiler ...... Phase 1 · v0.1.0-rc</p>
+          <h1 className="flow-headline max-w-[1200px]" style={{ fontSize: 'clamp(46px, 9.4vw, 136px)' }}>
+            Don&apos;t Draw; Just Describe.
+          </h1>
+          <p className="max-w-[58ch] font-sans text-lg leading-relaxed">
+            Plain English in. A schematic, a board, firmware, a simulation and a BOM out, with a reason
+            given for every part and a plain statement of what was not checked.
           </p>
-        </section>
-
-        <section className={styles.vision}>
-          <span className={styles.rule} data-rule><i /></span>
-          <span className={`${styles.visionLabel} ${styles.small} ${styles.reveal}`} data-reveal>
-            Principle
-          </span>
-          <div className={styles.visionBody}>
-            <p className={`${styles.normal} ${styles.reveal}`} data-reveal>
-              The language model never writes SPICE, KiCad files or firmware. It writes a structured
-              description of the requirement, and deterministic compilers turn that into every
-              output. The same requirement gives the same design, and a request that cannot be
-              justified is refused instead of negotiated. That is why a result can say what was
-              checked, and what was not.
-            </p>
-            <div className={`${styles.rows} ${styles.normal}`}>
-              <div className={styles.row}>
-                <span className={styles.rule} data-rule><i /></span>
-                <button type="button" className={styles.cta} onClick={onGetStarted}>
-                  <span>Open the app</span>
-                  <span aria-hidden="true">→</span>
-                  <span className={styles.ctaLines}><i className={styles.ctaLine1} /><i className={styles.ctaLine2} /></span>
-                </button>
-              </div>
-              <div className={styles.row}>
-                <a className={styles.cta} href={DEMO_URL} target="_blank" rel="noopener noreferrer">
-                  <span>Demo video</span>
-                  <span aria-hidden="true">→</span>
-                  <span className={styles.ctaLines}><i className={styles.ctaLine1} /><i className={styles.ctaLine2} /></span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Templates ───────────────────────────────────── */}
-        <section id="templates" className={styles.templates}>
-          <div className={`${styles.sectionHead} ${styles.normal}`} style={{ padding: 0 }}>
-            <h2>Templates</h2>
-            <button type="button" className={styles.ctaSecondary} onClick={onGetStarted}>
-              Open the app →
+          <div className="flex flex-wrap justify-center gap-3">
+            <button type="button" className="flow-btn !min-h-[52px] !px-7 !text-lg" onClick={() => onGetStarted()}>
+              Start a design →
             </button>
+            <a href={DEMO_URL} target="_blank" rel="noopener noreferrer"
+               className="flow-btn !min-h-[52px] !px-7 !text-lg inline-flex items-center !bg-transparent !text-paper !border-paper hover:!bg-paper hover:!text-ink">
+              Watch the demo
+            </a>
           </div>
-          <div className={styles.cols}>
-            {[
-              TEMPLATES.filter((_, i) => i % 2 === 0),
-              TEMPLATES.filter((_, i) => i % 2 === 1),
-            ].map((col, c) => (
-              <div key={c} className={c === 1 ? styles.colB : undefined}>
-                {col.map((t) => (
-                  <div key={t.label} className={`${styles.item} ${styles.normal} ${styles.reveal}`} data-reveal>
-                    <button
-                      type="button"
-                      className={styles.panel}
-                      style={{ aspectRatio: t.ratio }}
-                      data-zoom
-                      data-tooltip="Open the app"
-                      onClick={onGetStarted}
-                      aria-label={`${t.label} — open the app`}
-                    >
-                      <span className={`${styles.panelInner} ${styles.mono}`}>
-                        <span className={styles.panelTags}>{t.outputs.join(' · ')}</span>
-                        <span className={styles.panelLines}>
-                          {t.simLines.map((l) => (
-                            <span key={l}>{l}</span>
-                          ))}
-                        </span>
-                        <span className={styles.panelGrade}>✓ {t.grade}</span>
-                      </span>
-                    </button>
-                    <h3>{t.label}</h3>
-                    <p>{t.desc}</p>
+          <p className="text-xs">Move the pointer: the water follows. Every window on this page can be dragged.</p>
+        </section>
+
+        {/* ── A real design to try ─────────────────────────────── */}
+        <section id="try" className="px-6 pb-20 scroll-mt-6">
+          <div className="mx-auto max-w-[1280px] flex flex-wrap items-start gap-7">
+            <div className="flex-[4_1_340px] min-w-0 flex flex-col gap-7">
+              <FloatWindow id="landing-pipeline" title="compile" meta="1 model call">
+                <Pipeline />
+              </FloatWindow>
+              <FloatWindow id="landing-rule" title="The one rule">
+                <div className="p-4 flex flex-col gap-2">
+                  <p className="font-sans text-xl font-semibold leading-snug">
+                    The model writes the requirement. It never writes the circuit.
+                  </p>
+                  <p className="text-sm leading-relaxed text-cream-dim">
+                    Fixed generators turn the requirement into the design, and fixed compilers turn the
+                    design into SPICE, KiCad and firmware. The same request gives the same board, every time.
+                  </p>
+                </div>
+              </FloatWindow>
+            </div>
+            <div className="flex-[7_1_520px] min-w-0">
+              <FloatWindow id="landing-schematic" title="Schematic" meta="try it: point at a net, click a part" height={520}>
+                <SchematicDrawing ir={LANDING_IR} />
+              </FloatWindow>
+              <p className="mt-4 text-xs text-center">
+                The recorded output for &ldquo;{LANDING_PROMPT}&rdquo;. Click R1 to read why it is 280 Ω.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── What comes out ───────────────────────────────────── */}
+        <section id="included" className="px-6 pb-20 scroll-mt-6">
+          <div className="mx-auto max-w-[1280px] flex flex-col gap-8">
+            <h2 className="flow-headline text-center" style={{ fontSize: 'clamp(34px, 5vw, 68px)' }}>
+              One Sentence In; Six Things Out
+            </h2>
+            <div className="grid gap-7" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' }}>
+              {FEATURES.map((f, i) => (
+                <FloatWindow key={f.title} id={`landing-feature-${i}`} title={f.title}>
+                  <p className="p-4 text-sm leading-relaxed text-cream-dim">{f.desc}</p>
+                </FloatWindow>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Why, and what was not checked ────────────────────── */}
+        <section id="explanation" className="px-6 pb-20 scroll-mt-6">
+          <div className="mx-auto max-w-[1080px] flex flex-col items-center gap-6 text-center">
+            <p className="text-sm">The explanation is the product</p>
+            <blockquote className="flow-headline" style={{ fontSize: 'clamp(26px, 3.6vw, 48px)', lineHeight: 1.08 }}>
+              &ldquo;280Ω, the E96 value nearest 10 mA. Halving it would roughly double the current and,
+              past 20 mA, overload the pin.&rdquo;
+            </blockquote>
+            <p className="max-w-[60ch] font-sans text-base leading-relaxed">
+              That is the generator&apos;s own note on R1 above. Every part carries one, every claim carries a
+              grade, and a rule that was not checked is printed as not assessed, never counted as passed.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Templates ────────────────────────────────────────── */}
+        <section id="templates" className="px-6 pb-24 scroll-mt-6">
+          <div className="mx-auto max-w-[1080px] flex flex-col gap-6">
+            <h2 className="flow-headline text-center" style={{ fontSize: 'clamp(34px, 5vw, 68px)' }}>
+              Five Circuits It Builds Today
+            </h2>
+            <div className="paper border-[1.5px] border-ink shadow-[5px_5px_0_rgba(254,254,254,0.3)]">
+              {TEMPLATES.map((t, i) => (
+                <div key={t.label}
+                     className={`flex flex-wrap items-center gap-x-6 gap-y-3 p-4 ${i ? 'border-t-[1.5px] border-ink' : ''}`}>
+                  <div className="flex-[999_1_320px] min-w-0 flex flex-col gap-1">
+                    <h3 className="text-lg">{t.label}</h3>
+                    <p className="text-sm leading-relaxed text-cream-dim">{t.desc}</p>
+                    <p className="font-mono text-xs text-muted">{t.outputs.join(' · ')}</p>
                   </div>
-                ))}
-              </div>
-            ))}
+                  <button type="button" onClick={() => onGetStarted(t.prompt)}
+                          aria-label={`Build the ${t.label}`}
+                          className="flex-[1_1_auto] min-h-[44px] px-4 bg-ink text-paper border-[1.5px] border-ink font-sans text-[15px] font-semibold hover:bg-paper hover:text-ink">
+                    Build this →
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-center">
+              Each opens the app with its request already written out, values and all. Free-form circuits are not in yet.
+            </p>
           </div>
         </section>
 
-        {/* ── Included ────────────────────────────────────── */}
-        <section id="included" className={styles.included}>
-          <div className={`${styles.sectionHead} ${styles.normal}`} style={{ padding: 0 }}>
-            <h2>Included</h2>
-            <span className={styles.grey}>One prompt, one workflow</span>
-          </div>
-          <ul className={styles.list}>
-            {FEATURES.map((f, i) => (
-              <li key={f.title} className={`${styles.li} ${styles.normal} ${styles.reveal}`} data-reveal>
-                <span className={styles.rule} data-rule><i /></span>
-                <span className={styles.liNum}>{String(i + 1).padStart(2, '0')}</span>
-                <h3 className={styles.liTitle}>{f.title}</h3>
-                <p className={styles.liDesc}>{f.desc}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* ── Explanation ─────────────────────────────────── */}
-        <section id="explanation" className={styles.explain}>
-          <p className={`${styles.explainText} ${styles.big} ${styles.reveal}`} data-reveal>
-            Any engineer can run ngspice. What no tool does is tell you exactly what breaks if you
-            change a value — and why. The explanation is the product.
-          </p>
-          <div className={`${styles.explainBlock} ${styles.mono} ${styles.reveal}`} data-reveal>
-            <div className={styles.c}>{'// example explanation — DHT22 circuit, component R1'}</div>
-            <div className={styles.w}>R1 (10kΩ) pulls the DHT22 DATA line high between transmissions.</div>
-            <div className={styles.warn}>⚠ Without R1: the open-drain output never reaches logic HIGH.</div>
-            <div className={styles.warn}>⚠ Every read returns a timeout. The MCU loops indefinitely.</div>
-            <div>Lowering R1 below 1kΩ pushes the line current past a 5mA sink limit at 5V.</div>
-            <div>At 1kΩ: 5mA, on the limit. At 10kΩ: 0.5mA, well inside it.</div>
-          </div>
-        </section>
-      </main>
-
-      {/* ── Footer (revealed from under main) ─────────────── */}
-      <div className={styles.footerWrap}>
-        <footer ref={footerRef} className={styles.footer}>
-          <div className={styles.footerCols}>
-            <div className={styles.fCol}>
-              <span className={styles.rule} data-rule><i /></span>
-              <span className={styles.fLabel}>Start</span>
-              <button type="button" className={styles.fBtn} onClick={onGetStarted}>
-                Generate your first circuit →
-              </button>
-              <div className={styles.fList}>
-                <span>Describe it in plain English.</span>
-                <span>Get a physics-validated design back.</span>
-              </div>
-            </div>
-            <div className={styles.fCol}>
-              <span className={styles.rule} data-rule><i /></span>
-              <span className={styles.fLabel}>Elsewhere</span>
-              <div className={styles.fList} style={{ marginTop: 0 }}>
-                <a className={styles.ulink} href={DOCS_URL} target="_blank" rel="noopener noreferrer">
-                  Docs
-                </a>
-                <a className={styles.ulink} href={REPO_URL} target="_blank" rel="noopener noreferrer">
-                  GitHub
-                </a>
-                <a className={styles.ulink} href={DEMO_URL} target="_blank" rel="noopener noreferrer">
-                  Demo video
-                </a>
-              </div>
-            </div>
-            <div className={styles.fCol}>
-              <span className={styles.rule} data-rule><i /></span>
-              <span className={styles.fLabel}>Status</span>
-              <div className={styles.fList} style={{ marginTop: 0 }}>
-                <span>Phase 1 · v0.1.0-rc · AGPL-3.0</span>
-              </div>
-            </div>
-          </div>
-          <div className={styles.footerBottom}>
-            <span>© 2026 Circuit OS</span>
-            <span>AI hardware compiler</span>
-          </div>
+        <footer className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-t border-paper/30 text-xs">
+          <span className="font-pixel text-xl">CIRCUIT OS</span>
+          <span>Phase 1 · v0.1.0-rc · AGPL-3.0</span>
+          <span className="flex flex-wrap gap-4">
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 !text-paper">docs</a>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 !text-paper">github</a>
+            <a href={DEMO_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 !text-paper">demo video</a>
+          </span>
         </footer>
       </div>
-
-      <span ref={tipRef} className={styles.tip} aria-hidden="true" />
     </div>
   )
 }

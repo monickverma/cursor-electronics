@@ -275,6 +275,9 @@ async def list_designs(
             "version": d.version,
             "simulation_passed": d.simulation_passed,
             "created_at": d.created_at.isoformat() if d.created_at else None,
+            "target_mcu": getattr(d, "target_mcu", None),
+            "project_id": str(d.project_id) if getattr(d, "project_id", None) else None,
+            "updated_at": d.updated_at.isoformat() if getattr(d, "updated_at", None) else None,
         }
         for d in designs
     ]

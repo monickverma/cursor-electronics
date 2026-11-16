@@ -1,5 +1,14 @@
 import type { Config } from 'tailwindcss'
 
+/**
+ * Every colour a panel uses is a CSS variable (an RGB triplet in globals.css),
+ * so one component renders in either tone:
+ *   - the default values are the dark "screen" tone;
+ *   - inside `.paper` (a FloatWindow body) they flip to ink on white.
+ * A panel never needs to know which window it sits in.
+ */
+const v = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`
+
 const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,31 +18,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* The desktop itself: fixed, never themed */
+        ground:      '#16213f',
+        ink:         '#141414',
+        paper:       '#fefefe',
         /* Light side */
-        lumen:       '#ffffeb',
-        'lumen-dim': '#e4e4d0',
+        lumen:       v('lumen'),
+        'lumen-dim': v('lumen-dim'),
         /* Dark side */
-        vast:        '#1a1a1a',
-        surface:     '#242424',
-        'surface-2': '#2e2e2e',
+        vast:        v('vast'),
+        surface:     v('surface'),
+        'surface-2': v('surface-2'),
         /* Accents */
-        dawn:        '#f0d7ff',
-        'dawn-dim':  '#d8b8f5',
+        dawn:        v('dawn'),
+        'dawn-dim':  v('dawn-dim'),
         fathom:      '#034f46',
-        glow:        '#ffa946',
+        glow:        v('glow'),
         /* Legacy aliases kept so nothing breaks */
-        cream:       '#ffffeb',
-        'cream-dim': '#e4e4d0',
-        dark:        '#1a1a1a',
-        lavender:    '#f0d7ff',
-        'lavender-dim': '#d8b8f5',
-        border:      '#383838',
-        muted:       '#888888',
+        cream:       v('cream'),
+        'cream-dim': v('cream-dim'),
+        dark:        v('dark'),
+        lavender:    v('lavender'),
+        'lavender-dim': v('lavender-dim'),
+        border:      v('border'),
+        muted:       v('muted'),
+        /* Status: what a verdict or a grade is drawn in */
+        ok:          v('ok'),
+        bad:         v('bad'),
+        warn:        v('warn'),
+        info:        v('info'),
       },
       fontFamily: {
         serif: ['EB Garamond', 'Georgia', 'serif'],
-        sans: ['Figtree', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        sans: ['Schibsted Grotesk', 'Figtree', 'system-ui', 'sans-serif'],
+        mono: ['Space Mono', 'JetBrains Mono', 'ui-monospace', 'monospace'],
+        pixel: ['VT323', 'Space Mono', 'ui-monospace', 'monospace'],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

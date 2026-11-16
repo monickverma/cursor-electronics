@@ -60,6 +60,24 @@ For direct API calls in `lib/api.ts`, use the `NEXT_PUBLIC_API_URL` env var — 
 
 ---
 
+## The Shell: the Flow Desktop
+
+> **Amended 2026-11-15 (owner's choice of look; `brain/decisions.md` [2026-11-15]).** The two-panel
+> layout is gone. `app/page.tsx` is a desktop: the requirement as recorded is the headline, the prompt
+> bar and conversation sit under it, and each output is a `FloatWindow` on live water.
+
+- **Outputs are windows, not tabs.** The dock (`nav[aria-label="Outputs"]`) opens a window and brings it
+  forward; it never closes one. A window is hidden from its own title bar. Schematic and Validation are
+  open when a design arrives; the rest open on request, so nothing polls or fetches unasked.
+- **`FloatWindow` moves by transform only** and stays in the page's layout, so the desktop reflows at any
+  width. Its bob freezes in place while the pointer or focus is inside it — it does not even settle — so a click
+  aimed at a point inside a window (a part on the 3D board) lands on that point.
+- **`FlowBackground` is decoration.** Nothing reads it. It hides itself, leaving static dots, without
+  WebGL 2, on a software renderer, or when frames stay slow. `prefers-reduced-motion` stills the windows.
+- **A panel never knows its window's tone.** Colours are CSS variables (`globals.css`), read through
+  Tailwind tokens. Inside `.paper` they are ink on white; the default is the dark "screen" tone (the 3D
+  board). Use `text-ok / text-bad / text-warn / text-info`, never `text-green-300` and the like.
+
 ## Component Responsibilities
 
 | Component | What it does | Key constraint |
@@ -96,6 +114,11 @@ The interval is cleared in the cleanup function. If the component unmounts while
 ---
 
 ## Design System (Flow-Inspired)
+
+> **Amended 2026-11-15.** The variables below still exist and still style the landing page. The app
+> itself now uses: ground `#16213f`, ink `#141414`, paper `#fefefe`; `Schibsted Grotesk` (headline, body),
+> `Space Mono` (data), `VT323` (window title bars). Tailwind: `bg-ground`, `text-ink`, `bg-paper`,
+> `font-sans`, `font-mono`, `font-pixel`.
 
 CSS variables defined in `app/globals.css`:
 
@@ -139,7 +162,13 @@ const [token, setToken] = useState<string>('')
 />
 ```
 
-No global auth context, no localStorage persistence — Phase 1 simplicity. Phase 2 adds persistent sessions.
+No global auth context.
+
+> **Amended 2026-11-16 (the library; `brain/decisions.md` [2026-11-16] item 4).** The token is also kept in
+> `localStorage` (`circuitos.token`) so a reload keeps the session and the library. `page.tsx` checks it
+> against `/auth/me` before trusting it and drops it if refused; "Sign out" removes it. Because any script on
+> the page could read it, **never build HTML from user or model text** (`dangerouslySetInnerHTML`,
+> `innerHTML`): render it as React elements, as `Markdown.tsx` does.
 
 ---
 

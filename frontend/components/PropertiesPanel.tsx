@@ -14,8 +14,8 @@ import { useState } from 'react'
 import { signOffDesign, type PropertyView, type ValidationCoverage } from '@/lib/api'
 
 const STATUS: Record<PropertyView['status'], { label: string; cls: string }> = {
-  proven:  { label: 'proven',  cls: 'text-green-300 border-green-700 bg-green-900/20' },
-  refuted: { label: 'refuted', cls: 'text-red-300 border-red-700 bg-red-900/20' },
+  proven:  { label: 'proven',  cls: 'text-ok border-ok bg-ok/10' },
+  refuted: { label: 'refuted', cls: 'text-bad border-bad bg-bad/10' },
   unknown: { label: 'undecided', cls: 'text-glow border-glow/60 bg-glow/10' },
 }
 
@@ -55,7 +55,7 @@ export default function PropertiesPanel({ coverage, circuitId, token, onSigned }
 
   return (
     <section aria-label="Proved properties" data-testid="properties-panel">
-      <h3 className="text-sm font-medium text-cream mb-1" style={{ fontFamily: 'EB Garamond, serif' }}>
+      <h3 className="text-sm font-medium text-cream mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
         What is proved about this design
       </h3>
       <p className="text-xs text-muted mb-3">
@@ -76,7 +76,7 @@ export default function PropertiesPanel({ coverage, circuitId, token, onSigned }
                 </span>
               </div>
               {p.counterexample && (
-                <p className="text-xs text-red-300 mt-1 font-mono break-words">
+                <p className="text-xs text-bad mt-1 font-mono break-words">
                   counterexample: {Object.entries(p.counterexample).map(([k, v]) => `${k}=${v}`).join(', ')}
                 </p>
               )}
@@ -103,7 +103,7 @@ export default function PropertiesPanel({ coverage, circuitId, token, onSigned }
           set {coverage.properties_hash?.slice(0, 16)}
         </p>
       </div>
-      {error && <p className="text-sm text-red-300 mt-2 whitespace-pre-wrap">{error}</p>}
+      {error && <p className="text-sm text-bad mt-2 whitespace-pre-wrap">{error}</p>}
     </section>
   )
 }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Figtree:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Figtree:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -91,6 +91,198 @@
   --vast-30:  rgba(26,26,26,0.30);
   --vast-15:  rgba(26,26,26,0.15);
   --vast-10:  rgba(26,26,26,0.10);
+}
+
+/* ── Themeable panel colours ──────────────────────────────────────
+   RGB triplets read by tailwind.config.ts. The defaults are the dark
+   "screen" tone; `.paper` (a FloatWindow body) flips them to ink on white. */
+:root {
+  --c-cream: 255 255 235;
+  --c-cream-dim: 228 228 208;
+  --c-lumen: 255 255 235;
+  --c-lumen-dim: 228 228 208;
+  --c-dark: 26 26 26;
+  --c-vast: 26 26 26;
+  --c-surface: 36 36 36;
+  --c-surface-2: 46 46 46;
+  --c-border: 56 56 56;
+  --c-muted: 136 136 136;
+  --c-lavender: 240 215 255;
+  --c-lavender-dim: 216 184 245;
+  --c-dawn: 240 215 255;
+  --c-dawn-dim: 216 184 245;
+  --c-glow: 255 169 70;
+  --c-ok: 134 239 172;
+  --c-bad: 252 165 165;
+  --c-warn: 251 191 36;
+  --c-info: 147 197 253;
+
+  /* The desktop */
+  --ground: #16213f;
+  --ink: #141414;
+  --paper: #fefefe;
+}
+
+.paper {
+  --c-cream: 20 20 20;
+  --c-cream-dim: 38 38 38;
+  --c-lumen: 20 20 20;
+  --c-lumen-dim: 60 60 60;
+  --c-dark: 254 254 254;
+  --c-vast: 254 254 254;
+  --c-surface: 241 241 238;
+  --c-surface-2: 228 228 224;
+  --c-border: 20 20 20;
+  --c-muted: 86 86 86;
+  --c-lavender: 22 33 63;
+  --c-lavender-dim: 40 56 100;
+  --c-dawn: 22 33 63;
+  --c-dawn-dim: 40 56 100;
+  --c-glow: 138 82 0;
+  --c-ok: 20 20 20;
+  --c-bad: 179 38 30;
+  --c-warn: 138 82 0;
+  --c-info: 22 33 63;
+
+  --lumen: #141414;
+  --vast: #fefefe;
+  --dawn: #16213f;
+  --glow: #8a5200;
+  --text-muted-dark: #565656;
+  --border-dark: #141414;
+  --font-heading: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-body: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+}
+.paper h1, .paper h2, .paper h3, .paper h4, .paper h5 {
+  font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.paper ::selection { background: var(--ink); color: var(--paper); }
+
+/* The dark tone, for a window that holds its own lit scene (the 3D board). */
+.screen { background: #1a1a1a; color: #ffffeb; }
+
+/* ── The flow desktop ─────────────────────────────────────────── */
+.flow-app {
+  position: relative;
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--paper);
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+/* Shown through the canvas only when WebGL 2 is missing. */
+.flow-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(254, 254, 254, 0.22) 1.2px, transparent 1.4px);
+  background-size: 6px 6px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 55% 60%, #000 0%, transparent 75%);
+          mask-image: radial-gradient(ellipse 60% 55% at 55% 60%, #000 0%, transparent 75%);
+}
+.flow-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+/* Links take the colour of the surface they sit on: paper on the ground, ink in a window. */
+.flow-app a { color: inherit; }
+.flow-headline {
+  font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.win {
+  position: relative;
+  will-change: transform;
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 rgba(254, 254, 254, 0.3);
+}
+.win-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+  padding: 0 4px 0 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'VT323', 'Space Mono', monospace;
+  font-size: 20px;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.win-bar:active { cursor: grabbing; }
+.win-hide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  background: transparent;
+  color: var(--paper);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 20px;
+}
+.win-hide:hover, .win-hide:focus-visible { background: var(--paper); color: var(--ink); outline: none; }
+@keyframes winIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.win-in { animation: winIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+.flow-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.flow-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--paper); }
+.flow-btn:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+.flow-btn[aria-pressed='false'] { background: transparent; color: var(--paper); border-color: var(--paper); }
+.flow-btn[aria-pressed='false']:hover { background: var(--paper); color: var(--ink); }
+.flow-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.flow-field {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 14px;
+  outline: none;
+}
+.flow-field::placeholder { color: #565656; }
+.flow-field:focus-visible { outline: 2px solid var(--ground); outline-offset: -4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .win-in { animation: none; }
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */

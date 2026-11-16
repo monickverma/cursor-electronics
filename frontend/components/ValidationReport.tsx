@@ -41,10 +41,10 @@ export default function ValidationReport({ validation, explanation, explanationE
           passed" while rules sit unassessed — that is the silent pass X8 ends. */}
       <div className={`inline-flex items-center gap-2 rounded px-3 py-1.5 text-sm border ${
         !validation.passed
-          ? 'bg-red-900/20 border-red-700 text-red-400'
+          ? 'bg-bad/10 border-bad text-bad'
           : coverage && coverage.not_assessed.length > 0
             ? 'bg-glow/10 border-glow/60 text-glow'
-            : 'bg-green-900/20 border-green-700 text-green-400'
+            : 'bg-ok/10 border-ok text-ok'
       }`}>
         {!validation.passed
           ? `✗ ${validation.errors.length} error(s)`
@@ -91,7 +91,7 @@ function Section({ title, count, variant, children }: {
   variant: 'error' | 'warning'
   children: React.ReactNode
 }) {
-  const color = variant === 'error' ? 'text-red-400' : 'text-amber-400'
+  const color = variant === 'error' ? 'text-bad' : 'text-warn'
   return (
     <section>
       <h3 className={`text-sm font-medium mb-2 ${color}`}>
@@ -107,8 +107,8 @@ function RuleRow({ field, message, variant }: {
   message: string
   variant: 'error' | 'warning'
 }) {
-  const borderColor = variant === 'error' ? 'border-red-800' : 'border-amber-800'
-  const bg = variant === 'error' ? 'bg-red-900/10' : 'bg-amber-900/10'
+  const borderColor = variant === 'error' ? 'border-bad' : 'border-warn'
+  const bg = variant === 'error' ? 'bg-bad/10' : 'bg-warn/10'
   return (
     <div className={`rounded border ${borderColor} ${bg} px-3 py-2`}>
       <p className="text-xs font-mono text-muted mb-0.5">{field}</p>

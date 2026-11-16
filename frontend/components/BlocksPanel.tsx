@@ -16,7 +16,7 @@ export default function BlocksPanel({ coverage }: { coverage: ValidationCoverage
 
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-medium text-cream mb-1" style={{ fontFamily: 'EB Garamond, serif' }}>
+      <h3 className="text-sm font-medium text-cream mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
         Blocks on this board
       </h3>
       <table className="w-full text-sm">
