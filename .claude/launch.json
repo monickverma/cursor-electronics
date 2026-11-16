@@ -6,18 +6,6 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "frontend"],
       "port": 3000
-    },
-    {
-      "name": "frontend-demo",
-      "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "set NEXT_PUBLIC_DEMO_MODE=1&& npm run dev --prefix frontend -- -p 3210"],
-      "port": 3210
-    },
-    {
-      "name": "frontend-mocklive",
-      "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "set NEXT_PUBLIC_API_URL=http://backend.test&& set NEXT_DIST_DIR=.next-live&& npm run dev --prefix frontend -- -p 3211"],
-      "port": 3211
     }
   ]
 }

@@ -196,33 +196,20 @@ backend/
     └── rate_limit.py          slowapi limiter — keyed by IP address
 
 frontend/
-├── app/page.tsx               All UI state (token, result, active sheet) + the workbench layout
-├── app/globals.css            Design tokens and component classes — the one owner (2026-11-13)
+├── app/page.tsx               Two-panel layout (chat | tabbed output)
 ├── components/
-│   ├── ui/                    Primitives every panel uses: Button, VerdictBadge, GradeChip, Chip,
-│   │                          SheetFrame, Section, Callout, KeyValue, Field, EmptyState, Cursor,
-│   │                          CopyButton, Prose (safe markdown), verdict.ts (verdict → tone/glyph/word)
-│   ├── workbench/             The shell: TopBar (design identity), SheetTabs (00–06), StatusBar
-│   │                          (the title block), RequirementPanel (resizable host of ChatPanel),
-│   │                          OverviewSheet (the compile report), EmptySheet, facts.ts (what the
-│   │                          response says — never a guessed value)
-│   ├── LandingPage.tsx        The cover sheet: same tokens and type as the app; Lenis + GSAP scroll
-│   ├── ChatPanel.tsx          Sign-in + the requirement console. First message → generate, follow-up → patch
-│   ├── BlocksPanel.tsx        Blocks and behaviour rules of a composed board (shown on Overview)
-│   ├── ExplanationPanel.tsx   The explanation, polled while it is written (shown on Overview)
-│   ├── SchematicViewer.tsx    kicanvas — dynamic import ssr:false (REQUIRED); Source toggle
-│   ├── SimulationResults.tsx  Polls every 3s, clears interval on unmount; verdict slab, tables
-│   ├── FirmwareViewer.tsx     Build status; polls while compiling; source + .ino / ini download only
-│   │                          once compiled (Stage 5); onBuild reports the polled state to the page
+│   ├── ChatPanel.tsx          Auth form + chat. First message → generate, follow-up → patch
+│   ├── SchematicViewer.tsx    kicanvas — dynamic import ssr:false (REQUIRED)
+│   ├── SimulationResults.tsx  Polls every 3s, clears interval on unmount
+│   ├── FirmwareViewer.tsx     Build status; polls while compiling; source + .ino / ini
+│   │                          download only once compiled (Stage 5)
 │   ├── BOMTable.tsx           Dated prices, CSV export; checked substitutes and "Use this part" (Stage 6);
 │   │                          each price's source, currency and time, a total per currency (2026-09-25)
-│   ├── ValidationReport.tsx   Rules, claims, proved properties — three sections
+│   ├── ValidationReport.tsx   Error/warning list
 │   ├── ClaimsTable.tsx        Every claim a row, most urgent first (Stage 3)
-│   ├── PropertiesPanel.tsx    The proved sentences, grouped by block, and sign-off by hash (Stage 4)
-│   ├── WaveformChart.tsx      AC / transient / DC, inline SVG, monochrome (Stage 3)
-│   ├── PCBViewer.tsx          Experimental PCB sheet: 2D SVG / 3D switch, stats, engine warnings
-│   ├── Board3DView.tsx        The board in 3D (React Three Fiber, ssr:false)
-│   └── BoardVerification.tsx  The independent board verifier's findings, each on its rung
+│   ├── PropertiesPanel.tsx    The proved sentences and sign-off by hash (Stage 4)
+│   ├── WaveformChart.tsx      AC / transient / DC, inline SVG (Stage 3)
+│   └── PCBViewer.tsx          Experimental PCB tab
 ├── lib/api.ts                 Typed API client (auth, generate, patch, sign-off, firmware)
 └── e2e/                       Playwright; fixtures exported from the real pipeline by
                                scripts/export_ui_fixtures.py

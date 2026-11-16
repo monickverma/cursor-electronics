@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { getExplanation, type ExplanationView } from '@/lib/api'
-import { Callout, Cursor, Prose } from '@/components/ui'
+import Markdown from '@/components/Markdown'
 
 interface Props {
   circuitId?: string
@@ -52,20 +52,27 @@ export default function ExplanationPanel({ circuitId, token, explanation, status
 
   if (view.status === 'writing') {
     return (
-      <p className="t-small c-fg-2" role="status">
-        Writing the explanation. The design above is complete; this usually takes about a minute.{' '}
-        <Cursor label="writing" />
+      <p className="text-sm text-muted border border-border rounded p-3">
+        Writing the explanation. The design above is complete; this usually takes about a minute.
       </p>
     )
   }
   if (!view.explanation) {
     if (!SETTLED.has(view.status) || !view.error) return null
-    // Not a verdict on the design: an informational (grey) note.
     return (
-      <Callout>
+      <p className="text-sm text-muted border border-border rounded p-3">
         No explanation for this design: {view.error}.
-      </Callout>
+      </p>
     )
   }
-  return <Prose text={view.explanation} />
+  return (
+    <section>
+      <h3 className="text-sm font-medium text-cream mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+        Design Explanation
+      </h3>
+      <div className="bg-surface border border-border rounded p-4" data-testid="explanation">
+        <Markdown text={view.explanation} />
+      </div>
+    </section>
+  )
 }

@@ -20,9 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, Html, Line } from '@react-three/drei'
-import { X } from 'lucide-react'
 import type { BoardScene, SceneComponent, ScenePad } from '@/lib/api'
-import { Button, ICON, KeyValue, KeyValueList } from '@/components/ui'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Coordinates
@@ -76,39 +74,14 @@ export default function Board3DView({ scene }: { scene: BoardScene }) {
   const toggle = (k: keyof Layers) => setLayers(l => ({ ...l, [k]: !l[k] }))
 
   return (
-    <div className="b3d" data-testid="board-3d">
-      <style>{CHROME_CSS}</style>
-      {/* ── toolbar: the view, the layers shown, the lift ── */}
-      <div className="b3d-bar" role="toolbar" aria-label="3D view">
-        <Group label="View">
-          {(['iso', 'top', 'bottom', 'front', 'side'] as ViewName[]).map(v => (
-            <ToolButton key={v} active={view === v} onClick={() => go(v)}>
-              {v === 'iso' ? '3D' : v[0].toUpperCase() + v.slice(1)}
-            </ToolButton>
-          ))}
-        </Group>
-        <Group label="Show">
-          {(Object.keys(layers) as (keyof Layers)[]).map(k => (
-            <ToolButton key={k} active={layers[k]} onClick={() => toggle(k)} className="b3d-layer">
-              {k === 'drc' ? 'DRC' : k[0].toUpperCase() + k.slice(1)}
-            </ToolButton>
-          ))}
-        </Group>
-        <div className="b3d-group">
-          <ToolButton active={lifted} onClick={() => setLifted(v => !v)}>
-            {lifted ? 'Seat parts' : 'Lift parts'}
-          </ToolButton>
-        </div>
-      </div>
-
-      <div className="b3d-stage">
+    <div className="relative w-full h-full min-h-0" data-testid="board-3d">
       <Canvas
         frameloop="demand"
         dpr={[1, 2]}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
         camera={{ fov: 35, near: 0.1, far: 5000, position: [0, 200, 0.001] }}
         onPointerMissed={() => setSelected(null)}
-        style={{ background: 'var(--bench-0)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 40%, #2a2a2a 0%, #141414 75%)' }}
       >
         <SceneLights />
         <Board
@@ -123,63 +96,54 @@ export default function Board3DView({ scene }: { scene: BoardScene }) {
         <CameraRig scene={scene} view={view} nonce={viewNonce} />
       </Canvas>
 
-      {/* ── legend: what this board is not ── */}
-      <div className="b3d-legend">
-        <Badge tone={scene.stats.unrouted ? 'warn' : 'pass'} glyph={scene.stats.unrouted ? '╌' : '✓'}>
+      {/* ── toolbar ── */}
+      <div
+        className="absolute top-3 left-3 flex flex-wrap gap-1.5 items-center"
+        style={{ fontSize: 'var(--body-xs)' }}
+      >
+        <Group label="View">
+          {(['iso', 'top', 'bottom', 'front', 'side'] as ViewName[]).map(v => (
+            <ToolButton key={v} active={view === v} onClick={() => go(v)}>
+              {v === 'iso' ? '3D' : v[0].toUpperCase() + v.slice(1)}
+            </ToolButton>
+          ))}
+        </Group>
+        <Group label="Show">
+          {(Object.keys(layers) as (keyof Layers)[]).map(k => (
+            <ToolButton key={k} active={layers[k]} onClick={() => toggle(k)}>
+              {k === 'drc' ? 'DRC' : k[0].toUpperCase() + k.slice(1)}
+            </ToolButton>
+          ))}
+        </Group>
+        <ToolButton active={lifted} onClick={() => setLifted(v => !v)}>
+          {lifted ? 'Seat parts' : 'Lift parts'}
+        </ToolButton>
+      </div>
+
+      {/* ── honesty strip: what this board is not ── */}
+      <div
+        className="absolute bottom-3 left-3 flex flex-wrap gap-2"
+        style={{ fontSize: 'var(--body-xs)' }}
+      >
+        <Badge tone={scene.stats.unrouted ? 'warn' : 'ok'}>
           {scene.stats.unrouted
             ? `${scene.stats.unrouted} unrouted (dashed)`
             : 'all connections routed'}
         </Badge>
-        <Badge tone={scene.stats.drc_errors ? 'fail' : 'pass'} glyph={scene.stats.drc_errors ? '✕' : '✓'}>
+        <Badge tone={scene.stats.drc_errors ? 'bad' : 'ok'}>
           {scene.stats.drc_errors} DRC error{scene.stats.drc_errors === 1 ? '' : 's'}
         </Badge>
         {scene.stats.generic_bodies > 0 && (
-          <Badge tone="warn" glyph="~">{scene.stats.generic_bodies} part(s) without a body model (grey box)</Badge>
+          <Badge tone="warn">{scene.stats.generic_bodies} part(s) without a body model (grey box)</Badge>
         )}
         <Badge tone="muted">package-shaped bodies, not manufacturer models · experimental layout</Badge>
       </div>
 
       {/* ── selection panel ── */}
       {sel && <PartPanel part={sel} pads={selPads} onClose={() => setSelected(null)} />}
-      </div>
     </div>
   )
 }
-
-// The chrome around the scene, on the app's tokens: hairlines, no radius, no blur.
-const CHROME_CSS = `
-.b3d { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; }
-.b3d-bar { flex: none; display: flex; align-items: center; height: 36px; padding: 0 8px; gap: 0;
-  background: var(--bench-2); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
-.b3d-group { display: flex; align-items: center; gap: 2px; padding: 0 8px; height: 100%; flex: none; }
-.b3d-group + .b3d-group { border-left: 1px solid var(--line); }
-.b3d-group > .t-label { margin-right: 6px; }
-.b3d-bar .btn[aria-pressed='true']:hover:not(:disabled) { background: var(--fg); color: var(--bench-0); }
-.b3d-bar .b3d-layer { gap: 6px; }
-.b3d-bar .b3d-layer::before { content: ''; width: 8px; height: 8px; border: 1px solid var(--line-2); flex: none; }
-.b3d-bar .b3d-layer[aria-pressed='true'], .b3d-bar .b3d-layer[aria-pressed='true']:hover:not(:disabled) {
-  background: transparent; color: var(--fg); border-color: transparent; }
-.b3d-bar .b3d-layer[aria-pressed='true']:hover:not(:disabled) { background: var(--bench-3); }
-.b3d-bar .b3d-layer[aria-pressed='true']::before { background: var(--fg); border-color: var(--fg); }
-.b3d-stage { position: relative; flex: 1; min-height: 0; }
-.b3d-legend { position: absolute; left: 12px; bottom: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px;
-  pointer-events: none; }
-.b3d-legend .chip { background: var(--bench-1); }
-.b3d-legend .chip-pass { background: var(--bench-1); }
-.b3d-legend .chip-warn, .b3d-legend .chip-fail { background: var(--bench-1); }
-.b3d-panel { position: absolute; top: 0; right: 0; bottom: 0; width: 288px; max-width: 100%; display: flex; flex-direction: column;
-  background: var(--bench-2); border-left: 1px solid var(--line); z-index: 2; }
-.b3d-panel-head { flex: none; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 16px;
-  border-bottom: 1px solid var(--line); }
-.b3d-panel-body { flex: 1; min-height: 0; overflow: auto; padding: 4px 16px 16px; }
-.b3d-panel .kv-row:last-child { border-bottom: 0; }
-.b3d-pins { margin-top: 16px; }
-.b3d-pins .dt th { background: var(--bench-2); }
-.b3d-tip { background: var(--bench-2); color: var(--fg); border: 1px solid var(--line-2); padding: 3px 8px;
-  white-space: nowrap; font-family: var(--font-mono); font-size: 11px; line-height: 1.4; }
-.b3d-tip-fail { border-color: var(--fail); }
-.b3d-tip-warn { border-color: var(--warn); }
-`
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Lights and camera
@@ -480,7 +444,7 @@ function DrcMarker({ at, label, severity }: { at: V3; label: string; severity: s
       </mesh>
       {hover && (
         <Html center distanceFactor={60} style={{ pointerEvents: 'none' }}>
-          <div className={`b3d-tip ${severity === 'error' ? 'b3d-tip-fail' : 'b3d-tip-warn'}`}>{label}</div>
+          <div style={tooltipStyle(color)}>{label}</div>
         </Html>
       )}
     </group>
@@ -553,9 +517,9 @@ function Part({ part, pads, W, T, lifted, hovered, selected, onHover, onSelect }
       {(hovered || selected) && (
         <Html position={L(0, 0, part.body.standoff + part.body.size[2] + 1.2)} center
               distanceFactor={70} style={{ pointerEvents: 'none' }}>
-          <div className="b3d-tip">
+          <div style={tooltipStyle('#f0d7ff')}>
             <strong>{part.ref}</strong> · {part.package ?? '—'} · {part.kind}
-            {part.model === 'generic' && <span className="c-warn"> · no body model</span>}
+            {part.model === 'generic' && <span style={{ color: '#fbbf24' }}> · no body model</span>}
           </div>
         </Html>
       )}
@@ -800,72 +764,91 @@ function Body({ part, pads, emissive }:
 // ─────────────────────────────────────────────────────────────────────────────
 function PartPanel({ part, pads, onClose }: { part: SceneComponent; pads: ScenePad[]; onClose: () => void }) {
   return (
-    <aside className="b3d-panel" data-testid="part-panel" aria-label={`Part ${part.ref}`}>
-      <div className="b3d-panel-head">
-        <span className="t-data c-fg" style={{ fontSize: 13, fontWeight: 600 }}>{part.ref}</span>
-        <span className="t-small c-fg-3">{part.kind}</span>
-        <Button variant="ghost" size="sm" square aria-label="Close" onClick={onClose} className="ml-auto"
-                icon={<X {...ICON} />} />
+    <div
+      className="absolute top-14 right-3 w-72 rounded-md border border-border-dark"
+      style={{ background: 'rgba(20,20,20,0.94)', color: 'var(--lumen)', fontSize: 'var(--body-xs)',
+               backdropFilter: 'blur(6px)' }}
+      data-testid="part-panel"
+    >
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border-dark">
+        <div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--body-md)' }}>{part.ref}</span>
+          <span style={{ color: 'var(--text-muted-dark)', marginLeft: 8 }}>{part.kind}</span>
+        </div>
+        <button onClick={onClose} aria-label="Close" style={{ color: 'var(--text-muted-dark)' }}>✕</button>
       </div>
-      <div className="b3d-panel-body">
-        <KeyValueList>
-          <KeyValue label="Part" value={part.mpn ?? '—'} />
-          <KeyValue label="Package" value={part.package ?? '—'} />
-          <KeyValue label="Position" value={<>{part.x.toFixed(2)}, {part.y.toFixed(2)}<span className="unit">mm</span></>} />
-          <KeyValue label="Rotation" value={<>{part.rotation}<span className="unit">°</span></>} />
-          <KeyValue label="Side" value={part.side} />
-          <KeyValue
-            label="3D body"
-            mono={false}
-            value={part.model === 'generic'
-              ? <span className="c-warn">none for this package — courtyard box</span>
-              : <span className="c-fg-2">package-shaped</span>}
-          />
-        </KeyValueList>
-        <div className="b3d-pins">
-          <table className="dt">
-            <thead>
-              <tr><th>Pin</th><th>Net</th></tr>
-            </thead>
-            <tbody>
-              {pads.map(p => (
-                <tr key={p.pin}>
-                  <td className="mono muted">{p.pin}</td>
-                  <td className={p.net ? 'mono' : 'mono muted'}>{p.net || 'no net'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <dl className="px-3 py-2 grid grid-cols-[6rem_1fr] gap-y-1">
+        <dt style={{ color: 'var(--text-muted-dark)' }}>Part</dt><dd>{part.mpn ?? '—'}</dd>
+        <dt style={{ color: 'var(--text-muted-dark)' }}>Package</dt><dd>{part.package ?? '—'}</dd>
+        <dt style={{ color: 'var(--text-muted-dark)' }}>Position</dt>
+        <dd style={{ fontFamily: 'var(--font-mono)' }}>
+          {part.x.toFixed(2)}, {part.y.toFixed(2)} mm · {part.rotation}° · {part.side}
+        </dd>
+        <dt style={{ color: 'var(--text-muted-dark)' }}>3D body</dt>
+        <dd style={{ color: part.model === 'generic' ? '#fbbf24' : undefined }}>
+          {part.model === 'generic' ? 'none for this package — courtyard box' : 'package-shaped'}
+        </dd>
+      </dl>
+      <div className="px-3 pb-3">
+        <div style={{ color: 'var(--text-muted-dark)', marginBottom: 4 }}>Pins</div>
+        <div className="max-h-40 overflow-auto" style={{ fontFamily: 'var(--font-mono)' }}>
+          {pads.map(p => (
+            <div key={p.pin} className="flex justify-between">
+              <span>{p.pin}</span>
+              <span style={{ color: p.net ? 'var(--dawn)' : 'var(--text-muted-dark)' }}>{p.net || 'no net'}</span>
+            </div>
+          ))}
         </div>
       </div>
-    </aside>
+    </div>
   )
 }
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="b3d-group" role="group" aria-label={label}>
-      <span className="t-label" aria-hidden="true">{label}</span>
+    <div className="flex items-center gap-1 rounded-md px-1.5 py-1"
+         style={{ background: 'rgba(20,20,20,0.85)', border: '1px solid var(--border-dark)' }}>
+      <span style={{ color: 'var(--text-muted-dark)', marginRight: 2 }}>{label}</span>
       {children}
     </div>
   )
 }
 
-function ToolButton({ active, onClick, children, className }:
-  { active: boolean; onClick: () => void; children: React.ReactNode; className?: string }) {
+function ToolButton({ active, onClick, children }:
+  { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <Button variant="ghost" size="sm" onClick={onClick} aria-pressed={active} className={className}>
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className="rounded px-2 py-0.5 transition-colors"
+      style={{
+        background: active ? 'var(--dawn)' : 'transparent',
+        color: active ? 'var(--vast)' : 'var(--lumen-dim)',
+        border: active ? '1px solid var(--dawn)' : '1px solid var(--border-dark)',
+      }}
+    >
       {children}
-    </Button>
+    </button>
   )
 }
 
-function Badge({ tone, glyph, children }:
-  { tone: 'pass' | 'warn' | 'fail' | 'muted'; glyph?: string; children: React.ReactNode }) {
+function Badge({ tone, children }: { tone: 'ok' | 'warn' | 'bad' | 'muted'; children: React.ReactNode }) {
+  const colors = {
+    ok: ['#12261a', '#4ade80'], warn: ['#2a2214', '#fbbf24'],
+    bad: ['#281515', '#f87171'], muted: ['rgba(20,20,20,0.85)', '#888888'],
+  }[tone]
   return (
-    <span className={`chip ${tone === 'muted' ? 'chip-none chip-none-solid c-fg-3' : `chip-${tone}`}`}>
-      {glyph && <span className="verdict-glyph" aria-hidden="true">{glyph}</span>}
-      <span>{children}</span>
+    <span className="rounded px-2 py-0.5"
+          style={{ background: colors[0], color: colors[1], border: '1px solid var(--border-dark)' }}>
+      {children}
     </span>
   )
+}
+
+function tooltipStyle(accent: string): React.CSSProperties {
+  return {
+    background: 'rgba(20,20,20,0.92)', color: 'var(--lumen)', border: `1px solid ${accent}`,
+    borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap', fontSize: 12,
+    fontFamily: 'var(--font-body)',
+  }
 }

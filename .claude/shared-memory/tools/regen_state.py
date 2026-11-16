@@ -71,7 +71,8 @@ MODULES = {
     "simulation/monitor":      {"file": "backend/simulation/monitor.py",            "test": None,                               "phase": 1},
     "validation/rule_engine":  {"file": "backend/validation/rule_engine.py",        "test": "tests/test_rule_engine.py",        "phase": 1},
     "tasks/simulation_task":   {"file": "backend/tasks/simulation_task.py",         "test": None,                               "phase": 1},
-    "api/routes/design":       {"file": "backend/api/routes/design.py",             "test": None,                               "phase": 1},
+    "api/routes/design":       {"file": "backend/api/routes/design.py",             "test": "tests/test_design_harness.py",     "phase": 1},
+    "api/routes/library":      {"file": "backend/api/routes/library.py",            "test": "tests/test_design_harness.py",     "phase": 2},
     # Rewritten in Stage 2 (X4): patches the requirement, not the circuit.
     "api/routes/patch":        {"file": "backend/api/routes/patch.py",              "test": "tests/test_patch_route.py",        "phase": 1},
     "api/routes/simulate":     {"file": "backend/api/routes/simulate.py",           "test": None,                               "phase": 1},
@@ -150,6 +151,8 @@ MODULES = {
     "validation/figure_audit":    {"file": "backend/validation/figure_audit.py",    "test": "tests/test_d7_figures.py",           "phase": 2},
     "generators/bom/substitution": {"file": "backend/generators/bom/substitution.py", "test": ["tests/test_substitution.py", "tests/test_bom_route.py"], "phase": 2},
     "api/routes/bom":             {"file": "backend/api/routes/bom.py",             "test": "tests/test_bom_route.py",            "phase": 2},
+    "api/routes/projects":        {"file": "backend/api/routes/projects.py",        "test": "tests/test_design_harness.py",       "phase": 2},
+    "api/routes/parts":           {"file": "backend/api/routes/parts.py",           "test": "tests/test_parts_route.py",          "phase": 2},
     "validation/bench":           {"file": "backend/validation/bench.py",           "test": ["tests/test_bench.py", "tests/test_bench_rc_method.py"], "phase": 2},
     # [2026-10-08]: did the person wire this design? — faults, readings, a plan, a verdict.
     "validation/build_check":     {"file": "backend/validation/build_check.py",     "test": "tests/test_build_check.py",          "phase": 2},

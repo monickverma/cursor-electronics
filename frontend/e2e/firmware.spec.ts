@@ -28,6 +28,10 @@ async function mockBackend(page: Page, design: Json, answer: () => Json) {
     const path = new URL(req.url()).pathname
     if (path === '/health') return json(route, { status: 'ok', pcb_engine_enabled: false })
     if (path === '/auth/login') return json(route, { access_token: 'test-token', token_type: 'bearer' })
+    // The library reads these as soon as someone is signed in (2026-11-16).
+    if (path === '/auth/me') return json(route, { id: 'u1', email: 'engineer@example.com', tier: 'free', is_active: true })
+    if (path === '/design/list') return json(route, [])
+    if (path === '/projects') return json(route, [])
     if (path === '/design/generate') return json(route, design)
     if (path === `/design/${design.circuit_id}/firmware`) {
       polls.push(path)
@@ -43,7 +47,7 @@ async function mockBackend(page: Page, design: Json, answer: () => Json) {
 
 async function openFirmware(page: Page) {
   await page.goto('/')
-  await page.getByRole('button', { name: /get started/i }).first().click()
+  await page.getByRole('button', { name: /open app/i }).first().click()
   await page.getByPlaceholder('Email address').fill('engineer@example.com')
   await page.getByPlaceholder('Password').fill('correct horse battery staple')
   await page.getByRole('button', { name: 'Sign in' }).click()
@@ -77,7 +81,7 @@ test('source appears only when the poll says it compiled', async ({ page }) => {
   built = true
   await expect(page.getByText(`compiled for the ${compiled.board}`, { exact: false })).toBeVisible({ timeout: 15_000 })
   const firstLine = compiled.firmware.split('\n').find(l => l.trim().length > 0)!
-  await expect(page.locator('pre')).toContainText(firstLine.trim())
+  await expect(page.getByTestId('window-firmware').locator('pre')).toContainText(firstLine.trim())
   await expect(page.getByRole('button', { name: 'Download platformio.ini' })).toBeVisible()
   expect(backend.polls.length).toBeGreaterThanOrEqual(3)
 
@@ -97,7 +101,7 @@ test('a failed build shows its log, never its source, and is not polled', async 
   await openFirmware(page)
 
   await expect(page.getByText(failed.message)).toBeVisible()
-  await expect(page.locator('pre')).toContainText("'LED_PIN' was not declared")
+  await expect(page.getByTestId('window-firmware').locator('pre')).toContainText("'LED_PIN' was not declared")
   await expect(page.getByRole('button', { name: 'Download .ino' })).toHaveCount(0)
   await page.waitForTimeout(4_000)
   expect(backend.polls).toEqual([])

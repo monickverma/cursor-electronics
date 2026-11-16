@@ -2843,37 +2843,68 @@ Four gaps between "Is the board correct" Part 5 and the code, raised by the "PCB
 4. **The report is corrected** (`reports/Is the board correct …` Part 5): nothing refuses; 12/12 vs 8/12
    kept as history; IV.1 registry and IV.3 not built stated; plane-net checks recorded.
 
-## [2026-11-13] One design system for the landing page and the app — "Drawing Set" — decided by the owner's brief
+## [2026-11-15] The app's look: the flow desktop (owner's choice)
 
-**Asked.** The owner: the home page and the app look like two different products, and the app "feels kind
-of not so good"; remake the UI start to end as "serious pro software", the design left to the agent.
+The owner asked for the frontend rebuilt from scratch with the same functionality, compared nine static
+mock-ups over two days, and chose one: windows on live water, after typesafe.ai's one-bit dither look
+("the feel should be flowish, like in water"). The mock-ups are on a claude.ai design canvas, not in the repo.
 
-**Found.** The landing page (black and white, Inter Tight, no radii) and the app (cream chat panel,
-EB Garamond italic, amber buttons, rounded bubbles) shared nothing. The app had no design identity,
-revision or status anywhere and printed raw markdown into chat bubbles. Every e2e spec began by clicking
-a `Get started` button the landing page no longer had, so the suite was failing on `master`.
+1. **The shell is rebuilt, the panels are not.** `app/page.tsx`, `ChatPanel`, `FlowBackground`,
+   `FloatWindow`, `lib/flow.ts` are new or rewritten. Every panel (claims, BOM, firmware, simulation,
+   schematic, board) is the same component with the same behaviour, re-coloured through CSS variables.
+2. **Tabs became windows.** Several outputs can be read side by side. Only Schematic and Validation open
+   by themselves: the simulation poll, the firmware build poll and the BOM (Mouser) fetch still start only
+   when asked for, as they did under tabs.
+3. **The water never costs the page.** It is skipped on a software renderer and stops if frames stay slow.
+   Found by the UI tests: under headless Chrome it ran on the CPU and stretched a 3 s poll gap to 1.4 s.
+4. **The headline is `GenerateResponse.intent`.** A patch changes the requirement but its response carries
+   no sentence, so the headline keeps the first one and the version number moves. Open: return the
+   requirement's sentence from the patch route.
+5. **Not done:** the landing page keeps its own look; no window layout is remembered between visits.
+7. **The schematic is drawn from the CircuitIR** (`lib/schematicLayout.ts`, `SchematicDrawing.tsx`), asked
+   for by the owner the same day: parts as symbols, nets as labels, a net traced on hover, a part's
+   `justification` on click. It places and never decides: one `data-pin` per IR connection, counted by
+   `e2e/desktop.spec.ts`. A net only two adjacent two-pin parts share is drawn as the short wire it is,
+   named; every other net still joins by label. The `.kicad_sch` (kicanvas) is one click away in the same
+   window and is still the file that opens in KiCad.
+8. **The explanation is drawn as formatted text** (`components/Markdown.tsx`): headings, lists, bold, code.
+   React elements only, never HTML built from the text — the explanation can quote the user's prompt.
 
-**Decided.**
-1. One system, owned by `frontend/app/globals.css`: the UI is a drawing set — numbered sheets, a title
-   block (status bar) always visible, hairlines, zero radius, no shadows.
-2. **Monochrome; colour only ever means a verdict** (holds / holds, defeasible / fails / not assessed).
-   An unknown price or an informational note is grey. This is the product's one claim — graded evidence —
-   made the visual rule.
-3. A new `00 Overview` sheet is the compile report and the sheet a new design opens on. It, the top bar
-   and the status bar show only values present in the response; missing data is omitted, never zero.
-4. The explanation moves from the Validation sheet to the Overview; the chat panel becomes a console for
-   the requirement and no longer pastes the explanation.
-5. Archivo (width axis) + JetBrains Mono through `next/font`; EB Garamond, Figtree and Inter Tight removed.
-6. The landing keeps the scroll behaviour the owner chose (Lenis + GSAP), takes the shared tokens, and
-   its figures now come from the recorded examples — several template panels had shown invented values.
+## [2026-11-16] The library, the front page, the board first, the parts sheet (owner's requests)
 
-**Not changed.** Data flow, API calls, polling, the demo-mode logic, kicanvas and the 3D board as
-`ssr: false` imports. No test assertion was weakened; no spec file was edited.
-
-**Checked.** Type-check, production build, and the Playwright suite (18 of 18) on 2026-11-14.
-**Not checked.** Nothing was verified against the live backend — demo recordings and mocked responses only.
-
-**Tooling added.** `NEXT_DIST_DIR` in `next.config.js` so the e2e suite and a preview server can run in
-one checkout; `frontend-demo` and `frontend-mocklive` in `.claude/launch.json`.
-
-Rule file: `.claude/rules/frontend/react-style.md` (Design System).
+1. **A saved design can be reopened** — `GET /design/{id}` (`api/routes/library.py::open_design`; a module
+   of its own that calls no model, because `test_llm_cannot_write_circuit_ir.py` refuses a module that both
+   calls a model and constructs a CircuitIR — it caught the first draft, which sat in `design.py`). Every output
+   is compiled again from the stored CircuitIR by the same compilers; no model is called, nothing is
+   regenerated from the prompt. The firmware goes through the same compile gate. The explanation is left to
+   its own route: importing it would make this module reach a model, so the response says `writing`, which
+   sends the client to `GET /design/{id}/explanation`, where a stored one comes straight back.
+2. **Projects** — `api/routes/projects.py`, on the `projects` table that already existed. Filing a design
+   (`PUT /design/{id}/project`, also in `library.py`) changes its `project_id` and nothing else. Owner-only throughout.
+3. **The conversation is rebuilt, not stored.** `page.tsx::conversationOf` shows the recorded requirement, then
+   each patch's `prompted_by` and readable changes. The model's first reply was never stored, so it is not
+   invented. Open: a `messages` table, if the owner wants conversations kept word for word.
+4. **The session is kept in the browser** (`localStorage`, key `circuitos.token`), checked against `/auth/me`
+   before it is trusted. This reverses "no localStorage persistence — Phase 1 simplicity" in
+   `rules/frontend/react-style.md`. A token in `localStorage` is readable by any script on the page; the app
+   builds no HTML from user text (item 8 above), which is what keeps that acceptable. Open: an httpOnly cookie.
+5. **The last simulation is not kept.** `simulation_runs` is never written (`create_simulation_run` has no
+   caller), so a reopened design has no job to show; the Simulation window offers "Run the simulation"
+   (`POST /design/{id}/simulation/start`, which existed). Open: record the run.
+6. **The board in 3D comes first** — first in the dock, open when a design arrives, the largest window. It
+   stays labelled experimental; `POST /pcb/compile` is still inline and took 1–11 s on the five templates.
+7. **The parts sheet** (`components/PartsSheet.tsx`) lays each part's recorded ratings beside the nets it
+   sits on and links to a datasheet search. It states figures and **gives no verdict**: whether a rating
+   holds is `voltage_ratings_ok`'s graded claim. Its one mark is arithmetic — a nominal voltage above the
+   part's stated maximum. The owner's words were "a chart sheet… they match every component"; this reading
+   (datasheet cross-check) is the agent's and is the owner's to confirm.
+8. **The catalogue is searched as typed** — `GET /parts` (`api/routes/parts.py`), a lookup over
+   `component_db.json`. Finding a part adds it to nothing: "Ask for this part" writes a request into the
+   prompt bar, and the change goes through the requirement like any other.
+9. **The front page** is the app's own world: the water, draggable windows, and the app's `SchematicDrawing`
+   fed the recorded `led-indicator` output (`lib/landingExample.ts`). Its template buttons hand the app a
+   prompt that states every value its generator needs — the old examples came back with questions.
+10. **Run locally from a worktree:** `.env` points at `localhost`, which inside the containers is not the
+    database. A compose override naming `db` and `redis` is needed (not in the repo). Open: commit one.
+6. **Found on the way:** the six UI test files clicked a "Get started" button the landing page has not had
+   since `eb4dfc6`; every one failed at its first step. They now click "open app".

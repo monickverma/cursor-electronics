@@ -8,8 +8,9 @@ const apiUrl =
   (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '')
 
 const nextConfig = {
-  // Two dev servers in one checkout must not share a build directory: the e2e
-  // suite (playwright.config.ts) and any side-by-side preview set their own.
+  // The UI tests run their own `next dev` with a fake backend address. Sharing `.next`
+  // with a dev server already running let their build overwrite its chunks, so the dev
+  // server then called the fake address (found 2026-11-16). They build elsewhere.
   distDir: process.env.NEXT_DIST_DIR || '.next',
   async rewrites() {
     if (!apiUrl) return []

@@ -1,15 +1,8 @@
 'use client'
 
-/**
- * Sheet 05 — BOM. Dated prices, a part priced only as itself, one total per currency (never
- * converted), and — with a design id and a token — the checked substitutes for each line.
- * A price is not a verdict: an unknown one is grey. Only the substitutes' re-proved checks are green.
- */
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Download } from 'lucide-react'
 
 import { applyPatchOps, BOMRow, BOMView, CurrencyTotal, getBom, PatchResponse, Substitute } from '@/lib/api'
-import { Button, Callout, Chip, Cursor, EmptyState, ICON, Section, SheetFrame, VerdictBadge } from '@/components/ui'
 
 interface Props {
   rows: BOMRow[]
@@ -100,20 +93,11 @@ function mouserLink(url: string | null | undefined): string | null {
   return u.protocol === 'https:' && !u.username && !u.password && MOUSER_DOMAINS.has(host) ? url : null
 }
 
-const COLUMNS: { label: string; num?: boolean }[] = [
-  { label: 'Ref' }, { label: 'Part number' }, { label: 'Manufacturer' }, { label: 'Package' },
-  { label: 'Value' }, { label: 'Qty', num: true }, { label: 'LCSC' }, { label: 'Unit', num: true },
-  { label: 'Line total', num: true }, { label: 'Price as of' }, { label: 'Source' },
-]
-// The footer's label spans everything before "Line total"; the amount sits under it.
-const LABEL_SPAN = 8
-
 export default function BOMTable({ rows: initialRows, circuitId, version, token, onPatched }: Props) {
   const [view, setView] = useState<BOMView | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [applying, setApplying] = useState<string | null>(null)
-  const [showRejected, setShowRejected] = useState(false)
 
   useEffect(() => {
     if (!circuitId || !token) return
@@ -146,13 +130,9 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
   const rows = view?.rows ?? initialRows
   if (!rows || rows.length === 0) {
     return (
-      <SheetFrame meta={loading ? 'Loading…' : undefined}>
-        {loading ? (
-          <p className="t-ui c-fg-2"><Cursor label="Loading" /> Loading the bill of materials…</p>
-        ) : (
-          <EmptyState title="BOM not available.">This design has no bill of materials.</EmptyState>
-        )}
-      </SheetFrame>
+      <div className="h-full flex items-center justify-center text-muted text-sm">
+        {loading ? 'Loading the bill of materials…' : 'BOM not available.'}
+      </div>
     )
   }
 
@@ -163,9 +143,6 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
     byComponent.set(s.component_id, [...(byComponent.get(s.component_id) ?? []), s])
   }
   const rejected = view?.rejected ?? []
-  const subCount = view?.substitutes?.length ?? 0
-  const pricingError = view?.live_pricing?.error ?? null
-  const cacheError = view?.live_pricing?.cache_error ?? null
 
   function handleExportCSV() {
     const header = [
@@ -201,229 +178,166 @@ export default function BOMTable({ rows: initialRows, circuitId, version, token,
     URL.revokeObjectURL(url)
   }
 
-  const meta = (
-    <>
-      <span className="t-data">{rows.length}</span> components ·{' '}
-      {unpriced.length === 0 ? 'estimated total' : 'partial total'}{' '}
-      <span className="t-data c-fg">{totalsText(totals)}</span>
-      {unpriced.length > 0 && <> · <span className="t-data">{unpriced.length}</span> unpriced</>}
-    </>
-  )
-
   return (
-    <SheetFrame
-      padded={false}
-      meta={meta}
-      actions={
-        <Button size="sm" icon={<Download {...ICON} />} onClick={handleExportCSV}>Export CSV</Button>
-      }
-    >
-      {(view?.pricing || pricingError || cacheError) && (
-        <div className="px-4 py-2 border-b border-line flex flex-col gap-2">
-          {view?.pricing && <p className="t-small c-fg-3 max-w-[110ch]">{view.pricing}</p>}
-          {(pricingError || cacheError) && (
-            <Callout tone="info" title="Live prices fell back to the static catalogue">
-              {pricingError && <span className="t-small block">{pricingError}</span>}
-              {cacheError && <span className="t-small block">Price cache: {cacheError}</span>}
-            </Callout>
-          )}
-        </div>
-      )}
-
-      <table className="dt dt-inset" data-testid="bom-table">
-        <thead>
-          <tr>
-            {COLUMNS.map(c => (
-              <th key={c.label} scope="col" className={c.num ? 'num' : undefined}>{c.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => {
-            const price = shown(row)
-            const link = mouserLink(row.live?.product_url)
-            const title = priceTitle(row)
-            return (
-              <tr key={i}>
-                <td className="mono whitespace-nowrap">{row.id}</td>
-                <td className="mono whitespace-nowrap">{row.part_number}</td>
-                <td className="c-fg-2 whitespace-nowrap">{row.manufacturer}</td>
-                <td className="mono c-fg-2 whitespace-nowrap">{row.package}</td>
-                <td className="mono whitespace-nowrap">{row.value || <span className="muted">—</span>}</td>
-                <td className="num">{row.quantity}</td>
-                <td className="mono whitespace-nowrap">
-                  {row.lcsc_pn ? row.lcsc_pn : <span className="muted">—</span>}
-                </td>
-                <td className="num whitespace-nowrap" title={title}>
-                  {price ? money(price.price, price.currency) : <span className="muted">unknown</span>}
-                </td>
-                <td className="num whitespace-nowrap">
-                  {price ? money(price.price * row.quantity, price.currency) : <span className="muted">unknown</span>}
-                </td>
-                <td className={`mono whitespace-nowrap ${price ? 'c-fg-2' : 'muted'}`} title={title}>{asOf(row)}</td>
-                <td className="whitespace-nowrap" title={title}>
-                  {row.live ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Chip>
-                        {link
-                          ? <a href={link} target="_blank" rel="noopener noreferrer" className="link">Mouser</a>
-                          : 'Mouser'}
-                        <span className="c-fg-3">{row.live.currency}</span>
-                      </Chip>
-                      {row.live.stock != null && (
-                        <span className="t-small c-fg-3" title={`${row.live.stock.toLocaleString('en-US')} in stock`}>
-                          <span className="t-data">
-                            {new Intl.NumberFormat('en-US', { notation: 'compact' }).format(row.live.stock)}
-                          </span> in stock
-                        </span>
-                      )}
-                    </span>
-                  ) : price ? (
-                    <Chip>catalogue</Chip>
-                  ) : (
-                    <span className="muted">—</span>
-                  )}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-        <tfoot data-testid="bom-total">
-          {(totals.length ? totals : [{ currency: 'USD', amount: 0, rows: 0, sources: [] }]).map((t, i) => (
-            <tr key={t.currency}>
-              <td colSpan={LABEL_SPAN} className="text-right c-fg-2">
-                <span className="t-label">
-                  {i === 0 && unpriced.length > 0 ? 'Partial total' : 'Total'} · {t.currency}
-                </span>
-                {i === 0 && totals.length > 1 && (
-                  <span className="t-small c-fg-3"> — one per currency, not converted</span>
-                )}
-              </td>
-              <td className="num whitespace-nowrap">{money(t.amount, t.currency, 2)}</td>
-              <td colSpan={2} className="t-small c-fg-3 whitespace-nowrap">
-                {t.rows > 0 && <><span className="t-data">{t.rows}</span> {t.rows === 1 ? 'row' : 'rows'}</>}
-              </td>
-            </tr>
-          ))}
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-surface">
+        <span className="text-xs text-muted">
+          {rows.length} components ·{' '}
+          {unpriced.length === 0 ? 'Estimated total: ' : 'Partial total: '}
+          <span className="text-lavender" data-testid="bom-total">{totalsText(totals)}</span>
           {unpriced.length > 0 && (
-            <tr>
-              <td colSpan={LABEL_SPAN} className="text-right">
-                <span className="t-label">Unpriced · {unpriced.length}</span>
-              </td>
-              <td colSpan={3} className="mono c-fg-3">{unpriced.map(r => r.id).join(', ')}</td>
-            </tr>
+            <span className="text-warn">
+              {' '}· {unpriced.length} unpriced ({unpriced.map(r => r.id).join(', ')})
+            </span>
           )}
-        </tfoot>
-      </table>
+        </span>
+        <button
+          onClick={handleExportCSV}
+          className="text-xs text-lavender hover:text-lavender-dim transition-colors"
+        >
+          Export CSV
+        </button>
+      </div>
 
-      {circuitId && token && (
-        <div className="px-4 pt-8 pb-12" data-testid="bom-substitutes">
-          <Section label="Substitutes" count={view && !view.substitutes_unavailable ? subCount : undefined}>
-            <p className="t-small c-fg-2 max-w-[78ch] mb-4">
+      <div className="flex-1 overflow-auto">
+        <table className="w-full text-sm" data-testid="bom-table">
+          <thead className="sticky top-0 bg-surface border-b border-border">
+            <tr>
+              {['ID', 'Part Number', 'Manufacturer', 'Package', 'Value', 'LCSC PN', 'Unit', 'Total', 'Price as of', 'Source'].map(h => (
+                <th key={h} className="text-left px-3 py-2 text-xs text-muted font-normal whitespace-nowrap">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => {
+              const price = shown(row)
+              const link = mouserLink(row.live?.product_url)
+              return (
+                <tr key={i} className="border-b border-border/50 hover:bg-surface/50 transition-colors">
+                  <td className="px-3 py-2 font-mono text-xs text-lavender-dim">{row.id}</td>
+                  <td className="px-3 py-2 text-xs font-medium text-cream">{row.part_number}</td>
+                  <td className="px-3 py-2 text-xs text-muted">{row.manufacturer}</td>
+                  <td className="px-3 py-2 text-xs text-muted font-mono">{row.package}</td>
+                  <td className="px-3 py-2 text-xs text-muted font-mono">{row.value || '—'}</td>
+                  <td className="px-3 py-2 text-xs">
+                    {row.lcsc_pn ? (
+                      <span className="text-lavender font-mono">{row.lcsc_pn}</span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-right font-mono text-cream-dim" title={priceTitle(row)}>
+                    {price ? money(price.price, price.currency) : <span className="text-warn">unknown</span>}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-right font-mono text-cream">
+                    {price ? money(price.price * row.quantity, price.currency) : <span className="text-warn">unknown</span>}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted font-mono whitespace-nowrap" title={priceTitle(row)}>
+                    {asOf(row)}
+                  </td>
+                  <td className="px-3 py-2 text-xs whitespace-nowrap" title={priceTitle(row)}>
+                    {row.live ? (
+                      <span className="text-lavender">
+                        {link
+                          ? <a href={link} target="_blank" rel="noopener noreferrer" className="underline">Mouser</a>
+                          : 'Mouser'}
+                        {row.live.stock != null && (
+                          <span className="text-muted"> · {row.live.stock.toLocaleString('en-US')} in stock</span>
+                        )}
+                      </span>
+                    ) : price ? (
+                      <span className="text-muted">catalogue</span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+          <tfoot className="border-t border-border bg-surface">
+            <tr>
+              <td colSpan={7} className="px-3 py-2 text-xs text-muted text-right">
+                {unpriced.length > 0 ? `Total (${unpriced.length} unpriced)` : 'Total'}
+                {totals.length > 1 && ' — one per currency, not converted'}
+              </td>
+              <td className="px-3 py-2 text-xs font-medium text-right text-lavender font-mono whitespace-nowrap">
+                {totalsText(totals)}
+              </td>
+              <td colSpan={2} />
+            </tr>
+          </tfoot>
+        </table>
+
+        {circuitId && token && (
+          <section className="px-4 py-3 border-t border-border" data-testid="bom-substitutes">
+            <h3 className="text-sm text-cream mb-1">Substitutes</h3>
+            <p className="text-xs text-muted mb-3">
               Each part below passed every check the original passed — its claims re-derived and the
               original&apos;s proved properties re-proved over its own tolerance and ratings. Using one is a
               patch to the requirement: a new version, and a signed design must be signed again.
             </p>
-            <div className="flex flex-col gap-3">
-              {loading && <p className="t-small c-fg-2"><Cursor label="Checking" /> Checking substitutes…</p>}
-              {error && <Callout tone="fail" role="alert">{error}</Callout>}
-              {view?.substitutes_unavailable && <Callout tone="info">{view.substitutes_unavailable}</Callout>}
-              {view && !view.substitutes_unavailable && byComponent.size === 0 && !loading && (
-                <p className="t-small c-fg-3">No catalogue part passes the original&apos;s checks for any line.</p>
-              )}
-            </div>
-
+            {loading && <p className="text-xs text-muted">Checking substitutes…</p>}
+            {error && <p className="text-xs text-warn">{error}</p>}
+            {view?.substitutes_unavailable && (
+              <p className="text-xs text-warn">{view.substitutes_unavailable}</p>
+            )}
+            {view && !view.substitutes_unavailable && byComponent.size === 0 && !loading && (
+              <p className="text-xs text-muted">No catalogue part passes the original&apos;s checks for any line.</p>
+            )}
             {Array.from(byComponent.entries()).map(([cid, subs]: [string, Substitute[]]) => (
-              <div key={cid} className="mt-6 first:mt-0">
-                <div className="flex items-baseline gap-2 pb-2">
-                  <span className="t-data c-fg">{cid}</span>
-                  <span className="t-label">replaces</span>
-                  <span className="t-data c-fg-2">{subs[0].replaces}</span>
-                </div>
-                <ul className="border-t border-line">
+              <div key={cid} className="mb-3">
+                <div className="text-xs text-lavender-dim font-mono mb-1">{cid} · {subs[0].replaces}</div>
+                <ul className="space-y-1">
                   {subs.map(s => {
                     const key = `${s.component_id}:${s.part_number}`
-                    const figures = s.changes.slice(1)
                     return (
-                      <li
-                        key={key}
-                        className="flex flex-col gap-3 py-3 border-b border-line sm:flex-row sm:items-start sm:justify-between"
-                      >
-                        <div className="min-w-0 flex flex-col gap-1">
-                          <div className="flex flex-wrap items-baseline gap-2">
-                            <span className="t-data c-fg">{s.part_number}</span>
-                            <span className="t-data c-fg-3">{s.package}</span>
-                          </div>
-                          <div className="t-data c-fg-2">{figures.join(' · ') || 'same figures'}</div>
-                          <div className="t-small c-fg-3">
+                      <li key={key} className="flex items-start justify-between gap-3 bg-surface border border-border rounded px-3 py-2">
+                        <div className="text-xs">
+                          <div className="text-cream font-mono">{s.part_number} <span className="text-muted">({s.package})</span></div>
+                          <div className="text-muted">{s.changes.slice(1).join(' · ') || 'same figures'}</div>
+                          <div className="text-muted">
                             {s.unit_price_usd != null
-                              ? <>
-                                  <span className="t-data">{money(s.unit_price_usd)}</span> as of{' '}
-                                  <span className="t-data">{s.price_asof}</span>
-                                  {s.price_delta_usd != null && (
-                                    <span className="t-data">
-                                      {' '}({s.price_delta_usd >= 0 ? '+' : ''}{s.price_delta_usd.toFixed(4)})
-                                    </span>
-                                  )}
-                                </>
+                              ? <>{money(s.unit_price_usd)} as of {s.price_asof}{s.price_delta_usd != null && ` (${s.price_delta_usd >= 0 ? '+' : ''}${s.price_delta_usd.toFixed(4)})`}</>
                               : 'price unknown'}
-                            {s.live && (
-                              <> · Mouser <span className="t-data">{money(s.live.unit_price, s.live.currency)}</span></>
-                            )}
+                            {s.live && <> · Mouser {money(s.live.unit_price, s.live.currency)}</>}
+                            {' '}· {s.checks} checks passed
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-none">
-                          <VerdictBadge tone="pass" label={`${s.checks} checks passed`} />
-                          <Button
-                            size="sm"
-                            onClick={() => apply(s)}
-                            disabled={applying !== null || loading}
-                          >
-                            {applying === key ? <><Cursor /> Applying…</> : 'Use this part'}
-                          </Button>
-                        </div>
+                        <button
+                          onClick={() => apply(s)}
+                          disabled={applying !== null || loading}
+                          className="text-xs bg-lavender text-dark px-2 py-1 rounded hover:bg-lavender-dim disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {applying === key ? 'Applying…' : 'Use this part'}
+                        </button>
                       </li>
                     )
                   })}
                 </ul>
               </div>
             ))}
-
             {rejected.length > 0 && (
-              <div className="mt-6">
-                <button
-                  type="button"
-                  className="disclosure t-small c-fg-2 hover:text-fg h-7"
-                  aria-expanded={showRejected}
-                  onClick={() => setShowRejected(o => !o)}
-                >
-                  {showRejected
-                    ? <ChevronDown size={12} strokeWidth={1.5} aria-hidden />
-                    : <ChevronRight size={12} strokeWidth={1.5} aria-hidden />}
-                  <span>{rejected.length} checked and not offered — why</span>
-                </button>
-                {showRejected && (
-                  <ul className="mt-2 border border-dashed border-line-2">
-                    {rejected.map(r => (
-                      <li
-                        key={`${r.component_id}:${r.part_number}`}
-                        className="flex flex-col gap-1 px-3 py-2 border-b border-dashed border-line-2 last:border-b-0 t-small c-fg-3 sm:flex-row sm:gap-4"
-                      >
-                        {/* The reason is the li's own text, not a second element: a search for the
-                            part number then finds one element (the reason names the part too). */}
-                        <span className="t-data c-fg-2 flex-none sm:w-56">
-                          {r.component_id} {r.part_number}
-                        </span>
-                        {r.reason}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <details className="text-xs text-muted">
+                <summary className="cursor-pointer">{rejected.length} checked and not offered — why</summary>
+                <ul className="mt-2 space-y-1">
+                  {rejected.map(r => (
+                    <li key={`${r.component_id}:${r.part_number}`}>
+                      <span className="font-mono text-cream-dim">{r.component_id} {r.part_number}</span>: {r.reason}
+                    </li>
+                  ))}
+                </ul>
+              </details>
             )}
-          </Section>
-        </div>
+          </section>
+        )}
+      </div>
+
+      {view?.pricing && (
+        <div className="px-4 py-2 border-t border-border bg-surface text-xs text-muted">{view.pricing}</div>
       )}
-    </SheetFrame>
+    </div>
   )
 }

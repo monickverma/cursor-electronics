@@ -31,6 +31,10 @@ async function mockBackend(page: Page) {
     const path = new URL(req.url()).pathname
     if (path === '/health') return json(route, { status: 'ok', pcb_engine_enabled: true })
     if (path === '/auth/login') return json(route, { access_token: 'test-token', token_type: 'bearer' })
+    // The library reads these as soon as someone is signed in (2026-11-16).
+    if (path === '/auth/me') return json(route, { id: 'u1', email: 'engineer@example.com', tier: 'free', is_active: true })
+    if (path === '/design/list') return json(route, [])
+    if (path === '/projects') return json(route, [])
     if (path === '/design/generate') return json(route, design)
     if (path === '/pcb/compile') { compiles.push(req.postDataJSON()); return json(route, compiled) }
     if (path.endsWith('/explanation')) return json(route, { status: 'unavailable', explanation: null })
@@ -43,7 +47,7 @@ async function mockBackend(page: Page) {
 
 async function openPcb(page: Page) {
   await page.goto('/')
-  await page.getByRole('button', { name: /get started/i }).first().click()
+  await page.getByRole('button', { name: /open app/i }).first().click()
   await page.getByPlaceholder('Email address').fill('engineer@example.com')
   await page.getByPlaceholder('Password').fill('correct horse battery staple')
   await page.getByRole('button', { name: 'Sign in' }).click()

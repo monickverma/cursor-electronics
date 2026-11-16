@@ -40,6 +40,10 @@ async function mockBackend(page: Page, opts: { design?: Json; signOff?: (route: 
     const path = new URL(req.url()).pathname
     if (path === '/health') return json(route, { status: 'ok', pcb_engine_enabled: false })
     if (path === '/auth/login') return json(route, { access_token: 'test-token', token_type: 'bearer' })
+    // The library reads these as soon as someone is signed in (2026-11-16).
+    if (path === '/auth/me') return json(route, { id: 'u1', email: 'engineer@example.com', tier: 'free', is_active: true })
+    if (path === '/design/list') return json(route, [])
+    if (path === '/projects') return json(route, [])
     if (path === '/design/generate') return json(route, design)
     if (path.endsWith('/sign-off')) {
       backend.signOffBodies.push(req.postDataJSON())
@@ -54,7 +58,7 @@ async function mockBackend(page: Page, opts: { design?: Json; signOff?: (route: 
 
 async function generateDesign(page: Page) {
   await page.goto('/')
-  await page.getByRole('button', { name: /get started/i }).first().click()
+  await page.getByRole('button', { name: /open app/i }).first().click()
   await page.getByPlaceholder('Email address').fill('engineer@example.com')
   await page.getByPlaceholder('Password').fill('correct horse battery staple')
   await page.getByRole('button', { name: 'Sign in' }).click()
