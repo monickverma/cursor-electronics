@@ -15,6 +15,9 @@ alembic==1.13.2
 # Task queue
 celery==5.4.0
 redis==5.0.8
+# celery allows any kombu 5.x; kombu 5.6+ refuses redis-py < 6.1 and the worker dies at
+# startup (VersionMismatch). Pinned to the kombu celery 5.4 shipped with (2026-11-27).
+kombu==5.4.2
 
 # Code generation
 jinja2==3.1.4
