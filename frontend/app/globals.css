@@ -246,6 +246,55 @@
   font-size: 20px;
 }
 .win-hide:hover, .win-hide:focus-visible { background: var(--paper); color: var(--ink); outline: none; }
+.win-hide[aria-pressed='true'] { background: var(--paper); color: var(--ink); }
+
+/* A window docked on the right (`half`) or full screen (FloatWindow `data-size`).
+   It leaves the layout; its title bar stays, and its body takes the rest. */
+.win[data-size='half'],
+.win[data-size='full'] {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  background: var(--ink);
+}
+/* Docked, the window is all the desktop shows (owner, 2026-11-27): the library on
+   the left, the window on the right, and nothing between. The rest of the desktop
+   (headline, conversation, the dock row, other windows) is hidden, not removed, so
+   it is exactly as it was when the window is put back; hidden, it takes no clicks,
+   and the page under it does not scroll. */
+body:has(.win[data-size='half']) { overflow: hidden; }
+body:has(.win[data-size='half']) .desk { visibility: hidden; }
+.win[data-size='half'] { visibility: visible; }
+/* Beside the library where it sits beside the page (wide screens; page.tsx sets
+   `lib-open`). Narrower, the library is a drawer and the dock is the full width. */
+@media (min-width: 1100px) {
+  .desk.lib-open .win[data-size='half'] { left: 288px; }
+}
+/* The desktop (page.tsx) is its own stacking context below the library (z-30).
+   While a window covers the whole screen (full screen where the Fullscreen API is
+   refused, or a dock where the library cannot sit beside it), lift the desktop so
+   the window covers the library's drawer and its button too. */
+body:has(.win[data-size='full']) .desk { z-index: 40; }
+@media (max-width: 1099px) {
+  body:has(.win[data-size='half']) .desk { z-index: 40; }
+}
+.win[data-size='half'] > .win-in,
+.win[data-size='full'] > .win-in {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.win[data-size='half'] .win-body,
+.win[data-size='full'] .win-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 @keyframes winIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .win-in { animation: winIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 

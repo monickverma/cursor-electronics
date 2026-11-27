@@ -69,6 +69,13 @@ For direct API calls in `lib/api.ts`, use the `NEXT_PUBLIC_API_URL` env var — 
 - **Outputs are windows, not tabs.** The dock (`nav[aria-label="Outputs"]`) opens a window and brings it
   forward; it never closes one. A window is hidden from its own title bar. Schematic and Validation are
   open when a design arrives; the rest open on request, so nothing polls or fetches unasked.
+- **An output window can leave the layout** (amended 2026-11-27, owner's request): its title bar docks it
+  on the right or makes it full screen (Fullscreen API; double-click the bar too); Esc or the same button
+  puts it back. **Docked, the library is on the left and the window on the right, and nothing between**:
+  the headline, conversation, dock row and other windows are hidden (not unmounted) until it is put back.
+  Docking opens the library; picking another design there swaps what the docked window shows. Below
+  1100 px the dock is the full width. One window out at a time. Only windows given `maximizable` (the
+  outputs in `page.tsx`) show these buttons.
 - **`FloatWindow` moves by transform only** and stays in the page's layout, so the desktop reflows at any
   width. Its bob freezes in place while the pointer or focus is inside it — it does not even settle — so a click
   aimed at a point inside a window (a part on the 3D board) lands on that point.

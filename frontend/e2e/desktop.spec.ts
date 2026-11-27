@@ -107,6 +107,91 @@ test('a window is dragged by its title bar and stays where it is dropped', async
   expect(Math.abs(later.x - after.x)).toBeLessThan(12)
 })
 
+test('a docked window is all the desktop shows, beside the library, and Esc puts it back', async ({ page }) => {
+  await mockBackend(page)
+  await generateDesign(page)
+  const vp = page.viewportSize()!
+  const schematic = page.getByTestId('window-schematic')
+  const change = page.getByPlaceholder('Request a change…')
+
+  await page.getByRole('button', { name: 'Dock Schematic on the right' }).click()
+  await expect(schematic).toHaveAttribute('data-size', 'half')
+  // From the library's edge to the right of the screen, full height, from the first frame.
+  const box = (await schematic.boundingBox())!
+  const library = (await page.getByRole('button', { name: 'Close the library' }).evaluate(
+    b => b.closest('.fixed')!.getBoundingClientRect().right))
+  expect(Math.abs(box.x - library)).toBeLessThan(2)
+  expect(box.x + box.width).toBeGreaterThan(vp.width - 2)
+  expect(box.y).toBe(0)
+  expect(box.height).toBe(vp.height)
+  // Nothing between them: the headline, the conversation and the other windows are hidden.
+  await expect(change).toBeHidden()
+  await expect(page.getByTestId('window-validation')).toBeHidden()
+
+  // Esc typed in a text field is the field's (the library's search, beside the dock).
+  const search = page.getByPlaceholder('Search your designs')
+  await search.focus()
+  await search.press('Escape')
+  await expect(schematic).toHaveAttribute('data-size', 'half')
+  await search.blur()
+  await page.keyboard.press('Escape')
+  await expect(schematic).toHaveAttribute('data-size', 'normal')
+  // Back exactly as it was.
+  await expect(change).toBeVisible()
+  await expect(page.getByTestId('window-validation')).toBeVisible()
+})
+
+test('docking opens the library on the left, and the library stays usable', async ({ page }) => {
+  await mockBackend(page)
+  await generateDesign(page)
+  await page.getByRole('button', { name: 'Close the library' }).click()
+  await expect(page.getByRole('button', { name: 'Open the library' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Dock Claims and checks on the right' }).click()
+  await expect(page.getByTestId('window-validation')).toHaveAttribute('data-size', 'half')
+  await expect(page.getByRole('button', { name: 'Close the library' })).toBeVisible()
+  // A point on the library reaches the library, not a hidden page or the dock.
+  const inLibrary = await page.evaluate(() => {
+    const el = document.elementFromPoint(100, window.innerHeight / 2)
+    return !!el?.closest('.fixed') && !el.closest('[data-testid^="window-"]')
+  })
+  expect(inLibrary).toBe(true)
+})
+
+test('an output window goes full screen and comes back where it was', async ({ page }) => {
+  await mockBackend(page)
+  await generateDesign(page)
+  const vp = page.viewportSize()!
+  const win = page.getByTestId('window-schematic')
+  const before = (await win.boundingBox())!
+
+  await page.getByRole('button', { name: 'Show Schematic full screen' }).click()
+  await expect(win).toHaveAttribute('data-size', 'full')
+  const full = (await win.boundingBox())!
+  expect(full.x).toBeLessThanOrEqual(0)
+  expect(full.y).toBeLessThanOrEqual(0)
+  expect(full.width).toBeGreaterThanOrEqual(vp.width - 20)
+  expect(full.height).toBeGreaterThanOrEqual(vp.height)
+
+  await page.getByRole('button', { name: 'Leave full screen' }).click()
+  await expect(win).toHaveAttribute('data-size', 'normal')
+  await expect.poll(async () => (await win.boundingBox())!.height).toBeCloseTo(before.height, -1)
+  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull()
+
+  // Double-clicking the title bar is the same switch.
+  await win.locator('.win-bar').dblclick({ position: { x: 40, y: 12 } })
+  await expect(win).toHaveAttribute('data-size', 'full')
+})
+
+test('only output windows can be docked or made full screen', async ({ page }) => {
+  await mockBackend(page)
+  await page.goto('/')
+  await page.getByRole('button', { name: /open app/i }).first().click()
+  const auth = page.getByTestId('window-auth')
+  await expect(auth).toBeVisible()
+  await expect(auth.getByRole('button', { name: /on the right|full screen/ })).toHaveCount(0)
+})
+
 test('the water is drawn in WebGL 2, or the static dots stand in', async ({ page }) => {
   await mockBackend(page)
   await generateDesign(page)
