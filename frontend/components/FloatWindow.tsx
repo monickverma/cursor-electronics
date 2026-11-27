@@ -11,9 +11,18 @@
  * person is reading or aiming at moves, not even to settle.
  *
  * `tone` picks the palette of whatever is inside — see tailwind.config.ts.
+ *
+ * Two buttons in the title bar take a window out of the layout: one docks it to
+ * the right half of the screen, the other makes it full screen (the browser's
+ * Fullscreen API, so it covers the library too and Esc leaves it). Double-click
+ * the title bar for full screen. While docked or full screen it neither bobs nor
+ * drags. A half dock on a wide screen is a split screen: the rest of the desktop
+ * moves into the left half (globals.css). Full screen holds the window's place
+ * with an empty box of its old height, so the page does not jump on the way back.
+ * One window is out of the layout at a time.
  */
 
-import { useEffect, useRef, ReactNode, PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, ReactNode, PointerEvent as ReactPointerEvent } from 'react'
 import { nextZ, prefersCalm, pushSplat } from '@/lib/flow'
 
 interface Props {
@@ -26,6 +35,8 @@ interface Props {
   /** Changing this number raises the window and scrolls it into view. */
   focusKey?: number
   onHide?: () => void
+  /** Show the right-half and full-screen buttons. */
+  maximizable?: boolean
   className?: string
   children: ReactNode
 }
@@ -44,8 +55,40 @@ const DRAG_LIMIT_X = 900
 const DRAG_LIMIT_Y = 700
 const MAX_THROW = 900          // px/s
 
-export default function FloatWindow({ id, title, meta, tone = 'paper', height, focusKey, onHide, className, children }: Props) {
+/** Where the window is: in the layout, docked to the right half, or full screen. */
+type Size = 'normal' | 'half' | 'full'
+
+/** Sent (with the window's id) when a window leaves the layout; any other one out goes back. */
+const OUT_EVENT = 'flow:window-out'
+
+function IconHalf() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.5" y="2.5" width="13" height="11" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="8" y="2.5" width="6.5" height="11" fill="currentColor" />
+    </svg>
+  )
+}
+
+function IconFull({ on }: { on: boolean }) {
+  // Corners pointing out to enter, pointing in to leave.
+  const d = on
+    ? 'M6 1.5V6H1.5M10 1.5V6h4.5M6 14.5V10H1.5M10 14.5V10h4.5'
+    : 'M1.5 6V1.5H6M14.5 6V1.5H10M1.5 10v4.5H6M14.5 10v4.5H10'
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+export default function FloatWindow({ id, title, meta, tone = 'paper', height, focusKey, onHide, maximizable = false, className, children }: Props) {
   const elRef = useRef<HTMLElement>(null)
+  const [size, setSize] = useState<Size>('normal')
+  const sizeRef = useRef<Size>('normal')
+  sizeRef.current = size
+  // The window's height in the layout, kept while it is out of it.
+  const [holdHeight, setHoldHeight] = useState(0)
   const motion = useRef<Motion>({
     x: 0, y: 0, vx: 0, vy: 0,
     phase: id.split('').reduce((n, c) => n + c.charCodeAt(0), 0) * 0.37,
@@ -64,6 +107,17 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
       raf = requestAnimationFrame(frame)
       const dt = Math.min(0.033, Math.max(0.001, (now - last) / 1000))
       last = now
+
+      // Docked or full screen: stand still, exactly where it was put.
+      if (sizeRef.current !== 'normal') {
+        if (m.drawn !== 'none') {
+          el.style.transform = 'none'
+          m.drawn = 'none'
+        }
+        m.vx = 0
+        m.vy = 0
+        return
+      }
 
       const damp = Math.exp(-(m.held ? 8 : 2.2) * dt)
       m.vx *= damp
@@ -112,13 +166,90 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
     if (focusKey > 0) el.scrollIntoView({ block: 'nearest', behavior: prefersCalm() ? 'auto' : 'smooth' })
   }, [focusKey])
 
+  // Leaving full screen by Esc (or any way but our button) puts the window back.
+  useEffect(() => {
+    const onChange = () => {
+      if (document.fullscreenElement !== elRef.current && sizeRef.current === 'full') setSize('normal')
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  // Out of the layout, the window stands exactly in its slot from the first frame:
+  // the bob's offset is cleared now, not on the next animation frame (which the
+  // browser may hold back), or a docked window sits a few pixels off the edge.
+  useLayoutEffect(() => {
+    const el = elRef.current
+    if (!el || size === 'normal') return
+    el.style.transform = 'none'
+    motion.current.drawn = 'none'
+  }, [size])
+
+  // One window out of the layout at a time: docking another puts this one back,
+  // rather than stacking two windows invisibly in the same place.
+  useEffect(() => {
+    const onOut = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === id || sizeRef.current === 'normal') return
+      if (document.fullscreenElement === elRef.current) document.exitFullscreen().catch(() => {})
+      setSize('normal')
+    }
+    window.addEventListener(OUT_EVENT, onOut)
+    return () => window.removeEventListener(OUT_EVENT, onOut)
+  }, [id])
+
+  // Esc also undocks a half-screen window, unless it was pressed in a text field.
+  useEffect(() => {
+    if (size !== 'half') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return
+      const t = e.target as HTMLElement | null
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return
+      setSize('normal')
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [size])
+
   function raise() {
     if (elRef.current) elRef.current.style.zIndex = String(nextZ())
   }
 
+  function leaveLayout() {
+    // Measure before the window leaves the layout, so its place can be held.
+    if (sizeRef.current === 'normal' && elRef.current) setHoldHeight(elRef.current.offsetHeight)
+    window.dispatchEvent(new CustomEvent(OUT_EVENT, { detail: id }))
+  }
+
+  function toggleHalf() {
+    if (sizeRef.current === 'half') { setSize('normal'); return }
+    if (document.fullscreenElement === elRef.current) document.exitFullscreen().catch(() => {})
+    leaveLayout()
+    raise()
+    setSize('half')
+  }
+
+  async function toggleFull() {
+    const el = elRef.current
+    if (!el) return
+    if (sizeRef.current === 'full') {
+      setSize('normal')
+      if (document.fullscreenElement === el) await document.exitFullscreen().catch(() => {})
+      return
+    }
+    leaveLayout()
+    raise()
+    setSize('full')
+    try {
+      await el.requestFullscreen()
+    } catch {
+      // No Fullscreen API here (or it was refused): fill the window instead.
+    }
+  }
+
   function onBarDown(e: ReactPointerEvent<HTMLDivElement>) {
-    // The hide button lives in the bar; pressing it is not a drag.
+    // The bar's buttons are not a drag, and a docked window does not move.
     if ((e.target as HTMLElement).closest('button')) return
+    if (sizeRef.current !== 'normal') return
     const m = motion.current
     m.held = true
     m.vx = 0
@@ -152,40 +283,61 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
   }
 
+  const out = size !== 'normal'
+
   return (
-    <section
-      ref={elRef}
-      aria-label={title}
-      data-testid={`window-${id}`}
-      className={`win ${className ?? ''}`}
-      onPointerEnter={() => { motion.current.inside = true }}
-      onPointerLeave={() => { motion.current.inside = false }}
-      onFocusCapture={() => { motion.current.inside = true }}
-      onBlurCapture={() => { motion.current.inside = false }}
-      onPointerDownCapture={raise}
-    >
-      <div className="win-in">
-        <div
-          className="win-bar"
-          onPointerDown={onBarDown}
-          onPointerMove={onBarMove}
-          onPointerUp={onBarUp}
-          onPointerCancel={onBarUp}
-        >
-          <span className="truncate">{title}</span>
-          <span className="flex items-center gap-2 min-w-0">
-            {meta && <span className="truncate">{meta}</span>}
-            {onHide && (
-              <button type="button" className="win-hide" onClick={onHide} aria-label={`Hide ${title}`}>
-                ×
+    <>
+      {out && <div aria-hidden="true" className="win-hold" data-for={size} style={{ height: holdHeight }} />}
+      <section
+        ref={elRef}
+        aria-label={title}
+        data-testid={`window-${id}`}
+        data-size={size}
+        className={`win ${className ?? ''}`}
+        onPointerEnter={() => { motion.current.inside = true }}
+        onPointerLeave={() => { motion.current.inside = false }}
+        onFocusCapture={() => { motion.current.inside = true }}
+        onBlurCapture={() => { motion.current.inside = false }}
+        onPointerDownCapture={raise}
+      >
+        <div className="win-in">
+          <div
+            className="win-bar"
+            onPointerDown={onBarDown}
+            onPointerMove={onBarMove}
+            onPointerUp={onBarUp}
+            onPointerCancel={onBarUp}
+            onDoubleClick={e => { if (maximizable && !(e.target as HTMLElement).closest('button')) toggleFull() }}
+          >
+            <span className="truncate">{title}</span>
+            <span className="flex items-center gap-1 min-w-0">
+              {meta && <span className="truncate mr-1">{meta}</span>}
+              {maximizable && <>
+              <button type="button" className="win-hide" onClick={toggleHalf}
+                      aria-pressed={size === 'half'}
+                      aria-label={size === 'half' ? `Put ${title} back` : `Dock ${title} to the right half`}
+                      title={size === 'half' ? 'Put back (Esc)' : 'Right half of the screen'}>
+                <IconHalf />
               </button>
-            )}
-          </span>
+              <button type="button" className="win-hide" onClick={toggleFull}
+                      aria-pressed={size === 'full'}
+                      aria-label={size === 'full' ? `Leave full screen` : `Show ${title} full screen`}
+                      title={size === 'full' ? 'Leave full screen (Esc)' : 'Full screen'}>
+                <IconFull on={size === 'full'} />
+              </button>
+              </>}
+              {onHide && (
+                <button type="button" className="win-hide" onClick={onHide} aria-label={`Hide ${title}`}>
+                  ×
+                </button>
+              )}
+            </span>
+          </div>
+          <div className={`win-body ${tone} overflow-hidden`} style={height && !out ? { height } : undefined}>
+            {children}
+          </div>
         </div>
-        <div className={`${tone} overflow-hidden`} style={height ? { height } : undefined}>
-          {children}
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }

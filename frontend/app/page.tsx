@@ -359,7 +359,7 @@ export default function Home() {
         />
       )}
 
-      <div className={`relative z-10 flex flex-col min-h-screen ${hasLibrary && libraryOpen ? 'min-[1100px]:pl-[288px]' : ''}`}>
+      <div className={`desk relative z-10 flex flex-col min-h-screen ${hasLibrary && libraryOpen ? 'min-[1100px]:pl-[288px]' : ''}`}>
         <header className="flex flex-wrap items-stretch justify-between gap-2 min-h-[44px]">
           <span className={`flex items-center min-h-[44px] px-3.5 bg-paper text-ink font-pixel text-2xl tracking-wider ${
             hasLibrary && libraryOpen ? 'min-[1100px]:invisible' : ''}`}>
@@ -432,7 +432,7 @@ export default function Home() {
                 <div className="flex-[7_1_520px] min-w-0 flex flex-col gap-7">
                   {left.map(o => (
                     <FloatWindow key={o.id} id={o.id} title={o.title} meta={meta(o.id)} tone={o.tone}
-                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)}>
+                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)} maximizable>
                       {body(o.id)}
                     </FloatWindow>
                   ))}
@@ -442,7 +442,7 @@ export default function Home() {
                 <div className="flex-[5_1_420px] min-w-0 flex flex-col gap-7">
                   {right.map(o => (
                     <FloatWindow key={o.id} id={o.id} title={o.title} meta={meta(o.id)} tone={o.tone}
-                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)}>
+                                 height={o.height} focusKey={focus[o.id]} onHide={() => hide(o.id)} maximizable>
                       {body(o.id)}
                     </FloatWindow>
                   ))}
