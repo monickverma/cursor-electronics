@@ -19,6 +19,8 @@ const RUNG: Record<BoardFinding['rung'], string> = {
   exact: 'decided by arithmetic on the board',
   sound: 'an over-approximation: may fail a good board, never passes a bad one',
   bounded: 'checked up to a stated bound',
+  simulated: "a solver's result on a named model; its error is not measured against hardware",
+  'rule check': 'a published rule or chart with cited thresholds; the rule itself is not bounded',
   evidence: 'a second source agrees; not a proof',
   unknown: 'not checked',
 }
@@ -78,6 +80,11 @@ export default function BoardVerification({ report }: { report: Report }) {
               {f.detail && (
                 <p className="ml-14" style={{ color: 'var(--lumen-dim)', overflowWrap: 'anywhere' }}>
                   {f.detail}
+                </p>
+              )}
+              {f.unknown_kind && (
+                <p className="ml-14" style={{ color: 'var(--text-muted-dark)' }}>
+                  {f.unknown_kind}{f.tool ? ` — ${f.tool}` : ''}
                 </p>
               )}
             </li>

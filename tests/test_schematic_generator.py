@@ -16,7 +16,9 @@ What is verified:
 - Every coordinate stays inside the A4 sheet (297 x 210 mm)
 - Output is deterministic: identical IR yields byte-identical output
 - Structural validity: balanced parens, required top-level format tokens
-- Every node produces a net label; every component produces a box and a ref
+- Every node produces a net label; every component is a placed symbol with
+  its reference (real symbols since 2026-10-21, finding F-S2-R001-3; KiCad
+  itself checks the file in tests/test_schematic_erc.py)
 - (no_connect) is NOT used as a component placeholder (breaks KiCad ERC)
 """
 
@@ -39,8 +41,23 @@ def gen():
     return KiCadSchematicGenerator()
 
 
+def _placed(text: str) -> str:
+    """The sheet without its embedded symbol definitions. A symbol's own
+    geometry is in its local frame, centred on 0 (negative by design); only
+    what is placed lands on the page."""
+    i = text.find("(lib_symbols")
+    if i < 0:
+        return text
+    depth, j = 0, i
+    while True:
+        depth += {"(": 1, ")": -1}.get(text[j], 0)
+        j += 1
+        if depth == 0:
+            return text[:i] + text[j:]
+
+
 def _coords(text: str):
-    return [(float(x), float(y)) for x, y in _COORD_RE.findall(text)]
+    return [(float(x), float(y)) for x, y in _COORD_RE.findall(_placed(text))]
 
 
 # ── Geometry — the regression guard ──────────────────────────────────────────
@@ -109,7 +126,7 @@ def test_required_format_tokens_present(gen, ir):
     assert '(version 20230121)' in out
     assert '(generator circuit_os)' in out
     assert '(paper "A4")' in out
-    assert '(lib_symbols)' in out
+    assert '(lib_symbols' in out
     assert '(title_block' in out
     assert out.rstrip().endswith(')')
 
@@ -122,15 +139,16 @@ def test_every_node_gets_a_net_label(gen, ir):
 
 
 @pytest.mark.parametrize("ir", ALL_EXAMPLES, ids=lambda i: i.circuit_id[:8])
-def test_every_component_gets_a_box_and_reference(gen, ir):
+def test_every_component_gets_a_symbol_and_reference(gen, ir):
     out = gen.generate(ir)
     assert out.count('(rectangle') >= len(ir.components), (
-        "each component needs a visible box"
+        "each component needs a visible body"
     )
     for comp in ir.components:
-        assert f'{comp.id}: {comp.part_number}' in out, (
-            f"no reference text for component {comp.id}"
+        assert f'(property "Reference" "{comp.id}"' in out, (
+            f"no reference for component {comp.id}"
         )
+        assert f'(property "MPN" "{comp.part_number}"' in out
 
 
 @pytest.mark.parametrize("ir", ALL_EXAMPLES, ids=lambda i: i.circuit_id[:8])
@@ -204,8 +222,11 @@ def test_a_net_name_never_renames_or_merges_a_net(gen):
     other = IR_003.nodes[1].id
     out = gen.generate(IR_003, [_note("n", "net_name", "node", node, other)])
     labels = re.findall(r'\(label "([^"]*)"', out)
-    assert labels == [n.id for n in IR_003.nodes]
-    assert labels.count(other) == 1
+    plain = re.findall(r'\(label "([^"]*)"', gen.generate(IR_003))
+    # Labels sit on pins now, one per connection; the annotation adds none
+    # and renames none.
+    assert labels == plain
+    assert set(labels) == {n.id for n in IR_003.nodes}
 
 
 def test_an_orphan_is_shown_not_dropped(gen):

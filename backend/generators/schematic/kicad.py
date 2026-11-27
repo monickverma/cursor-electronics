@@ -17,6 +17,23 @@ which rendered as a blank coloured rectangle in the browser.
 
 Keep all geometry inside the A4 bounds defined below.
 
+SYMBOLS, NOT BOXES (2026-10-21, finding F-S2-R001-3)
+===================================================
+Until 2026-10-21 each part was a drawn rectangle with text, the nets were a
+grid of labels touching nothing, and power was a `global_label` with
+`(shape power_in)`, a shape KiCad does not have. KiCad 10.0.1 refused to load
+the file (`kicad-cli sch erc` exit 3), and even patched it held no symbol, so
+ERC and netlist export saw an empty design.
+
+Now every part is a real symbol, embedded in `lib_symbols` (no library lookup,
+so still deterministic): a body with one passive pin per distinct pin the IR
+connects, the pin's number and name both the IR's pin name. A net label sits on
+each pin's end, so connectivity is still by net label only, with no wires, and
+KiCad's own netlist export reproduces the IR's connections exactly
+(tests/test_schematic_erc.py). Pins are `passive` because the IR does not
+record electrical pin types; ERC therefore checks connectivity, not drive.
+Every connection point is on the 1.27 mm grid KiCad connects on.
+
 Elements are given deterministic UUIDs (uuid5 over circuit_id + element key) so
 that identical IR input always produces a byte-identical schematic. That is
 required by the project's "deterministic compilers" rule — a random uuid4 would
@@ -42,7 +59,7 @@ import uuid
 from typing import Dict, List, Sequence, Tuple
 
 from core.annotations import Annotation, AnnotationKind, AnchorKind, attach
-from core.ir_schema import CircuitIR, SignalType
+from core.ir_schema import CircuitIR
 
 # ── Sheet geometry, all values in MILLIMETRES (A4 = 297 x 210) ────────────────
 _SHEET_W = 297.0
@@ -54,12 +71,15 @@ _LABEL_COLS = 4
 _LABEL_COL_W = 62.0
 _LABEL_ROW_H = 8.0
 
-# Component boxes (below the net labels)
+# Symbols (below the net legend). KiCad connects only on its 1.27 mm grid.
+_GRID = 1.27
 _COMP_COLS = 3
-_COMP_COL_W = 85.0
-_COMP_ROW_H = 34.0
-_BOX_W = 42.0
-_BOX_H = 20.0
+_COMP_COL_W = 87.63              # 69 grid steps
+_PIN_PITCH = 2.54
+_PIN_LEN = 2.54
+_BODY_HW = 7.62                  # half the symbol body's width
+_PIN_REACH = _BODY_HW + _PIN_LEN + 22.0   # room left of the body for pin labels
+_ROW_GAP = 7.62
 
 _FONT = 1.27          # KiCad default text size in mm
 _FONT_SMALL = 1.0
@@ -96,25 +116,28 @@ class KiCadSchematicGenerator:
         block: List[str] = []           # lines for the notes block
         lines: List[str] = []
 
+        sheet = uid.of("sheet")
         lines.append('(kicad_sch (version 20230121) (generator circuit_os)')
-        lines.append(f'  (uuid "{uid.of("sheet")}")')
+        lines.append(f'  (uuid "{sheet}")')
         lines.append('  (paper "A4")')
         lines.append(f'  (title_block (title "{_esc(ir.intent)[:60]}")'
                      f' (date "") (rev "v{ir.version}"))')
         lines.append('')
-        # Required by the format even when empty — we place no library symbols.
-        lines.append('  (lib_symbols)')
+        pins_of = _pins_by_component(ir)
+        lines.append('  (lib_symbols')
+        for comp in ir.components:
+            lines += _lib_symbol(comp, pins_of[comp.id])
+        lines.append('  )')
         lines.append('')
 
-        # ── Net labels, one per unique node ──────────────────────────────────
-        node_positions: Dict[str, Tuple[float, float]] = {}
+        # ── Net legend: each node's name, with its annotations beside it ─────
+        # Plain text, not labels: a label touching nothing is a dangling net.
         for i, node in enumerate(ir.nodes):
             col = i % _LABEL_COLS
             row = i // _LABEL_COLS
             nx = _MARGIN + col * _LABEL_COL_W
             ny = _MARGIN + 5.0 + row * _LABEL_ROW_H
-            node_positions[node.id] = (nx, ny)
-            lines.append(_net_label(node.id, nx, ny, uid.of(f"label:{node.id}")))
+            lines.append(_text(f"net {node.id}", nx, ny, _FONT, uid.of(f"label:{node.id}")))
             notes = by_anchor.get((AnchorKind.NODE.value, node.id), [])
             if notes:
                 lines.append(_text(_inline(notes, block, node.id), nx, ny + 2.6, _FONT_SMALL,
@@ -122,32 +145,22 @@ class KiCadSchematicGenerator:
 
         lines.append('')
 
-        # ── Power / ground symbols ───────────────────────────────────────────
-        for node in ir.nodes:
-            nx, ny = node_positions[node.id]
-            if node.type == SignalType.POWER or node.type == "power":
-                lines.append(_power_symbol("VCC", nx, ny - 4.0,
-                                           uid.of(f"pwr:{node.id}")))
-            elif node.type == SignalType.GROUND or node.type == "ground":
-                lines.append(_power_symbol("GND", nx, ny + 4.0,
-                                           uid.of(f"gnd:{node.id}")))
-
-        lines.append('')
-
-        # ── Component boxes ─────────────────────────────────────────────────
+        # ── Symbols, a net label on the end of every pin ─────────────────────
         label_rows = max(1, math.ceil(len(ir.nodes) / _LABEL_COLS))
-        comp_base_y = _MARGIN + 5.0 + label_rows * _LABEL_ROW_H + 14.0
-
-        for i, comp in enumerate(ir.components):
-            col = i % _COMP_COLS
-            row = i // _COMP_COLS
-            cx = _MARGIN + col * _COMP_COL_W
-            cy = comp_base_y + row * _COMP_ROW_H
-            lines += _component_block(comp, ir, cx, cy, uid)
-            notes = by_anchor.get((AnchorKind.COMPONENT.value, comp.id), [])
-            if notes:
-                lines.append(_text(_inline(notes, block, comp.id), cx, cy + _BOX_H + 3.0, _FONT_SMALL,
-                                   uid.of(f"ann:comp:{comp.id}")))
+        top = _snap(_MARGIN + 5.0 + label_rows * _LABEL_ROW_H + 6.0)
+        for r0 in range(0, len(ir.components), _COMP_COLS):
+            row = ir.components[r0:r0 + _COMP_COLS]
+            h = max(_body_h(len(pins_of[c.id])) for c in row)
+            cy = _snap(top + 2.54 + h / 2)
+            for j, comp in enumerate(row):
+                cx = _snap(_MARGIN + _PIN_REACH + j * _COMP_COL_W)
+                lines += _symbol_instance(comp, pins_of[comp.id], cx, cy, sheet, uid)
+                notes = by_anchor.get((AnchorKind.COMPONENT.value, comp.id), [])
+                if notes:
+                    lines.append(_text(_inline(notes, block, comp.id), cx - _BODY_HW,
+                                       cy + h / 2 + 4.0, _FONT_SMALL,
+                                       uid.of(f"ann:comp:{comp.id}")))
+            top = _snap(cy + h / 2 + _ROW_GAP)
 
         # ── Notes block: design comments, orphans, anything cut short above ──
         block += [f"{_KIND_PREFIX[a.kind]}: {_clean(a.text)}"
@@ -155,9 +168,8 @@ class KiCadSchematicGenerator:
         block += [f"ORPHANED {_KIND_PREFIX[a.kind]} on {a.anchor.kind} {a.anchor.id} "
                   f"(no longer in this design): {_clean(a.text)}" for a in report.orphaned]
         if block:
-            comp_rows = max(1, math.ceil(len(ir.components) / _COMP_COLS))
             lines.append('')
-            lines += _notes_block(block, comp_base_y + comp_rows * _COMP_ROW_H + 4.0, uid)
+            lines += _notes_block(block, top, uid)
 
         lines.append('')
         lines.append(')')  # close kicad_sch
@@ -223,23 +235,6 @@ def _fmt(v: float) -> str:
     return f"{round(v, 4):g}"
 
 
-def _net_label(name: str, x: float, y: float, uid: str) -> str:
-    return (
-        f'  (label "{_esc(name)}" (at {_fmt(x)} {_fmt(y)} 0) (fields_autoplaced yes)\n'
-        f'    (effects (font (size {_FONT} {_FONT})) (justify left bottom))\n'
-        f'    (uuid "{uid}"))'
-    )
-
-
-def _power_symbol(name: str, x: float, y: float, uid: str) -> str:
-    return (
-        f'  (global_label "{name}" (shape power_in) (at {_fmt(x)} {_fmt(y)} 0)\n'
-        f'    (fields_autoplaced yes)\n'
-        f'    (effects (font (size {_FONT} {_FONT})) (justify left))\n'
-        f'    (uuid "{uid}"))'
-    )
-
-
 def _text(content: str, x: float, y: float, size: float, uid: str) -> str:
     return (
         f'  (text "{_esc(content)}" (at {_fmt(x)} {_fmt(y)} 0)\n'
@@ -248,39 +243,98 @@ def _text(content: str, x: float, y: float, size: float, uid: str) -> str:
     )
 
 
-def _rectangle(x1: float, y1: float, x2: float, y2: float, uid: str) -> str:
-    return (
-        f'  (rectangle (start {_fmt(x1)} {_fmt(y1)}) (end {_fmt(x2)} {_fmt(y2)})\n'
-        f'    (stroke (width {_STROKE}) (type default))\n'
-        f'    (fill (type none))\n'
-        f'    (uuid "{uid}"))'
-    )
+def _snap(v: float) -> float:
+    return round(round(v / _GRID) * _GRID, 4)
 
 
-def _component_block(comp, ir: CircuitIR, cx: float, cy: float,
+def _body_h(npins: int) -> float:
+    return max(2, npins + 1) * _PIN_PITCH
+
+
+def _pins_by_component(ir: CircuitIR) -> Dict[str, List[Tuple[str, List[str]]]]:
+    """Each component's distinct pins in first-seen order, with the node(s)
+    each one connects to. A pin on two nodes gets a label for each; KiCad then
+    shows those nets joined, which is what the IR says."""
+    out: Dict[str, List[Tuple[str, List[str]]]] = {c.id: [] for c in ir.components}
+    for conn in ir.connections:
+        pins = out.setdefault(conn.component_id, [])
+        for name, nodes in pins:
+            if name == conn.pin:
+                if conn.node_id not in nodes:
+                    nodes.append(conn.node_id)
+                break
+        else:
+            pins.append((conn.pin, [conn.node_id]))
+    return out
+
+
+def _prefix(ref: str) -> str:
+    letters = "".join(ch for ch in ref if ch.isalpha())
+    return letters or "U"
+
+
+def _pin_y(i: int, n: int) -> float:
+    """Pin i's y in the symbol's own frame (y up), centred on the body."""
+    return round(((n - 1) / 2 - i) * _PIN_PITCH, 4)
+
+
+def _lib_symbol(comp, pins) -> List[str]:
+    """The part's own symbol, embedded: a body and one passive pin per pin."""
+    name = _esc(comp.id)
+    hh = _body_h(len(pins)) / 2
+    out = [f'    (symbol "CircuitOS:{name}" (pin_names (offset 0.508)) (in_bom yes) (on_board yes)',
+           f'      (property "Reference" "{_prefix(comp.id)}" (at 0 {_fmt(hh + 1.27)} 0)'
+           f' (effects (font (size {_FONT} {_FONT}))))',
+           f'      (property "Value" "{_esc(comp.part_number)}" (at 0 {_fmt(-hh - 1.27)} 0)'
+           f' (effects (font (size {_FONT} {_FONT}))))',
+           f'      (property "Footprint" "" (at 0 0 0) (effects (font (size {_FONT} {_FONT})) hide))',
+           f'      (property "Datasheet" "" (at 0 0 0) (effects (font (size {_FONT} {_FONT})) hide))',
+           f'      (symbol "{name}_0_1"',
+           f'        (rectangle (start {_fmt(-_BODY_HW)} {_fmt(hh)}) (end {_fmt(_BODY_HW)} {_fmt(-hh)})',
+           f'          (stroke (width {_STROKE}) (type default)) (fill (type background))))',
+           f'      (symbol "{name}_1_1"']
+    for i, (pin, _) in enumerate(pins):
+        out.append(f'        (pin passive line (at {_fmt(-_BODY_HW - _PIN_LEN)} {_fmt(_pin_y(i, len(pins)))} 0)'
+                   f' (length {_fmt(_PIN_LEN)})'
+                   f' (name "{_esc(pin)}" (effects (font (size {_FONT_SMALL} {_FONT_SMALL}))))'
+                   f' (number "{_esc(pin)}" (effects (font (size {_FONT_SMALL} {_FONT_SMALL})))))')
+    out += ['      )', '    )']
+    return out
+
+
+def _symbol_instance(comp, pins, cx: float, cy: float, sheet: str,
                      uid: _Uid) -> List[str]:
-    """A visible box per component, its ref/part number above it, and the net
-    name of every connected pin listed inside."""
-    lines: List[str] = []
-
-    # Box outline — real graphics, so the component is actually visible.
-    # The previous version emitted (no_connect) as a placeholder, which is
-    # semantically wrong: (no_connect) marks a pin as intentionally unconnected
-    # and makes KiCad's ERC misreport the design.
-    lines.append(_rectangle(cx, cy, cx + _BOX_W, cy + _BOX_H,
-                            uid.of(f"box:{comp.id}")))
-
-    # Reference + part number above the box
-    lines.append(_text(f'{comp.id}: {comp.part_number}', cx, cy - 1.5,
-                       _FONT, uid.of(f"ref:{comp.id}")))
-
-    # Connected net names inside the box, one per line
-    pin_conns = [c for c in ir.connections if c.component_id == comp.id]
-    for j, conn in enumerate(pin_conns):
-        ty = cy + 4.0 + j * 3.2
-        if ty > cy + _BOX_H - 1.0:      # box is full, stop rather than overflow
-            break
-        lines.append(_text(conn.node_id, cx + 2.0, ty, _FONT_SMALL,
-                           uid.of(f"pin:{comp.id}:{conn.node_id}:{j}")))
-
-    return lines
+    """The placed symbol, then a net label on the end of each of its pins."""
+    hh = _body_h(len(pins)) / 2
+    value = comp.value or comp.part_number
+    out = [f'  (symbol (lib_id "CircuitOS:{_esc(comp.id)}") (at {_fmt(cx)} {_fmt(cy)} 0) (unit 1)',
+           '    (in_bom yes) (on_board yes) (dnp no)',
+           f'    (uuid "{uid.of("sym:" + comp.id)}")',
+           f'    (property "Reference" "{_esc(comp.id)}" (at {_fmt(cx)} {_fmt(cy - hh - 1.27)} 0)'
+           f' (effects (font (size {_FONT} {_FONT}))))',
+           f'    (property "Value" "{_esc(value)}" (at {_fmt(cx)} {_fmt(cy + hh + 1.27)} 0)'
+           f' (effects (font (size {_FONT} {_FONT}))))',
+           f'    (property "Footprint" "" (at {_fmt(cx)} {_fmt(cy)} 0)'
+           f' (effects (font (size {_FONT} {_FONT})) hide))',
+           f'    (property "Datasheet" "" (at {_fmt(cx)} {_fmt(cy)} 0)'
+           f' (effects (font (size {_FONT} {_FONT})) hide))',
+           # The package is not a KiCad footprint id; the board writer
+           # (pcb_engine/kicad_export.py) owns footprints, so it is kept apart.
+           f'    (property "Package" "{_esc(comp.package)}" (at {_fmt(cx)} {_fmt(cy)} 0)'
+           f' (effects (font (size {_FONT} {_FONT})) hide))',
+           f'    (property "MPN" "{_esc(comp.part_number)}" (at {_fmt(cx)} {_fmt(cy)} 0)'
+           f' (effects (font (size {_FONT} {_FONT})) hide))']
+    for pin, _ in pins:
+        out.append(f'    (pin "{_esc(pin)}" (uuid "{uid.of("pin:" + comp.id + ":" + pin)}"))')
+    out += ['    (instances',
+            f'      (project "circuit_os" (path "/{sheet}" (reference "{_esc(comp.id)}") (unit 1))))',
+            '  )']
+    # Schematic y runs down; the symbol's own frame runs up.
+    px = _fmt(cx - _BODY_HW - _PIN_LEN)
+    for i, (pin, nodes) in enumerate(pins):
+        py = _fmt(cy - _pin_y(i, len(pins)))
+        for node in nodes:
+            out.append(f'  (label "{_esc(node)}" (at {px} {py} 180) (fields_autoplaced yes)\n'
+                       f'    (effects (font (size {_FONT} {_FONT})) (justify right bottom))\n'
+                       f'    (uuid "{uid.of("label:" + comp.id + ":" + pin + ":" + node)}"))')
+    return out

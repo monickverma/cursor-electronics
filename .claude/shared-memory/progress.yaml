@@ -463,7 +463,7 @@ files:
       score:
         status: untested
         type: function
-        description: Physics scorecard for a candidate layout
+        description: Layout cost score (unrouted, DRC, vias, length, layers, skew; no physics term)
         signature: 'score(board: Board, w: Weights | None, violations: list[Violation]
           | None) -> Score'
         line: 273

@@ -15,7 +15,10 @@ imports it normally:
 
     from pcb_engine import compile_board
 
-Only stdlib plus numpy (``router.py``) is required — no ngspice, no KiCad.
+Only stdlib plus numpy (``router.py``) is required — no ngspice. KiCad
+(``kicad-cli``) is used as a subprocess by the export modules when installed
+(``kicad_cli``, ``kicad_drc``, ``kicad_fab``); without it they say so and
+refuse fab files rather than fail.
 """
 
 import sys
@@ -27,6 +30,7 @@ if _PKG_DIR not in sys.path:
 
 from compile_board import compile_board, from_netlist, place_constructive  # noqa: E402
 from verify import verify_board, Report, Finding  # noqa: E402
+from kicad_fab import export_fab, kicad_package  # noqa: E402
 
 __all__ = ["compile_board", "from_netlist", "place_constructive",
-           "verify_board", "Report", "Finding"]
+           "verify_board", "Report", "Finding", "export_fab", "kicad_package"]
