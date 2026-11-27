@@ -248,39 +248,40 @@
 .win-hide:hover, .win-hide:focus-visible { background: var(--paper); color: var(--ink); outline: none; }
 .win-hide[aria-pressed='true'] { background: var(--paper); color: var(--ink); }
 
-/* A window docked to the right half, or full screen (FloatWindow `data-size`).
+/* A window docked on the right (`half`) or full screen (FloatWindow `data-size`).
    It leaves the layout; its title bar stays, and its body takes the rest. */
 .win[data-size='half'],
 .win[data-size='full'] {
   position: fixed;
   top: 0;
   bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   box-shadow: none;
   background: var(--ink);
 }
-.win[data-size='half'] { right: 0; width: 50vw; }
-.win[data-size='full'] { left: 0; right: 0; }
-@media (max-width: 899px) {
-  .win[data-size='half'] { width: 100vw; }
+/* Docked, the window is all the desktop shows (owner, 2026-11-27): the library on
+   the left, the window on the right, and nothing between. The rest of the desktop
+   (headline, conversation, the dock row, other windows) is hidden, not removed, so
+   it is exactly as it was when the window is put back; hidden, it takes no clicks,
+   and the page under it does not scroll. */
+body:has(.win[data-size='half']) { overflow: hidden; }
+body:has(.win[data-size='half']) .desk { visibility: hidden; }
+.win[data-size='half'] { visibility: visible; }
+/* Beside the library where it sits beside the page (wide screens; page.tsx sets
+   `lib-open`). Narrower, the library is a drawer and the dock is the full width. */
+@media (min-width: 1100px) {
+  .desk.lib-open .win[data-size='half'] { left: 288px; }
 }
 /* The desktop (page.tsx) is its own stacking context below the library (z-30).
    While a window covers the whole screen (full screen where the Fullscreen API is
-   refused, or docked on a narrow screen, where the dock is the full width), lift
-   the desktop so the window covers the library too. Never for a half dock on a
-   wide screen: the desktop is transparent, and lifted it would swallow every
-   click meant for the library beside the docked window. */
+   refused, or a dock where the library cannot sit beside it), lift the desktop so
+   the window covers the library's drawer and its button too. */
 body:has(.win[data-size='full']) .desk { z-index: 40; }
-@media (max-width: 899px) {
+@media (max-width: 1099px) {
   body:has(.win[data-size='half']) .desk { z-index: 40; }
-}
-/* A half dock on a wide screen is a split screen: the rest of the desktop moves
-   into the left half (as the library pushes it right), so no window sits hidden
-   under the dock, and the docked window's old place is not held open. */
-@media (min-width: 900px) {
-  body:has(.win[data-size='half']) .desk { padding-right: 50vw; }
-  .win-hold[data-for='half'] { display: none; }
 }
 .win[data-size='half'] > .win-in,
 .win[data-size='full'] > .win-in {

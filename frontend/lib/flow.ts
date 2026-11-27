@@ -29,6 +29,14 @@ export function drainSplats(max = 32): Splat[] {
   return taken
 }
 
+/**
+ * Sent on `window` when a FloatWindow leaves the layout: docked beside the library
+ * (`half`) or full screen. Any other window out goes back; the page opens the library
+ * for a dock, so the design list is on the left and the window on the right.
+ */
+export const WINDOW_OUT = 'flow:window-out'
+export interface WindowOut { id: string; size: 'half' | 'full' }
+
 // Windows stack in the order they were last touched.
 let z = 10
 export function nextZ(): number {

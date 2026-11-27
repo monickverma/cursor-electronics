@@ -12,18 +12,19 @@
  *
  * `tone` picks the palette of whatever is inside — see tailwind.config.ts.
  *
- * Two buttons in the title bar take a window out of the layout: one docks it to
- * the right half of the screen, the other makes it full screen (the browser's
+ * Two buttons in the title bar take a window out of the layout: one docks it on
+ * the right, beside the library, the other makes it full screen (the browser's
  * Fullscreen API, so it covers the library too and Esc leaves it). Double-click
  * the title bar for full screen. While docked or full screen it neither bobs nor
- * drags. A half dock on a wide screen is a split screen: the rest of the desktop
- * moves into the left half (globals.css). Full screen holds the window's place
- * with an empty box of its old height, so the page does not jump on the way back.
+ * drags. Docked, the window is all the desktop shows: it runs from the library's
+ * edge to the right of the screen and the rest of the desktop is hidden until it
+ * is put back (globals.css; the page opens the library). Either way an empty box
+ * of its old height holds its place, so the page is exactly as it was on return.
  * One window is out of the layout at a time.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState, ReactNode, PointerEvent as ReactPointerEvent } from 'react'
-import { nextZ, prefersCalm, pushSplat } from '@/lib/flow'
+import { nextZ, prefersCalm, pushSplat, WINDOW_OUT, type WindowOut } from '@/lib/flow'
 
 interface Props {
   id: string
@@ -55,11 +56,8 @@ const DRAG_LIMIT_X = 900
 const DRAG_LIMIT_Y = 700
 const MAX_THROW = 900          // px/s
 
-/** Where the window is: in the layout, docked to the right half, or full screen. */
+/** Where the window is: in the layout, docked on the right beside the library, or full screen. */
 type Size = 'normal' | 'half' | 'full'
-
-/** Sent (with the window's id) when a window leaves the layout; any other one out goes back. */
-const OUT_EVENT = 'flow:window-out'
 
 function IconHalf() {
   return (
@@ -189,15 +187,15 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
   // rather than stacking two windows invisibly in the same place.
   useEffect(() => {
     const onOut = (e: Event) => {
-      if ((e as CustomEvent<string>).detail === id || sizeRef.current === 'normal') return
+      if ((e as CustomEvent<WindowOut>).detail.id === id || sizeRef.current === 'normal') return
       if (document.fullscreenElement === elRef.current) document.exitFullscreen().catch(() => {})
       setSize('normal')
     }
-    window.addEventListener(OUT_EVENT, onOut)
-    return () => window.removeEventListener(OUT_EVENT, onOut)
+    window.addEventListener(WINDOW_OUT, onOut)
+    return () => window.removeEventListener(WINDOW_OUT, onOut)
   }, [id])
 
-  // Esc also undocks a half-screen window, unless it was pressed in a text field.
+  // Esc also undocks a docked window, unless it was pressed in a text field.
   useEffect(() => {
     if (size !== 'half') return
     const onKey = (e: KeyboardEvent) => {
@@ -214,16 +212,16 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
     if (elRef.current) elRef.current.style.zIndex = String(nextZ())
   }
 
-  function leaveLayout() {
+  function leaveLayout(to: WindowOut['size']) {
     // Measure before the window leaves the layout, so its place can be held.
     if (sizeRef.current === 'normal' && elRef.current) setHoldHeight(elRef.current.offsetHeight)
-    window.dispatchEvent(new CustomEvent(OUT_EVENT, { detail: id }))
+    window.dispatchEvent(new CustomEvent<WindowOut>(WINDOW_OUT, { detail: { id, size: to } }))
   }
 
   function toggleHalf() {
     if (sizeRef.current === 'half') { setSize('normal'); return }
     if (document.fullscreenElement === elRef.current) document.exitFullscreen().catch(() => {})
-    leaveLayout()
+    leaveLayout('half')
     raise()
     setSize('half')
   }
@@ -236,7 +234,7 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
       if (document.fullscreenElement === el) await document.exitFullscreen().catch(() => {})
       return
     }
-    leaveLayout()
+    leaveLayout('full')
     raise()
     setSize('full')
     try {
@@ -315,8 +313,8 @@ export default function FloatWindow({ id, title, meta, tone = 'paper', height, f
               {maximizable && <>
               <button type="button" className="win-hide" onClick={toggleHalf}
                       aria-pressed={size === 'half'}
-                      aria-label={size === 'half' ? `Put ${title} back` : `Dock ${title} to the right half`}
-                      title={size === 'half' ? 'Put back (Esc)' : 'Right half of the screen'}>
+                      aria-label={size === 'half' ? `Put ${title} back` : `Dock ${title} on the right`}
+                      title={size === 'half' ? 'Put back (Esc)' : 'Dock on the right, beside the library'}>
                 <IconHalf />
               </button>
               <button type="button" className="win-hide" onClick={toggleFull}

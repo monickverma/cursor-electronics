@@ -107,54 +107,55 @@ test('a window is dragged by its title bar and stays where it is dropped', async
   expect(Math.abs(later.x - after.x)).toBeLessThan(12)
 })
 
-test('an output window docks to the right half, one at a time, and Esc puts it back', async ({ page }) => {
+test('a docked window is all the desktop shows, beside the library, and Esc puts it back', async ({ page }) => {
   await mockBackend(page)
   await generateDesign(page)
   const vp = page.viewportSize()!
   const schematic = page.getByTestId('window-schematic')
-  const validation = page.getByTestId('window-validation')
+  const change = page.getByPlaceholder('Request a change…')
 
-  await page.getByRole('button', { name: 'Dock Schematic to the right half' }).click()
+  await page.getByRole('button', { name: 'Dock Schematic on the right' }).click()
   await expect(schematic).toHaveAttribute('data-size', 'half')
-  // Flush with the right half and the full height, from the first frame: no bob offset.
+  // From the library's edge to the right of the screen, full height, from the first frame.
   const box = (await schematic.boundingBox())!
+  const library = (await page.getByRole('button', { name: 'Close the library' }).evaluate(
+    b => b.closest('.fixed')!.getBoundingClientRect().right))
+  expect(Math.abs(box.x - library)).toBeLessThan(2)
+  expect(box.x + box.width).toBeGreaterThan(vp.width - 2)
   expect(box.y).toBe(0)
   expect(box.height).toBe(vp.height)
-  expect(box.x + box.width).toBeGreaterThan(vp.width - 20)
-  expect(Math.abs(box.width - vp.width / 2)).toBeLessThan(2)
-  // A split screen: the rest of the desktop moved into the left half, nothing hides under the dock.
-  const other = (await validation.boundingBox())!
-  expect(other.x + other.width).toBeLessThanOrEqual(box.x + 1)
+  // Nothing between them: the headline, the conversation and the other windows are hidden.
+  await expect(change).toBeHidden()
+  await expect(page.getByTestId('window-validation')).toBeHidden()
 
-  // Docking another window puts the first back; two never stack in one place.
-  // (Pointer in first, as a person's would be: a window holds still only then.)
-  const vbox = (await validation.boundingBox())!
-  await page.mouse.move(vbox.x + vbox.width / 2, vbox.y + 60)
-  await page.getByRole('button', { name: 'Dock Claims and checks to the right half' }).click()
-  await expect(validation).toHaveAttribute('data-size', 'half')
-  await expect(schematic).toHaveAttribute('data-size', 'normal')
-
-  // Esc typed in a text field is the field's; elsewhere it undocks.
-  const change = page.getByPlaceholder('Request a change…')
-  await change.focus()
-  await change.press('Escape')
-  await expect(validation).toHaveAttribute('data-size', 'half')
-  await change.blur()
+  // Esc typed in a text field is the field's (the library's search, beside the dock).
+  const search = page.getByPlaceholder('Search your designs')
+  await search.focus()
+  await search.press('Escape')
+  await expect(schematic).toHaveAttribute('data-size', 'half')
+  await search.blur()
   await page.keyboard.press('Escape')
-  await expect(validation).toHaveAttribute('data-size', 'normal')
+  await expect(schematic).toHaveAttribute('data-size', 'normal')
+  // Back exactly as it was.
+  await expect(change).toBeVisible()
+  await expect(page.getByTestId('window-validation')).toBeVisible()
 })
 
-test('a docked window leaves the page beside it usable', async ({ page }) => {
+test('docking opens the library on the left, and the library stays usable', async ({ page }) => {
   await mockBackend(page)
   await generateDesign(page)
-  await page.getByRole('button', { name: 'Dock Claims and checks to the right half' }).click()
-  // The page wrapper is transparent; it must not be lifted over the library beside the dock.
-  const hit = await page.evaluate(() => {
-    const el = document.elementFromPoint(20, window.innerHeight / 2)
-    return el?.closest('[data-testid^="window-"]')?.getAttribute('data-testid') ?? 'page'
+  await page.getByRole('button', { name: 'Close the library' }).click()
+  await expect(page.getByRole('button', { name: 'Open the library' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Dock Claims and checks on the right' }).click()
+  await expect(page.getByTestId('window-validation')).toHaveAttribute('data-size', 'half')
+  await expect(page.getByRole('button', { name: 'Close the library' })).toBeVisible()
+  // A point on the library reaches the library, not a hidden page or the dock.
+  const inLibrary = await page.evaluate(() => {
+    const el = document.elementFromPoint(100, window.innerHeight / 2)
+    return !!el?.closest('.fixed') && !el.closest('[data-testid^="window-"]')
   })
-  expect(hit).not.toBe('window-validation')
-  expect(await page.locator('.desk').evaluate(el => getComputedStyle(el).zIndex)).toBe('10')
+  expect(inLibrary).toBe(true)
 })
 
 test('an output window goes full screen and comes back where it was', async ({ page }) => {
@@ -188,7 +189,7 @@ test('only output windows can be docked or made full screen', async ({ page }) =
   await page.getByRole('button', { name: /open app/i }).first().click()
   const auth = page.getByTestId('window-auth')
   await expect(auth).toBeVisible()
-  await expect(auth.getByRole('button', { name: /right half|full screen/ })).toHaveCount(0)
+  await expect(auth.getByRole('button', { name: /on the right|full screen/ })).toHaveCount(0)
 })
 
 test('the water is drawn in WebGL 2, or the static dots stand in', async ({ page }) => {
